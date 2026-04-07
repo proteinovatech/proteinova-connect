@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/home/presentation/newpurchase.dart';
+import 'package:proteinova_connect/features/home/widget/purchasecard.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -41,28 +43,32 @@ class _HomeState extends State<Home> {
               style: AppTextStyles.body,
               ),
                SizedBox(height: size.height*0.02,),
-               Container(
-                width:size.width*0.90,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.amber600,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-        Icon(Icons.add, color:AppColors.dark),
-        SizedBox(width: 8),
-        Text(
-          "New Purchanse Entry",
-          style: AppTextStyles.heading2,
-          
-        ),
-            ],
-          ),
-        ),
+               GestureDetector(
+                onTap: (){Navigator.push(context, 
+                MaterialPageRoute(builder: (context)=>Newpurchase()));},
+                 child: Container(
+                  width:size.width*0.90,
+                           padding: const EdgeInsets.all(12),
+                           decoration: BoxDecoration(
+                             color: AppColors.amber600,
+                             borderRadius: BorderRadius.circular(12),
+                           ),
+                           
+                           child: Row(
+                             mainAxisAlignment: MainAxisAlignment.center,
+                             mainAxisSize: MainAxisSize.min,
+                             children: [
+                         Icon(Icons.add, color:AppColors.dark),
+                         SizedBox(width: 8),
+                         Text(
+                           "New Purchanse Entry",
+                           style: AppTextStyles.heading2,
+                           
+                         ),
+                             ],
+                           ),
+                         ),
+               ),
         SizedBox(height:size.height*0.03,),
        SizedBox(
   height:size.height*0.05,
@@ -200,289 +206,33 @@ Row(
 SizedBox(height: size.height * 0.03,),
 Expanded(
   child: SingleChildScrollView(
-    child: Padding(
-      padding: const EdgeInsets.all(1.0),
-      child: Column(
-        children: [
-          Container(
-           margin: const EdgeInsets.symmetric(vertical: 8), // only vertical
-  padding: const EdgeInsets.all(10),
-  decoration: BoxDecoration(
-    border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: Column(
-              children: [
-               
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                   
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        "Recevied",
-                        style: AppTextStyles.body.copyWith(
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-          
-              
-                const SizedBox(height: 30),
-                Divider(color: Colors.grey.shade300),
-                const SizedBox(height: 10),
-          
-               
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Container(
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Icon(
-              Icons.home,
-              color: Colors.grey,
-            ),
-          ),
-                    Text("Apex Farms", style: AppTextStyles.body),
-                  ],
-                ),
-          
-                /// 🔥 DIVIDER
-                const SizedBox(height: 50),
-                Divider(color: Colors.grey.shade300),
-                const SizedBox(height: 10),
-          
-                
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 243, 238, 238),
-                      border: Border.all(color: const Color.fromARGB(255, 214, 210, 210))
-                      ),
-                      child: Row(
-                        children: [
-                           Icon(
-                  Icons.edit, 
-                  color: Colors.black,
-                  size: 16,
-                ),
-                const SizedBox(width: 6),
-                          Text(
-                            "Edit",
-                            style: AppTextStyles.heading2
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                  ],
-                ),
-              ],
-            ),
-          
-          ),
-         SizedBox(height: size.height*0.02,),
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 8), // only vertical
-  padding: const EdgeInsets.all(10),
-  decoration: BoxDecoration(
-    border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: Column(
-              children: [
-               
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                   
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 199, 209, 231),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        "Draft",
-                        style: AppTextStyles.body.copyWith(
-                          color: Colors.blue,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-          
-              
-                const SizedBox(height: 30),
-                Divider(color: Colors.grey.shade300),
-                const SizedBox(height: 10),
-          
-               
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Container(
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Icon(
-              Icons.home,
-              color: Colors.grey,
-            ),
-          ),
-                    Text("Valley Farms", style: AppTextStyles.body),
-                  ],
-                ),
-          
-                /// 🔥 DIVIDER
-                const SizedBox(height: 50),
-                Divider(color: Colors.grey.shade300),
-                const SizedBox(height: 10),
-          
-                
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 243, 238, 238),
-                      border: Border.all(color: const Color.fromARGB(255, 214, 210, 210))
-                      ),
-                      child: Row(
-                        children: [
-                           Icon(
-                  Icons.edit, 
-                  color: Colors.black,
-                  size: 16,
-                ),
-                const SizedBox(width: 6),
-                          Text(
-                            "Edit",
-                            style: AppTextStyles.heading2
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                  ],
-                ),
-              
-              ],
-            ),
-          
-          ),
-          SizedBox(height: size.height*0.02,),
-           Container(
-          margin: const EdgeInsets.symmetric(vertical: 8), // only vertical
-  padding: const EdgeInsets.all(10),
-  decoration: BoxDecoration(
-    border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: Column(
-              children: [
-               
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                   
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 245, 205, 190),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        "In transit",
-                        style: AppTextStyles.body.copyWith(
-                          color: Colors.brown,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-          
-              
-                const SizedBox(height: 30),
-                Divider(color: Colors.grey.shade300),
-                const SizedBox(height: 10),
-          
-               
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Container(
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Icon(
-              Icons.home,
-              color: Colors.grey,
-            ),
-          ),
-                    Text("Sunrise Poultry", style: AppTextStyles.body),
-                  ],
-                ),
-          
-                /// 🔥 DIVIDER
-                const SizedBox(height: 50),
-                Divider(color: Colors.grey.shade300),
-                const SizedBox(height: 10),
-          
-                
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 243, 238, 238),
-                      border: Border.all(color: const Color.fromARGB(255, 214, 210, 210))
-                      ),
-                      child: Row(
-                        children: [
-                           Icon(
-                  Icons.edit, 
-                  color: Colors.black,
-                  size: 16,
-                ),
-                const SizedBox(width: 6),
-                          Text(
-                            "Edit",
-                            style: AppTextStyles.heading2
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                  ],
-                ),
-              ],
-            ),
-          
-          ),
-        
-        ],
-      ),
+    child: Column(
+      children: [
+        PurchaseCard(
+          status: "Received",
+          statusColor: Colors.green,
+          textColor: Colors.white,
+          supplier: "Apex Farms",
+        ),
+
+        SizedBox(height: size.height * 0.02),
+
+        PurchaseCard(
+          status: "Draft",
+          statusColor: Color.fromARGB(255, 199, 209, 231),
+          textColor: Colors.blue,
+          supplier: "Valley Farms",
+        ),
+
+        SizedBox(height: size.height * 0.02),
+
+        PurchaseCard(
+          status: "In transit",
+          statusColor: Color.fromARGB(255, 245, 205, 190),
+          textColor: Colors.brown,
+          supplier: "Sunrise Poultry",
+        ),
+      ],
     ),
   ),
 ),

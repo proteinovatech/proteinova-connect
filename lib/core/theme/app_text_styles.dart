@@ -48,7 +48,7 @@ class AppTextStyles {
     color: Colors.black, // works well on yellow
   );
   static const TextStyle subtitle = TextStyle(
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: FontWeight.w400,
     color: AppColors.textSecondary, // works well on yellow
   );

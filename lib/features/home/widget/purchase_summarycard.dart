@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/orders/presentation/checkout.dart';
 
 class PurchaseSummaryCard extends StatelessWidget {
   const PurchaseSummaryCard({super.key});
@@ -87,7 +88,8 @@ class PurchaseSummaryCard extends StatelessWidget {
           
           child: ElevatedButton(
             onPressed: () {
-        
+        Navigator.push(context, MaterialPageRoute(builder: 
+        (context)=>Checkout()));
              
             },
             style: ElevatedButton.styleFrom(
@@ -100,7 +102,7 @@ class PurchaseSummaryCard extends StatelessWidget {
             child:  Row(
               children: [
                  SizedBox(width: size.width*0.1),
-
+        
                 Icon(Icons.check_circle_outline, color: AppColors.dark),
                  SizedBox(width: size.width*0.03),
                 Text(

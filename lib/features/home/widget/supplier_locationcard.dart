@@ -104,7 +104,7 @@ class _SupplierLocationCardState extends State<SupplierLocationCard> {
          Row(
            children: [
              Text("Origin Location",style: AppTextStyles.button,),
-               SizedBox(width:size.width*0.35),
+               SizedBox(width:size.width*0.30),
              Text("Auto-filled",style: AppTextStyles.body,), 
            ],
          ),
@@ -128,7 +128,7 @@ class _SupplierLocationCardState extends State<SupplierLocationCard> {
                   location.isEmpty ? "Auto-filled location" : location,
                   style: AppTextStyles.subtitle,
                 ),
-                 SizedBox(width: size.width*0.3),
+                 SizedBox(width: size.width*0.23),
                 Icon(Icons.check_circle_outline, color: AppColors.green),
      
               ],
