@@ -214,6 +214,7 @@ Expanded(
           textColor: Colors.white,
           supplier: "Apex Farms",
         ),
+       
 
         SizedBox(height: size.height * 0.02),
 

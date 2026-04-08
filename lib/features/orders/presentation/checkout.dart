@@ -124,7 +124,7 @@ class _CheckoutState extends State<Checkout> {
 
                           SizedBox(height: size.height * 0.03),
 
-                          /// 🔹 BILL DETAILS
+                         
                           Text("Subtotal", style: TextStyle(color: Colors.grey)),
                           Text("Taxes (5%)", style: TextStyle(color: Colors.grey)),
                           Text("Delivery fee", style: TextStyle(color: Colors.grey)),
