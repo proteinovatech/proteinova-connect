@@ -8,7 +8,26 @@ class Checkout extends StatefulWidget {
   @override
   State<Checkout> createState() => _CheckoutState();
 }
+double subtotal = 5000;
+double tax = subtotal * 0.05;
+double deliveryFee = 50;
 
+double totalAmount = subtotal + tax + deliveryFee;
+int selectedIndex = 0;
+final List<String> tabs = [
+    "Card",
+    "UPI",
+    "Wallets",
+    "Cash",
+    
+  ];
+  List<IconData> tabIcons = [
+  Icons.credit_card,
+  Icons.phone_android_outlined,
+  Icons.wallet,
+  Icons.money,
+];
+bool isChecked = false;
 class _CheckoutState extends State<Checkout> {
   @override
   Widget build(BuildContext context) {
@@ -19,31 +38,34 @@ class _CheckoutState extends State<Checkout> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-          /// 🔹 HEADER
           SizedBox(
-            height: size.height * 0.09,
+            height: size.height * 0.10,
             child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Center(
-                  child: Text(
-                    "Check out",
-                    style: AppTextStyles.heading1,
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Icon(Icons.arrow_back_sharp),
-                ),
-              ],
-            ),
+  alignment: Alignment.center,
+  children: [
+    Center(
+      child: Text(
+        "Check out",
+        style: AppTextStyles.heading1,
+      ),
+    ),
+    Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16), 
+        child: GestureDetector(
+          onTap: () {
+            Navigator.pop(context); 
+          },
+          child: const Icon(Icons.arrow_back_sharp),
+        ),
+      ),
+    ),
+  ],
+)
           ),
-
-          
-          const Divider(),
-
-          /// 🔹 TITLE SECTION
+       
+          Divider(),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
@@ -116,35 +138,495 @@ class _CheckoutState extends State<Checkout> {
                           /// 🔹 DELIVERY
                           Text(
                             "Delivery details",
+                            style: AppTextStyles.heading2
+                          ),
+                            Text(
+                            "Address details\n hggfu hghjvuy bn fuf",
                             style: AppTextStyles.body.copyWith(fontSize: 14),
                           ),
 
                           const SizedBox(height: 10),
                           Divider(),
+                            SizedBox(height: 10,),
+        SizedBox(height: 10),
 
-                          SizedBox(height: size.height * 0.03),
+Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+
+    /// 🔹 LEFT SIDE (2 texts in column)
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Jumbco white (GradeA)", style: AppTextStyles.heading2),
+        Text("200 boxes *15", style: AppTextStyles.body),
+      ],
+    ),
+
+    /// 🔹 RIGHT SIDE
+    Text("\$17438", style: AppTextStyles.heading2),
+  ],
+),
+SizedBox(height: 10,),
+         Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Jumbco white (GradeB)", style: AppTextStyles.heading2),
+        Text("200 boxes *15", style: AppTextStyles.body),
+      ],
+    ),
+    Text("\$17438", style: AppTextStyles.heading2),
+  ],
+),
+
+
+          SizedBox(height: size.height * 0.02),
+          Divider(color: Colors.grey.shade300),
+
+
+                          SizedBox(height: size.height * 0.01),
 
                          
-                          Text("Subtotal", style: TextStyle(color: Colors.grey)),
-                          Text("Taxes (5%)", style: TextStyle(color: Colors.grey)),
-                          Text("Delivery fee", style: TextStyle(color: Colors.grey)),
+                          Column(
+  children: [
+
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text("Subtotal", style: TextStyle(color: Colors.grey)),
+        Text("₹5000"),
+      ],
+    ),
+
+    SizedBox(height: 5),
+
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text("Taxes (5%)", style: TextStyle(color: Colors.grey)),
+        Text("₹250"),
+      ],
+    ),
+
+    SizedBox(height: 5),
+
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text("Delivery fee", style: TextStyle(color: Colors.grey)),
+        Text("₹50"),
+      ],
+    ),
+
+  ],
+),
+
 
                           SizedBox(height: size.height * 0.02),
-
-                          /// 🔹 TOTAL
-                          Text(
-                            "Total Amount",
-                            style: AppTextStyles.heading2,
-                          ),
+Divider(),
+                         
+                          Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
+    Text(
+      "Total Amount",
+      style: AppTextStyles.heading2,
+    ),
+    Text(
+      "₹${totalAmount.toStringAsFixed(2)}",
+      style: AppTextStyles.heading2,
+    ),
+  ],
+),
                         ],
                       ),
                     ),
+ Container(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+
+                         
+                          Text(
+                            "Payment Method",
+                            style: AppTextStyles.heading1,
+                          ),
+                        
+
+                          SizedBox(height: size.height * 0.03),
+  SizedBox(
+   height: size.height * 0.05,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: tabs.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 20),
+        itemBuilder: (context, index) {
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                selectedIndex = index;
+              });
+            },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            
+            Row(
+              children: [
+                 Icon(
+      tabIcons[index],
+      color: selectedIndex == index
+          ? AppColors.dark
+          : Colors.grey,
+    ),
+SizedBox(width: 5,),
+                Text(
+                  tabs[index],
+                  style: AppTextStyles.body.copyWith(
+                    color: selectedIndex == index
+                        ? AppColors.dark
+                        : Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          
+        ),
+  );
+  },
+  ),),
+    Stack(
+      children: [
+
+        /// Grey full line
+        Container(
+          height: 3,
+          width: double.infinity,
+          color: const Color.fromARGB(255, 250, 246, 246),
+        ),
+
+        /// Yellow moving indicator
+        AnimatedAlign(
+          duration: const Duration(milliseconds: 300),
+          alignment: Alignment(
+            -1 + (2 / (tabs.length - 1)) * selectedIndex,
+            0,
+          ),
+          child: Container(
+            height: 3,
+            width: 100,
+            decoration: BoxDecoration(
+              color: AppColors.amber500,
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+      ],
+    ),                   
+SizedBox(height: 10,),
+Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  crossAxisAlignment: CrossAxisAlignment.center,
+  children: [
+
+    /// 🔹 LEFT TEXT
+    Text(
+      "Enter Card Details",
+      style: AppTextStyles.heading2,
+    ),
+
+    /// 🔹 RIGHT SIDE (2 containers)
+    Row(
+      children: [
+
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+             color: AppColors.containerColor,
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Text("VISA"),
+        ),
+
+        const SizedBox(width: 8),
+
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+          color: AppColors.containerColor,
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Text("MC"),
+        ),
+      ],
+    ),
+  ],
+),
+SizedBox(height: 10,),
+Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+
+    /// 🔹 LABEL
+    Text(
+      "Card Number",
+      style: AppTextStyles.button,
+    ),
+
+    const SizedBox(height: 8),
+
+    /// 🔹 INPUT CONTAINER
+    Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: TextField(
+        keyboardType: TextInputType.number,
+        decoration: const InputDecoration(
+          border: InputBorder.none,
+
+          /// 🔹 CARD ICON
+          prefixIcon: Icon(Icons.credit_card),
+
+          hintText: "Enter card number",
+          suffixIcon:Icon(Icons.check_circle_outline, color: AppColors.green),
+     
+        ),
+        
+      ),
+         
+    ),
+    
+  ],
+),
+SizedBox(height: 10,),
+Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Text(
+      "Name on Card",
+      style: AppTextStyles.button,
+    ),
+
+    const SizedBox(height: 8),
+
+    /// 🔹 INPUT CONTAINER
+    Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: TextField(
+        keyboardType: TextInputType.name,
+        decoration: const InputDecoration(
+          border: InputBorder.none,
+          hintText: "Admin User",         
+        ),        
+      ),
+        ),
+        SizedBox(height: 10,),
+     Column(
+  children: [
+
+    /// 🔹 LABEL ROW
+    Row(
+      children: [
+        Expanded(
+          child: Text("Expiry Date"),
+        ),
+        Expanded(
+          child: Text("CVV"),
+        ),
+      ],
+    ),
+
+    const SizedBox(height: 8),
+
+    /// 🔹 INPUT ROW
+    Row(
+      children: [
+
+        /// Expiry Date Field
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const TextField(
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: "MM/YY",
+              ),
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 10),
+
+        /// CVV Field
+     Expanded(
+  child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10),
+    decoration: BoxDecoration(
+      border: Border.all(color: Colors.grey.shade300),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: TextField(
+  obscureText: true,
+  keyboardType: TextInputType.number,
+  decoration: InputDecoration(
+    border: InputBorder.none,
+    hintText: "123",
+
+    suffixIconConstraints: const BoxConstraints(
+      minWidth: 30,
+      minHeight: 30,
+    ),
+
+    suffixIcon: Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.grey.shade300,
+        ),
+        padding: const EdgeInsets.all(6),
+        child: const Text(
+          "?",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
+    ),
+  ),
+)
+  ),
+)
+      ],
+    ),
+    SizedBox(height: 10,),
+   Row(
+  children: [
+    GestureDetector(
+      onTap: () {
+        setState(() {
+          isChecked = !isChecked;
+        });
+      },
+      child: Container(
+        height: 22,
+        width: 22,
+        decoration: BoxDecoration(
+          color: isChecked ? Colors.blue : Colors.transparent,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: isChecked
+            ? const Icon(Icons.check, size: 16, color: Colors.white)
+            : null,
+      ),
+    ),
+    const SizedBox(width: 10),
+    const Text("Save this card for future payments"),
+  ],
+)
+  ],
+),
+    ],
+),
+             ],
+                      ),
+                    ),
+                  SizedBox(height: 10),
+Row(
+  mainAxisAlignment: .center,
+  children: [
+    Icon(
+      Icons.security_outlined, 
+      size: 18,
+      color: Colors.grey
+    
+    ),
+    SizedBox(width: 6),
+    Text(
+      "Secure 256 bit SSL encryption",
+      style: TextStyle(color: Colors.grey),
+    ),
+  ],
+),
 
                   ],
                 ),
               ),
             ),
           ),
+         
+Divider(),
+       Padding(
+         padding: const EdgeInsets.all(8.0),
+         child: Row(
+           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+           crossAxisAlignment: CrossAxisAlignment.center,
+           children: [
+         
+             /// 🔹 LEFT SIDE (Column)
+             Column(
+               crossAxisAlignment: CrossAxisAlignment.start,
+               children: [
+          Text(
+            "Total Amount",
+            style: AppTextStyles.body,
+          ),
+          SizedBox(height: 4),
+          Text(
+            "₹${totalAmount.toStringAsFixed(2)}",
+      style: AppTextStyles.heading2,
+          ),
+               ],
+             ),
+         
+             /// 🔹 RIGHT SIDE (Payment Button)
+             Container(
+               padding: const EdgeInsets.symmetric(horizontal: 75, vertical: 15),
+               decoration: BoxDecoration(
+          color:AppColors.amber600,
+          borderRadius: BorderRadius.circular(10),
+               ),
+               child:  Row(
+                 children: [
+                  Icon(Icons.lock_outline),
+                   Text(
+                             "Pay Now",
+                             style: TextStyle(
+                               fontWeight: FontWeight.bold,
+                             ),
+                   ),
+                 ],
+               ),
+             ),
+           ],
+         ),
+       )
         ],
       ),
     );

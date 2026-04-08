@@ -220,7 +220,8 @@ Expanded(
           status: "Received",
           statusColor: Colors.green,
           textColor: Colors.white,
-          supplier: "Apex Farms",
+          supplier: "Apex Farms", orderId: 'mnbjghjg', dateTime: '17.00', 
+          bottomId: '156271', items: 'mszjkshxls()', itemboxes: ',mbdckjsc',
         ),
        
 
@@ -230,7 +231,9 @@ Expanded(
           status: "Draft",
           statusColor: Color.fromARGB(255, 199, 209, 231),
           textColor: Colors.blue,
-          supplier: "Valley Farms",
+          supplier: "Valley Farms", orderId: 'ahdkah',
+           dateTime: '27.00', bottomId: 'bnamvdhj',
+           items: 'hvjcka()', itemboxes: 'mcsbdkjc',
         ),
 
         SizedBox(height: size.height * 0.02),
@@ -239,7 +242,8 @@ Expanded(
           status: "In transit",
           statusColor: Color.fromARGB(255, 245, 205, 190),
           textColor: Colors.brown,
-          supplier: "Sunrise Poultry",
+          supplier: "Sunrise Poultry", orderId: 'Hxl,L', dateTime: '15.09',
+           bottomId: 'ZMBCSJB', items: 'amx,jkxbs()', itemboxes: 'cmsbcmsd',
         ),
       ],
     ),

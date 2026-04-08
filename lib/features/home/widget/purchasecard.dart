@@ -9,14 +9,23 @@ class PurchaseCard extends StatelessWidget {
   final Color textColor;
   final String supplier;
 
+  final String orderId;
+  final String dateTime;
+  final String bottomId;
+final String items;
+final String itemboxes;
   const PurchaseCard({
     super.key,
     required this.status,
     required this.statusColor,
     required this.textColor,
     required this.supplier,
+    required this.orderId,
+    required this.dateTime,
+    required this.bottomId, 
+  required this.items,
+   required this.itemboxes,
   });
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -25,7 +34,7 @@ class PurchaseCard extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.shade300),
       ),
-      child: Column(
+      child: Column(crossAxisAlignment: .start,
         children: [
 
           /// 🔹 STATUS
@@ -39,6 +48,8 @@ class PurchaseCard extends StatelessWidget {
               ),
             ],
           ),
+ Text(orderId, style: AppTextStyles.heading2),
+    Text(dateTime, style: AppTextStyles.body),
 
           const SizedBox(height: 30),
           Divider(color: Colors.grey.shade300),
@@ -58,15 +69,20 @@ class PurchaseCard extends StatelessWidget {
               Text(supplier, style: AppTextStyles.body),
             ],
           ),
+          SizedBox(height: 10,),
+          Text(items, style: AppTextStyles.heading2),
+    Text(itemboxes, style: AppTextStyles.body),
+
 
           const SizedBox(height: 50),
           Divider(color: Colors.grey.shade300),
 
           /// 🔹 EDIT BUTTON
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: const [
-              EditButton(),
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+               Text(bottomId, style: AppTextStyles.heading2),
+              const EditButton(),
             ],
           ),
         ],
