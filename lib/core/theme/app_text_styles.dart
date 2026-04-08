@@ -13,8 +13,8 @@ class AppTextStyles {
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
   );
-  static const TextStyle headingText21 = TextStyle(
-    fontSize: 21,
+  static const TextStyle headingText20 = TextStyle(
+    fontSize: 19,
     fontWeight: FontWeight.w500,
     color: AppColors.textPrimary,
   );

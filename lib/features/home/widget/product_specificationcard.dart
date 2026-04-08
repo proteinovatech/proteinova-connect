@@ -57,7 +57,7 @@ final List<String> eggCategories = [
         SizedBox(width: size.width * 0.02),
         Text(
           "Product Specification",
-          style: AppTextStyles.headingText21,
+          style: AppTextStyles.headingText20,
         ),
       ],
     ),

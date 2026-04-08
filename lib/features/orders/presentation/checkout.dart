@@ -1,6 +1,7 @@
                                                                                                                                   import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/orders/presentation/purchase_success_screen.dart';
 
 class Checkout extends StatefulWidget {
   const Checkout({super.key});
@@ -138,7 +139,7 @@ class _CheckoutState extends State<Checkout> {
                           /// 🔹 DELIVERY
                           Text(
                             "Delivery details",
-                            style: AppTextStyles.headingText22
+                            style: AppTextStyles.headingText20
                           ),
                             Text(
                             "Address details\n hggfu hghjvuy bn fuf",
@@ -159,13 +160,13 @@ Row(
     Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Jumbco white (GradeA)", style: AppTextStyles.headingText22),
+        Text("Jumbco white (GradeA)", style: AppTextStyles.headingText20),
         Text("200 boxes *15", style: AppTextStyles.bodyText16),
       ],
     ),
 
     /// 🔹 RIGHT SIDE
-    Text("\$17438", style: AppTextStyles.headingText22),
+    Text("\$17438", style: AppTextStyles.headingText20),
   ],
 ),
 SizedBox(height: 10,),
@@ -176,11 +177,11 @@ SizedBox(height: 10,),
     Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Jumbco white (GradeB)", style: AppTextStyles.headingText22),
+        Text("Jumbco white (GradeB)", style: AppTextStyles.headingText20),
         Text("200 boxes *15", style: AppTextStyles.bodyText16),
       ],
     ),
-    Text("\$17438", style: AppTextStyles.headingText22),
+    Text("\$17438", style: AppTextStyles.headingText20),
   ],
 ),
 
@@ -259,7 +260,7 @@ Divider(),
 
                          Text(
                             "Payment Method",
-                            style: AppTextStyles.headingText25,
+                            style: AppTextStyles.headingText22,
                           ),
                         SizedBox(height: size.height * 0.03),
   SizedBox(
@@ -343,7 +344,7 @@ Row(
     /// 🔹 LEFT TEXT
     Text(
       "Enter Card Details",
-      style: AppTextStyles.headingText22,
+      style: AppTextStyles.headingText20,
     ),
 
     /// 🔹 RIGHT SIDE (2 containers)
@@ -597,28 +598,33 @@ Divider(),
           SizedBox(height: 4),
           Text(
             "₹${totalAmount.toStringAsFixed(2)}",
-      style: AppTextStyles.headingText22,
+      style: AppTextStyles.headingText20,
           ),
                ],
              ),
          
              /// 🔹 RIGHT SIDE (Payment Button)
-             Container(
-               padding: const EdgeInsets.symmetric(horizontal: 75, vertical: 15),
-               decoration: BoxDecoration(
-          color:AppColors.amber600,
-          borderRadius: BorderRadius.circular(10),
-               ),
-               child:  Row(
-                 children: [
-                  Icon(Icons.lock_outline),
-                   Text(
-                             "Pay Now",
-                             style: TextStyle(
-                               fontWeight: FontWeight.bold,
-                             ),
-                   ),
-                 ],
+             GestureDetector(
+              onTap: (){
+                Navigator.push(context,MaterialPageRoute(builder: (context)=>PurchaseSuccessScreen()));
+              },
+               child: Container(
+                 padding: const EdgeInsets.symmetric(horizontal: 70, vertical: 15),
+                 decoration: BoxDecoration(
+                         color:AppColors.amber600,
+                         borderRadius: BorderRadius.circular(10),
+                 ),
+                 child:  Row(
+                   children: [
+                    Icon(Icons.lock_outline),
+                     Text(
+                               "Pay Now",
+                               style: TextStyle(
+                                 fontWeight: FontWeight.bold,
+                               ),
+                     ),
+                   ],
+                 ),
                ),
              ),
            ],

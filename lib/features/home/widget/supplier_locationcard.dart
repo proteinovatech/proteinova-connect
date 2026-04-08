@@ -46,7 +46,7 @@ class _SupplierLocationCardState extends State<SupplierLocationCard> {
                SizedBox(width: size.width*0.02),
                Text(
                 "Supplier and Location Details",
-                style: AppTextStyles.headingText21,
+                style: AppTextStyles.headingText20,
                          ),
              ],
            ),

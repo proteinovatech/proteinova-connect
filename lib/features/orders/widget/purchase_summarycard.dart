@@ -65,7 +65,7 @@ class PurchaseSummaryCard extends StatelessWidget {
             children: const [
               Text(
                 "Total Cost",
-                style: AppTextStyles.headingText21,
+                style: AppTextStyles.headingText20,
               ),
               Text(
                 "--", // placeholder

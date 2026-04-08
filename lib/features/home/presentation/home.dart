@@ -70,7 +70,7 @@ class _HomeState extends State<Home> {
                          SizedBox(width: 8),
                          Text(
                            "New Purchanse Entry",
-                           style: AppTextStyles.headingText21,
+                           style: AppTextStyles.headingText20,
                            
                          ),
                              ],

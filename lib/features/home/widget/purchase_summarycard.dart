@@ -101,13 +101,13 @@ class PurchaseSummaryCard extends StatelessWidget {
             ),
             child:  Row(
               children: [
-                 SizedBox(width: size.width*0.1),
+                 SizedBox(width: size.width*0.08),
         
                 Icon(Icons.check_circle_outline, color: AppColors.dark),
-                 SizedBox(width: size.width*0.03),
+                 SizedBox(width: size.width*0.02),
                 Text(
                         "Submit Purchase Entry",
-                        style: AppTextStyles.headingText21
+                        style: AppTextStyles.headingText20
                 ),
               ],
             ),
@@ -138,13 +138,13 @@ class PurchaseSummaryCard extends StatelessWidget {
             ),
             child:  Row(
               children: [
-                 SizedBox(width: size.width*0.2),
+                 SizedBox(width: size.width*0.15),
 
                 Icon(Icons.save_outlined, color: AppColors.dark),
                  SizedBox(width: size.width*0.03),
                 Text(
                         "Save as Draft",
-                        style: AppTextStyles.headingText21
+                        style: AppTextStyles.headingText20
                 ),
               ],
             ),
