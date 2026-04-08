@@ -48,8 +48,8 @@ final String itemboxes;
               ),
             ],
           ),
- Text(orderId, style: AppTextStyles.heading2),
-    Text(dateTime, style: AppTextStyles.body),
+ Text(orderId, style: AppTextStyles.headingText22),
+    Text(dateTime, style: AppTextStyles.bodyText16),
 
           const SizedBox(height: 30),
           Divider(color: Colors.grey.shade300),
@@ -66,12 +66,12 @@ final String itemboxes;
                 child: const Icon(Icons.home, color: Colors.grey),
               ),
               const SizedBox(width: 10),
-              Text(supplier, style: AppTextStyles.body),
+              Text(supplier, style: AppTextStyles.bodyText16),
             ],
           ),
           SizedBox(height: 10,),
-          Text(items, style: AppTextStyles.heading2),
-    Text(itemboxes, style: AppTextStyles.body),
+          Text(items, style: AppTextStyles.headingText22),
+    Text(itemboxes, style: AppTextStyles.bodyText16),
 
 
           const SizedBox(height: 50),
@@ -81,7 +81,7 @@ final String itemboxes;
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-               Text(bottomId, style: AppTextStyles.heading2),
+               Text(bottomId, style: AppTextStyles.headingText22),
               const EditButton(),
             ],
           ),

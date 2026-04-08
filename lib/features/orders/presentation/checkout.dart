@@ -46,7 +46,7 @@ class _CheckoutState extends State<Checkout> {
     Center(
       child: Text(
         "Check out",
-        style: AppTextStyles.heading1,
+        style: AppTextStyles.headingText25,
       ),
     ),
     Align(
@@ -80,7 +80,7 @@ class _CheckoutState extends State<Checkout> {
                     SizedBox(width: size.width*0.01,),
                     Text(
                   "Order #ORD-8921",
-                  style: AppTextStyles.heading2,
+                  style: AppTextStyles.headingText22,
                 ),
                   ],
                 ),
@@ -117,7 +117,7 @@ class _CheckoutState extends State<Checkout> {
                             children: [
                               Text(
                                 "Order Summary",
-                                style: AppTextStyles.heading1,
+                                style: AppTextStyles.headingText22,
                               ),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -127,7 +127,7 @@ class _CheckoutState extends State<Checkout> {
                                 ),
                                 child: Text(
                                   "Pending",
-                                  style: AppTextStyles.body,
+                                  style: AppTextStyles.bodyText16,
                                 ),
                               ),
                             ],
@@ -138,11 +138,11 @@ class _CheckoutState extends State<Checkout> {
                           /// 🔹 DELIVERY
                           Text(
                             "Delivery details",
-                            style: AppTextStyles.heading2
+                            style: AppTextStyles.headingText22
                           ),
                             Text(
                             "Address details\n hggfu hghjvuy bn fuf",
-                            style: AppTextStyles.body.copyWith(fontSize: 14),
+                            style: AppTextStyles.bodyText16.copyWith(fontSize: 14),
                           ),
 
                           const SizedBox(height: 10),
@@ -159,13 +159,13 @@ Row(
     Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Jumbco white (GradeA)", style: AppTextStyles.heading2),
-        Text("200 boxes *15", style: AppTextStyles.body),
+        Text("Jumbco white (GradeA)", style: AppTextStyles.headingText22),
+        Text("200 boxes *15", style: AppTextStyles.bodyText16),
       ],
     ),
 
     /// 🔹 RIGHT SIDE
-    Text("\$17438", style: AppTextStyles.heading2),
+    Text("\$17438", style: AppTextStyles.headingText22),
   ],
 ),
 SizedBox(height: 10,),
@@ -176,11 +176,11 @@ SizedBox(height: 10,),
     Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Jumbco white (GradeB)", style: AppTextStyles.heading2),
-        Text("200 boxes *15", style: AppTextStyles.body),
+        Text("Jumbco white (GradeB)", style: AppTextStyles.headingText22),
+        Text("200 boxes *15", style: AppTextStyles.bodyText16),
       ],
     ),
-    Text("\$17438", style: AppTextStyles.heading2),
+    Text("\$17438", style: AppTextStyles.headingText22),
   ],
 ),
 
@@ -235,11 +235,11 @@ Divider(),
   children: [
     Text(
       "Total Amount",
-      style: AppTextStyles.heading2,
+      style: AppTextStyles.headingText22,
     ),
     Text(
       "₹${totalAmount.toStringAsFixed(2)}",
-      style: AppTextStyles.heading2,
+      style: AppTextStyles.headingText22,
     ),
   ],
 ),
@@ -257,21 +257,18 @@ Divider(),
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
 
-                         
-                          Text(
+                         Text(
                             "Payment Method",
-                            style: AppTextStyles.heading1,
+                            style: AppTextStyles.headingText25,
                           ),
-                        
-
-                          SizedBox(height: size.height * 0.03),
+                        SizedBox(height: size.height * 0.03),
   SizedBox(
    height: size.height * 0.05,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: tabs.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 20),
+        separatorBuilder: (_, _) => const SizedBox(width: 20),
         itemBuilder: (context, index) {
           return GestureDetector(
             onTap: () {
@@ -294,7 +291,7 @@ Divider(),
 SizedBox(width: 5,),
                 Text(
                   tabs[index],
-                  style: AppTextStyles.body.copyWith(
+                  style: AppTextStyles.bodyText16.copyWith(
                     color: selectedIndex == index
                         ? AppColors.dark
                         : Colors.grey,
@@ -346,7 +343,7 @@ Row(
     /// 🔹 LEFT TEXT
     Text(
       "Enter Card Details",
-      style: AppTextStyles.heading2,
+      style: AppTextStyles.headingText22,
     ),
 
     /// 🔹 RIGHT SIDE (2 containers)
@@ -386,7 +383,7 @@ Column(
     /// 🔹 LABEL
     Text(
       "Card Number",
-      style: AppTextStyles.button,
+      style: AppTextStyles.buttonText16,
     ),
 
     const SizedBox(height: 8),
@@ -423,7 +420,7 @@ Column(
   children: [
     Text(
       "Name on Card",
-      style: AppTextStyles.button,
+      style: AppTextStyles.buttonText16,
     ),
 
     const SizedBox(height: 8),
@@ -595,12 +592,12 @@ Divider(),
                children: [
           Text(
             "Total Amount",
-            style: AppTextStyles.body,
+            style: AppTextStyles.bodyText16,
           ),
           SizedBox(height: 4),
           Text(
             "₹${totalAmount.toStringAsFixed(2)}",
-      style: AppTextStyles.heading2,
+      style: AppTextStyles.headingText22,
           ),
                ],
              ),

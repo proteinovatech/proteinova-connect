@@ -60,8 +60,8 @@ class _RoleToggleState extends State<RoleToggle> {
             child: Text(
               title,
               style: isSelected
-                  ? AppTextStyles.button.copyWith(color: Colors.black)
-                  : AppTextStyles.body,
+                  ? AppTextStyles.buttonText16.copyWith(color: Colors.black)
+                  : AppTextStyles.bodyText16,
             ),
           ),
         ),

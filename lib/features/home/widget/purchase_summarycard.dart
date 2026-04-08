@@ -26,7 +26,7 @@ class PurchaseSummaryCard extends StatelessWidget {
           
               Text(
                 "Purchase Summary",
-                style: AppTextStyles.heading1,
+                style: AppTextStyles.headingText25,
               ),
            
 
@@ -68,11 +68,11 @@ class PurchaseSummaryCard extends StatelessWidget {
             children: const [
               Text(
                 "Total Estimated Cost",
-                style: AppTextStyles.heading2,
+                style: AppTextStyles.headingText22,
               ),
               Text(
                 "--", // placeholder
-                style: AppTextStyles.amount,
+                style: AppTextStyles.blueText,
               ),
             ],
           ),
@@ -107,7 +107,7 @@ class PurchaseSummaryCard extends StatelessWidget {
                  SizedBox(width: size.width*0.03),
                 Text(
                         "Submit Purchase Entry",
-                        style: AppTextStyles.heading2
+                        style: AppTextStyles.headingText21
                 ),
               ],
             ),
@@ -144,7 +144,7 @@ class PurchaseSummaryCard extends StatelessWidget {
                  SizedBox(width: size.width*0.03),
                 Text(
                         "Save as Draft",
-                        style: AppTextStyles.heading2
+                        style: AppTextStyles.headingText21
                 ),
               ],
             ),
@@ -154,7 +154,7 @@ class PurchaseSummaryCard extends StatelessWidget {
           children: [
             Icon(Icons.info_outline,color: AppColors.textSecondary,),
             SizedBox(width: size.width*0.01,),
-            Text("Stock will be marked as \'incoming\'  upon\nsubmission",style: AppTextStyles.subtitle),
+            Text("Stock will be marked as \'incoming\'  upon\nsubmission",style: AppTextStyles.formInputs15),
           ],
         )
          
@@ -172,10 +172,10 @@ class PurchaseSummaryCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: AppTextStyles.subtitle),
+          Text(title, style: AppTextStyles.formInputs15),
           const Text(
             "--", // placeholder
-            style: AppTextStyles.body2,
+            style: AppTextStyles.bodyText16,
           ),
         ],
       ),

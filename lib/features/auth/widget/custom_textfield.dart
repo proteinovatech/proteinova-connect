@@ -27,11 +27,11 @@ class CustomTextField extends StatelessWidget {
       child: TextField(
         controller: controller,
         obscureText: isPassword,
-        style: AppTextStyles.body,
+        style: AppTextStyles.bodyText16,
         decoration: InputDecoration(
           border: InputBorder.none,
           hintText: hintText,
-          hintStyle: AppTextStyles.subtitle,
+          hintStyle: AppTextStyles.formInputs15
         ),
       ),
     );
