@@ -20,7 +20,7 @@ class _RoleToggleState extends State<RoleToggle> {
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 209, 206, 206),
+        color: AppColors.containerColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -53,7 +53,7 @@ class _RoleToggleState extends State<RoleToggle> {
           decoration: BoxDecoration(
             color: isSelected
                 ? AppColors.cardBackground
-                : const Color.fromARGB(255, 209, 206, 206),
+                : AppColors.containerColor,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Center(

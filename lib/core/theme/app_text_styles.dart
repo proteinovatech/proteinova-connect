@@ -17,8 +17,8 @@ class AppTextStyles {
 
   // Titles
   static const TextStyle browntext = TextStyle(
-    fontSize: 18,
-    fontWeight: FontWeight.w600,
+    fontSize: 15.5,
+    fontWeight: FontWeight.w400,
     color: AppColors.amber800,
   );
 

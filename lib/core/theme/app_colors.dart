@@ -18,13 +18,17 @@ class AppColors {
 
   // Dark Shades
   static const Color dark = Color(0xFF1C1C1C);          // shadows
-  static const Color softBlack =  Color.fromARGB(255, 209, 206, 206);
+  static const Color softBlack =  Color.fromARGB(255, 228, 225, 225);
 
   // Text Colors
   static const Color textPrimary = Color(0xFF1C1C1C);
   static const Color textSecondary = Color(0xFF6D6D6D);
   static const Color textLight = Color(0xFFFFFFFF);
   static const Color amber800=Color.fromARGB(255, 88, 68, 6);
+
+  // Container Colors
+  static const Color containerColor = Color.fromARGB(255, 229, 231, 238);
+
 
   // Backgrounds
   static const Color background =  Color(0xFFFFFFFF);
