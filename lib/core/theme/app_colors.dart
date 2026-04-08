@@ -13,7 +13,7 @@ class AppColors {
   static const Color amber300= Color.fromARGB(255, 233, 188, 172);
   static const Color amber400= Color.fromARGB(255, 243, 234, 103);
   static const Color amber500= Color.fromARGB(255, 243, 225, 62);
-  static const Color amber600= Color.fromARGB(255, 243, 230, 46);
+  static const Color amber600= Colors.amber;
            // deeper shade
 
   // Dark Shades
@@ -24,10 +24,10 @@ class AppColors {
   static const Color textPrimary = Color(0xFF1C1C1C);
   static const Color textSecondary = Color(0xFF6D6D6D);
   static const Color textLight = Color(0xFFFFFFFF);
-  static const Color amber800=Color.fromARGB(255, 88, 68, 6);
+  static const Color amber800= Color.fromARGB(255, 104, 80, 10);
 
   // Container Colors
-  static const Color containerColor = Color.fromARGB(255, 229, 231, 238);
+  static const Color containerColor = Color.fromARGB(255, 239, 242, 252);
 
 
   // Backgrounds

@@ -27,8 +27,9 @@ final TextEditingController passwordController = TextEditingController();
           children: [
             SizedBox(height: size.height*0.05,),
             Text("Sign in",style: AppTextStyles.heading1,),
+             SizedBox(height: size.height*0.01),
             Text("Enter your credentials to access your distribution system. ",style: AppTextStyles.body,),
-             SizedBox(height: size.height*0.05,),
+             SizedBox(height: size.height*0.04),
             Text("System Role",style: AppTextStyles.heading2,),
             // default
             RoleToggle(
@@ -60,7 +61,7 @@ Container(
   height: 50,
   margin: const EdgeInsets.symmetric(vertical: 20),
   decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(12),
+    borderRadius: BorderRadius.circular(5),
     color: AppColors.amber600
     ),
   
