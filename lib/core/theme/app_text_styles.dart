@@ -8,6 +8,11 @@ class AppTextStyles {
     fontWeight: FontWeight.bold,
     color: AppColors.textPrimary, // dark brown
   );
+  static const TextStyle amount = TextStyle(
+    fontSize: 26,
+    fontWeight: FontWeight.bold,
+    color: AppColors.blueAccent, // dark brown
+  );
 
   static const TextStyle heading2 = TextStyle(
     fontSize: 16,
@@ -28,6 +33,11 @@ class AppTextStyles {
     fontWeight: FontWeight.normal,
     color: AppColors.textSecondary,
   );
+   static const TextStyle body2 = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    color: AppColors.dark,
+  );
 
   // Subtitle / Secondary Text
   
@@ -39,8 +49,8 @@ class AppTextStyles {
   );
   static const TextStyle subtitle = TextStyle(
     fontSize: 16,
-    fontWeight: FontWeight.bold,
-    color: Colors.grey, // works well on yellow
+    fontWeight: FontWeight.w400,
+    color: AppColors.textSecondary, // works well on yellow
   );
 
 

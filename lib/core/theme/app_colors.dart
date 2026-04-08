@@ -29,9 +29,14 @@ class AppColors {
   // Container Colors
   static const Color containerColor = Color.fromARGB(255, 239, 242, 252);
 
+  // Icon colors
+   static const Color light =  Color.fromARGB(255, 124, 124, 124);
+   static const Color green =  Colors.green;
+
 
   // Backgrounds
   static const Color background =  Color(0xFFFFFFFF);
+   static const Color background1 =  Color.fromARGB(255, 239, 242, 252);
   static const Color cardBackground = Color(0xFFFFFFFF);
 
   // Borders / Dividers
