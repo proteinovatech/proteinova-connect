@@ -21,7 +21,11 @@ final TextEditingController notesController = TextEditingController();
   Widget build(BuildContext context) {
     final Size size=MediaQuery.of(context).size;
     return Scaffold(backgroundColor: AppColors.background1,
-      appBar: AppBar(backgroundColor: AppColors.background,actions: [
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        title:  Text("New Purchase",style: AppTextStyles.heading1,),
+
+      actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: CircleAvatar(
@@ -37,14 +41,7 @@ final TextEditingController notesController = TextEditingController();
             child: Column(crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(height: size.height*0.02,),
-                Row(
-                  children: [
-                   
-                    Icon(Icons.arrow_back_outlined),
-                    SizedBox(width: size.width*0.02,),
-                    Text("New Purchase",style: AppTextStyles.heading1,),
-                  ],
-                ),
+               
                 Padding(
                   padding: EdgeInsets.only( left: size.width * 0.02,),
                   child: Text("Record new form procurement and \nstock.",style: AppTextStyles.body,),
