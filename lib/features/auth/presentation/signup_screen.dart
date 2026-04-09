@@ -4,7 +4,6 @@ import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/purchase_bottom_navigator.dart';
 import 'package:proteinova_connect/features/auth/widget/custom_textfield.dart';
 import 'package:proteinova_connect/features/auth/widget/role_toggle.dart';
-import 'package:proteinova_connect/features/purchase_dashboard/presentation/purchase_dashboard.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
