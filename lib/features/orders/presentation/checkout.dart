@@ -29,7 +29,7 @@ class _CheckoutState extends State<Checkout> {
                 Center(
                   child: Text(
                     "Check out",
-                    style: AppTextStyles.heading1,
+                    style: AppTextStyles.headingText25,
                   ),
                 ),
                 Align(
@@ -53,12 +53,12 @@ class _CheckoutState extends State<Checkout> {
                   children: [
                     Text(
                       "Sales & Dispatch  >",
-                      style: TextStyle(color: Colors.grey),
+                      style: AppTextStyles.formInputs15,
                     ),
                     SizedBox(width: size.width*0.01,),
                     Text(
                   "Order #ORD-8921",
-                  style: AppTextStyles.heading2,
+                  style: AppTextStyles.headingText21,
                 ),
                   ],
                 ),
@@ -95,7 +95,7 @@ class _CheckoutState extends State<Checkout> {
                             children: [
                               Text(
                                 "Order Summary",
-                                style: AppTextStyles.heading1,
+                                style: AppTextStyles.headingText22,
                               ),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -105,7 +105,7 @@ class _CheckoutState extends State<Checkout> {
                                 ),
                                 child: Text(
                                   "Pending",
-                                  style: AppTextStyles.body,
+                                  style: AppTextStyles.bodyText16,
                                 ),
                               ),
                             ],
@@ -116,7 +116,7 @@ class _CheckoutState extends State<Checkout> {
                           /// 🔹 DELIVERY
                           Text(
                             "Delivery details",
-                            style: AppTextStyles.body.copyWith(fontSize: 14),
+                            style: AppTextStyles.headingText21,
                           ),
 
                           const SizedBox(height: 10),
@@ -125,16 +125,16 @@ class _CheckoutState extends State<Checkout> {
                           SizedBox(height: size.height * 0.03),
 
                          
-                          Text("Subtotal", style: TextStyle(color: Colors.grey)),
-                          Text("Taxes (5%)", style: TextStyle(color: Colors.grey)),
-                          Text("Delivery fee", style: TextStyle(color: Colors.grey)),
+                          Text("Subtotal", style:AppTextStyles.formInputs15),
+                          Text("Taxes (5%)", style:AppTextStyles.formInputs15 ),
+                          Text("Delivery fee", style: AppTextStyles.formInputs15),
 
                           SizedBox(height: size.height * 0.02),
 
                           /// 🔹 TOTAL
                           Text(
                             "Total Amount",
-                            style: AppTextStyles.heading2,
+                            style: AppTextStyles.headingText21,
                           ),
                         ],
                       ),

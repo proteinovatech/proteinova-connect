@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 
@@ -56,7 +57,7 @@ final List<String> eggCategories = [
         SizedBox(width: size.width * 0.02),
         Text(
           "Product Specification",
-          style: AppTextStyles.heading2,
+          style: AppTextStyles.headingText21,
         ),
       ],
     ),
@@ -66,7 +67,7 @@ final List<String> eggCategories = [
     const SizedBox(height: 10),
 
     // 🔹 1. Egg Category
-    const Text("Egg Category & Grade", style: AppTextStyles.button),
+    const Text("Egg Category & Grade", style: AppTextStyles.buttonText16),
     const SizedBox(height: 6),
 
     Container(
@@ -107,29 +108,31 @@ final List<String> eggCategories = [
     const SizedBox(height: 14),
 
     // 🔹 2. Quantity
-    const Text("Quantity (Tray of 30)", style: AppTextStyles.button),
+    const Text("Quantity (Tray of 30)", style: AppTextStyles.buttonText16),
     const SizedBox(height: 6),
     _buildField(
       controller: widget.quantityController,
       hint: "Enter quantity",
       icon: Icons.grid_view_outlined,
+      isNumeric: true
     ),
 
     const SizedBox(height: 14),
 
     // 🔹 3. Rate
-    const Text("Rate per Box (INR)", style: AppTextStyles.button),
+    const Text("Rate per Box (INR)", style: AppTextStyles.buttonText16),
     const SizedBox(height: 6),
     _buildField(
       controller: widget.rateController,
       hint: "Enter rate",
       icon: Icons.attach_money_outlined,
+      isNumeric: true
     ),
 
     const SizedBox(height: 14),
 
     // 🔹 4. Notes
-    const Text("Additional Notes", style: AppTextStyles.button),
+    const Text("Additional Notes", style: AppTextStyles.buttonText16),
     const SizedBox(height: 6),
     _buildField(
       controller: widget.notesController,
@@ -145,7 +148,8 @@ final List<String> eggCategories = [
     required TextEditingController controller,
     required String hint,
     int maxLines = 1,
-     IconData? icon, // 👈 add this
+     IconData? icon,
+     bool isNumeric = false,  // 👈 add this
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -157,7 +161,13 @@ final List<String> eggCategories = [
       child: TextField(
         controller: controller,
         maxLines: maxLines,
-        style: AppTextStyles.subtitle,
+        style: AppTextStyles.formInputs15,
+         keyboardType:
+          isNumeric ? TextInputType.number : TextInputType.text, // 👈
+
+      inputFormatters: isNumeric
+          ? [FilteringTextInputFormatter.digitsOnly] // 👈 only numbers
+          : [],
         decoration: InputDecoration(
           hintText: hint,
           border: InputBorder.none,

@@ -46,9 +46,9 @@ class _HomeState extends State<Home> {
           ),
             Divider(),
             
-            Text("Purchase",style: AppTextStyles.heading1,),
+            Text("Purchase",style: AppTextStyles.headingText25,),
               Text("Manage Purchase orders and Incoming stocks. ",
-              style: AppTextStyles.body,
+              style: AppTextStyles.bodyText16,
               ),
                SizedBox(height: size.height*0.02,),
                GestureDetector(
@@ -70,7 +70,7 @@ class _HomeState extends State<Home> {
                          SizedBox(width: 8),
                          Text(
                            "New Purchanse Entry",
-                           style: AppTextStyles.heading2,
+                           style: AppTextStyles.headingText21,
                            
                          ),
                              ],
@@ -97,7 +97,7 @@ class _HomeState extends State<Home> {
           children: [
             Text(
               tabs[index],
-              style: AppTextStyles.body.copyWith(
+              style: AppTextStyles.bodyText16.copyWith(
                 color: selectedIndex == index
                     ? AppColors.dark
                     : Colors.grey,
@@ -168,7 +168,7 @@ Row(
             Expanded(
               child: Text(
                 "All Suppliers",
-                style: AppTextStyles.body,
+                style: AppTextStyles.bodyText16,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -196,7 +196,7 @@ Row(
             Expanded(
               child: Text(
                 "Last 30 days",
-                style: AppTextStyles.body,
+                style: AppTextStyles.bodyText16,
                 overflow: TextOverflow.ellipsis,
               ),
             ),

@@ -23,7 +23,7 @@ class StatusBadge extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: AppTextStyles.body.copyWith(
+        style: AppTextStyles.bodyText16.copyWith(
           color: textColor,
           fontSize: 12,
         ),

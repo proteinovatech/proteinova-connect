@@ -23,7 +23,7 @@ final TextEditingController notesController = TextEditingController();
     return Scaffold(backgroundColor: AppColors.background1,
       appBar: AppBar(
         backgroundColor: AppColors.background,
-        title:  Text("New Purchase",style: AppTextStyles.heading1,),
+        title:  Text("New Purchase",style: AppTextStyles.headingText25,),
 
       actions: [
           Padding(
@@ -44,7 +44,7 @@ final TextEditingController notesController = TextEditingController();
                
                 Padding(
                   padding: EdgeInsets.only( left: size.width * 0.02,),
-                  child: Text("Record new form procurement and \nstock.",style: AppTextStyles.body,),
+                  child: Text("Record new form procurement and \nstock.",style: AppTextStyles.bodyText16,),
                 ),
                 SizedBox(height: size.height*0.02,),
                 SupplierLocationCard(),

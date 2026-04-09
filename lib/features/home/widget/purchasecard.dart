@@ -55,7 +55,7 @@ class PurchaseCard extends StatelessWidget {
                 child: const Icon(Icons.home, color: Colors.grey),
               ),
               const SizedBox(width: 10),
-              Text(supplier, style: AppTextStyles.body),
+              Text(supplier, style: AppTextStyles.bodyText16),
             ],
           ),
 

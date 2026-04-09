@@ -18,7 +18,7 @@ class EditButton extends StatelessWidget {
         children: [
           const Icon(Icons.edit, size: 16),
           const SizedBox(width: 6),
-          Text("Edit", style: AppTextStyles.heading2),
+          Text("Edit", style: AppTextStyles.headingText21),
         ],
       ),
     );

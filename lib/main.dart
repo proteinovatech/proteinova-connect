@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 import 'package:proteinova_connect/features/home/presentation/newpurchase.dart';
+import 'package:proteinova_connect/features/orders/presentation/purchase_success_screen.dart';
 
 void main() {
   runApp(const MyApp());

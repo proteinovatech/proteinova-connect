@@ -46,7 +46,7 @@ class _SupplierLocationCardState extends State<SupplierLocationCard> {
                SizedBox(width: size.width*0.02),
                Text(
                 "Supplier and Location Details",
-                style: AppTextStyles.heading2,
+                style: AppTextStyles.headingText21,
                          ),
              ],
            ),
@@ -58,7 +58,7 @@ class _SupplierLocationCardState extends State<SupplierLocationCard> {
           SizedBox(height: size.height*0.01),
 
           // 🔹 Supplier Name Title
-          const Text("Supplier Name",style: AppTextStyles.button,),
+          const Text("Supplier Name",style: AppTextStyles.buttonText16,),
 
           SizedBox(height:size.height*0.01),
 
@@ -103,9 +103,9 @@ class _SupplierLocationCardState extends State<SupplierLocationCard> {
           // 🔹 Location Title
          Row(
            children: [
-             Text("Origin Location",style: AppTextStyles.button,),
+             Text("Origin Location",style: AppTextStyles.buttonText16,),
                SizedBox(width:size.width*0.30),
-             Text("Auto-filled",style: AppTextStyles.body,), 
+             Text("Auto-filled",style: AppTextStyles.bodyText16,), 
            ],
          ),
 
@@ -126,7 +126,7 @@ class _SupplierLocationCardState extends State<SupplierLocationCard> {
                  SizedBox(width: size.width*0.02),
                 Text(
                   location.isEmpty ? "Auto-filled location" : location,
-                  style: AppTextStyles.subtitle,
+                  style: AppTextStyles.formInputs15,
                 ),
                  SizedBox(width: size.width*0.23),
                 Icon(Icons.check_circle_outline, color: AppColors.green),
