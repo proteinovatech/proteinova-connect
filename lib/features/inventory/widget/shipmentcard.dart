@@ -23,7 +23,7 @@ class ShipmentCard extends StatelessWidget {
       child: Container(
         height:size.height*0.14,
         padding: const EdgeInsets.all(14),
-        margin: const EdgeInsets.symmetric(horizontal: 5),
+        margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
           color: AppColors.background,
           borderRadius: BorderRadius.circular(12),
@@ -39,7 +39,7 @@ class ShipmentCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: AppTextStyles.bodyText14semibold
+                  style: AppTextStyles.bodyText12semibold
                 ),
                 
                

@@ -94,7 +94,7 @@ final Color statusTextColor;
         children: [
           const Icon(Icons.person_outline, size: 18, color: AppColors.textSecondary),
           const SizedBox(width: 6),
-          const Text("Supplier",style: AppTextStyles.bodyText14semibold,),
+          const Text("Supplier",style: AppTextStyles.bodyText12semibold,),
           const Spacer(),
           Text(
             supplier,
@@ -110,7 +110,7 @@ final Color statusTextColor;
         children: [
           const Icon(Icons.inventory_2_outlined, size: 18, color:AppColors.textSecondary),
           const SizedBox(width: 6),
-          const Text("Products",style: AppTextStyles.bodyText14semibold,),
+          const Text("Products",style: AppTextStyles.bodyText12semibold,),
           const Spacer(),
           Text(
             "$quantity ($product)",

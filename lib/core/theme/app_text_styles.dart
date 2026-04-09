@@ -46,8 +46,8 @@ class AppTextStyles {
   );
 
   // Body Text
-   static const TextStyle bodyText14semibold = TextStyle(
-    fontSize: 14,
+   static const TextStyle bodyText12semibold = TextStyle(
+    fontSize: 11,
     fontWeight: FontWeight.w500,
     color: AppColors.textSecondary,
   );
@@ -67,7 +67,7 @@ class AppTextStyles {
     color: AppColors.textSecondary,
   );
   static const TextStyle bodyText12 = TextStyle(
-    fontSize: 12,
+    fontSize: 10.5,
     fontWeight: FontWeight.normal,
     color: AppColors.textSecondary,
   );
