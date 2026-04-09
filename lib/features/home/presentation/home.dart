@@ -34,6 +34,14 @@ class _HomeState extends State<Home> {
         crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height:size.height*0.07,),
+            Padding(
+            padding: EdgeInsets.only(left:size.width*0.8),
+            child: CircleAvatar(
+              radius: 18,
+              backgroundColor: Colors.grey.shade300,
+             
+            ),
+          ),
             Divider(),
             
             Text("Purchase",style: AppTextStyles.heading1,),
