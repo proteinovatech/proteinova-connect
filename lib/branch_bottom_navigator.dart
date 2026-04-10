@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/branch_dashboard/presentation/branch_dashboard.dart';
 import 'package:proteinova_connect/features/inventory/presentation/inventory.dart';
 
 class BranchBottomNavigator extends StatefulWidget {
@@ -14,7 +15,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
   int selectedIndex = 0;
 
   final List<Widget> pages = [
-    const Center(child: Text("Notifications Screen")),
+    BranchDashboard(),
     const Center(child: Text("Notifications Screen")),
     Inventory(),
     const Center(child: Text("Notifications Screen")),
