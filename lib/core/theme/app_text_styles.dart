@@ -26,6 +26,12 @@ class AppTextStyles {
     fontWeight: FontWeight.bold,
     color: AppColors.blueAccent, // dark brown
   );
+   static const TextStyle blueText2 = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.bold,
+    color: AppColors.blueAccent, // dark brown
+  );
+
 
   static const TextStyle browntext = TextStyle(
     fontSize: 15.5,
