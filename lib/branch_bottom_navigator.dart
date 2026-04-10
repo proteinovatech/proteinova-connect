@@ -16,8 +16,8 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
 
   final List<Widget> pages = [
     BranchDashboard(),
-    const Center(child: Text("Notifications Screen")),
     Inventory(),
+    const Center(child: Text("Notifications Screen")),
     const Center(child: Text("Notifications Screen")),
   ];
   @override
