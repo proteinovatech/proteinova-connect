@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/purchase_dashboard/presentation/newpurchase.dart';
+
 import 'package:proteinova_connect/features/sales/widget/Salesorders.dart';
+import 'package:proteinova_connect/features/sales/presentation/sales_entry.dart';
 import 'package:proteinova_connect/features/sales/widget/dashboardcard.dart';
 import 'package:proteinova_connect/features/sales/widget/dashboardcard2.dart';
 import 'package:proteinova_connect/features/sales/widget/dispatchcard.dart';
@@ -62,7 +64,7 @@ class _SalesState extends State<Sales> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Newpurchase(),
+                            builder: (context) => SalesEntry(),
                           ),
                         );
                       },
