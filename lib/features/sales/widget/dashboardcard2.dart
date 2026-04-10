@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 
-class DashboardCard extends StatefulWidget {
+class DashboardCard2 extends StatefulWidget {
   final String title;
   final String value;
-  final String percent;
   final String subtitle;
   final IconData icon;
   final Color iconBg;
   final Color iconColor;
 
-  const DashboardCard({
+  const DashboardCard2({
     super.key,
     required this.title,
-    required this.value,
-    required this.percent,
+    required this.value,   
     required this.subtitle,
     required this.icon,
     required this.iconBg,
@@ -22,10 +20,10 @@ class DashboardCard extends StatefulWidget {
   });
 
   @override
-  State<DashboardCard> createState() => _DashboardCardState();
+  State<DashboardCard2> createState() => _DashboardCard2State();
 }
 
-class _DashboardCardState extends State<DashboardCard> {
+class _DashboardCard2State extends State<DashboardCard2> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -71,16 +69,7 @@ class _DashboardCardState extends State<DashboardCard> {
           /// 🔹 TREND
           Row(
             children: [
-              const Icon(Icons.trending_up,
-                  color: Colors.green, size: 13),
-              const SizedBox(width: 3),
-              Text(
-                widget.percent,
-                style: const TextStyle(
-                    color: Colors.green, fontSize: 10),
-              ),
-              const SizedBox(width: 3),
-              Text(
+                                     Text(
                 widget.subtitle,
                 style:AppTextStyles.bodyText12semibold
               ),

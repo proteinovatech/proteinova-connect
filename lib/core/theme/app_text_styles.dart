@@ -47,7 +47,7 @@ class AppTextStyles {
 
   // Body Text
    static const TextStyle bodyText12semibold = TextStyle(
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: FontWeight.w500,
     color: AppColors.textSecondary,
   );
