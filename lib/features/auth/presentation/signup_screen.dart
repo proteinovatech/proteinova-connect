@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/branch_bottom_navigator.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/purchase_bottom_navigator.dart';
@@ -104,15 +105,23 @@ final TextEditingController passwordController = TextEditingController();
                 ),
               
               child: ElevatedButton(
-                onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>  PurchaseBottomNavigator(),
-              ),
-            );
-                 
-                },
+               onPressed: () {
+  if (selectedRole == "Purchase") {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PurchaseBottomNavigator(),
+      ),
+    );
+  } else if (selectedRole == "Branch") {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BranchBottomNavigator(), // 👈 your branch home
+      ),
+    );
+  }
+},
                 style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,

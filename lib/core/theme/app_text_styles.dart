@@ -40,9 +40,28 @@ class AppTextStyles {
   );
 
   // Body Text
-  
+   static const TextStyle bodyText14semibold = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textSecondary,
+  );
+  static const TextStyle bodyText14dark = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    color: AppColors.dark,
+  );
    static const TextStyle bodyText16 = TextStyle(
     fontSize: 16,
+    fontWeight: FontWeight.normal,
+    color: AppColors.textSecondary,
+  );
+   static const TextStyle bodyText14 = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.normal,
+    color: AppColors.textSecondary,
+  );
+  static const TextStyle bodyText12 = TextStyle(
+    fontSize: 12,
     fontWeight: FontWeight.normal,
     color: AppColors.textSecondary,
   );

@@ -28,6 +28,8 @@ class AppColors {
 
   // Container Colors
   static const Color containerColor = Color.fromARGB(255, 239, 242, 252);
+  static const Color containerColor2 = Color.fromARGB(255, 219, 225, 243);
+  static const Color deepOrange=Colors.deepOrange;
 
   // Icon colors
    static const Color light =  Color.fromARGB(255, 124, 124, 124);
@@ -41,4 +43,6 @@ class AppColors {
 
   // Borders / Dividers
   static const Color border = Color(0xFFE0E0E0);
+  static const Color border2 = Color.fromARGB(255, 198, 208, 240); 
+
 }
