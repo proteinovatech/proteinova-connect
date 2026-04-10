@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/dashboard.dart';
-import 'package:proteinova_connect/features/home/presentation/newpurchase.dart';
+import 'package:proteinova_connect/purchase_bottom_navigator.dart';
+import 'package:proteinova_connect/features/purchase_dashboard/presentation/newpurchase.dart';
 import 'package:proteinova_connect/features/orders/widget/purchase_summarycard.dart';
 
 class PurchaseSuccessScreen extends StatefulWidget {
@@ -66,7 +66,7 @@ SizedBox(height: size.height*0.02,),
             child: ElevatedButton(
               onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: 
-          (context)=>Dashboard()));
+          (context)=>PurchaseBottomNavigator()));
                
               },
               style: ElevatedButton.styleFrom(
