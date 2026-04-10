@@ -39,34 +39,22 @@ class _CheckoutState extends State<Checkout> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            height: size.height * 0.10,
-            child: Stack(
-  alignment: Alignment.center,
-  children: [
-    Center(
-      child: Text(
-        "Check out",
-        style: AppTextStyles.headingText25,
-      ),
-    ),
-    Align(
-      alignment: Alignment.centerLeft,
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16), 
-        child: GestureDetector(
-          onTap: () {
-            Navigator.pop(context); 
-          },
-          child: const Icon(Icons.arrow_back_sharp),
-        ),
-      ),
-    ),
-  ],
-)
-          ),
-       
-          Divider(),
+          SizedBox(height: size.height * 0.06),
+          Row(
+            children: [
+            SizedBox(width: size.width*0.04,),
+
+            GestureDetector(
+              onTap: () {
+             Navigator.pop(context); 
+              },
+              child: Icon(Icons.arrow_back)),
+             SizedBox(width: size.width*0.25,),
+            Text("Check out",style: AppTextStyles.headingText25,),
+          ],),
+          SizedBox(height: size.height * 0.02),
+          const Divider(height: 1,),
+          SizedBox(height: size.height * 0.01),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
@@ -617,11 +605,10 @@ Divider(),
                  child:  Row(
                    children: [
                     Icon(Icons.lock_outline),
+                    SizedBox(width: size.width * 0.03),
                      Text(
                                "Pay Now",
-                               style: TextStyle(
-                                 fontWeight: FontWeight.bold,
-                               ),
+                               style:AppTextStyles.containerText
                      ),
                    ],
                  ),
