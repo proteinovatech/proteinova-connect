@@ -194,7 +194,7 @@ Row(
                   
                 ),
         ),
-              SizedBox(width: size.width*0.37,),
+              SizedBox(width: size.width*0.29,),
                Container(
                 padding:  EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
