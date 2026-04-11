@@ -38,6 +38,11 @@ class AppTextStyles {
     fontWeight: FontWeight.w400,
     color: AppColors.amber800,
   );
+   static const TextStyle whiteText = TextStyle(
+    fontSize: 15.5,
+    fontWeight: FontWeight.w400,
+    color: AppColors.background,
+  );
   //container Text
    static const TextStyle containerText = TextStyle(
     fontSize: 16,

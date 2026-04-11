@@ -3,6 +3,7 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch_dashboard/presentation/branch_dashboard.dart';
 import 'package:proteinova_connect/features/inventory/presentation/inventory.dart';
+import 'package:proteinova_connect/features/sales/presentation/sales.dart';
 
 class BranchBottomNavigator extends StatefulWidget {
   const BranchBottomNavigator({super.key});
@@ -17,7 +18,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
   final List<Widget> pages = [
     BranchDashboard(),
     Inventory(),
-    const Center(child: Text("Notifications Screen")),
+    Sales(),
     const Center(child: Text("Notifications Screen")),
   ];
   @override
