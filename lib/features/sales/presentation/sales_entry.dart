@@ -61,9 +61,9 @@ final TextEditingController notesController = TextEditingController();
             children: [
               Row(
                 children: [
-                  Text("Daily Sales Entry",style: AppTextStyles.headingText25,),
+                  Text("Daily Sales Entry",style: AppTextStyles.headingText22,),
 
-                  SizedBox(width:  size.width*0.16,),
+                  SizedBox(width:  size.width*0.07,),
 
                    Container(
                 padding:  EdgeInsets.symmetric(horizontal: 10, vertical: 5),
