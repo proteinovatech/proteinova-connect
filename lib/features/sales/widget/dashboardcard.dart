@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 
 class DashboardCard extends StatefulWidget {
@@ -31,6 +32,7 @@ class _DashboardCardState extends State<DashboardCard> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
+        color: AppColors.background,
         border: Border.all(color: Colors.grey.shade300),
         borderRadius: BorderRadius.circular(12),
       ),
