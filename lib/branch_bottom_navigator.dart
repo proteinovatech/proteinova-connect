@@ -3,6 +3,7 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch_dashboard/presentation/branch_dashboard.dart';
 import 'package:proteinova_connect/features/inventory/presentation/inventory.dart';
+import 'package:proteinova_connect/features/sales/presentation/dispatchscreen.dart';
 import 'package:proteinova_connect/features/sales/presentation/sales.dart';
 
 class BranchBottomNavigator extends StatefulWidget {
@@ -19,6 +20,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
     BranchDashboard(),
     Inventory(),
     Sales(),
+    Dispatchscreen(),
     const Center(child: Text("Notifications Screen")),
   ];
   @override
@@ -40,7 +42,9 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
             _buildNavItem(Icons.grid_view, 0),
             _buildNavItem(Icons.inventory_2_outlined, 1),
             _buildNavItem(Icons.shopping_cart_outlined,2),
-             _buildNavItem(Icons.menu_outlined, 3),
+            _buildNavItem(Icons.local_shipping_outlined, 3),
+             _buildNavItem(Icons.menu_outlined, 4),
+             
           ],
         ),
       ),
@@ -93,6 +97,8 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
       case 2:
         return "Sales";
       case 3:
+        return "Dispatches";
+      case 4:
         return "Menu";
       default:
         return "";

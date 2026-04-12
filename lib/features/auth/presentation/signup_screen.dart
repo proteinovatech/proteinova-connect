@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/branch_bottom_navigator.dart';
+import 'package:proteinova_connect/core/config/api_config.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 
 import 'package:proteinova_connect/features/auth/widget/custom_textfield.dart';
 import 'package:proteinova_connect/features/auth/widget/role_toggle.dart';
 import 'package:proteinova_connect/purchase_bottom_navigator.dart';
+import 'package:proteinova_connect/services/auth_services.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -105,29 +107,43 @@ final TextEditingController passwordController = TextEditingController();
                 ),
               
               child: ElevatedButton(
-               onPressed: ()  {
-                if (selectedRole == "Purchase") {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PurchaseBottomNavigator(),
-      ),
+             onPressed: () async {
+  final email = emailController.text;
+  final password = passwordController.text;
+
+  if (email.isEmpty || password.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Please enter all fields")),
     );
-  } else if (selectedRole == "Branch") {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BranchBottomNavigator(),
-      ),
-    );
+    return;
   }
 
-  
+  final result = await AuthService.login(
+    email: email,
+    password: password,
+  );
 
- 
-    
-  } 
-,
+  if (result != null) {
+    // ✅ Success → Navigate
+    if (selectedRole == "Purchase") {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => PurchaseBottomNavigator()),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => BranchBottomNavigator()),
+      );
+     
+    }
+  } else {
+    // ❌ Error
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Login failed")),
+    );
+  }
+},
                 style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,

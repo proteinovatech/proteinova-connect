@@ -45,8 +45,7 @@ final Color statusTextColor;
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          /// 🔹 Top Row (Order + Status)
-          Row(
+                   Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
@@ -70,17 +69,12 @@ final Color statusTextColor;
               ),
             ],
           ),
-
           const SizedBox(height: 6),
-
-          /// 🔹 Date & Time
           Text(
             dateTime,
             style: AppTextStyles.bodyText14,
           ),
-
           const SizedBox(height: 12),
-
         Container(
   padding: const EdgeInsets.all(14),
   decoration: BoxDecoration(
