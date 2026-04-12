@@ -2,20 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 
-class DashboardCard extends StatefulWidget {
+class Dispatchcard2 extends StatefulWidget {
   final String title;
   final String value;
-  final String percent;
   final String subtitle;
   final IconData icon;
   final Color iconBg;
   final Color iconColor;
 
-  const DashboardCard({
+  const Dispatchcard2({
     super.key,
     required this.title,
-    required this.value,
-    required this.percent,
+    required this.value,   
     required this.subtitle,
     required this.icon,
     required this.iconBg,
@@ -23,10 +21,10 @@ class DashboardCard extends StatefulWidget {
   });
 
   @override
-  State<DashboardCard> createState() => _DashboardCardState();
+  State<Dispatchcard2> createState() => _Dispatchcard2State();
 }
 
-class _DashboardCardState extends State<DashboardCard> {
+class _Dispatchcard2State extends State<Dispatchcard2> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -39,7 +37,8 @@ class _DashboardCardState extends State<DashboardCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+
+                    Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
@@ -57,33 +56,23 @@ class _DashboardCardState extends State<DashboardCard> {
               ),
             ],
           ),
-
-          const SizedBox(height: 25),
-
-                    Text(
-            widget.value,
-            style: AppTextStyles.headingText22,
-          ),
-
-          const SizedBox(height: 5),
-
-                    Row(
+            Row(
             children: [
-              const Icon(Icons.trending_up,
-                  color: Colors.green, size: 13),
-              const SizedBox(width: 3),
-              Text(
-                widget.percent,
-                style: const TextStyle(
-                    color: Colors.green, fontSize: 10),
-              ),
-              const SizedBox(width: 3),
-              Text(
+                                     Text(
                 widget.subtitle,
                 style:AppTextStyles.bodyText12semibold
               ),
             ],
           ),
+
+          const SizedBox(height: 25),
+          Text(
+            widget.value,
+            style: AppTextStyles.headingText22,
+          ),
+
+          const SizedBox(height: 5),
+                
         ],
       ),
     );

@@ -38,8 +38,7 @@ class _DashboardCard2State extends State<DashboardCard2> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          /// 🔹 TOP ROW
-          Row(
+                  Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
@@ -60,15 +59,12 @@ class _DashboardCard2State extends State<DashboardCard2> {
 
           const SizedBox(height: 25),
 
-          /// 🔹 VALUE
-          Text(
+                   Text(
             widget.value,
             style: AppTextStyles.headingText22,
           ),
 
           const SizedBox(height: 5),
-
-          /// 🔹 TREND
           Row(
             children: [
                                      Text(
