@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:proteinova_connect/branch_bottom_navigator.dart';
-import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 import 'package:proteinova_connect/features/auth/presentation/splashscreen.dart';
 
 Future<void> main() async {
@@ -23,7 +21,8 @@ class MyApp extends StatelessWidget {
 
       home:SplashScreen(),
 
-         );
+      
+    );
   }
 }
 
