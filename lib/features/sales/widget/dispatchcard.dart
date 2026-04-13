@@ -34,20 +34,17 @@ class _DispatchCardState extends State<DispatchCard> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-      
+        borderRadius: BorderRadius.circular(10),      
       ),
 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          /// 🔹 Top Row
-          Row(
+                  Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(widget.id, style: AppTextStyles.headingText20),
-
             Container(
   padding: const EdgeInsets.symmetric(
     horizontal: 10,
@@ -73,8 +70,6 @@ class _DispatchCardState extends State<DispatchCard> {
           Text(widget.branch, style: AppTextStyles.bodyText14),
 
           const SizedBox(height: 5),
-
-          /// 🔹 Inner container
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -83,8 +78,6 @@ class _DispatchCardState extends State<DispatchCard> {
             ),
             child: Column(
               children: [
-
-                /// Vehicle Row
                 Row(
                   children: [
                     const Icon(Icons.local_shipping_outlined, color: Colors.grey),
@@ -101,7 +94,6 @@ class _DispatchCardState extends State<DispatchCard> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 5),
 
                 Align(
@@ -134,8 +126,7 @@ class _DispatchCardState extends State<DispatchCard> {
 
           const SizedBox(height: 10),
 
-          /// 🔹 Bottom Icons
-          Row(
+                    Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
              Row(

@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:proteinova_connect/branch_bottom_navigator.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/purchase_bottom_navigator.dart';
+
 import 'package:proteinova_connect/features/auth/widget/custom_textfield.dart';
 import 'package:proteinova_connect/features/auth/widget/role_toggle.dart';
+import 'package:proteinova_connect/purchase_bottom_navigator.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -104,8 +105,8 @@ final TextEditingController passwordController = TextEditingController();
                 ),
               
               child: ElevatedButton(
-               onPressed: () {
-  if (selectedRole == "Purchase") {
+               onPressed: ()  {
+                if (selectedRole == "Purchase") {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -116,11 +117,17 @@ final TextEditingController passwordController = TextEditingController();
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => BranchBottomNavigator(), // 👈 your branch home
+        builder: (context) => BranchBottomNavigator(),
       ),
     );
   }
-},
+
+  
+
+ 
+    
+  } 
+,
                 style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,

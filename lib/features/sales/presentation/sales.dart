@@ -233,8 +233,7 @@ class _SalesState extends State<Sales> {
 
       const SizedBox(height: 15),
 
-      /// 🔹 3 Dispatch Cards
-      DispatchCard(
+          DispatchCard(
             id: "#DS-1142",
             status: "In Transit",
             branch: "Branch downtown",
