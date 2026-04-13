@@ -35,24 +35,41 @@ class _SalesState extends State<Sales> {
            children: [
              SizedBox(height: size.height * 0.07),
 
+         Padding(
+  padding: EdgeInsets.symmetric(
+    horizontal: size.width * 0.04,
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SizedBox(height: size.height * 0.01),
+
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // ✅ Logo (Left side)
+          Image.asset(
+            "assets/erplogo.png",
+            height: 30,
+            width: 130,
+          ),
           Row(
-  mainAxisAlignment: MainAxisAlignment.end,
-  children: [
-    SizedBox(width: 10),
-      Icon(
-      Icons.search,
-      color: Colors.grey,
-    ),
-    Icon(
-      Icons.notifications_none,
-      color: Colors.grey,
-    ),
-    const SizedBox(width: 12),
-    CircleAvatar(
-      radius: 18,
-      backgroundColor: Colors.grey.shade300,
-    ),
-  ],
+            children: [
+               Icon(Icons.search_outlined),
+              SizedBox(width: size.width * 0.02),
+              Icon(Icons.notifications_outlined),
+              SizedBox(width: size.width * 0.02),
+              
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: Colors.grey.shade300,
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+  ),
 ),
             const Divider(),
             Text("Sales & Dispatch",style: AppTextStyles.headingText22,),

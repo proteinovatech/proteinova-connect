@@ -22,23 +22,41 @@ class _InventoryState extends State<Inventory> {
       padding: EdgeInsets.only(left: size.height*0.01, right:size.height*0.01 ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: size.height*0.06,),
-          Padding(
-            padding:  EdgeInsets.only(left: size.width*0.72),
-            child: Row(children: [
+          SizedBox(height: size.height*0.01,),
+         Padding(
+  padding: EdgeInsets.symmetric(
+    horizontal: size.width * 0.04,
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SizedBox(height: size.height * 0.06),
+
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+        
+          Image.asset(
+            "assets/erplogo.png",
+            height: 30,
+            width: 130,
+          ),
+
+                    Row(
+            children: [
               Icon(Icons.notifications_outlined),
-              SizedBox(width:  size.width*0.02,),
-               Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: CircleAvatar(
+              SizedBox(width: size.width * 0.02),
+              CircleAvatar(
                 radius: 18,
                 backgroundColor: Colors.grey.shade300,
-               
               ),
-            ),
-            
-            ],),
+            ],
           ),
+        ],
+      ),
+    ],
+  ),
+),
           Divider(),
            Expanded(
         child: SingleChildScrollView(

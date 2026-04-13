@@ -33,12 +33,12 @@ final TextEditingController passwordController = TextEditingController();
       height: MediaQuery.of(context).size.height * 0.35,
       width: double.infinity,
       child: Image.asset(
-       "assets/warehouse.png",
+        "assets/warehouse.png",
         fit: BoxFit.cover,
       ),
     ),
 
-    // 🔥 Gradient overlay (fade to white)
+    // 🔥 Gradient overlay
     Positioned.fill(
       child: Container(
         decoration: BoxDecoration(
@@ -52,6 +52,16 @@ final TextEditingController passwordController = TextEditingController();
             ],
           ),
         ),
+      ),
+    ),
+
+       Positioned(
+      top: 20, 
+      left: 5,
+      child: Image.asset(
+        "assets/erplogo.png",
+        height: 30,
+        width: 130,
       ),
     ),
   ],
