@@ -5,6 +5,7 @@ class AuthService {
   static Future<Map<String, dynamic>?> login({
     required String email,
     required String password,
+    
   }) async {
     final response = await http.post(
       Uri.parse("https://proteinova-system.onrender.com/login"),
