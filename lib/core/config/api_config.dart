@@ -5,8 +5,8 @@ class ApiConfig {
       dotenv.env['BASE_URL'] ?? " https://proteinova-system.onrender.com";
 
   static final String login =
-      "$baseUrl${dotenv.env['LOGIN'] ?? '/api/login'}";
+      "$baseUrl${'/login'}";
 
   static final String signup =
-      "$baseUrl${dotenv.env['SIGNUP'] ?? '/api/signup'}";
+      "$baseUrl${'/signup'}";
 }

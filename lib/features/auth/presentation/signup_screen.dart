@@ -122,7 +122,7 @@ final TextEditingController passwordController = TextEditingController();
     email: email,
     password: password,
   );
-
+print("result : $result");
   if (result != null) {
     // ✅ Success → Navigate
     if (selectedRole == "Purchase") {
