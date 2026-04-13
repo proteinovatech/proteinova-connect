@@ -31,7 +31,7 @@ final TextEditingController passwordController = TextEditingController();
       height: MediaQuery.of(context).size.height * 0.35,
       width: double.infinity,
       child: Image.asset(
-        "assets/signup image.jpeg",
+       "assets/warehouse.png",
         fit: BoxFit.cover,
       ),
     ),
