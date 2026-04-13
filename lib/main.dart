@@ -20,12 +20,10 @@ class MyApp extends StatelessWidget {
     
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-<<<<<<< HEAD
+
       home:SplashScreen(),
-=======
-      home:BranchBottomNavigator(),
->>>>>>> 00f7c0809da0f8cb6f3a5a816db3577b116953a7
-    );
+
+         );
   }
 }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:proteinova_connect/purchase_bottom_navigator.dart';
 import 'package:proteinova_connect/branch_bottom_navigator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'signup_screen.dart';
 
 class SplashScreen extends StatefulWidget {

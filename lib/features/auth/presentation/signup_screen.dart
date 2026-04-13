@@ -4,7 +4,6 @@ import 'package:proteinova_connect/branch_bottom_navigator.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
-import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_state.dart';
 
 import 'package:proteinova_connect/features/auth/widget/custom_textfield.dart';
@@ -28,7 +27,7 @@ final TextEditingController passwordController = TextEditingController();
     final Size size=MediaQuery.of(context).size;
     
     return Scaffold(backgroundColor: AppColors.background,
-<<<<<<< HEAD
+
       body: BlocProvider(
         create: (_) => AuthBloc(),
   child: BlocConsumer<AuthBloc, AuthState>(
@@ -97,9 +96,9 @@ final TextEditingController passwordController = TextEditingController();
               ],
             ),
           ),
-        ),
-=======
-      body: SingleChildScrollView(
+        ),),]),
+
+       SingleChildScrollView(
         child: Column(
           children: [
              Stack(
@@ -205,6 +204,7 @@ final TextEditingController passwordController = TextEditingController();
   final result = await AuthService.login(
     email: email,
     password: password,
+    role:selectedRole.toLowerCase(),
   );
 print("result : $result");
   if (result != null) {
@@ -242,113 +242,14 @@ print("result : $result");
               ),
             )
                   ],),
->>>>>>> 00f7c0809da0f8cb6f3a5a816db3577b116953a7
+
             ),
           ],
         ),
-              Padding(
-                padding:  EdgeInsets.only(left:size.width*0.05,right: size.width*0.05),
-                child: Column(mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                   
-                    SizedBox(height: size.height*0.02,),
-                    Text("Sign in",style: AppTextStyles.headingText25,),
-                     SizedBox(height: size.height*0.01),
-                    Text("Enter your credentials to access your distribution system. ",
-                    style: AppTextStyles.bodyText16,),
-                     SizedBox(height: size.height*0.04),
-                    Text("System Role",style: AppTextStyles.buttonText16,),
-                    // default
-                    RoleToggle(
-                    onChanged: (value) {
-                    setState(() {
-                    selectedRole = value; // ✅ update state
-                    });
-                    print("Selected Role: $value");
-                    },
-                    ),
-              SizedBox(height: size.height*0.03),
-              Text("Email or Phone",style: AppTextStyles.buttonText16,),
-              CustomTextField(
-                hintText: "Email",
-                controller: emailController,
-              ),
-              SizedBox(height: size.height*0.03),
-              Text("Password",style: AppTextStyles.buttonText16,),
-              CustomTextField(
-                hintText: "Password",
-                controller: passwordController,
-                isPassword: true,
-              ),
-              SizedBox(height: size.height*0.02),
-              Padding(
-                padding:  EdgeInsets.only(left: size.width*0.54),
-                child: Text("Forgot password?",style: AppTextStyles.browntext,),
-              ),
-              Container(
-                width: double.infinity,
-                height: 50,
-                margin: const EdgeInsets.symmetric(vertical: 20),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
-                  color: AppColors.amber600
-                  ),
-                
-                child: ElevatedButton(
-               onPressed: context.watch<AuthBloc>().state is AuthLoading
-    ? null
-    : () {
-        final email = emailController.text;
-        final password = passwordController.text;
-
-        if (email.isEmpty || password.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Please enter all fields")),
-          );
-          return;
-        }
-
-        context.read<AuthBloc>().add(
-          LoginRequested(
-            email: email,
-            password: password,
-            role: selectedRole.toLowerCase(),
-          ),
-        );
-      },
-                  style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              shadowColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-                  ),
-                  child:BlocBuilder<AuthBloc, AuthState>(
-  builder: (context, state) {
-    if (state is AuthLoading) {
-      return const SizedBox(
-        height: 20,
-        width: 20,
-        child: CircularProgressIndicator(
-          color: Colors.white,
-          strokeWidth: 2,
-        ),
-      );
-    }
-    return const Text(
-      "Sign In",
-      style: AppTextStyles.containerText,
-    );
-  },
-),
-                ),
-              )
-                    ],),
-              ),
-            ],
-          ),
-        );
+              
+               )],
+          
+        ));
   }),));
   }
 }
