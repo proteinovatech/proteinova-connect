@@ -259,11 +259,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+<<<<<<< HEAD
   flutter_web_plugins:
     dependency: transitive
     description: flutter
     source: sdk
     version: "0.0.0"
+=======
+>>>>>>> 00f7c0809da0f8cb6f3a5a816db3577b116953a7
   frontend_server_client:
     dependency: transitive
     description:
@@ -592,6 +595,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.0"
+<<<<<<< HEAD
   shared_preferences:
     dependency: "direct main"
     description:
@@ -648,6 +652,8 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.1"
+=======
+>>>>>>> 00f7c0809da0f8cb6f3a5a816db3577b116953a7
   shelf:
     dependency: transitive
     description:

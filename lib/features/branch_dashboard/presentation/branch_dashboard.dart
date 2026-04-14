@@ -24,8 +24,14 @@ class _BranchDashboardState extends State<BranchDashboard> {
              SizedBox(height: size.height * 0.07),
 
           Row(
-  mainAxisAlignment: MainAxisAlignment.end,
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
   children: [
+      Image.asset(
+        "assets/erplogo.png",
+        height: 30,
+        width: 130,
+      ),
+      SizedBox(width: 120,),
     Icon(
       Icons.notifications_none,
       color: Colors.grey,

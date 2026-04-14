@@ -28,6 +28,7 @@ final TextEditingController passwordController = TextEditingController();
     final Size size=MediaQuery.of(context).size;
     
     return Scaffold(backgroundColor: AppColors.background,
+<<<<<<< HEAD
       body: BlocProvider(
         create: (_) => AuthBloc(),
   child: BlocConsumer<AuthBloc, AuthState>(
@@ -97,6 +98,151 @@ final TextEditingController passwordController = TextEditingController();
             ),
           ),
         ),
+=======
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+             Stack(
+  children: [
+    SizedBox(
+      height: MediaQuery.of(context).size.height * 0.35,
+      width: double.infinity,
+      child: Image.asset(
+        "assets/warehouse.png",
+        fit: BoxFit.cover,
+      ),
+    ),
+
+    // 🔥 Gradient overlay
+    Positioned.fill(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.transparent,
+              Colors.white.withOpacity(0.1),
+              Colors.white,
+            ],
+          ),
+        ),
+      ),
+    ),
+
+       Positioned(
+      top: 20, 
+      left: 5,
+      child: Image.asset(
+        "assets/erplogo.png",
+        height: 30,
+        width: 130,
+      ),
+    ),
+  ],
+),
+            Padding(
+              padding:  EdgeInsets.only(left:size.width*0.05,right: size.width*0.05),
+              child: Column(mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                 
+                  SizedBox(height: size.height*0.02,),
+                  Text("Sign in",style: AppTextStyles.headingText25,),
+                   SizedBox(height: size.height*0.01),
+                  Text("Enter your credentials to access your distribution system. ",
+                  style: AppTextStyles.bodyText16,),
+                   SizedBox(height: size.height*0.04),
+                  Text("System Role",style: AppTextStyles.buttonText16,),
+                  // default
+                  RoleToggle(
+                  onChanged: (value) {
+                  setState(() {
+                  selectedRole = value; // ✅ update state
+                  });
+                  print("Selected Role: $value");
+                  },
+                  ),
+            SizedBox(height: size.height*0.03),
+            Text("Email or Phone",style: AppTextStyles.buttonText16,),
+            CustomTextField(
+              hintText: "Email",
+              controller: emailController,
+            ),
+            SizedBox(height: size.height*0.03),
+            Text("Password",style: AppTextStyles.buttonText16,),
+            CustomTextField(
+              hintText: "Password",
+              controller: passwordController,
+              isPassword: true,
+            ),
+            SizedBox(height: size.height*0.02),
+            Padding(
+              padding:  EdgeInsets.only(left: size.width*0.54),
+              child: Text("Forgot password?",style: AppTextStyles.browntext,),
+            ),
+            Container(
+              width: double.infinity,
+              height: 50,
+              margin: const EdgeInsets.symmetric(vertical: 20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                color: AppColors.amber600
+                ),
+              
+              child: ElevatedButton(
+             onPressed: () async {
+  final email = emailController.text;
+  final password = passwordController.text;
+
+  if (email.isEmpty || password.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Please enter all fields")),
+    );
+    return;
+  }
+
+  final result = await AuthService.login(
+    email: email,
+    password: password,
+  );
+print("result : $result");
+  if (result != null) {
+    // ✅ Success → Navigate
+    if (selectedRole == "Purchase") {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => PurchaseBottomNavigator()),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => BranchBottomNavigator()),
+      );
+     
+    }
+  } else {
+    // ❌ Error
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Login failed")),
+    );
+  }
+},
+                style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+                ),
+                child: const Text(
+            "Sign In",
+            style: AppTextStyles.containerText
+                ),
+              ),
+            )
+                  ],),
+>>>>>>> 00f7c0809da0f8cb6f3a5a816db3577b116953a7
             ),
           ],
         ),

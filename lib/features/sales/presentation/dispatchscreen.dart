@@ -19,24 +19,41 @@ class _DispatchscreenState extends State<Dispatchscreen> {
     return Scaffold(
       backgroundColor: AppColors.background1,
       appBar: AppBar(backgroundColor: AppColors.background,
-      actions: [  Padding(
-        padding: const EdgeInsets.all(9.0),
-        child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Icon(
-                    Icons.notifications_none,
-                    color: Colors.grey,
-                  ),
-                  SizedBox(width: size.width*0.03,),
-                  CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Colors.grey.shade300,
-                  ),
+      actions: [   Padding(
+  padding: EdgeInsets.symmetric(
+    horizontal: size.width * 0.04,
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SizedBox(height: size.height * 0.01),
+
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+                 Image.asset(
+            "assets/erplogo.png",
+            height: 30,
+            width: 130,
+          ),
+          Row(
+            children: [
+               Icon(Icons.search_outlined),
+              SizedBox(width: size.width * 0.02),
+              Icon(Icons.notifications_outlined),
+              SizedBox(width: size.width * 0.02),
               
-                ],
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: Colors.grey.shade300,
               ),
-      ),],),
+            ],
+          ),
+        ],
+      ),
+    ],
+  ),
+),],),
      body: SingleChildScrollView(
   child: Padding(
     padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),

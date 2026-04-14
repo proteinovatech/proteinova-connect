@@ -29,22 +29,33 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
+        padding: EdgeInsets.symmetric(horizontal: size.width * 0.03),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
             /// 🔹 HEADER (FIXED)
-            SizedBox(height: size.height * 0.07),
+        SizedBox(height: size.height * 0.05),
 
-            Align(
-              alignment: Alignment.centerRight,
-              child: CircleAvatar(
-                radius: 18,
-                backgroundColor: Colors.grey.shade300,
-              ),
-            ),
-
+Padding(
+  padding: const EdgeInsets.all(0.8),
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+          Image.asset(
+        "assets/erplogo.png",
+        height: 30,
+        width: 130,
+      ),
+  
+      // ✅ Circle Avatar (Right side)
+      CircleAvatar(
+        radius: 18,
+        backgroundColor: Colors.grey.shade300,
+      ),
+    ],
+  ),
+),
             const Divider(),
 
             /// 🔹 SCROLL STARTS HERE ✅
