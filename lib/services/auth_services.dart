@@ -6,6 +6,7 @@ class AuthService {
   static Future<Map<String, dynamic>?> login({
     required String email,
     required String password,
+    
   }) async {
     try {
       print("📤 EMAIL: $email");
