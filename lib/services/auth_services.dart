@@ -5,6 +5,7 @@ class AuthService {
   static Future<Map<String, dynamic>?> login({
     required String email,
     required String password,
+    required String role
     
   }) async {
     final response = await http.post(
@@ -15,7 +16,7 @@ class AuthService {
       body: jsonEncode({
         "email": email,
         "password": password,
-        "role": "purchase",
+        "role": role,
       }),
     );
 

@@ -6,8 +6,9 @@ class AuthLoading extends AuthState {}
 
 class AuthSuccess extends AuthState {
   final Map<String, dynamic> user;
+  final String role;
 
-  AuthSuccess(this.user);
+  AuthSuccess(this.user,this.role);
 }
 
 class AuthFailure extends AuthState {

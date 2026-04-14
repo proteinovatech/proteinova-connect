@@ -46,43 +46,41 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
   }
 
   Widget _buildNavItem(IconData icon, int index) {
-    bool isSelected = selectedIndex == index;
+  bool isSelected = selectedIndex == index;
 
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedIndex = index;
-        });
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isSelected ? AppColors.amber600 : Colors.transparent,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              color: isSelected ? AppColors.dark : AppColors.textSecondary,
-            ),
+  return GestureDetector(
+    onTap: () {
+      setState(() {
+        selectedIndex = index;
+      });
+    },
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.amber600 : Colors.transparent,
+            shape: BoxShape.circle,
           ),
+          child: Icon(
+            icon,
+            color: isSelected ? AppColors.dark : AppColors.textSecondary,
+          ),
+        ),
 
-          // ❌ No text when selected (your requirement)
-          if (!isSelected)
-            const SizedBox(height: 4),
+        const SizedBox(height: 4),
 
-          if (!isSelected)
-            Text(
-              _getLabel(index),
-              style: AppTextStyles.bodyText16,
-            ),
-        ],
-      ),
-    );
-  }
-
+        // ✅ Show text ONLY when selected
+        if (isSelected)
+          Text(
+            _getLabel(index),
+            style: AppTextStyles.bodyText16,
+          ),
+      ],
+    ),
+  );
+}
   String _getLabel(int index) {
     switch (index) {
       case 0:
