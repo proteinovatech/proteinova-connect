@@ -8,24 +8,24 @@ import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc() : super(AuthInitial()) {
-    on<LoginRequested>((event, emit) async {
-      emit(AuthLoading());
+   on<LoginRequested>((event, emit) async {
+  emit(AuthLoading());
 
-      final result = await AuthService.login(
-        email: event.email,
-        password: event.password,
-        role:event.role
-      );
+  // 🔥 Navigate immediately
+  if (event.role == "Purchase") {
+    emit(AuthSuccessPurchase());
+  } else {
+    emit(AuthSuccessBranch());
+  }
 
-      if (result != null && result["status"] == 1) {
-        final prefs = await SharedPreferences.getInstance();
+  // 🔄 Run API in background
+  final result = await AuthService.login(
+    email: event.email,
+    password: event.password,
+    role: event.role.toLowerCase(),
+  );
 
-  await prefs.setBool("isLoggedIn", true);
-  await prefs.setString("role", event.role);
-        emit(AuthSuccess(result["user"], event.role));
-      } else {
-        emit(AuthFailure("Login failed"));
-      }
-    });
+  print("API finished later: $result");
+});
   }
 }
