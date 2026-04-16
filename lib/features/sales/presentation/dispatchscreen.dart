@@ -18,42 +18,30 @@ class _DispatchscreenState extends State<Dispatchscreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background1,
-      appBar: AppBar(backgroundColor: AppColors.background,
-      actions: [   Padding(
-  padding: EdgeInsets.symmetric(
-    horizontal: size.width * 0.04,
-  ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      SizedBox(height: size.height * 0.01),
+    appBar: AppBar(
+  backgroundColor: Colors.white,
+  elevation: 0,
 
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-                 Image.asset(
-            "assets/erplogo.png",
-            height: 30,
-            width: 130,
-          ),
-          Row(
-            children: [
-               Icon(Icons.search_outlined),
-              SizedBox(width: size.width * 0.02),
-              Icon(Icons.notifications_outlined),
-              SizedBox(width: size.width * 0.02),
-              
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: Colors.grey.shade300,
-              ),
-            ],
-          ),
-        ],
-      ),
-    ],
+  // Logo on left
+  title: Image.asset(
+    "assets/erplogo.png",
+    height: 40,
   ),
-),],),
+
+   actions: [
+    Icon(Icons.search_outlined, color: Colors.black),
+    SizedBox(width: 10),
+
+    Icon(Icons.notifications_outlined, color: Colors.black),
+    SizedBox(width: 10),
+
+    CircleAvatar(
+      radius: 16,
+      backgroundColor: Colors.grey.shade300,
+    ),
+    SizedBox(width: 10),
+  ],
+),
      body: SingleChildScrollView(
   child: Padding(
     padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),

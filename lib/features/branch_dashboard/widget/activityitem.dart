@@ -27,38 +27,29 @@ class _ActivityItemState extends State<ActivityItem> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
 
-        /// 🔹 LEADING (Avatar / Icon)
-        widget.leading,
+              widget.leading,
 
         const SizedBox(width: 12),
-
-        /// 🔹 CONTENT
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-              /// TITLE
               Text(
                 widget.title,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 12,
+                  fontSize: 17,
                 ),
               ),
 
               const SizedBox(height: 4),
-
-              /// SUBTITLE
               widget.subtitle,
 
               const SizedBox(height: 4),
-
-              /// TIME ROW
               Row(
                 children: [
                   const Icon(Icons.access_time,
-                      size: 16, color: Colors.grey),
+                      size: 17, color: Colors.grey),
                   const SizedBox(width: 4),
                   Text(widget.time,
                       style: const TextStyle(color: Colors.grey)),

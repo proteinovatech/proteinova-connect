@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/inventory/presentation/receivestock.dart';
 import 'package:proteinova_connect/features/inventory/widget/order_shipmentcard.dart';
 import 'package:proteinova_connect/features/inventory/widget/shipment_filter_row.dart';
 import 'package:proteinova_connect/features/inventory/widget/shipmentcard.dart';
@@ -13,6 +14,7 @@ class Inventory extends StatefulWidget {
 }
 
 class _InventoryState extends State<Inventory> {
+   bool isClicked = false;
   @override
   Widget build(BuildContext context) {
     final Size size =MediaQuery.of(context).size;
@@ -22,7 +24,7 @@ class _InventoryState extends State<Inventory> {
       padding: EdgeInsets.only(left: size.height*0.01, right:size.height*0.01 ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: size.height*0.01,),
+                  SizedBox(height: size.height*0.01,),
          Padding(
   padding: EdgeInsets.symmetric(
     horizontal: size.width * 0.04,
@@ -38,7 +40,7 @@ class _InventoryState extends State<Inventory> {
         
           Image.asset(
             "assets/erplogo.png",
-            height: 30,
+            height: 40,
             width: 130,
           ),
 
@@ -70,14 +72,15 @@ class _InventoryState extends State<Inventory> {
               SizedBox(height: size.height * 0.02),
 
               Row(
-                children: const [
-                  ShipmentCard(
+                children: [
+                   
+                  const ShipmentCard(
                     title: "Expected Today",
                     count: "4 Shipments",
                     subtitle: "Totaling 2,150 Tray",
                     icon: Icons.event,
                   ),
-                  ShipmentCard(
+                  const ShipmentCard(
                     title: "Ready for Unloading",
                     count: "2 Shipments",
                     subtitle: "Requires immediate action",
@@ -85,9 +88,9 @@ class _InventoryState extends State<Inventory> {
                   ),
                 ],
               ),
+                            
 
               SizedBox(height: size.height * 0.02),
-
               ShipmentFilterRow(),
 
               SizedBox(height: size.height * 0.02),
@@ -105,7 +108,14 @@ class _InventoryState extends State<Inventory> {
                 product: "Jumbo White",
                 quantity: "500 Tray",
                 buttonText: "Receive Stock",
-                onReceiveTap: () {},
+                onReceiveTap: () {
+                    Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const Receivestock(),
+                ),
+              );
+                },
               ),
 
               OrderShipmentcard(

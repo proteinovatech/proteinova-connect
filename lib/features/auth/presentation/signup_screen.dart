@@ -4,7 +4,6 @@ import 'package:proteinova_connect/branch_bottom_navigator.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
-import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
 
 import 'package:proteinova_connect/features/auth/bloc/auth_state.dart';
 

@@ -7,13 +7,13 @@ class ShipmentCard extends StatelessWidget {
   final String count;
   final String subtitle;
   final IconData icon;
-
+ final VoidCallback? onTap;
   const ShipmentCard({
     super.key,
     required this.title,
     required this.count,
     required this.subtitle,
-    required this.icon,
+    required this.icon, this.onTap,
   });
 
   @override
