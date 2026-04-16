@@ -3,6 +3,9 @@ abstract class AuthState {}
 class AuthInitial extends AuthState {}
 
 class AuthLoading extends AuthState {}
+class AuthSuccessPurchase extends AuthState {}   // ✅ ADD THIS
+
+class AuthSuccessBranch extends AuthState {} 
 
 class AuthSuccess extends AuthState {
   final Map<String, dynamic> user;
