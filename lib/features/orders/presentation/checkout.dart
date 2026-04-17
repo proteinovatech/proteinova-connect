@@ -2,6 +2,7 @@
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/orders/presentation/purchase_success_screen.dart';
+import 'package:proteinova_connect/features/orders/widget/checkout_summary.dart';
 
 class Checkout extends StatefulWidget {
   const Checkout({super.key});
@@ -30,8 +31,70 @@ final List<String> tabs = [
 ];
 bool isChecked = false;
 class _CheckoutState extends State<Checkout> {
+  final TextEditingController quantityController = TextEditingController();
+final TextEditingController countController = TextEditingController();
+final TextEditingController neccController = TextEditingController();
+final TextEditingController minusController = TextEditingController();
+final TextEditingController trayController = TextEditingController();
+final TextEditingController rateController = TextEditingController();
+final TextEditingController notesController = TextEditingController();
+
+final TextEditingController branchController=TextEditingController();
+final TextEditingController numberController=TextEditingController();
+final TextEditingController typeController=TextEditingController();
+final TextEditingController contactController=TextEditingController();
+
+final TextEditingController loadingController=TextEditingController();
+final TextEditingController unloadingController=TextEditingController();
+final TextEditingController transportController=TextEditingController();
+final TextEditingController miscController=TextEditingController();
+void calculateSummary() {
+  final quantity = double.tryParse(quantityController.text) ?? 0;
+  final rate = double.tryParse(rateController.text) ?? 0;
+
+  final loading = 500;   // later connect from controller
+  final unloading = 300;
+  final transport = 1000;
+  final misc = 200;
+
+  final totalCost = (quantity * rate) + loading + unloading + transport + misc;
+
+  setState(() {
+    // You can store this in a variable if needed
+  });
+}
+@override
+void initState() {
+  super.initState();
+
+  quantityController.addListener(calculateSummary);
+  rateController.addListener(calculateSummary);
+  neccController.addListener(calculateSummary);
+  minusController.addListener(calculateSummary);
+
+  quantityController.addListener(_refresh);
+  rateController.addListener(_refresh);
+  countController.addListener(_refresh);
+  neccController.addListener(_refresh);
+  minusController.addListener(_refresh);
+
+   loadingController.addListener(_refresh);
+  unloadingController.addListener(_refresh);
+  transportController.addListener(_refresh);
+  miscController.addListener(_refresh);
+}
+
+
+void _refresh() {
+  setState(() {}); 
+}
+
   @override
   Widget build(BuildContext context) {
+    
+    String supplier = "";
+String location = "";
+String category = "";
     final Size size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -64,14 +127,28 @@ class _CheckoutState extends State<Checkout> {
                   children: [
                     Text(
                       "Sales & Dispatch  >",
-                      style: TextStyle(color: Colors.grey),
+                      style: AppTextStyles.bodyText14,
                     ),
                     SizedBox(width: size.width*0.01,),
                     Text(
                   "Order #ORD-8921",
-                  style: AppTextStyles.headingText22,
+                  style: AppTextStyles.bodyText14,
+                ),
+                Text(
+                  "> Payment",
+                  style: AppTextStyles.bodyText14dark,
                 ),
                   ],
+                ),
+                SizedBox(height: size.height*0.01),
+                Text(
+                  "Checkout Payment",
+                  style: AppTextStyles.headingText22,
+                ),
+                 SizedBox(height: size.height*0.01),
+                Text(
+                  "Select a payment method to complete Order #ORD-892 ",
+                  style: AppTextStyles.bodyText14,
                 ),
                 
               ],
@@ -86,156 +163,8 @@ class _CheckoutState extends State<Checkout> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
-                  children: [
-
-                    /// 🔹 CARD
-                    Container(
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-
-                         
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Order Summary",
-                                style: AppTextStyles.headingText22,
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: AppColors.amber100,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  "Pending",
-                                  style: AppTextStyles.bodyText16,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          SizedBox(height: size.height * 0.03),
-
-                          /// 🔹 DELIVERY
-                          Text(
-                            "Delivery details",
-                            style: AppTextStyles.headingText20
-                          ),
-                            Text(
-                            "Address details\n hggfu hghjvuy bn fuf",
-                            style: AppTextStyles.bodyText16.copyWith(fontSize: 14),
-                          ),
-
-                          const SizedBox(height: 10),
-                          Divider(),
-                            SizedBox(height: 10,),
-        SizedBox(height: 10),
-
-Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-
-    /// 🔹 LEFT SIDE (2 texts in column)
-    Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("Jumbco white (GradeA)", style: AppTextStyles.headingText20),
-        Text("200 boxes *15", style: AppTextStyles.bodyText16),
-      ],
-    ),
-
-    /// 🔹 RIGHT SIDE
-    Text("\$17438", style: AppTextStyles.headingText20),
-  ],
-),
-SizedBox(height: 10,),
-         Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("Jumbco white (GradeB)", style: AppTextStyles.headingText20),
-        Text("200 boxes *15", style: AppTextStyles.bodyText16),
-      ],
-    ),
-    Text("\$17438", style: AppTextStyles.headingText20),
-  ],
-),
-
-
-          SizedBox(height: size.height * 0.02),
-          Divider(color: Colors.grey.shade300),
-
-
-                          SizedBox(height: size.height * 0.01),
-
-                         
-                          Column(
-  children: [
-
-    Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text("Subtotal", style: TextStyle(color: Colors.grey)),
-        Text("₹5000"),
-      ],
-    ),
-
-    SizedBox(height: 5),
-
-    Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text("Taxes (5%)", style: TextStyle(color: Colors.grey)),
-        Text("₹250"),
-      ],
-    ),
-
-    SizedBox(height: 5),
-
-    Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text("Delivery fee", style: TextStyle(color: Colors.grey)),
-        Text("₹50"),
-      ],
-    ),
-
-  ],
-),
-
-
-                          SizedBox(height: size.height * 0.02),
-Divider(),
-                         
-                          Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: [
-    Text(
-      "Total Amount",
-      style: AppTextStyles.headingText22,
-    ),
-    Text(
-      "₹${totalAmount.toStringAsFixed(2)}",
-      style: AppTextStyles.headingText22,
-    ),
-  ],
-),
-                        ],
-                      ),
-                    ),
- Container(
+                  children: [ 
+                  Container(
                       margin: const EdgeInsets.symmetric(vertical: 8),
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
@@ -251,7 +180,7 @@ Divider(),
                             style: AppTextStyles.headingText22,
                           ),
                         SizedBox(height: size.height * 0.03),
-  SizedBox(
+   SizedBox(
    height: size.height * 0.05,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
@@ -544,79 +473,26 @@ Column(
                       ),
                     ),
                   SizedBox(height: 10),
-Row(
-  mainAxisAlignment: .center,
-  children: [
-    Icon(
-      Icons.security_outlined, 
-      size: 18,
-      color: Colors.grey
-    
-    ),
-    SizedBox(width: 6),
-    Text(
-      "Secure 256 bit SSL encryption",
-      style: TextStyle(color: Colors.grey),
-    ),
-  ],
-),
-
+                   CheckoutSummary(
+          supplier: supplier, 
+          location: location, 
+          product: category, 
+          quantity: quantityController.text, 
+          rate: rateController.text, 
+          
+          totalEggs: countController.text, 
+          loading: loadingController.text, 
+          unloading: unloadingController.text, 
+          transport: transportController.text, 
+          misc: miscController.text
+          )
                   ],
                 ),
               ),
             ),
           ),
          
-Divider(),
-       Padding(
-         padding: const EdgeInsets.all(8.0),
-         child: Row(
-           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-           crossAxisAlignment: CrossAxisAlignment.center,
-           children: [
-         
-             /// 🔹 LEFT SIDE (Column)
-             Column(
-               crossAxisAlignment: CrossAxisAlignment.start,
-               children: [
-          Text(
-            "Total Amount",
-            style: AppTextStyles.bodyText16,
-          ),
-          SizedBox(height: 4),
-          Text(
-            "₹${totalAmount.toStringAsFixed(2)}",
-      style: AppTextStyles.headingText20,
-          ),
-               ],
-             ),
-         
-             /// 🔹 RIGHT SIDE (Payment Button)
-             GestureDetector(
-              onTap: (){
-                Navigator.push(context,MaterialPageRoute(builder: (context)=>PurchaseSuccessScreen()));
-              },
-               child: Container(
-                 padding: const EdgeInsets.symmetric(horizontal: 70, vertical: 15),
-                 decoration: BoxDecoration(
-                         color:AppColors.amber600,
-                         borderRadius: BorderRadius.circular(10),
-                 ),
-                 child:  Row(
-                   children: [
-                    Icon(Icons.lock_outline),
-                    SizedBox(width: size.width * 0.03),
-                     Text(
-                               "Pay Now",
-                               style:AppTextStyles.containerText
-                     ),
-                   ],
-                 ),
-               ),
-             ),
-           ],
-         ),
-       )
+       
         ],
       ),
     );

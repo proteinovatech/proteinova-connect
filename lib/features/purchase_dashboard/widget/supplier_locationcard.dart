@@ -3,7 +3,8 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 
 class SupplierLocationCard extends StatefulWidget {
-  const SupplierLocationCard({super.key});
+   final Function(String supplier, String location) onChanged; 
+  const SupplierLocationCard({super.key,required this.onChanged,});
 
   @override
   State<SupplierLocationCard> createState() =>
@@ -13,6 +14,7 @@ class SupplierLocationCard extends StatefulWidget {
 class _SupplierLocationCardState extends State<SupplierLocationCard> {
   String? selectedSupplier;
   String location = "";
+  bool isExpanded = false;
 
   // Dummy data (replace with API/Supabase later)
   final Map<String, String> supplierData = {
@@ -40,18 +42,32 @@ class _SupplierLocationCardState extends State<SupplierLocationCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 🔹 Main Title
-           Row(
-             children: [
-              Icon(Icons.local_shipping_outlined,color: AppColors.amber600,),
-               SizedBox(width: size.width*0.02),
-               Text(
-                "Supplier and Location Details",
-                style: AppTextStyles.headingText20,
-                         ),
-             ],
+           InkWell(
+             onTap: () {
+    setState(() {
+      isExpanded = !isExpanded;
+    });
+  },
+             child: Row(
+               children: [
+                Icon(Icons.local_shipping_outlined,color: AppColors.blueAccent,),
+                 SizedBox(width: size.width*0.02),
+                 Expanded(
+                   child: Text(
+                    "Supplier & Location Details",
+                    style: AppTextStyles.headingText20,
+                             ),
+                 ),
+                 Icon(
+        isExpanded
+            ? Icons.keyboard_arrow_up
+            : Icons.keyboard_arrow_down,
+      ),
+               ],
+             ),
            ),
 
-          SizedBox(height:size.height*0.01 ),
+          if(isExpanded)...[SizedBox(height:size.height*0.01 ),
 
           const Divider(color: AppColors.border,),
 
@@ -87,11 +103,13 @@ class _SupplierLocationCardState extends State<SupplierLocationCard> {
                       );
                     }).toList(),
                     onChanged: (value) {
-                      setState(() {
-                        selectedSupplier = value;
-                        location = supplierData[value] ?? "";
-                      });
-                    },
+  setState(() {
+    selectedSupplier = value;
+    location = supplierData[value] ?? "";
+  });
+
+  widget.onChanged(selectedSupplier ?? "", location); 
+},
                   ),
                 ),
               ],
@@ -100,14 +118,11 @@ class _SupplierLocationCardState extends State<SupplierLocationCard> {
 
           SizedBox(height: size.height*0.02),
 
-          // 🔹 Location Title
-         Row(
-           children: [
+          
              Text("Origin Location",style: AppTextStyles.buttonText16,),
-               SizedBox(width:size.width*0.30),
-             Text("Auto-filled",style: AppTextStyles.bodyText16,), 
-           ],
-         ),
+             
+            
+         
 
           const SizedBox(height: 6),
 
@@ -134,8 +149,11 @@ class _SupplierLocationCardState extends State<SupplierLocationCard> {
               ],
             ),
           ),
+          SizedBox(height:size.height*0.01),
+          Text("Auto-filled based on selected supplier",style: AppTextStyles.bodyText14, )
+          
         ],
-      ),
+      ]),
     );
   }
 }

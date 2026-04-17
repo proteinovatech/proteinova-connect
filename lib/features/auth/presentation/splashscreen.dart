@@ -28,34 +28,27 @@ class _SplashScreenState extends State<SplashScreen> {
   final prefs = await SharedPreferences.getInstance();
 
   bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-  String? role = prefs.getString('role');
+  String? role = prefs.getString('role')?.toLowerCase();
 
-  print("isLoggedIn: $isLoggedIn");
-  print("ROLE: $role");
+  if (!mounted) return;
+
+  Widget nextScreen;
 
   if (isLoggedIn && role != null) {
     if (role == "purchase") {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const PurchaseBottomNavigator()),
-      );
+      nextScreen = const PurchaseBottomNavigator();
     } else if (role == "branch") {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const BranchBottomNavigator()),
-      );
+      nextScreen = const BranchBottomNavigator();
     } else {
-      _goToLogin();
+      nextScreen = const SignupScreen();
     }
   } else {
-    _goToLogin();
+    nextScreen = const SignupScreen();
   }
-}
 
-void _goToLogin() {
   Navigator.pushReplacement(
     context,
-    MaterialPageRoute(builder: (_) => const SignupScreen()),
+    MaterialPageRoute(builder: (_) => nextScreen),
   );
 }
   @override

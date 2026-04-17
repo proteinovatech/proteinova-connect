@@ -3,7 +3,7 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/orders/presentation/checkout.dart';
 
-class PurchaseSummaryCard extends StatelessWidget {
+class CheckoutSummary extends StatelessWidget {
   final String supplier;
   final String location;
   final String product;
@@ -17,7 +17,7 @@ class PurchaseSummaryCard extends StatelessWidget {
   final String misc;
 
   
-  const PurchaseSummaryCard({
+  const CheckoutSummary({
     super.key,
     required this.supplier,
     required this.location,
@@ -174,12 +174,18 @@ final totalCost = (qty * r) + additionalTotal;
             ),
             child:  Row(
               children: [
-                 SizedBox(width: size.width*0.08),
-        
-                Icon(Icons.check_circle_outline, color: AppColors.dark),
+                 SizedBox(width: size.width*0.2),
+                    
+                Icon(Icons.lock_outline, color: AppColors.dark),
                  SizedBox(width: size.width*0.02),
                 Text(
-                        "Submit Purchase Entry",
+                        "Pay",
+                        style: AppTextStyles.headingText20
+                ),
+                
+                SizedBox(width: size.width*0.02),
+                Text(
+                        "₹ $totalCost",
                         style: AppTextStyles.headingText20
                 ),
               ],
@@ -209,18 +215,12 @@ final totalCost = (qty * r) + additionalTotal;
           borderRadius: BorderRadius.circular(12),
         ),
             ),
-            child:  Row(
-              children: [
-                 SizedBox(width: size.width*0.15),
-
-                Icon(Icons.save_outlined, color: AppColors.dark),
-                 SizedBox(width: size.width*0.03),
+            child:  
                 Text(
-                        "Save as Draft",
+                        "Save cancel",
                         style: AppTextStyles.headingText20
                 ),
-              ],
-            ),
+             
           ),
         ),
         Row(

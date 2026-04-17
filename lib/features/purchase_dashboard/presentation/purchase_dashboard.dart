@@ -44,15 +44,12 @@ Padding(
     children: [
           Image.asset(
         "assets/erplogo.png",
-        height: 30,
+        height: 37,
         width: 130,
       ),
   
       // ✅ Circle Avatar (Right side)
-      CircleAvatar(
-        radius: 18,
-        backgroundColor: Colors.grey.shade300,
-      ),
+      Icon(Icons.notifications_outlined,color:  AppColors.textSecondary,)
     ],
   ),
 ),
@@ -210,11 +207,11 @@ Padding(
                       statusColor: Colors.green,
                       textColor: Colors.white,
                       supplier: "Apex Farms",
-                      orderId: 'mnbjghjg',
-                      dateTime: '17.00',
-                      bottomId: '156271',
-                      items: 'mszjkshxls()',
-                      itemboxes: ',mbdckjsc',
+                      orderId: '#PO-1024',
+                      dateTime: 'Today, 10.45 PM',
+                      bottomId: '\$7,500.00',
+                      items: 'Jumbo White(Grade AA)',
+                      itemboxes: '500 Boxes',
                     ),
 
                     SizedBox(height: size.height * 0.02),
@@ -224,11 +221,11 @@ Padding(
                       statusColor: Color(0xFFC7D1E7),
                       textColor: Colors.blue,
                       supplier: "Valley Farms",
-                      orderId: 'ahdkah',
-                      dateTime: '27.00',
-                      bottomId: 'bnamvdhj',
-                      items: 'hvjcka()',
-                      itemboxes: 'mcsbdkjc',
+                      orderId: '#PO-1020',
+                      dateTime: 'Oct 22,2023,02.15 PM',
+                      bottomId: '\$4,200.00',
+                      items: 'Medium Brown',
+                      itemboxes: '300 Boxes',
                     ),
 
                     SizedBox(height: size.height * 0.02),
@@ -238,11 +235,11 @@ Padding(
                       statusColor: Color(0xFFF5CDBE),
                       textColor: Colors.brown,
                       supplier: "Sunrise Poultry",
-                      orderId: 'Hxl,L',
-                      dateTime: '15.09',
-                      bottomId: 'ZMBCSJB',
-                      items: 'amx,jkxbs()',
-                      itemboxes: 'cmsbcmsd',
+                      orderId: '#PO-1022',
+                      dateTime: 'Oct 20,2023,09.00 AM',
+                      bottomId: '\$2,020.00',
+                      items: 'Large White(Grade A)',
+                      itemboxes: '150 Boxes',
                     ),
 
                     SizedBox(height: size.height * 0.05),
