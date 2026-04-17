@@ -90,6 +90,12 @@ class AppTextStyles {
     fontWeight: FontWeight.w400,
     color: AppColors.textSecondary, // works well on yellow
   );
+  static const TextStyle formInputs15dark = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.bold,
+    color: AppColors.dark, // works well on yellow
+  );
+
 
 
   // Caption / Small Text

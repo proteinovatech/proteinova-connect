@@ -63,7 +63,7 @@ final String itemboxes;
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: const Icon(Icons.home, color: Colors.grey),
+                child: const Icon(Icons.store_outlined, color: Colors.grey),
               ),
               const SizedBox(width: 10),
               Text(supplier, style: AppTextStyles.bodyText16),

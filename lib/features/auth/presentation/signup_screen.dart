@@ -5,14 +5,11 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
-
 import 'package:proteinova_connect/features/auth/bloc/auth_state.dart';
-
 import 'package:proteinova_connect/features/auth/widget/custom_textfield.dart';
 import 'package:proteinova_connect/features/auth/widget/role_toggle.dart';
 import 'package:proteinova_connect/purchase_bottom_navigator.dart';
-import 'package:proteinova_connect/services/auth_services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -29,32 +26,7 @@ final TextEditingController passwordController = TextEditingController();
 Widget build(BuildContext context) {
   final Size size = MediaQuery.of(context).size;
 
-  return  BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is AuthSuccessPurchase) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => PurchaseBottomNavigator(),
-            ),
-          );
-        } 
-        else if (state is AuthSuccessBranch) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => BranchBottomNavigator(),
-            ),
-          );
-        } 
-        else if (state is AuthFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
-        }
-      },
-
-      child: Scaffold(
+  return Scaffold(
         backgroundColor: AppColors.background,
 
         body: SingleChildScrollView(
@@ -92,7 +64,7 @@ Widget build(BuildContext context) {
                     left: 5,
                     child: Image.asset(
                       "assets/erplogo.png",
-                      height: 30,
+                      height: 35,
                       width: 130,
                     ),
                   ),
@@ -148,93 +120,92 @@ Widget build(BuildContext context) {
 
                     SizedBox(height: size.height * 0.02),
 
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        "Forgot password?",
-                        style: AppTextStyles.browntext,
-                      ),
-                    ),
+                  Container(
+  width: double.infinity,
+  height: 50,
+  margin: const EdgeInsets.symmetric(vertical: 20),
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(5),
+    color: AppColors.amber600,
+  ),
 
-                    /// 🔥 BUTTON
-                    Container(
-                      width: double.infinity,
-                      height: 50,
-                      margin: const EdgeInsets.symmetric(vertical: 20),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        color: AppColors.amber600,
-                      ),
+  child: BlocListener<AuthBloc, AuthState>(
+    listener: (context, state) {
+      if (state is AuthSuccessPurchase) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const PurchaseBottomNavigator(),
+          ),
+        );
+      } else if (state is AuthSuccessBranch) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const BranchBottomNavigator(),
+          ),
+        );
+      } else if (state is AuthFailure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(state.message)),
+        );
+      }
+    },
 
-                      child: ElevatedButton(
-                       
-  onPressed: () async {
-    final email = emailController.text;
-    final password = passwordController.text;
+    child: ElevatedButton(
+      onPressed: () {
+        final email = emailController.text.trim();
+        final password = passwordController.text.trim();
 
-    final result = await AuthService.login(
-      email: email,
-      password: password,
-      role: selectedRole.toLowerCase(),
-    );
+        if (email.isEmpty || password.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Please enter all fields")),
+          );
+          return;
+        }
 
-    print("LOGIN RESPONSE: $result");
+        /// 🔥 CALL BLOC ONLY
+        context.read<AuthBloc>().add(
+          LoginRequested(
+            email: email,
+            password: password,
+            role: selectedRole,
+          ),
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+      ),
 
-   if (result != null && result['user'] != null) {
+      child: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, state) {
+          if (state is AuthLoading) {
+            return const CircularProgressIndicator(
+              color: Colors.white,
+              strokeWidth: 2,
+            );
+          }
 
-  final prefs = await SharedPreferences.getInstance();
+          return const Text(
+            "Sign In",
+            style: AppTextStyles.containerText,
+          );
+        },
+      ),
+    ),
+  ),
+)  
 
-  await prefs.setBool('isLoggedIn', true); // ✅ important
-  await prefs.setString('role', result['user']['role']);
-
-  print("Saved ROLE: ${result['user']['role']}");
-
-  if (result['user']['role'] == "purchase") {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const PurchaseBottomNavigator()),
-    );
-  } else {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const BranchBottomNavigator()),
-    );
-  }
-
-} else {
-  print("Login failed");
-}
-  },
-
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                        ),
-
-                        child: BlocBuilder<AuthBloc, AuthState>(
-                          builder: (context, state) {
-                            if (state is AuthLoading) {
-                              return const CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              );
-                            }
-                            return const Text(
-                              "Sign In",
-                              style: AppTextStyles.containerText,
-                            );
-                          },
-                        ),
-                      ),
-                    ),
+                   
                   ],
                 ),
               ),
             ],
           ),
         ),
-      ),
-    );
+      );
+    
   
 }
             }

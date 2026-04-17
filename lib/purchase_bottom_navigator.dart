@@ -38,7 +38,7 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
           children: [
             _buildNavItem(Icons.grid_view, 0),
             _buildNavItem(Icons.shopping_cart_outlined, 1),
-            _buildNavItem(Icons.notifications_none, 2),
+            _buildNavItem(Icons.person_outline, 2),
           ],
         ),
       ),
@@ -88,7 +88,7 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
       case 1:
         return "Purchase";
       case 2:
-        return "Notifications";
+        return "Profile";
       default:
         return "";
     }

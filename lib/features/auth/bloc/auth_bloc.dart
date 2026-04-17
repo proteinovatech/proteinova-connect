@@ -11,21 +11,30 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
    on<LoginRequested>((event, emit) async {
   emit(AuthLoading());
 
-  // 🔥 Navigate immediately
-  if (event.role == "Purchase") {
-    emit(AuthSuccessPurchase());
-  } else {
-    emit(AuthSuccessBranch());
+  try {
+    final result = await AuthService.login(
+      email: event.email,
+      password: event.password,
+      role: event.role.toLowerCase(),
+    );
+
+    if (result != null && result['user'] != null) {
+      final prefs = await SharedPreferences.getInstance();
+
+      await prefs.setBool('isLoggedIn', true);
+      await prefs.setString('role', result['user']['role']);
+
+      if (result['user']['role'] == "purchase") {
+        emit(AuthSuccessPurchase());
+      } else {
+        emit(AuthSuccessBranch());
+      }
+    } else {
+      emit(AuthFailure("Login failed"));
+    }
+  } catch (e) {
+    emit(AuthFailure("Something went wrong"));
   }
-
-  // 🔄 Run API in background
-  final result = await AuthService.login(
-    email: event.email,
-    password: event.password,
-    role: event.role.toLowerCase(),
-  );
-
-  print("API finished later: $result");
 });
   }
 }
