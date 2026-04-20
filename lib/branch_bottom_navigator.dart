@@ -41,7 +41,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildNavItem(Icons.grid_view, 0),
-            _buildNavItem(Icons.inventory, 1),
+            _buildNavItem(Icons.inventory_2_outlined, 1),
             _buildNavItem(Icons.shopping_cart_outlined,2),
             _buildNavItem(Icons.local_shipping_outlined, 3),
              _buildNavItem(Icons.menu_outlined, 4),
@@ -75,11 +75,11 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
             ),
           ),
 
-          // ❌ No text when selected (your requirement)
-          if (!isSelected)
+          
+          if (isSelected)
             const SizedBox(height: 4),
 
-          if (!isSelected)
+          if (isSelected)
             Text(
               _getLabel(index),
               style: AppTextStyles.bodyText16,

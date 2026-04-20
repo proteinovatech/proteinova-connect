@@ -3,6 +3,7 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/purchase_dashboard/presentation/purchase_dashboard.dart';
 import 'package:proteinova_connect/features/purchase_dashboard/presentation/newpurchase.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PurchaseBottomNavigator extends StatefulWidget {
   const PurchaseBottomNavigator({super.key});
@@ -13,6 +14,41 @@ class PurchaseBottomNavigator extends StatefulWidget {
 
 class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
   int selectedIndex = 0;
+  
+  void _showProfileOptions(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title:  Text("Profile",style: AppTextStyles.headingText20,),
+        content: Text("Do you want to logout?",style: AppTextStyles.bodyText14,),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // close dialog
+            },
+            child:  Text("Cancel",style: AppTextStyles.browntext,),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final prefs = await SharedPreferences.getInstance();
+  await prefs.clear(); 
+
+  Navigator.pushNamedAndRemoveUntil(
+    context,
+    "/signup", 
+    (route) => false,); // 🔥
+             
+             
+            },
+            child: const Text("Logout",style: AppTextStyles.browntext,),
+          ),
+        ],
+      );
+    },
+  );
+}
 
   final List<Widget> pages = [
    PurchaseDashboard(),
@@ -50,10 +86,14 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
 
   return GestureDetector(
     onTap: () {
-      setState(() {
-        selectedIndex = index;
-      });
-    },
+  if (index == 2) {
+    _showProfileOptions(context); // 👈 show logout popup
+  } else {
+    setState(() {
+      selectedIndex = index;
+    });
+  }
+},
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [

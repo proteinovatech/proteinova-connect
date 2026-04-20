@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/orders/presentation/checkout.dart';
+import 'package:proteinova_connect/features/orders/presentation/purchase_success_screen.dart';
 
 class CheckoutSummary extends StatelessWidget {
   final String supplier;
@@ -162,7 +163,7 @@ final totalCost = (qty * r) + additionalTotal;
           child: ElevatedButton(
             onPressed: () {
         Navigator.push(context, MaterialPageRoute(builder: 
-        (context)=>Checkout()));
+        (context)=>PurchaseSuccessScreen()));
              
             },
             style: ElevatedButton.styleFrom(
