@@ -187,9 +187,7 @@ class _SalesState extends State<Sales> {
         ),
       
         const SizedBox(height: 15),
-      
-        /// 🔹 Tabs
-      SizedBox(
+           SizedBox(
   height: 45,
   child: ListView.builder(
     controller: _scrollController,

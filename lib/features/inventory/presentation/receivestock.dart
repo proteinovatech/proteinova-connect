@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/inventory/widget/buildrow.dart';
+import 'package:proteinova_connect/features/inventory/widget/receiveditem.dart';
 import 'package:proteinova_connect/features/inventory/widget/traydetailcard.dart';
 
 class Receivestock extends StatefulWidget {
@@ -10,6 +13,9 @@ class Receivestock extends StatefulWidget {
 }
 
 class _ReceivestockState extends State<Receivestock> {
+   bool isExpanded = true;
+   bool isTrayExpanded = true;
+     bool isReceivedExpanded = true;
   @override
   Widget build(BuildContext context) {
     
@@ -177,6 +183,7 @@ Divider(color: Colors.grey.shade300),
           ),
         ],
       ),
+      SizedBox(height: 10,),
       Container(
         width: 170,
   padding: const EdgeInsets.all(12),
@@ -215,36 +222,244 @@ Divider(color: Colors.grey.shade300),
   ),
 ),
 SizedBox(height: 10,),
-Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: [
-    Text(
-      "Tray details",
-      style: AppTextStyles.headingText20,
-    ),
+  Container(
+  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+  decoration: BoxDecoration(
+    color: AppColors.background,
+    border: Border.all(color: AppColors.border),
+    borderRadius: BorderRadius.circular(8),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    mainAxisSize: MainAxisSize.min,
+    children: [
 
-    Icon(
-      Icons.keyboard_arrow_down,
-      size: 24,
-    ),
-  ],
-),
-   const SizedBox(height: 10),
+      /// 🔹 HEADER
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            "Received Items",
+            style: AppTextStyles.headingText20,
+          ),
 
-   Column(
-  children: const [
+          /// 🔥 FIXED ICON SIZE (important)
+          IconButton(
+            iconSize: 20,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            icon: Icon(
+              isReceivedExpanded
+                  ? Icons.keyboard_arrow_up
+                  : Icons.keyboard_arrow_down,
+            ),
+            onPressed: () {
+              setState(() {
+                isReceivedExpanded = !isReceivedExpanded;
+              });
+            },
+          ),
+        ],
+      ),
 
-    TrayDetailsCard(title: "Plastic Tray (With Eggs)"),
+      const SizedBox(height: 6),
 
-    TrayDetailsCard(title: "Paper Tray (With Eggs)"),
-
-    TrayDetailsCard(title: "Empty Tray"),
-
-  ],
-)
+      /// 🔹 EXPAND CONTENT
+      if (isReceivedExpanded)
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Receiveditem(title: "White Eggs (With trays)"),
+            SizedBox(height: 6),
+            Receiveditem(title: "Brown Eggs (With trays)"),
+            SizedBox(height: 6),
+            Receiveditem(title: "White Eggs (With trays)"),
+          ],
+        ),
     ],
   ),
-))
+),
+        const SizedBox(height: 10),
+       Container(
+  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3), 
+  decoration: BoxDecoration(
+    color: AppColors.background,
+    border: Border.all(color: AppColors.border),
+    borderRadius: BorderRadius.circular(5), 
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    mainAxisSize: MainAxisSize.min, // 👈 important (no extra height)
+    children: [
+
+      /// 🔹 HEADER ROW
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            "Tray details",
+            style: AppTextStyles.headingText20,
+          ),
+
+          /// 👇 reduce icon size + padding
+          IconButton(
+            iconSize: 20, // 👈 smaller icon
+            padding: EdgeInsets.zero, // 👈 remove extra space
+            constraints: const BoxConstraints(), // 👈 VERY IMPORTANT
+            icon: Icon(
+              isTrayExpanded
+                  ? Icons.keyboard_arrow_up
+                  : Icons.keyboard_arrow_down,
+            ),
+            onPressed: () {
+              setState(() {
+                isTrayExpanded = !isTrayExpanded;
+              });
+            },
+          ),
+        ],
+      ),
+
+      const SizedBox(height: 6), // 👈 reduced space
+
+      /// 🔹 EXPAND CONTENT
+      if (isTrayExpanded)
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            TrayDetailsCard(title: "Plastic Tray (With Eggs)"),
+            SizedBox(height: 6),
+            TrayDetailsCard(title: "Paper Tray (With Eggs)"),
+            SizedBox(height: 6),
+            TrayDetailsCard(title: "Empty Tray"),
+          ],
+        ),
+    ],
+  ),
+), Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Summary",
+              style: AppTextStyles.headingText22,
+            ),
+            Icon(Icons.inventory_outlined,color: Colors.blue,)]),
+            SizedBox(height: 10,),
+           Container(
+  padding: const EdgeInsets.all(16),
+  margin: const EdgeInsets.all(12),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(12),
+    border: Border.all(color: const Color.fromARGB(255, 204, 203, 203))
+  ),
+  child: Column(
+    children: [
+      buildRow("Total Trays", "400"),
+      const SizedBox(height: 5),
+      const Divider(),
+      buildRow("Total Eggs", "12,000"),
+      const SizedBox(height: 5),
+      const Divider(),
+      buildRow("Plastic Trays", "300"),
+      const SizedBox(height: 5),
+      const Divider(),
+      buildRow("Paper Trays", "50"),
+      const SizedBox(height: 5),
+      const Divider(),
+      buildRow("Empty Trays", "0"),
+    ],
+  ),
+),
+            SizedBox(height: 5,),
+            Divider(),
+            SizedBox(height: 10,),
+            Align(
+  alignment: Alignment.centerLeft,
+  child: Text(
+    "Bill Summery",
+    style: AppTextStyles.headingText22,
+  ),
+),
+                 Container(
+  padding: const EdgeInsets.all(10),
+  margin: const EdgeInsets.all(12),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(12),
+    border:Border.all(color: const Color.fromARGB(255, 218, 217, 217)) 
+     ),
+  child: Column(
+    children: [
+        buildRow("Total Trays", "400"),
+      const SizedBox(height: 5),
+      const Divider(),
+      buildRow("Items(3)", "\$10,000"),
+      const SizedBox(height: 5),
+      const Divider(),
+
+      buildRow("Transport Charge", "\$200"),
+      const SizedBox(height: 5),
+      const Divider(),
+
+      buildRow("Other Charge", "0"),
+      const SizedBox(height: 5),
+      const Divider(color: Colors.black),
+
+      buildRow("Total Amount", "\$10,200", isBold: true),
+      const Divider(color: Colors.black),
+
+      buildRow("Discount", "\$100"),
+      const SizedBox(height: 5),
+      const Divider(),
+
+      buildRow("Net Amount", "\$10,100", isBold: true),
+    ],
+  ),
+)
+            ]) 
+    ],
+  ),
+)),
+SizedBox(height: 5,),
+Row(
+  children: [
+    Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(255, 236, 218, 220),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          "Cancel",
+          style:  AppTextStyles.bodyText14dark
+        ),
+      ),
+    ),
+
+    const SizedBox(width: 10),
+
+    Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.orange,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Text(
+          "Confirm Receive",
+          style:  AppTextStyles.bodyText14dark
+        ),
+      ),
+    ),
+  ],
+)
+    
   ])
         )
     );

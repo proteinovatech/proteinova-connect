@@ -62,9 +62,7 @@ final TextEditingController notesController = TextEditingController();
               Row(
                 children: [
                   Text("Daily Sales Entry",style: AppTextStyles.headingText22,),
-
                   SizedBox(width:  size.width*0.07,),
-
                    Container(
                 padding:  EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
@@ -91,7 +89,7 @@ final TextEditingController notesController = TextEditingController();
                Text("Log new sales transactions to automatically update\nbranch inventory.",style: AppTextStyles.bodyText14,),
 
                SizedBox(height: size.height*0.02,),
-
+ 
                TransactionDetailscard(
                 categoryController: categoryController, 
                 quantityController: quantityController, 
@@ -100,22 +98,26 @@ final TextEditingController notesController = TextEditingController();
                 ),
                 SizedBox(height: size.height*0.02,),
 
-                StockPreviewCard(
-               
-                available: "8,000",
-                selling: "- 50",
-                remaining: "7,950",
-               
-                onReceiveTap: () {},
-              ),
-              SizedBox(height: size.height*0.02,),
-
-              RecentSalesCard(
-  sales: [
-    SaleItem(time: "10:45 AM", quantity: 12, customer: "Walk-in"),
-    SaleItem(time: "09:12 AM", quantity: 200, customer: "City Supermarket"),
-    SaleItem(time: "08:30 AM", quantity: 15, customer: "Walk-in"),
-  ],
+              Visibility(
+  visible: false, // 👈 change to true when needed
+  child: Column(
+    children: [
+      StockPreviewCard(
+        available: "8,000",
+        selling: "- 50",
+        remaining: "7,950",
+        onReceiveTap: () {},
+      ),
+      SizedBox(height: size.height * 0.02),
+      RecentSalesCard(
+        sales: [
+          SaleItem(time: "10:45 AM", quantity: 12, customer: "Walk-in"),
+          SaleItem(time: "09:12 AM", quantity: 200, customer: "City Supermarket"),
+          SaleItem(time: "08:30 AM", quantity: 15, customer: "Walk-in"),
+        ],
+      ),
+    ],
+  ),
 ),
 SizedBox(height: size.height*0.05,),
 
