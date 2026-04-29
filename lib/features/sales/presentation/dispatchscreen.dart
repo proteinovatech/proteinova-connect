@@ -19,11 +19,9 @@ class _DispatchscreenState extends State<Dispatchscreen> {
     return Scaffold(
       backgroundColor: AppColors.background1,
     appBar: AppBar(
-  backgroundColor: Colors.white,
-  elevation: 0,
-
-  // Logo on left
-  title: Image.asset(
+    backgroundColor: AppColors.background,
+            scrolledUnderElevation: 0,
+    title: Image.asset(
     "assets/erplogo.png",
     height: 40,
   ),
@@ -36,9 +34,14 @@ class _DispatchscreenState extends State<Dispatchscreen> {
     SizedBox(width: 10),
 
     CircleAvatar(
-      radius: 16,
-      backgroundColor: Colors.grey.shade300,
-    ),
+              radius: 18,
+              backgroundColor: Colors.grey.shade300,
+              child: Icon(
+    Icons.person,
+    size: 20,
+    color:AppColors.background,
+  ),
+        ),
     SizedBox(width: 10),
   ],
 ),

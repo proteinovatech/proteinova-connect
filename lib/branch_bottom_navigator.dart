@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/addexpense/presentation/expense_management/presentation/expense_management.dart';
+import 'package:proteinova_connect/features/branch_details/presentation/branch_details.dart';
+import 'package:proteinova_connect/features/daily_closing/presentation/daily_closing.dart';
 import 'package:proteinova_connect/features/inventory/presentation/inventory.dart';
-import 'package:proteinova_connect/features/sales/presentation/dispatchscreen.dart';
+import 'package:proteinova_connect/features/inventory/presentation/receivestock.dart';
 import 'package:proteinova_connect/features/sales/presentation/sales.dart';
-
+import 'package:proteinova_connect/features/tray_returns/presentation/tray_returns.dart';
 import 'features/branch_dashboard/presentation/branch_dashboard.dart';
 
 class BranchBottomNavigator extends StatefulWidget {
@@ -15,15 +18,44 @@ class BranchBottomNavigator extends StatefulWidget {
 }
 
 class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
-  int selectedIndex = 0;
+ void _openSideMenu() {
+  showGeneralDialog(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: "Menu",
+    barrierColor: Colors.black54,
+    transitionDuration: const Duration(milliseconds: 300),
+    pageBuilder: (context, anim1, anim2) {
+      return Align(
+        alignment: Alignment.centerRight,
+        child: Material( 
+          color: Colors.white,
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.6,
+            height: double.infinity,
+            child: _menuContent(),
+          ),
+        ),
+      );
+    },
+    transitionBuilder: (context, anim1, anim2, child) {
+      return SlideTransition(
+        position: Tween(
+          begin: const Offset(1, 0),
+          end: const Offset(0, 0),
+        ).animate(anim1),
+        child: child,
+      );
+    },
+  );
+}int selectedIndex = 0;
 
   final List<Widget> pages = [
     BranchDashboard(),
     Inventory(),
     Sales(),
-    Dispatchscreen(),
-    const Center(child: Text("Notifications Screen")),
-  ];
+    DailyClosing(),
+      ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +75,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
             _buildNavItem(Icons.grid_view, 0),
             _buildNavItem(Icons.inventory_2_outlined, 1),
             _buildNavItem(Icons.shopping_cart_outlined,2),
-            _buildNavItem(Icons.local_shipping_outlined, 3),
+            _buildNavItem(Icons.receipt_long, 3),
              _buildNavItem(Icons.menu_outlined, 4),
              
           ],
@@ -55,11 +87,15 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
     bool isSelected = selectedIndex == index;
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedIndex = index;
-        });
-      },
+   onTap: () {
+  if (index == 4) {
+    _openSideMenu();
+  } else {
+    setState(() {
+      selectedIndex = index;
+    });
+  }
+},
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -98,11 +134,70 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
       case 2:
         return "Sales";
       case 3:
-        return "Dispatches";
+        return "Daily closing";
       case 4:
         return "Menu";
       default:
         return "";
     }
   }
+ Widget _menuContent() {
+  return SafeArea(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+     Image.asset("assets/erplogo.png",height: 40,width: 150,),
+   const SizedBox(height: 20),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
+
+ _menuTile(Icons.agriculture, "Incoming Stock from warehouse", Receivestock()),
+
+_menuTile(Icons.store, "Branches",BranchDetails()),
+
+_menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
+
+_menuTile(Icons.money, "Expenses", ExpenseManagement()),
+
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ),
+
+            ],
+    ),
+  );
+}
+Widget _menuTile(IconData icon, String title, Widget page) {
+  return ListTile(
+    leading: Icon(icon, size: 20),
+    title: Text(title),
+    onTap: () {
+      Navigator.pop(context); 
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => page),
+      );
+    },
+  );
+}
+}
+Widget _sectionTitle(String title) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    child: Text(
+      title,
+      style: const TextStyle(
+        color: Colors.grey,
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  );
 }

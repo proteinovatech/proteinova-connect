@@ -26,26 +26,18 @@ class _ReceiveditemState extends State<Receiveditem> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-          // 🔹 Dynamic Title
           Text(
             widget.title,
             style: AppTextStyles.bodyText14dark,
           ),
-
           const SizedBox(height: 12),
-
-          // 🔹 Row 1 Titles
           const Row(
             children: [
               Expanded(child: Text("Trays")),
               Expanded(child: Text("Eggs")),
             ],
           ),
-
           const SizedBox(height: 6),
-
-          // 🔹 Row 1 Inputs
           Row(
             children: [
               Expanded(child: _inputField("Enter count")),
@@ -57,8 +49,6 @@ class _ReceiveditemState extends State<Receiveditem> {
       ),
     );
   }
-
-  // 🔥 Reusable input field
   Widget _inputField(String hint) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10),

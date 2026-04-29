@@ -1,121 +1,214 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/features/branch_dashboard/widget/activityitem.dart';
 
-class Resentactivity extends StatelessWidget {
+class Resentactivity extends StatefulWidget {
   const Resentactivity({super.key});
 
   @override
+  State<Resentactivity> createState() =>
+      _ResentactivityState();
+}
+
+class _ResentactivityState
+    extends State<Resentactivity> {
+
+  List recentActivity = [];
+
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchRecentActivity();
+  }
+
+  Future<void> fetchRecentActivity() async {
+
+    try {
+
+      final response = await http.get(
+        Uri.parse(
+          "https://proteinova-system.onrender.com/api/branch/dashboard",
+        ),
+      );
+
+      if (response.statusCode == 200) {
+
+        final data = jsonDecode(response.body);
+
+        setState(() {
+
+          recentActivity =
+              data["recent_activity"] ?? [];
+
+          isLoading = false;
+        });
+
+      } else {
+
+        setState(() {
+          isLoading = false;
+        });
+
+        print(
+          "Status Code : ${response.statusCode}",
+        );
+      }
+
+    } catch (e) {
+
+      setState(() {
+        isLoading = false;
+      });
+
+      print(e);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+
     return Scaffold(
+
+      backgroundColor:
+          AppColors.background1,
+
       appBar: AppBar(
-        title: const Text("Recent Activity"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: ListView(
-          children: [
 
-                   ActivityItem(
-      leading: const CircleAvatar(
-        radius: 25,
-        backgroundColor: Colors.grey,
-        child: Icon(Icons.person, color: Colors.white),
-      ),
-      title: "Sarah jenzkin generated purchase order",
-      subtitle: Row(
-        children: const [
-          Text("#PO-4092",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-          SizedBox(width: 5),
-          Text("for 500x wireless headset",
-              style: TextStyle(color: Colors.grey)),
-        ],
-      ),
-      time: "10 min ago",
-      tag: "procurement",
-    ),
+        backgroundColor:
+            AppColors.background,
 
-    const SizedBox(height: 15),
-    const Divider(),
-               const SizedBox(height: 12),
+        scrolledUnderElevation: 0,
 
-                      ActivityItem(
-      leading: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: const Icon(Icons.local_shipping_outlined,
-            color: Colors.green),
-      ),
-      title: "Dispatch DS-110 marked as in transit to",
-      subtitle: const Text(
-        "Branch (Downtown)",
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-      ),
-      time: "10 min ago",
-      tag: "procurement",
-    ),
-    const SizedBox(height: 15),
-    const Divider(),
-    const SizedBox(height: 10),
-        ActivityItem(
-     leading: const CircleAvatar(
-        radius: 25,
-        backgroundColor: Colors.grey,
-        child: Icon(Icons.person, color: Colors.white),
-      ),
-      title: "Marcus Doe recorded anew bulk sales",
-      subtitle: const Text(
-        "entry #NV",
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)
-      ),
-      time: "5 min ago",
-      tag: "delivery",
-    ),
-    const SizedBox(height: 15),
-    const Divider(),
-    const SizedBox(height: 10),
-      ActivityItem(
-      leading: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: const Icon(Icons.error_outline,
-            color: Colors.red),
-      ),
-      title: "Dispatch DS-110 marked as in transit to",
-      subtitle: const Text(
-        "Branch (Downtown)",
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-      ),
-      time: "10 min ago",
-      tag: "procurement",
-    ),
-    const SizedBox(height: 15),
-    const Divider(),
-    const SizedBox(height: 10),
-        ActivityItem(
-     leading: const CircleAvatar(
-        radius: 25,
-        backgroundColor: Colors.grey,
-        child: Icon(Icons.person, color: Colors.white),
-      ),
-      title: "Marcus Doe recorded anew bulk sales",
-      subtitle: const Text(
-        "entry #NV",
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)
-      ),
-      time: "5 min ago",
-      tag: "delivery",
-    ),
- 
-          ],
+        title: const Text(
+          "Recent Activity",
         ),
       ),
+
+      body: isLoading
+
+          ? const Center(
+              child:
+                  CircularProgressIndicator(),
+            )
+
+          : recentActivity.isEmpty
+
+              ? const Center(
+                  child: Text(
+                    "No Recent Activity",
+                  ),
+                )
+
+              : Padding(
+
+                  padding:
+                      const EdgeInsets.all(
+                    12,
+                  ),
+
+                  child: ListView.builder(
+
+                    itemCount:
+                        recentActivity.length,
+
+                    itemBuilder:
+                        (context, index) {
+
+                      final activity =
+                          recentActivity[index];
+
+                      return Column(
+
+                        children: [
+
+                          ActivityItem(
+
+                            leading:
+                                CircleAvatar(
+
+                              radius: 25,
+
+                              backgroundColor:
+                                  Colors.grey,
+
+                              child: Icon(
+
+                                getIcon(
+                                  activity["tag"]
+                                      .toString(),
+                                ),
+
+                                color:
+                                    Colors.white,
+                              ),
+                            ),
+
+                            title:
+                                activity["title"]
+                                        ?.toString() ??
+                                    "No Title",
+
+                            subtitle: Text(
+
+                              activity["description"]
+                                      ?.toString() ??
+                                  "No Description",
+
+                              style:
+                                  const TextStyle(
+
+                                fontWeight:
+                                    FontWeight
+                                        .bold,
+
+                                fontSize: 12,
+                              ),
+                            ),
+
+                            time:
+                                activity["time"]
+                                        ?.toString() ??
+                                    "",
+
+                            tag:
+                                activity["tag"]
+                                        ?.toString() ??
+                                    "",
+                          ),
+
+                          const SizedBox(
+                            height: 15,
+                          ),
+
+                          const Divider(),
+                        ],
+                      );
+                    },
+                  ),
+                ),
     );
+  }
+
+  IconData getIcon(String tag) {
+
+    switch (tag.toLowerCase()) {
+
+      case "delivery":
+        return Icons.local_shipping;
+
+      case "error":
+        return Icons.error_outline;
+
+      case "procurement":
+        return Icons.shopping_cart;
+
+      default:
+        return Icons.person;
+    }
   }
 }

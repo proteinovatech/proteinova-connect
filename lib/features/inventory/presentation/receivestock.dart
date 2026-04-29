@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/features/inventory/widget/buildrow.dart';
 import 'package:proteinova_connect/features/inventory/widget/receiveditem.dart';
 import 'package:proteinova_connect/features/inventory/widget/traydetailcard.dart';
+import 'package:proteinova_connect/features/sales/widget/buildrow.dart';
 
 class Receivestock extends StatefulWidget {
   const Receivestock({super.key});
@@ -17,10 +17,12 @@ class _ReceivestockState extends State<Receivestock> {
    bool isTrayExpanded = true;
      bool isReceivedExpanded = true;
   @override
-  Widget build(BuildContext context) {
-    
+  Widget build(BuildContext context) {    
     return Scaffold(
+      backgroundColor: AppColors.background1,
           appBar: AppBar(
+            backgroundColor: AppColors.background,
+            scrolledUnderElevation: 0,
         title: const Text("Receive Stock"),
       ),
       body: Padding(
@@ -31,13 +33,11 @@ class _ReceivestockState extends State<Receivestock> {
              SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-          
+            children: [          
           Text(
           "RCN-2016-04-001",
           style: AppTextStyles.headingText22,
-              ),
-          
+              ),          
           Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
@@ -65,25 +65,18 @@ Expanded(child: SingleChildScrollView(
   decoration: BoxDecoration(
     border: Border.all(color: Colors.grey.shade300),
     borderRadius: BorderRadius.circular(12),
+    color: AppColors.background
   ),
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-
-      // 🔹 Main Title
       Text(
         "Received Info",
         style: AppTextStyles.headingText22,
       ),
-
       const SizedBox(height: 10),
-
-      // 🔹 Divider
       Divider(color: Colors.grey.shade300),
-
       const SizedBox(height: 10),
-
-      // 🔹 Titles Row
       Row(
         children: const [
           Expanded(
@@ -106,9 +99,7 @@ Expanded(child: SingleChildScrollView(
           ),
         ],
       ),
-
       const SizedBox(height: 6),
-
            Row(
         children: const [
           Expanded(
@@ -132,10 +123,7 @@ Expanded(child: SingleChildScrollView(
         ],
       ),
 Divider(color: Colors.grey.shade300),
-
       const SizedBox(height: 10),
-
-      // 🔹 Titles Row
       Row(
         children: const [
           Expanded(
@@ -158,9 +146,7 @@ Divider(color: Colors.grey.shade300),
           ),
         ],
       ),
-
       const SizedBox(height: 6),
-
            Row(
         children: const [
           Expanded(
@@ -195,7 +181,6 @@ Divider(color: Colors.grey.shade300),
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-
       const Text(
         "From Supplier",
         style: TextStyle(
@@ -203,10 +188,7 @@ Divider(color: Colors.grey.shade300),
           fontSize: 14,
         ),
       ),
-
       const SizedBox(height: 6),
-
-      // 🔹 Subtitle
       const Text(
         "A2B form",
         style: TextStyle(
@@ -214,7 +196,6 @@ Divider(color: Colors.grey.shade300),
           fontSize: 13,
         ),
       ),
-
     ],
   ),
 )
@@ -233,8 +214,6 @@ SizedBox(height: 10,),
     crossAxisAlignment: CrossAxisAlignment.start,
     mainAxisSize: MainAxisSize.min,
     children: [
-
-      /// 🔹 HEADER
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -242,8 +221,6 @@ SizedBox(height: 10,),
             "Received Items",
             style: AppTextStyles.headingText20,
           ),
-
-          /// 🔥 FIXED ICON SIZE (important)
           IconButton(
             iconSize: 20,
             padding: EdgeInsets.zero,
@@ -261,10 +238,7 @@ SizedBox(height: 10,),
           ),
         ],
       ),
-
       const SizedBox(height: 6),
-
-      /// 🔹 EXPAND CONTENT
       if (isReceivedExpanded)
         Column(
           mainAxisSize: MainAxisSize.min,
@@ -291,8 +265,6 @@ SizedBox(height: 10,),
     crossAxisAlignment: CrossAxisAlignment.start,
     mainAxisSize: MainAxisSize.min, // 👈 important (no extra height)
     children: [
-
-      /// 🔹 HEADER ROW
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -300,12 +272,10 @@ SizedBox(height: 10,),
             "Tray details",
             style: AppTextStyles.headingText20,
           ),
-
-          /// 👇 reduce icon size + padding
           IconButton(
-            iconSize: 20, // 👈 smaller icon
-            padding: EdgeInsets.zero, // 👈 remove extra space
-            constraints: const BoxConstraints(), // 👈 VERY IMPORTANT
+            iconSize: 20, 
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(), 
             icon: Icon(
               isTrayExpanded
                   ? Icons.keyboard_arrow_up
@@ -319,11 +289,8 @@ SizedBox(height: 10,),
           ),
         ],
       ),
-
-      const SizedBox(height: 6), // 👈 reduced space
-
-      /// 🔹 EXPAND CONTENT
-      if (isTrayExpanded)
+      const SizedBox(height: 6), 
+          if (isTrayExpanded)
         Column(
           mainAxisSize: MainAxisSize.min,
           children: const [
@@ -357,19 +324,19 @@ SizedBox(height: 10,),
   ),
   child: Column(
     children: [
-      buildRow("Total Trays", "400"),
+      buildSummaryRow("Total Trays", "400"),
       const SizedBox(height: 5),
       const Divider(),
-      buildRow("Total Eggs", "12,000"),
+      buildSummaryRow("Total Eggs", "12,000"),
       const SizedBox(height: 5),
       const Divider(),
-      buildRow("Plastic Trays", "300"),
+       buildSummaryRow("Plastic Trays", "300"),
       const SizedBox(height: 5),
       const Divider(),
-      buildRow("Paper Trays", "50"),
+      buildSummaryRow("Paper Trays", "50"),
       const SizedBox(height: 5),
       const Divider(),
-      buildRow("Empty Trays", "0"),
+       buildSummaryRow("Empty Trays", "0"),
     ],
   ),
 ),
@@ -393,29 +360,29 @@ SizedBox(height: 10,),
      ),
   child: Column(
     children: [
-        buildRow("Total Trays", "400"),
+       buildSummaryRow("Total Trays", "400"),
       const SizedBox(height: 5),
       const Divider(),
-      buildRow("Items(3)", "\$10,000"),
-      const SizedBox(height: 5),
-      const Divider(),
-
-      buildRow("Transport Charge", "\$200"),
+       buildSummaryRow("Items(3)", "\$10,000"),
       const SizedBox(height: 5),
       const Divider(),
 
-      buildRow("Other Charge", "0"),
+      buildSummaryRow("Transport Charge", "\$200"),
+      const SizedBox(height: 5),
+      const Divider(),
+
+      buildSummaryRow("Other Charge", "0"),
       const SizedBox(height: 5),
       const Divider(color: Colors.black),
 
-      buildRow("Total Amount", "\$10,200", isBold: true),
+      buildSummaryRow("Total Amount", "\$10,200", isBold: true),
       const Divider(color: Colors.black),
 
-      buildRow("Discount", "\$100"),
+      buildSummaryRow("Discount", "\$100"),
       const SizedBox(height: 5),
       const Divider(),
 
-      buildRow("Net Amount", "\$10,100", isBold: true),
+       buildSummaryRow("Net Amount", "\$10,100", isBold: true),
     ],
   ),
 )
@@ -431,8 +398,9 @@ Row(
         padding: const EdgeInsets.symmetric(vertical: 14),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 236, 218, 220),
+          color: AppColors.background,
           borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.border2)
         ),
         child: Text(
           "Cancel",
@@ -440,9 +408,7 @@ Row(
         ),
       ),
     ),
-
     const SizedBox(width: 10),
-
     Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -459,8 +425,7 @@ Row(
     ),
   ],
 )
-    
-  ])
+   ])
         )
     );
   }

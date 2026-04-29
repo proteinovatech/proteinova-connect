@@ -64,11 +64,8 @@ class _DispatchCardState extends State<DispatchCard> {
 ),
             ],
           ),
-
           const SizedBox(height: 5),
-
           Text(widget.branch, style: AppTextStyles.bodyText14),
-
           const SizedBox(height: 5),
           Container(
             padding: const EdgeInsets.all(10),
@@ -102,8 +99,6 @@ class _DispatchCardState extends State<DispatchCard> {
                 ),
 
                 const SizedBox(height: 6),
-
-                /// Items Row
                 Row(
                   children: [
                     const Icon(Icons.inventory_2_outlined, color: Colors.grey),
@@ -125,7 +120,6 @@ class _DispatchCardState extends State<DispatchCard> {
           ),
 
           const SizedBox(height: 10),
-
                     Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [

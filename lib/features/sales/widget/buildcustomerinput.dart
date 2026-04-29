@@ -13,8 +13,6 @@ Widget buildCustomerInput() {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
-        /// 🔥 NAME + DATE IN SAME ROW
         Row(
           children: [
             Expanded(

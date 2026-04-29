@@ -22,26 +22,20 @@ class TrayDetailsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          // 🔹 Dynamic Title
-          Text(
+                 Text(
             title,
             style: AppTextStyles.bodyText14dark,
           ),
 
           const SizedBox(height: 12),
-
-          // 🔹 Row 1 Titles
-          const Row(
+                    const Row(
             children: [
               Expanded(child: Text("Received")),
               Expanded(child: Text("Damaged")),
             ],
           ),
-
           const SizedBox(height: 6),
-
-          // 🔹 Row 1 Inputs
-          Row(
+         Row(
             children: [
               Expanded(child: _inputField("Enter count")),
               const SizedBox(width: 10),
@@ -50,19 +44,14 @@ class TrayDetailsCard extends StatelessWidget {
           ),
 
           const SizedBox(height: 12),
-
-          // 🔹 Row 2 Titles
           const Row(
             children: [
               Expanded(child: Text("Good")),
               Expanded(child: Text("Notes")),
             ],
           ),
-
           const SizedBox(height: 6),
-
-          // 🔹 Row 2 Inputs
-          Row(
+                 Row(
             children: [
               Expanded(child: _inputField("Enter good trays")),
               const SizedBox(width: 10),
@@ -73,8 +62,6 @@ class TrayDetailsCard extends StatelessWidget {
       ),
     );
   }
-
-  // 🔥 Reusable input field
   Widget _inputField(String hint) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10),

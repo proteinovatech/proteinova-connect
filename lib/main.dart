@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:proteinova_connect/auth_bloc_provider.dart';
-
 import 'package:proteinova_connect/features/auth/presentation/splashscreen.dart';
 
 Future<void> main() async {
@@ -10,7 +9,7 @@ Future<void> main() async {
   await dotenv.load(fileName: ".env");
 
   runApp(
-    AppBlocProvider( // ✅ your separate file
+    AppBlocProvider( 
       child: const MyApp(),
     ),
   );

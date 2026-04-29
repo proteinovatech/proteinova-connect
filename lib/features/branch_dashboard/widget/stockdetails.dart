@@ -28,6 +28,7 @@ class _StockdetailsState extends State<Stockdetails> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 125,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.background,
@@ -37,8 +38,7 @@ class _StockdetailsState extends State<Stockdetails> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// 🔹 Title + Icon
-          Row(
+                    Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
@@ -61,8 +61,6 @@ class _StockdetailsState extends State<Stockdetails> {
           ),
 
           const SizedBox(height: 25),
-
-          /// 🔥 VALUE (FIXED - only one widget)
           widget.highlightUnit && widget.value.contains(" ")
               ? RichText(
                   text: TextSpan(
@@ -79,7 +77,7 @@ class _StockdetailsState extends State<Stockdetails> {
                             .sublist(1)
                             .join(" "),
                         style: AppTextStyles.headingText22.copyWith(
-                          color: Colors.grey, // 🔥 grey unit
+                          color: Colors.grey, 
                           fontSize: 16,
                         ),
                       ),

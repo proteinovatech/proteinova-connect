@@ -5,13 +5,13 @@ import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 class EggItemCard extends StatelessWidget {
   final String title;
   final String price;
-  final String stock;
+  final String Stock;
 
   const EggItemCard({
     super.key,
     required this.title,
     required this.price,
-    required this.stock,
+    required this.Stock,
   });
 
   @override
@@ -48,7 +48,7 @@ class EggItemCard extends StatelessWidget {
   ),
 ),
           const SizedBox(height: 6),
-          Text(stock, style: AppTextStyles.bodyText14),
+          Text(Stock, style: AppTextStyles.bodyText14),
         ],
       ),
     );

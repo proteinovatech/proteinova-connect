@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/features/orders/presentation/checkout.dart';
 import 'package:proteinova_connect/features/orders/presentation/purchase_success_screen.dart';
 
 class CheckoutSummary extends StatelessWidget {
@@ -228,7 +227,7 @@ final totalCost = (qty * r) + additionalTotal;
           children: [
             Icon(Icons.info_outline,color: AppColors.textSecondary,),
             SizedBox(width: size.width*0.01,),
-            Text("Stock will be marked as \'incoming\'  upon\nsubmission",style: AppTextStyles.formInputs15),
+            Text("Stock will be marked as incoming upon\nsubmission",style: AppTextStyles.formInputs15),
           ],
         )
          

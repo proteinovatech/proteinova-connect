@@ -57,16 +57,12 @@ class _DashboardCardState extends State<DashboardCard> {
               ),
             ],
           ),
-
           const SizedBox(height: 25),
-
                     Text(
             widget.value,
             style: AppTextStyles.headingText22,
           ),
-
-          const SizedBox(height: 5),
-
+                    const SizedBox(height: 5),
                     Row(
             children: [
               const Icon(Icons.trending_up,

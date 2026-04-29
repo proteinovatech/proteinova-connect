@@ -38,7 +38,7 @@ void initState() {
               title: Text(date),
               onTap: () {
                 setState(() {
-                  selectedDate = date; // ✅ update value
+                  selectedDate = date; 
                 });
                 Navigator.pop(context);
               },
@@ -48,8 +48,6 @@ void initState() {
       },
     );
   }
-
-  /// 🏬 Supplier Bottom Sheet
   void _showSupplierPicker() {
     showModalBottomSheet(
       context: context,
@@ -78,8 +76,6 @@ void initState() {
       },
     );
   }
-
-  /// ⚙️ Filter Action
   void _onFilterTap() {
     print("Filter clicked");
   }
@@ -90,8 +86,7 @@ void initState() {
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
         children: [
-          /// 1️⃣ Expected Today
-          Expanded(
+                   Expanded(
             flex: 5,
             child: GestureDetector(
               onTap: _showDatePicker,
@@ -120,8 +115,6 @@ void initState() {
           ),
 
           const SizedBox(width: 10),
-
-          /// 2️⃣ All Suppliers
           Expanded(
             flex: 4,
             child: GestureDetector(
@@ -152,8 +145,6 @@ void initState() {
           ),
 
           const SizedBox(width: 10),
-
-          /// 3️⃣ Filter Icon
           GestureDetector(
             onTap: _onFilterTap,
             child: Container(

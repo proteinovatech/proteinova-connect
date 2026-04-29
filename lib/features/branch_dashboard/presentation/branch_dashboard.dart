@@ -4,542 +4,1196 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch_dashboard/dashboardoverview.dart';
 import 'package:proteinova_connect/features/branch_dashboard/presentation/resentactivity.dart';
+import 'package:proteinova_connect/features/branch_dashboard/repository/dashboard_repository.dart';
 import 'package:proteinova_connect/features/branch_dashboard/widget/activityitem.dart';
 import 'package:proteinova_connect/features/branch_dashboard/widget/legenditem.dart';
+import 'package:proteinova_connect/features/branch_dashboard/widget/lowstock.dart';
 import 'package:proteinova_connect/features/branch_dashboard/widget/stock.dart';
 import 'package:proteinova_connect/features/branch_dashboard/widget/stockdetails.dart';
-import 'package:proteinova_connect/features/branch_dashboard/widget/trayitem.dart';
 import 'package:proteinova_connect/features/branch_dashboard/widget/zigzagclipper.dart';
+import 'package:proteinova_connect/model/dashboardmodel.dart';
 
 class BranchDashboard extends StatefulWidget {
   const BranchDashboard({super.key});
 
   @override
-  State<BranchDashboard> createState() => _BranchDashboardState();
+  State<BranchDashboard> createState() =>
+      _BranchDashboardState();
 }
 
-class _BranchDashboardState extends State<BranchDashboard> {
-   Size get size => MediaQuery.of(context).size;
+class _BranchDashboardState
+    extends State<BranchDashboard> {
+
+  Size get size => MediaQuery.of(context).size;
+
+  final DashboardRepository repository =
+      DashboardRepository();
+
+  bool isLoading = true;
+
+  bool isShopOpen = false;
+
+  DashboardModel? dashboardModel;
+
+  Map<String, dynamic> cards = {};
+
+  List<Map<String, dynamic>> activeOffers = [];
+
+  List<Map<String, dynamic>> dailySalesVolume = [];
+
+  List<Map<String, dynamic>> recentActivity = [];
+  List<Map<String, dynamic>> lowStockAlerts = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchDashboard();
+  }
+
+  Future<void> fetchDashboard() async {
+
+    try {
+
+      final result =
+          await repository.fetchDashboardData();
+
+      setState(() {
+DashboardModel != DashboardModel;
+        cards = {
+
+          "opening_stocks":
+              result.cards.openingStocks,
+
+          "incoming_stock_in_transit":
+              result.cards.incomingStockInTransit,
+
+          "damaged_stock":
+              result.cards.damagedStock,
+
+          "sales_today":
+              result.cards.salesToday,
+
+          "today_expense":
+              result.cards.todayExpense,
+
+          "today_tray_sold":
+              result.cards.todayTraySold,
+
+          "closing_stock":
+              result.cards.closingStock,
+        };
+
+        activeOffers = result.activeOffers
+            .map(
+              (e) => {
+
+                "title": e.title,
+
+                "condition": e.condition,
+              },
+            )
+            .toList();
+
+    dailySalesVolume = result.dailySalesVolume
+    .map(
+      (e) => {
+        "sale_date": e.saleDate,
+        "retail_sales_units":
+            e.retailSalesUnits,
+        "wholesale_sales_units":
+            e.wholesaleSalesUnits,
+      },
+    )
+    .toList();
+
+        recentActivity =
+            result.recentActivity
+                .map(
+                  (e) => {
+
+                    "title": e.title,
+
+                    "description":
+                        e.description,
+
+                    "time": e.time,
+
+                    "tag": e.tag,
+                  },
+                )
+                .toList();
+
+        isLoading = false;
+      });
+
+    } catch (e) {
+
+      setState(() {
+        isLoading = false;
+      });
+
+      print("ERROR : $e");
+    }
+  }
+
+  List<BarChartGroupData> _barData() {
+
+    List<BarChartGroupData> groups = [];
+
+    for (
+      int i = 0;
+      i < dailySalesVolume.length;
+      i++
+    ) {
+
+      final item =
+          dailySalesVolume[i];
+
+      groups.add(
+
+        BarChartGroupData(
+
+          x: i,
+
+          barRods: [
+
+            BarChartRodData(
+
+              toY: double.parse(
+                item["retail_sales_units"]
+                    .toString(),
+              ),
+
+              color: Colors.orange,
+
+              width: 8,
+
+              borderRadius:
+                  BorderRadius.circular(
+                4,
+              ),
+            ),
+
+            BarChartRodData(
+
+              toY: double.parse(
+                item[
+                        "wholesale_sales_units"]
+                    .toString(),
+              ),
+
+              color: Colors.blue,
+
+              width: 8,
+
+              borderRadius:
+                  BorderRadius.circular(
+                4,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return groups;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-         backgroundColor: AppColors.background,
-         body: Padding(padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
-        child: Column(
-           crossAxisAlignment: CrossAxisAlignment.start,
-           children: [
-             SizedBox(height: size.height * 0.07),
 
-          Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: [
-      Image.asset(
-        "assets/erplogo.png",
-        height: 40,
-        width: 130,
-      ),
-      SizedBox(width: 120,),
-    Icon(
-      Icons.notifications_none,
-      color: Colors.grey,
-    ),
-    const SizedBox(width: 12),
-    CircleAvatar(
-      radius: 18,
-      backgroundColor: Colors.grey.shade300,
-    ),
-  ],
-),
-            const Divider(),
-          Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: [
-    Text(
-      "Dashboard Overview",
-      style: AppTextStyles.headingText22,
-    ),
-    GestureDetector(
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => Dashboardoverview(),
-      ),
-    );
-  },
-  child: Text(
-    "View All",
-    style: TextStyle(
-      color: Colors.blue,
-      fontWeight: FontWeight.w500,
-    ),
-  ),
-)
-  ],
-),
-SizedBox(height: 15,),
-            Expanded(child:SingleChildScrollView(child: Column(
-              crossAxisAlignment: .start,
-              children: [
-                SizedBox(height: 10,),
-               Container(
-  padding: const EdgeInsets.all(12),
-  decoration: BoxDecoration(
-    border: Border.all(color: Colors.grey.shade300),
-    borderRadius: BorderRadius.circular(12),
-  ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [     
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            "Opening Stocks",
-            style:TextStyle(color: Color.fromARGB(255, 133, 132, 132)), 
-          ),         
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 235, 240, 245),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.inventory_2,
-              color: Colors.blue,
-              size: 18,
-            ),
-          ),
-        ],
-      ),
-       SizedBox(height: 15),      
-     Row(
-  children: [
-        Text(
-      "6,700",
-      style: AppTextStyles.headingText20
-    ),
-    SizedBox(width: 6),
-    Text(
-      "Trays",
-      style: TextStyle(
-        color: Colors.grey,
-        fontSize: 14,
-      ),
-    ),
-  ],
-)
-    ],
-  ),
-),SizedBox(height: 15,),
- Row(
+    if (isLoading) {
+
+      return const Scaffold(
+
+        body: Center(
+          child:
+              CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    return Scaffold(
+
+      backgroundColor:
+          AppColors.background,
+
+      body: Padding(
+
+        padding: EdgeInsets.symmetric(
+          horizontal: size.width * 0.05,
+        ),
+
+        child: Column(
+
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
+
           children: [
-            Expanded(
-              child: Stockdetails(
-                title: "Today Tray Sold",
-                value: "40 trays",
-               icon: Icons.check_circle_outline,
-                iconBg: const Color.fromARGB(255, 230, 235, 240),
-                iconColor: const Color.fromARGB(255, 6, 94, 167),
-                 highlightUnit: true,
-              ),
+
+            SizedBox(
+              height: size.height * 0.07,
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Stock(
-                title: "Closing Stock",
-                value: "4,200 trays",
-                percent: "13.5%",
-                subtitle: "Yesterday",
-                icon: Icons.timer_outlined,
-                iconBg: const Color.fromARGB(255, 230, 235, 240),
-                iconColor: Colors.brown,
-                 highlightUnit: true,
-              ),
-            ),
-          ],
-        ),
-      
-SizedBox(height: 20,),
-Container(
-  width: double.infinity,
-  padding: const EdgeInsets.all(16),
-  decoration: BoxDecoration(
-    color: Colors.white, // Big container color
-    borderRadius: BorderRadius.circular(12),
-  border: Border.all(color: AppColors.border)
-  ),  
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-         Text(
-          "Stock Summery",
-          style: AppTextStyles.headingText22,
-        ),
-            GridView.count(
-  crossAxisCount: 2,
-  shrinkWrap: true,
-  physics: NeverScrollableScrollPhysics(),
-  crossAxisSpacing: 10,
-  mainAxisSpacing: 10,
-  childAspectRatio: 0.75,
-  children: [
-    trayItem(
-      title: "Plastic trays(with eggs)",
-      status: "Returnable",
-      description: "Durable plastic trays used for egg transport",
-      count: "200",
-    ),
-    trayItem(
-      title: "Paper Trays(with Eggs)",
-      status: "Non-Returnable",
-      description: "Paper pulp trays used for egg transport",
-      count: "50",
-    ),
-    trayItem(
-      title: "Plastic trays(empty)",
-      status: "Returnable",
-      description: "Durable plastic trays used for egg transport",
-      count: "150",
-    ),
-    trayItem(
-      title: "Paper trays(empty)",
-      status: "non-Returnable",
-      description: "Paper pulp trays used for egg transport",
-      count: "80",
-    ),
-  ],
-),
-    ],
-      ),
-),SizedBox(height: 10,),
-Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-  Container(
-  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-  decoration: BoxDecoration(
-    color:AppColors.background,
-    borderRadius: BorderRadius.circular(8),
-     border: Border.all(color: Colors.grey.shade300),
-  ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
 
             Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            "Active Offers",
-            style: AppTextStyles.headingText22,
-          ),
-          Text(
-            "View all",
-            style: TextStyle(color: Colors.blue, fontSize: 16),
-          ),
-        ],
-      ),
 
-      SizedBox(height: 10),
-      Row(
-        children: [
+              mainAxisAlignment:
+                  MainAxisAlignment
+                      .spaceBetween,
 
-                  Expanded(
-  child: Container(
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: Colors.grey.shade300),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-           ClipPath(
-  clipper: ZigZagClipper(),
-  child: Container(
-    padding: const EdgeInsets.all(14),
-    color: Colors.green.shade50,
-    child: Icon(
-      Icons.percent,
-      color: Colors.green,
-      size: 15,
-    ),
-  ),
-),
+              children: [
 
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                "Buy 5 Trays Get 1 Free",
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                Image.asset(
+                  "assets/erplogo.png",
+                  height: 40,
+                  width: 130,
                 ),
-              ),
-            ),
-          ],
-        ),
 
-        const SizedBox(height: 6),
-        Text(
-          "Medium White Eggs",
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey,
-          ),
-        ),
-      ],
-    ),
-  ),
-),
-          SizedBox(width: 10),
+                Row(
 
-                  Expanded(
-  child: Container(
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: Colors.grey.shade300),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-           ClipPath(
-  clipper: ZigZagClipper(),
-  child: Container(
-    padding: const EdgeInsets.all(14),
-    color: Colors.green.shade50,
-    child: Icon(
-      Icons.percent,
-      color: Colors.green,
-      size: 15,
-    ),
-  ),
-),
+                  children: [
 
-            const SizedBox(width: 10),
+                    Text(
 
-            Expanded(
-              child: Text(
-                "10% Offer",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
+                      isShopOpen
+                          ? "OPEN"
+                          : "CLOSED",
 
-        const SizedBox(height: 25),
-        Text(
-          "On white Eggs",
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey,
-          ),
-        ),
-      ],
-    ),
-  ),
-)
-        ],
-      ),
-    ],
-  ),
-)
- 
- 
-  ],
-),
- Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Daily Sales Volume",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-Divider(),
-          const SizedBox(height: 10),
+                      style: TextStyle(
 
-          Row(
-            children: [
-              legendItem(Colors.orange, "Retail Sales (Units)"),
-             const SizedBox(width: 16),
-              legendItem(Colors.blue, "Wholesale Sales (Units)"),
-            ],
-          ),
+                        color:
+                            isShopOpen
+                                ? Colors.green
+                                : Colors.red,
 
-          const SizedBox(height: 20),
+                        fontWeight:
+                            FontWeight.bold,
+                      ),
+                    ),
 
-                   SizedBox(
-            height: 250, // give fixed height for chart
-            child: BarChart(
-              BarChartData(
-                gridData:  FlGridData(
-  show: true,
-  drawHorizontalLine: true,
- drawVerticalLine: false,
-  getDrawingVerticalLine: (value) {
-    return FlLine(
-      color: Colors.grey.shade300,
-      strokeWidth: 1,
-    );
-  },
-),
-                borderData: FlBorderData(show: false),
-                titlesData: FlTitlesData(
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: true),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-                        return Text(days[value.toInt()]);
+                    const SizedBox(width: 10),
+
+                    GestureDetector(
+
+                      onTap: () {
+
+                        setState(() {
+
+                          isShopOpen =
+                              !isShopOpen;
+                        });
                       },
+
+                      child:
+                          AnimatedContainer(
+
+                        duration:
+                            const Duration(
+                          milliseconds: 300,
+                        ),
+
+                        width: 50,
+
+                        height: 30,
+
+                        decoration:
+                            BoxDecoration(
+
+                          borderRadius:
+                              BorderRadius
+                                  .circular(
+                            20,
+                          ),
+
+                          color:
+                              isShopOpen
+                                  ? Colors
+                                      .green
+                                      .shade100
+                                  : Colors
+                                      .red
+                                      .shade100,
+                        ),
+
+                        child:
+                            AnimatedAlign(
+
+                          duration:
+                              const Duration(
+                            milliseconds:
+                                300,
+                          ),
+
+                          alignment:
+                              isShopOpen
+                                  ? Alignment
+                                      .centerRight
+                                  : Alignment
+                                      .centerLeft,
+
+                          child: Container(
+
+                            width: 22,
+
+                            height: 22,
+
+                            margin:
+                                const EdgeInsets
+                                    .all(4),
+
+                            decoration:
+                                BoxDecoration(
+
+                              shape:
+                                  BoxShape
+                                      .circle,
+
+                              color:
+                                  isShopOpen
+                                      ? Colors
+                                          .green
+                                      : Colors
+                                          .red,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            const Divider(),
+
+            Row(
+
+              mainAxisAlignment:
+                  MainAxisAlignment
+                      .spaceBetween,
+
+              children: [
+
+                Text(
+                  "Dashboard Overview",
+                  style:
+                      AppTextStyles
+                          .headingText22,
+                ),
+
+                GestureDetector(
+
+                  onTap: () {
+
+                    Navigator.push(
+
+                      context,
+
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                Dashboardoverview(),
+                      ),
+                    );
+                  },
+
+                  child: const Text(
+
+                    "View All",
+
+                    style: TextStyle(
+
+                      color: Colors.blue,
+
+                      fontWeight:
+                          FontWeight.w500,
                     ),
                   ),
                 ),
-                barGroups: _barData(),
-              ),
+              ],
             ),
+
+            const SizedBox(height: 15),
+
+            Expanded(
+
+              child:
+                  SingleChildScrollView(
+
+                child: Column(
+
+                  crossAxisAlignment:
+                      CrossAxisAlignment
+                          .start,
+
+                  children: [
+
+                    Container(
+
+                      padding:
+                          const EdgeInsets
+                              .all(12),
+
+                      decoration:
+                          BoxDecoration(
+
+                        border: Border.all(
+                          color: Colors
+                              .grey
+                              .shade300,
+                        ),
+
+                        borderRadius:
+                            BorderRadius
+                                .circular(
+                          12,
+                        ),
+                      ),
+
+                      child: Column(
+
+                        crossAxisAlignment:
+                            CrossAxisAlignment
+                                .start,
+
+                        children: [
+
+                          Row(
+
+                            mainAxisAlignment:
+                                MainAxisAlignment
+                                    .spaceBetween,
+
+                            children: [
+
+                              const Text(
+                                "Opening Stocks",
+                              ),
+
+                              Container(
+
+                                padding:
+                                    const EdgeInsets
+                                        .all(6),
+
+                                decoration:
+                                    BoxDecoration(
+
+                                  color:
+                                      Colors.blue
+                                          .shade50,
+
+                                  borderRadius:
+                                      BorderRadius
+                                          .circular(
+                                    8,
+                                  ),
+                                ),
+
+                                child:
+                                    const Icon(
+
+                                  Icons
+                                      .inventory_2,
+
+                                  color:
+                                      Colors
+                                          .blue,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(
+                            height: 15,
+                          ),
+
+                          Text(
+
+                            "${cards["opening_stocks"] ?? 0} Trays",
+
+                            style:
+                                AppTextStyles
+                                    .headingText20,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    Row(
+
+                      children: [
+
+                        Expanded(
+
+                          child:
+                              Stockdetails(
+
+                            title:
+                                "Today Tray Sold",
+
+                            value:
+                                "${cards["today_tray_sold"] ?? 0} trays",
+
+                            icon:
+                                Icons
+                                    .check_circle_outline,
+
+                            iconBg:
+                                Colors
+                                    .blue
+                                    .shade50,
+
+                            iconColor:
+                                Colors.blue,
+
+                            highlightUnit:
+                                true,
+                          ),
+                        ),
+
+                        const SizedBox(
+                          width: 10,
+                        ),
+
+                        Expanded(
+
+                          child: Stock(
+
+                            title:
+                                "Closing Stock",
+
+                            value:
+                                "${cards["closing_stock"] ?? 0} trays",
+
+                            percent: "0%",
+
+                            subtitle:
+                                "Yesterday",
+
+                            icon:
+                                Icons
+                                    .timer_outlined,
+
+                            iconBg:
+                                Colors
+                                    .brown
+                                    .shade50,
+
+                            iconColor:
+                                Colors.brown,
+
+                            highlightUnit:
+                                true,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    Text(
+                      "Active Offers",
+                      style:
+                          AppTextStyles
+                              .headingText22,
+                    ),
+                    GridView.builder(
+
+                      itemCount:
+                          activeOffers.length,
+
+                      shrinkWrap: true,
+
+                      physics:
+                          const NeverScrollableScrollPhysics(),
+
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                        childAspectRatio: 1.3,
+                      ),
+                      itemBuilder:
+                          (context, index) {
+                        final offer =
+                            activeOffers[index];
+                        return Container(
+                          padding:
+                              const EdgeInsets
+                                  .all(12),
+                          decoration:
+                              BoxDecoration(
+                            borderRadius:
+                                BorderRadius
+                                    .circular(
+                              10,
+                            ),
+
+                            border: Border.all(
+                              color: Colors
+                                  .grey
+                                  .shade300,
+                            ),
+                          ),
+
+                          child: Column(
+
+                            crossAxisAlignment:
+                                CrossAxisAlignment
+                                    .start,
+
+                            children: [
+
+                              Row(
+
+                                crossAxisAlignment:
+                                    CrossAxisAlignment
+                                        .start,
+
+                                children: [
+
+                                  ClipPath(
+
+                                    clipper:
+                                        ZigZagClipper(),
+
+                                    child:
+                                        Container(
+
+                                      padding:
+                                          const EdgeInsets
+                                              .all(
+                                        14,
+                                      ),
+
+                                      color: Colors
+                                          .green
+                                          .shade50,
+
+                                      child:
+                                          const Icon(
+
+                                        Icons
+                                            .percent,
+
+                                        color: Colors
+                                            .green,
+
+                                        size: 18,
+                                      ),
+                                    ),
+                                  ),
+
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+
+                                  Expanded(
+
+                                    child: Text(
+
+                                      offer["title"],
+
+                                      maxLines: 2,
+
+                                      overflow:
+                                          TextOverflow
+                                              .ellipsis,
+
+                                      style:
+                                          const TextStyle(
+
+                                        fontWeight:
+                                            FontWeight
+                                                .bold,
+
+                                        fontSize:
+                                            13,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(
+                                height: 8,
+                              ),
+
+                              Text(
+
+                                offer["condition"],
+
+                                maxLines: 2,
+
+                                overflow:
+                                    TextOverflow
+                                        .ellipsis,
+
+                                style:
+                                    const TextStyle(
+
+                                  fontSize: 11,
+
+                                  color:
+                                      Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 20),
+  Container(
+  width: double.infinity,
+
+  padding: const EdgeInsets.all(16),
+
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(12),
+    border: Border.all(
+      color: Colors.grey.shade300,
+    ),
+  ),
+
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+
+    children: [
+
+      Row(
+        mainAxisAlignment:
+            MainAxisAlignment.spaceBetween,
+
+        children: [
+
+          const Text(
+            "Low Stock Alerts",
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          Icon(
+            Icons.warning_amber_rounded,
+            color: Colors.red.shade400,
+            size: 24,
           ),
         ],
       ),
-    ),
-   
-                 SizedBox(height: 20,),
-Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            "Recent activity",
-            style:AppTextStyles.headingText22 
-          ),         
-           GestureDetector(
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) =>Resentactivity(),
-      ),
-    );
-  },
-  child: Text(
-    "View All",
-    style: TextStyle(
-      color: Colors.blue,
-      fontWeight: FontWeight.w500,
-    ),
+
+      const SizedBox(height: 15),
+
+      lowStockAlerts.isEmpty
+
+          ? const Center(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: Text(
+                  "No Low Stock Alerts",
+                ),
+              ),
+            )
+
+          : GridView.builder(
+
+              itemCount: lowStockAlerts.length,
+
+              shrinkWrap: true,
+
+              physics:
+                  const NeverScrollableScrollPhysics(),
+
+              gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+
+                crossAxisCount: 2,
+
+                crossAxisSpacing: 15,
+
+                mainAxisSpacing: 15,
+
+                childAspectRatio: 2.4,
+              ),
+
+              itemBuilder: (context, index) {
+
+                final item =
+                    lowStockAlerts[index];
+
+                return lowStockBox(
+
+                  title:
+                      item["title"] ?? "",
+
+                  subtitle:
+                      item["subtitle"] ?? "",
+
+                  stock:
+                      item["stock"] ?? "",
+                );
+              },
+            ),
+    ],
   ),
-)                  
-        ],
-      ),
-      SizedBox(height: 20,),
-     Column(
+),Container(
+
+                      padding:
+                          const EdgeInsets
+                              .all(16),
+
+                      decoration:
+                          BoxDecoration(
+
+                        color: Colors.white,
+
+                        borderRadius:
+                            BorderRadius
+                                .circular(
+                          12,
+                        ),
+                      ),
+
+                      child: Column(
+
+  crossAxisAlignment:
+      CrossAxisAlignment.start,
+
   children: [
 
-      ActivityItem(
-      leading: const CircleAvatar(
-        radius: 25,
-        backgroundColor: Colors.grey,
-        child: Icon(Icons.person, color: Colors.white),
+    const Text(
+
+      "Daily Sales Volume",
+
+      style: TextStyle(
+
+        fontSize: 18,
+
+        fontWeight:
+            FontWeight.bold,
       ),
-      title: "Sarah jenzkin generated purchase order",
-      subtitle: Row(
-        children: const [
-          Text("#PO-4092",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-          SizedBox(width: 5),
-          Text("for 500x wireless headset",
-              style: TextStyle(color: Colors.grey)),
-        ],
-      ),
-      time: "10 min ago",
-      tag: "procurement",
     ),
 
-    const SizedBox(height: 15),
     const Divider(),
-    const SizedBox(height: 10),
-        ActivityItem(
-      leading: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: const Icon(Icons.local_shipping_outlined,
-            color: Colors.green),
-      ),
-      title: "Dispatch DS-110 marked as in transit to",
-      subtitle: const Text(
-        "Branch (Downtown)",
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-      ),
-      time: "10 min ago",
-      tag: "procurement",
-    ),
-    const SizedBox(height: 15),
-     ],
-)
 
-              ],
-            ),) )
-           ],
-        )),
-    );
-  }
-  List<BarChartGroupData> _barData() {
-    return [
-      makeGroup(0, 8, 12),
-      makeGroup(1, 10, 17),
-      makeGroup(2, 7, 11),
-      makeGroup(3, 12, 19),
-      makeGroup(4, 14, 16),
-      makeGroup(5, 17, 7),
-    ];
-  }
+    Row(
 
-  BarChartGroupData makeGroup(int x, double retail, double wholesale) {
-    return BarChartGroupData(
-      x: x,
-      barRods: [
-        BarChartRodData(
-          toY: retail,
-          color: Colors.orange,
-          width: 8,
-          borderRadius: BorderRadius.circular(4),
+      children: [
+
+        legendItem(
+          Colors.orange,
+          "Retail Sales",
         ),
-        BarChartRodData(
-          toY: wholesale,
-          color: Colors.blue,
-          width: 8,
-          borderRadius: BorderRadius.circular(4),
+
+        const SizedBox(
+          width: 16,
+        ),
+
+        legendItem(
+          Colors.blue,
+          "Wholesale Sales",
         ),
       ],
+    ),
+
+    const SizedBox(
+      height: 20,
+    ),
+
+    SizedBox(
+
+      height: 250,
+
+      child: BarChart(
+
+        BarChartData(
+
+          gridData: FlGridData(
+            show: true,
+          ),
+
+          borderData:
+              FlBorderData(
+            show: false,
+          ),
+
+          titlesData:
+              FlTitlesData(
+
+            leftTitles:
+                AxisTitles(
+
+              sideTitles:
+                  SideTitles(
+                showTitles:
+                    true,
+              ),
+            ),
+
+            bottomTitles:
+                AxisTitles(
+
+              sideTitles:
+                  SideTitles(
+
+                showTitles:
+                    true,
+
+                getTitlesWidget:
+                    (
+                  value,
+                  meta,
+                ) {
+
+                  final index =
+                      value.toInt();
+
+                  if (index >=
+                      dailySalesVolume
+                          .length) {
+
+                    return const SizedBox();
+                  }
+
+                  final date =
+                      dailySalesVolume[
+                              index]
+                          ["sale_date"];
+
+                  return Padding(
+
+                    padding:
+                        const EdgeInsets.only(
+                      top: 8,
+                    ),
+
+                    child: Text(
+
+                      date
+                          .toString()
+                          .substring(
+                            5,
+                            10,
+                          ),
+
+                      style:
+                          const TextStyle(
+                        fontSize:
+                            10,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+
+          barGroups:
+              List.generate(
+
+            dailySalesVolume.length,
+
+            (i) {
+
+              final item =
+                  dailySalesVolume[
+                      i];
+
+              final retail =
+                  double.tryParse(
+                        item[
+                                "retail_sales_units"]
+                            .toString(),
+                      ) ??
+                      0;
+
+              final wholesale =
+                  double.tryParse(
+                        item[
+                                "wholesale_sales_units"]
+                            .toString(),
+                      ) ??
+                      0;
+
+              return BarChartGroupData(
+
+                x: i,
+
+                barRods: [
+
+                  BarChartRodData(
+
+                    toY: retail,
+
+                    color:
+                        Colors.orange,
+
+                    width: 8,
+
+                    borderRadius:
+                        BorderRadius.circular(
+                      4,
+                    ),
+                  ),
+
+                  BarChartRodData(
+
+                    toY: wholesale,
+
+                    color:
+                        Colors.blue,
+
+                    width: 8,
+
+                    borderRadius:
+                        BorderRadius.circular(
+                      4,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    ),
+  ],
+) ),
+
+                    const SizedBox(height: 20),
+
+                    Row(
+
+                      mainAxisAlignment:
+                          MainAxisAlignment
+                              .spaceBetween,
+
+                      children: [
+
+                        const Text(
+
+                          "Recent activity",
+
+                          style:
+                              AppTextStyles
+                                  .headingText22,
+                        ),
+
+                        GestureDetector(
+
+                          onTap: () {
+
+                            Navigator.push(
+
+                              context,
+
+                              MaterialPageRoute(
+                                builder:
+                                    (_) =>
+                                        Resentactivity(),
+                              ),
+                            );
+                          },
+
+                          child: const Text(
+
+                            "View All",
+
+                            style: TextStyle(
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    recentActivity.isEmpty
+
+                        ? const Center(
+                            child: Text(
+                              "No Recent Activity",
+                            ),
+                          )
+
+                        : ListView.builder(
+
+                            itemCount:
+                                recentActivity
+                                    .length,
+
+                            shrinkWrap: true,
+
+                            physics:
+                                const NeverScrollableScrollPhysics(),
+
+                            itemBuilder:
+                                (context, index) {
+
+                              final item =
+                                  recentActivity[
+                                      index];
+
+                              return Column(
+
+                                children: [
+
+                                  ActivityItem(
+
+                                    leading:
+                                        const CircleAvatar(
+
+                                      backgroundColor:
+                                          Colors
+                                              .grey,
+
+                                      child: Icon(
+                                        Icons.person,
+                                        color:
+                                            Colors
+                                                .white,
+                                      ),
+                                    ),
+
+                                    title:
+                                        item["title"],
+
+                                    subtitle: Text(
+                                      item[
+                                          "description"],
+                                    ),
+
+                                    time:
+                                        item["time"] ??
+                                            "",
+
+                                    tag:
+                                        item["tag"] ??
+                                            "",
+                                  ),
+
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
-
 }

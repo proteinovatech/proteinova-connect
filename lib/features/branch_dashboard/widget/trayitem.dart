@@ -9,12 +9,11 @@ Widget trayItem({
   required String count,
 }) {
 
-  // ✅ Status color
   Color statusColor =
       status.toLowerCase().contains("non") ? Colors.orange : Colors.green;
 
   return Container(
-    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(8),
@@ -24,7 +23,6 @@ Widget trayItem({
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
 
-        // ✅ TITLE WITH GREY BRACKETS ONLY
         buildTitle(title),
 
         SizedBox(height: 8),

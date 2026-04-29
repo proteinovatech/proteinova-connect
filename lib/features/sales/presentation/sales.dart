@@ -66,9 +66,14 @@ class _SalesState extends State<Sales> {
                 SizedBox(width: size.width * 0.02),
                 
                 CircleAvatar(
-                  radius: 18,
-                  backgroundColor: Colors.grey.shade300,
-                ),
+              radius: 18,
+              backgroundColor: Colors.grey.shade300,
+              child: Icon(
+    Icons.person,
+    size: 20,
+    color:AppColors.background,
+  ),
+        ),
               ],
             ),
           ],
@@ -128,9 +133,7 @@ class _SalesState extends State<Sales> {
         child: ListView(
       padding: const EdgeInsets.only(top: 10, bottom: 20),
       children: [
-      
-        /// 🔹 Dashboard Cards
-        Row(
+              Row(
           children: [
             Expanded(
               child: DashboardCard(
@@ -156,10 +159,8 @@ class _SalesState extends State<Sales> {
             ),
           ],
         ),
-      
-        const SizedBox(height: 10),
-      
-        Row(
+              const SizedBox(height: 10),
+              Row(
           children: [
             Expanded(
               child: DashboardCard2(
@@ -185,8 +186,7 @@ class _SalesState extends State<Sales> {
             ),
           ],
         ),
-      
-        const SizedBox(height: 15),
+              const SizedBox(height: 15),
            SizedBox(
   height: 45,
   child: ListView.builder(
@@ -195,14 +195,11 @@ class _SalesState extends State<Sales> {
     itemCount: tabs.length,
     itemBuilder: (context, index) {
       final isSelected = selectedIndex == index;
-
       return GestureDetector(
         onTap: () {
           setState(() {
             selectedIndex = index;
           });
-
-          // 🔥 Scroll to selected tab
           _scrollController.animateTo(
             index * 120, // adjust spacing if needed
             duration: Duration(milliseconds: 300),
@@ -225,8 +222,6 @@ class _SalesState extends State<Sales> {
               ),
 
               const SizedBox(height: 5),
-
-              /// 🔥 Indicator
               AnimatedContainer(
                 duration: Duration(milliseconds: 300),
                 height: 3,
@@ -246,8 +241,7 @@ class _SalesState extends State<Sales> {
       
         const SizedBox(height: 10),
       
-        /// 🔹 Title Row
-        Row(
+                Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: const [
             Text("Active dispatches", style: AppTextStyles.headingText22),
@@ -261,8 +255,7 @@ class _SalesState extends State<Sales> {
           ],
         ),
       
-        const SizedBox(height: 15),
-      
+        const SizedBox(height: 15),      
             DispatchCard(
               id: "#DS-1142",
               status: "In Transit",
@@ -319,8 +312,7 @@ class _SalesState extends State<Sales> {
               vehicle: "11.45",
               items: "\$1,200,00",
               icon: Icons.print_outlined,
-            )
-                  
+            )              
       ],
         ),
       ),

@@ -1,7 +1,6 @@
                                                                                                                                   import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/features/orders/presentation/purchase_success_screen.dart';
 import 'package:proteinova_connect/features/orders/widget/checkout_summary.dart';
 
 class Checkout extends StatefulWidget {

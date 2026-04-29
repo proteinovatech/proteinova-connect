@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/features/inventory/widget/buildrow.dart';
+import 'package:proteinova_connect/features/orders/presentation/checkout.dart';
 import 'package:proteinova_connect/features/sales/widget/buildcustomerinput.dart';
-import 'package:proteinova_connect/features/sales/widget/buildpaymentitem.dart';
+import 'package:proteinova_connect/features/sales/widget/buildrow.dart';
 import 'package:proteinova_connect/features/sales/widget/eggitemcard.dart';
 
 class TransactionDetailscard extends StatefulWidget {
@@ -19,13 +19,10 @@ class TransactionDetailscard extends StatefulWidget {
     required this.quantityController,
     required this.nameController,
     required this.notesController,
-  });
-  
-
+  }); 
   @override
   State<TransactionDetailscard> createState() => _TransactionDetailscardState();
 }
-
 class _TransactionDetailscardState extends State<TransactionDetailscard> {
   List<String> items = [];
   String? selectedCategory;
@@ -33,23 +30,75 @@ class _TransactionDetailscardState extends State<TransactionDetailscard> {
 bool showNotesSection = false;
 bool showCustomerInput = false;
 String? selectedPayment;
-List<Map<String, String>> selectedItems = [];
+List<Map<String, String>> selectedItems = [ ];
 final List<String> eggCategories = [
   "White Eggs (Tray)",
   "Brown Eggs (Tray)",
   "Organic Eggs (Tray)",
 ];
+List<Map<String, String>> allTrays = [
+  {
+    "title": "White Eggs","price": "\$76", "Stock": "2,430"},
+    {"title":"Brown Eggs","price": "\$40", "Stock": "1,200"},
+     { "title":"Medium Eggs","price": "\$55", "Stock":
+      "850"},
+    { "title":"Plastic Trays","price": "\$70", "Stock": "3,100"},
+    { "title":"Paper Trays","price": "\$110", "Stock": "540"},
+     { "title":"Empty Trays","price": "\$120", "Stock":" 300"},  
+];
 
+final List<String> tabs = [    
+     "Cash","UPI","Card",
+     ];
+  List<IconData> tabIcons = [
+ Icons.money,Icons.phone_android_outlined, Icons.credit_card, 
+ ];
+ void showTrayList() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return ListView.builder(
+          itemCount: allTrays.length,
+          itemBuilder: (context, index) {
+            final tray = allTrays[index];
+          return ListTile(
+  title: Text(tray["title"] ?? ""),
+  subtitle: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text("${tray["price"] ?? "0"} per tray"),
+      Text("Stock: ${tray["Stock"] ?? ""}"),
+    ],
+  ),
+  onTap: () {
+    setState(() {
+      if (!selectedItems.any(
+          (item) => item["title"] == tray["title"])) {
+
+        selectedItems.add({
+          "title": tray["title"] ?? "",
+          "price": tray["price"] ?? "0",
+          "stock": tray["Stock"] ?? "",
+          "qty": "1", 
+        });
+      }
+    });
+
+    Navigator.pop(context);
+  },
+);},
+        );
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
-       String? selectedPayment;
-     final Size size=MediaQuery.of(context).size;
+          final Size size=MediaQuery.of(context).size;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-       
+        borderRadius: BorderRadius.circular(12),       
       ),
       child: Column(
   crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,10 +106,8 @@ final List<String> eggCategories = [
     Text(
           "Product Details",
           style: AppTextStyles.headingText20,
-        ),
-      
-    
-    const SizedBox(height: 10),
+        ),    
+       const SizedBox(height: 10),
     Container(
   padding: const EdgeInsets.symmetric(horizontal: 12),
   decoration: BoxDecoration(
@@ -83,10 +130,8 @@ final List<String> eggCategories = [
   ),
 ),
  const SizedBox(height: 10),
-    // 🔹 1. Egg Category
-    const Text("Select Product", style: AppTextStyles.buttonText16),
+        const Text("Select Product", style: AppTextStyles.buttonText16),
     const SizedBox(height: 6),
-
     Container(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
@@ -121,10 +166,7 @@ final List<String> eggCategories = [
         ],
       ),
     ),
-
     const SizedBox(height: 14),
-
-    // 🔹 2. Quantity
    Visibility(
   visible: false, // 👈 change to true when needed
   child: Column(
@@ -185,8 +227,7 @@ final List<String> eggCategories = [
   ),
 ),
     const SizedBox(height: 14),
-    // 🔹 3. Product List (Reusable Containers)
- Container(
+     Container(
   padding: const EdgeInsets.all(12),
   decoration: BoxDecoration(
     color: AppColors.background,
@@ -196,9 +237,7 @@ final List<String> eggCategories = [
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text("Product Details", style: AppTextStyles.buttonText16),
-      const SizedBox(height: 10),
-
+      Text("Product Details", style: AppTextStyles.headingText20),     
    GridView.count(
   crossAxisCount: 2,
   shrinkWrap: true,
@@ -225,83 +264,115 @@ Container(
     border: Border.all(color: AppColors.border),
     borderRadius: BorderRadius.circular(8),
   ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-
-      /// 🔥 HEADER
-      selectedItems.isNotEmpty
-          ? Row(
+  child:Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+              Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Sales Items",
+                style: AppTextStyles.headingText20),
+                     GestureDetector(
+              onTap: showTrayList,
+              child: Icon(Icons.add, color: AppColors.dark),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+               ...selectedItems.asMap().entries.map((entry) {
+          int index = entry.key;
+          var item = entry.value;
+          int price = int.tryParse(item["price"] ?? "0") ?? 0;
+int qty = int.tryParse(item["qty"] ?? "1") ?? 1;
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.containerColor.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: AppColors.containerColor2),
+            ),
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Sales Items",
-                    style: AppTextStyles.headingText20),
-                Icon(Icons.add, color: AppColors.dark),
-              ],
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Sales Items",
-                    style: AppTextStyles.headingText20),
-                const SizedBox(height: 10),
-                Center(
-                  child: Icon(Icons.add, color: AppColors.dark),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item["title"] ?? "",
+                        style: AppTextStyles.headingText20),
+                    Text("${item["price"] ?? "0"} per tray"),
+                    Text(item["Stock"] ?? "",
+                        style: AppTextStyles.bodyText14),
+                                                
+                  ],
                 ),
+
+                Row(
+      children: [
+
+        /// ➖ BUTTON
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              int qty = int.parse(item["qty"] ?? "1");
+              if (qty > 1) {
+                qty--;
+                item["qty"] = qty.toString();
+              }
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Icon(Icons.remove, size: 18),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          item["qty"] ?? "1",
+          style: const TextStyle(fontSize: 16),
+        ),
+        const SizedBox(width: 6),
+               GestureDetector(
+          onTap: () {
+            setState(() {
+              int qty = int.parse(item["qty"] ?? "1");
+              qty++;
+              item["qty"] = qty.toString();
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Icon(Icons.add, size: 18),
+          ),
+        ),
+
+        const SizedBox(width: 10),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              selectedItems.removeAt(index);
+            });
+          },
+          child: const Icon(Icons.delete_outline, color: Colors.red),
+        ),
+      ],
+    ),
+  
+
               ],
             ),
-
-      const SizedBox(height: 10),
-
-      /// 🔥 SHOW ALL SELECTED ITEMS
-      ...selectedItems.asMap().entries.map((entry) {
-        int index = entry.key;
-        var item = entry.value;
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppColors.containerColor.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: AppColors.containerColor2)
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-
-              /// 🔹 ITEM DETAILS
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(item["title"]!,
-                      style: AppTextStyles.headingText20),
-                  Text("${item["price"]} per tray"),
-                  Text(item["stock"]!,
-                      style: AppTextStyles.bodyText14),
-                ],
-              ),
-
-              /// 🔴 DELETE ICON
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    selectedItems.removeAt(index);
-
-                    if (selectedItems.isEmpty) {
-                      items.clear(); // reset condition
-                    }
-                  });
-                },
-                child: Icon(Icons.delete_outline, color: Colors.red),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
-    ],
-  ),
-  ),SizedBox(height: 10,),
+          );
+        }).toList(),
+      ],
+    )),SizedBox(height: 10,),
       Column(
   crossAxisAlignment: CrossAxisAlignment.start,
   children: [
@@ -309,11 +380,8 @@ Container(
       "Offers",
       style: AppTextStyles.headingText20,
     ),
-
     const SizedBox(height: 10),
-
-    /// 🔥 MAIN CONTAINER
-    Container(
+     Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.background,
@@ -385,8 +453,7 @@ Container(
         ],
       ),
     ),
- SizedBox(height: 10,),
- 
+ SizedBox(height: 10,), 
               SizedBox(height: 10,),
      Align(
    alignment: Alignment.centerLeft,
@@ -403,30 +470,28 @@ Container(
      borderRadius: BorderRadius.circular(12),
      border:Border.all(color: const Color.fromARGB(255, 218, 217, 217)) 
       ),
-   child: Column(
-     children: [
- buildRow("Items(6- Trays)", "₹275"),
-       const SizedBox(height: 5),
-       const Divider(),
-       buildRow("Offers Discount", "-₹45"),
-       const SizedBox(height: 5),
-       const Divider(),
-      
-    buildRow("Sub Total", "₹230", isBold: true),
-       const Divider(),
- 
-       buildRow("Tax(0%)", "₹0"),
-       const SizedBox(height: 5),
-       const Divider(),
-       buildRow("Total Amount", "₹230", isBold: true),
-     ],
-   ),
+   child:Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    buildSummaryRow("Items(6- Trays)", "₹275"),
+    const SizedBox(height: 5),
+    const Divider(),
+
+    buildSummaryRow("Sub Total", "₹230", isBold: true),
+    const Divider(),
+
+    buildSummaryRow("Tax(0%)", "₹0"),
+    const SizedBox(height: 5),
+    const Divider(),
+
+    buildSummaryRow("Total Amount", "₹230", isBold: true),
+  ],
+)
  )
         , SizedBox(height: 10,),  
        Column(
   crossAxisAlignment: CrossAxisAlignment.start,
   children: [
-
        Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -434,7 +499,6 @@ Container(
           "Customer Details",
           style: AppTextStyles.headingText22,
         ),
-
         GestureDetector(
           onTap: () {
             setState(() {
@@ -449,13 +513,13 @@ Container(
         ),
       ],
     ),
-
     const SizedBox(height: 10),
     const Divider(),
     const SizedBox(height: 10),
     if (showCustomerInput) buildCustomerInput(),
   ],
 ),
+SizedBox(height: 10,),
    Container(
   width: double.infinity,
   padding: const EdgeInsets.all(14),
@@ -467,71 +531,86 @@ Container(
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-
-      /// 🔹 PAYMENT METHOD
-      Text(
+     Text(
         "Payment Method",
         style: AppTextStyles.headingText22,
       ),
-
       const SizedBox(height: 10),
-     Row(
-     children: [
-       Expanded(
-         child: Center(
-           child: buildPaymentItem(
-             icon: Icons.money,
-             title: "Cash",
-             isSelected: selectedPayment == "Cash",
-             onTap: () {
-               setState(() {
-                 selectedPayment = "Cash";
-               });
-             },
-           ),
-         ),
-       ),
-     
-       Expanded(
-         child: Center(
-           child: buildPaymentItem(
-             icon: Icons.qr_code,
-             title: "UPI",
-             isSelected: selectedPayment == "UPI",
-             onTap: () {
-               setState(() {
-                 selectedPayment = "UPI";
-               });
-             },
-           ),
-         ),
-       ),
-     
-       Expanded(
-         child: Center(
-           child: buildPaymentItem(
-             icon: Icons.credit_card,
-             title: "Card",
-             isSelected: selectedPayment == "Card",
-             onTap: () {
-               setState(() {
-                 selectedPayment = "Card";
-               });
-             },
-           ),
-         ),
-       ),
-     ],
-     ),
-
+    SizedBox(
+   height: size.height * 0.05,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: tabs.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 20),
+        itemBuilder: (context, index) {
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                selectedIndex = index;
+              });
+            },
+        child: SizedBox(
+          height: 20,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [            
+              Row(
+                children: [
+                   Icon(
+                tabIcons[index],
+                color: selectedIndex == index
+            ? AppColors.dark
+            : Colors.grey,
+              ),
+          SizedBox(width: 5,),
+                  Text(
+                    tabs[index],
+                    style: AppTextStyles.bodyText16.copyWith(
+                      color: selectedIndex == index
+                          ? AppColors.dark
+                          : Colors.grey,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],          
+          ),
+        ),
+  );
+  },
+  ),),  
+    Stack(
+      children: [
+        Container(
+          height: 3,
+          width: double.infinity,
+          color: const Color.fromARGB(255, 250, 246, 246),
+        ),
+       AnimatedAlign(
+          duration: const Duration(milliseconds: 300),
+          alignment: Alignment(
+            -1 + (2 / (tabs.length - 1)) * selectedIndex,
+            0,
+          ),
+          child: Container(
+            height: 3,
+            width: 100,
+            decoration: BoxDecoration(
+              color: AppColors.amber500,
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+      ],
+    ),
       const SizedBox(height: 16),
      Text(
         "Cash Received",
         style: AppTextStyles.headingText20,
       ),
-
       const SizedBox(height: 10),
-
       Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -549,9 +628,7 @@ Container(
           ),
         ),
       ),
-
       const SizedBox(height: 16),
-
            Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -657,9 +734,7 @@ Container(
   ],
 ),
   );}
-
-  // 🔧 Reusable Field
-  Widget _buildField({
+   Widget _buildField({
     required TextEditingController controller,
     required String hint,
     int maxLines = 1,
@@ -678,8 +753,7 @@ Container(
         maxLines: maxLines,
         style: AppTextStyles.formInputs15,
          keyboardType:
-          isNumeric ? TextInputType.number : TextInputType.text, // 👈
-
+          isNumeric ? TextInputType.number : TextInputType.text, 
       inputFormatters: isNumeric
           ? [FilteringTextInputFormatter.digitsOnly] // 👈 only numbers
           : [],
@@ -691,24 +765,22 @@ Container(
       ),
     );
   }
-  Widget _buildItem(String title, String price, String stock) {
+ Widget _buildItem(String title, String price, String stock) {
   return InkWell(
     onTap: () {
       setState(() {
         selectedItems.add({
           "title": title,
-          "price": price,
+          "price": price.replaceAll("\$", ""), // ✅ REMOVE $
           "stock": stock,
+          "qty": "1",
         });
-
-        items.add(title); // keeps your existing condition working
       });
     },
     child: EggItemCard(
       title: title,
       price: price,
-      stock: stock,
+      Stock: stock,
     ),
   );
-}
-}
+}}
