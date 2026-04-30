@@ -8,11 +8,7 @@ Future<void> main() async {
 
   await dotenv.load(fileName: ".env");
 
-  runApp(
-    AppBlocProvider( 
-      child: const MyApp(),
-    ),
-  );
+  runApp(AppBlocProvider(child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
