@@ -42,7 +42,7 @@ class _BranchDashboardState
   List<Map<String, dynamic>> dailySalesVolume = [];
 
   List<Map<String, dynamic>> recentActivity = [];
-  List<Map<String, dynamic>> lowStockAlerts = [];
+  List lowStockAlerts = [];
 
   @override
   void initState() {
@@ -94,31 +94,32 @@ DashboardModel != DashboardModel;
             )
             .toList();
 
-    dailySalesVolume = result.dailySalesVolume
-    .map(
-      (e) => {
-        "sale_date": e.saleDate,
-        "retail_sales_units":
-            e.retailSalesUnits,
-        "wholesale_sales_units":
-            e.wholesaleSalesUnits,
-      },
-    )
-    .toList();
+        dailySalesVolume =
+          result.dailySalesVolume
+              .map(
+                (e) => {
+                  "sale_date": e.saleDate,
+                  "retail_sales_units":
+                      e.retailSalesUnits,
+                  "wholesale_sales_units":
+                      e.wholesaleSalesUnits,
+                },
+              )
+              .toList();
 
         recentActivity =
             result.recentActivity
                 .map(
                   (e) => {
 
-                    "title": e.title,
+                    "title": e.actorName,
 
                     "description":
-                        e.description,
+                        e.activity,
 
-                    "time": e.time,
+                    "time": e.createdAt,
 
-                    "tag": e.tag,
+                    "tag": e.activityType,
                   },
                 )
                 .toList();
@@ -136,69 +137,52 @@ DashboardModel != DashboardModel;
     }
   }
 
-  List<BarChartGroupData> _barData() {
+ List<BarChartGroupData> _barData() {
 
-    List<BarChartGroupData> groups = [];
+  List<BarChartGroupData> groups = [];
 
-    for (
-      int i = 0;
+  for (int i = 0;
       i < dailySalesVolume.length;
-      i++
-    ) {
+      i++) {
 
-      final item =
-          dailySalesVolume[i];
+    final item = dailySalesVolume[i];
 
-      groups.add(
+    groups.add(
 
-        BarChartGroupData(
+      BarChartGroupData(
 
-          x: i,
+        x: i,
 
-          barRods: [
+        barRods: [
 
-            BarChartRodData(
-
-              toY: double.parse(
-                item["retail_sales_units"]
-                    .toString(),
-              ),
-
-              color: Colors.orange,
-
-              width: 8,
-
-              borderRadius:
-                  BorderRadius.circular(
-                4,
-              ),
+          BarChartRodData(
+            toY: double.parse(
+              item["retail_sales_units"]
+                  .toString(),
             ),
+            color: Colors.orange,
+            width: 8,
+            borderRadius:
+                BorderRadius.circular(4),
+          ),
 
-            BarChartRodData(
-
-              toY: double.parse(
-                item[
-                        "wholesale_sales_units"]
-                    .toString(),
-              ),
-
-              color: Colors.blue,
-
-              width: 8,
-
-              borderRadius:
-                  BorderRadius.circular(
-                4,
-              ),
+          BarChartRodData(
+            toY: double.parse(
+              item["wholesale_sales_units"]
+                  .toString(),
             ),
-          ],
-        ),
-      );
-    }
-
-    return groups;
+            color: Colors.blue,
+            width: 8,
+            borderRadius:
+                BorderRadius.circular(4),
+          ),
+        ],
+      ),
+    );
   }
 
+  return groups;
+}
   @override
   Widget build(BuildContext context) {
 
@@ -749,53 +733,73 @@ DashboardModel != DashboardModel;
                     ),
 
                     const SizedBox(height: 20),
-  Container(
+                  Container(
+
   width: double.infinity,
 
   padding: const EdgeInsets.all(16),
 
   decoration: BoxDecoration(
+
     color: Colors.white,
+
     borderRadius: BorderRadius.circular(12),
+
     border: Border.all(
       color: Colors.grey.shade300,
     ),
   ),
 
   child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
+
+    crossAxisAlignment:
+        CrossAxisAlignment.start,
 
     children: [
 
       Row(
+
         mainAxisAlignment:
             MainAxisAlignment.spaceBetween,
 
         children: [
 
           const Text(
+
             "Low Stock Alerts",
+
             style: TextStyle(
+
               fontSize: 22,
-              fontWeight: FontWeight.bold,
+
+              fontWeight:
+                  FontWeight.bold,
             ),
           ),
 
           Icon(
+
             Icons.warning_amber_rounded,
-            color: Colors.red.shade400,
+
+            color:
+                Colors.red.shade400,
+
             size: 24,
           ),
         ],
       ),
 
-      const SizedBox(height: 15),
+      const SizedBox(height: 20),
 
       lowStockAlerts.isEmpty
 
           ? const Center(
+
               child: Padding(
-                padding: EdgeInsets.all(20),
+
+                padding:
+                    EdgeInsets.all(20),
+
                 child: Text(
                   "No Low Stock Alerts",
                 ),
@@ -804,7 +808,8 @@ DashboardModel != DashboardModel;
 
           : GridView.builder(
 
-              itemCount: lowStockAlerts.length,
+              itemCount:
+                  lowStockAlerts.length,
 
               shrinkWrap: true,
 
@@ -823,7 +828,8 @@ DashboardModel != DashboardModel;
                 childAspectRatio: 2.4,
               ),
 
-              itemBuilder: (context, index) {
+              itemBuilder:
+                  (context, index) {
 
                 final item =
                     lowStockAlerts[index];
@@ -843,24 +849,9 @@ DashboardModel != DashboardModel;
             ),
     ],
   ),
-),Container(
+), Container(
 
-                      padding:
-                          const EdgeInsets
-                              .all(16),
-
-                      decoration:
-                          BoxDecoration(
-
-                        color: Colors.white,
-
-                        borderRadius:
-                            BorderRadius
-                                .circular(
-                          12,
-                        ),
-                      ),
-
+                 padding: EdgeInsets.all(8.0),
                       child: Column(
 
   crossAxisAlignment:
@@ -1065,7 +1056,7 @@ DashboardModel != DashboardModel;
       ),
     ),
   ],
-) ),
+)),
 
                     const SizedBox(height: 20),
 
@@ -1114,8 +1105,7 @@ DashboardModel != DashboardModel;
                       ],
                     ),
 
-                    const SizedBox(height: 20),
-
+                   
                     recentActivity.isEmpty
 
                         ? const Center(

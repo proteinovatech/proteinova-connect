@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:proteinova_connect/core/network/api_constants.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/inventory/widget/receiveditem.dart';
@@ -16,8 +20,68 @@ class _ReceivestockState extends State<Receivestock> {
    bool isExpanded = true;
    bool isTrayExpanded = true;
      bool isReceivedExpanded = true;
+       bool isLoading = true;
+
+  Map<String, dynamic> receiveInfo = {};
+
+  Map<String, dynamic> summary = {};
+
+  List receivedItems = [];
+    Future<void> fetchReceiveStock() async {
+
+    try {
+
+       final response = await http.get(
+      Uri.parse(ApiConstants.dashboard),
+      headers: {
+        "Accept": "application/json",
+      },
+    );
+      if (response.statusCode == 200) {
+
+        final data = jsonDecode(
+          response.body,
+        );
+
+        setState(() {
+
+          receiveInfo =
+              data["receive_info"] ?? {};
+
+          summary =
+              data["summary"] ?? {};
+
+          receivedItems =
+              data["received_items"] ?? [];
+
+          isLoading = false;
+        });
+
+      } else {
+
+        setState(() {
+          isLoading = false;
+        });
+
+        print(
+          "Status Code : ${response.statusCode}",
+        );
+      }
+
+    } catch (e) {
+
+      setState(() {
+        isLoading = false;
+      });
+
+      print("ERROR : $e");
+    }
+  }
+
+
   @override
-  Widget build(BuildContext context) {    
+  Widget build(BuildContext context) {  
+      
     return Scaffold(
       backgroundColor: AppColors.background1,
           appBar: AppBar(

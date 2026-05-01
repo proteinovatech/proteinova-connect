@@ -54,7 +54,7 @@ class _StockdetailsState extends State<Stockdetails> {
                 child: Icon(
                   widget.icon,
                   color: widget.iconColor,
-                  size: 18,
+                  size: 16,
                 ),
               ),
             ],
@@ -78,7 +78,7 @@ class _StockdetailsState extends State<Stockdetails> {
                             .join(" "),
                         style: AppTextStyles.headingText22.copyWith(
                           color: Colors.grey, 
-                          fontSize: 16,
+                          fontSize: 18,
                         ),
                       ),
                     ],

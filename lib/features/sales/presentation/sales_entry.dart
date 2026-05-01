@@ -414,8 +414,6 @@ class _SalesEntryState extends State<SalesEntry> {
 
                     SizedBox(height: size.height * 0.02),
 
-                    /// PAYMENT METHODS
-
                     if (paymentMethods.isNotEmpty)
                       Wrap(
                         spacing: 10,
@@ -447,9 +445,6 @@ class _SalesEntryState extends State<SalesEntry> {
                       ),
 
                     SizedBox(height: size.height * 0.02),
-
-                    /// BILL SUMMARY
-
                     Container(
                       padding:
                           const EdgeInsets.all(14),
