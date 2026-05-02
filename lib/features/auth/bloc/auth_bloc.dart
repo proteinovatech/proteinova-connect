@@ -1,6 +1,6 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:proteinova_connect/services/auth_services.dart';
+import 'package:proteinova_connect/core/services/auth_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'auth_event.dart';
