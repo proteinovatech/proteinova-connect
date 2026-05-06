@@ -77,14 +77,10 @@ void initState() {
   Widget build(BuildContext context) {
     final List<Widget> pages = [
    PurchaseDashboard(),
-  
-
-   Newpurchase(
+  Newpurchase(
       isEdit: false,
       purchaseData: null,
     ),
-  
-
   Center(child: Text("Notifications Screen")),
 ];
     return BlocProvider.value(
