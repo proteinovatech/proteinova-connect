@@ -10,6 +10,7 @@ import 'package:proteinova_connect/features/auth/bloc/auth_state.dart';
 import 'package:proteinova_connect/features/auth/widget/custom_textfield.dart';
 import 'package:proteinova_connect/features/auth/widget/role_toggle.dart';
 import 'package:proteinova_connect/purchase_bottom_navigator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -127,8 +128,35 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
 
                     child: BlocListener<AuthBloc, AuthState>(
-                      listener: (context, state) {
+                      // listener: (context, state) {
+                      //   if (state is AuthSuccessPurchase) {
+                      //     Navigator.pushReplacement(
+                      //       context,
+                      //       MaterialPageRoute(
+                      //         builder: (_) => const PurchaseBottomNavigator(),
+                      //       ),
+                      //     );
+                      //   } else if (state is AuthSuccessBranch) {
+                      //     Navigator.pushReplacement(
+                      //       context,
+                      //       MaterialPageRoute(
+                      //         builder: (_) => const BranchBottomNavigator(),
+                      //       ),
+                      //     );
+                      //   } else if (state is AuthFailure) {
+                      //     ScaffoldMessenger.of(context).showSnackBar(
+                      //       SnackBar(content: Text(state.message)),
+                      //     );
+                      //   }
+                      // },
+                      listener: (context, state) async {
                         if (state is AuthSuccessPurchase) {
+                          final prefs = await SharedPreferences.getInstance();
+
+                          await prefs.setBool('isLoggedIn', true);
+
+                          await prefs.setString('role', 'purchase');
+
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
@@ -136,6 +164,12 @@ class _SignupScreenState extends State<SignupScreen> {
                             ),
                           );
                         } else if (state is AuthSuccessBranch) {
+                          final prefs = await SharedPreferences.getInstance();
+
+                          await prefs.setBool('isLoggedIn', true);
+
+                          await prefs.setString('role', 'branch');
+
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
@@ -148,7 +182,6 @@ class _SignupScreenState extends State<SignupScreen> {
                           );
                         }
                       },
-
                       child: ElevatedButton(
                         onPressed: () {
                           final email = emailController.text.trim();

@@ -20,8 +20,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (result != null && result['user'] != null) {
           final prefs = await SharedPreferences.getInstance();
 
+          // await prefs.setBool('isLoggedIn', true);
+          // await prefs.setString('role', result['user']['role']);
           await prefs.setBool('isLoggedIn', true);
+
           await prefs.setString('role', result['user']['role']);
+
+          /// SAVE BRANCH ID
+
+          final branchId = result['user']['branch_id'];
+
+          print("BRANCH ID => $branchId");
+          print(result['user']);
+          print(result['user']['branch_id']);
+          await prefs.setInt('branch_id', branchId ?? 0);
 
           if (result['user']['role'] == "purchase") {
             emit(AuthSuccessPurchase());
