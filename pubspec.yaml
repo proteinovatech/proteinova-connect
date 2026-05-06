@@ -50,6 +50,17 @@ dev_dependencies:
 
   hive_generator: ^2.0.1
   build_runner: ^2.4.6
+  flutter_launcher_icons: ^0.14.1
+flutter_launcher_icons:
+  android: true
+  ios: true
+
+  image_path: "assets/ERlogo.png"
+
+  adaptive_icon_background: "#FFD400"
+  adaptive_icon_foreground: "assets/ERlogo.png"
+
+  remove_alpha_ios: true
 
 
 
