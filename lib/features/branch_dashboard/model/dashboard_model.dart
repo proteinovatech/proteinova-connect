@@ -69,8 +69,7 @@ class Cards {
   factory Cards.fromJson(Map<String, dynamic> json) {
     return Cards(
       openingStocks: json["opening_stocks"] ?? 0,
-      incomingStockInTransit:
-          json["incoming_stock_in_transit"] ?? 0,
+      incomingStockInTransit: json["incoming_stock_in_transit"] ?? 0,
       damagedStock: json["damaged_stock"] ?? 0,
       salesToday: json["sales_today"] ?? 0,
       todayExpense: json["today_expense"] ?? 0,
@@ -84,10 +83,7 @@ class ActiveOffer {
   final String title;
   final String condition;
 
-  ActiveOffer({
-    required this.title,
-    required this.condition,
-  });
+  ActiveOffer({required this.title, required this.condition});
 
   factory ActiveOffer.fromJson(Map<String, dynamic> json) {
     return ActiveOffer(
@@ -108,14 +104,11 @@ class DailySalesVolume {
     required this.wholesaleSalesUnits,
   });
 
-  factory DailySalesVolume.fromJson(
-      Map<String, dynamic> json) {
+  factory DailySalesVolume.fromJson(Map<String, dynamic> json) {
     return DailySalesVolume(
       saleDate: json["sale_date"] ?? "",
-      retailSalesUnits:
-          json["retail_sales_units"] ?? 0,
-      wholesaleSalesUnits:
-          json["wholesale_sales_units"] ?? 0,
+      retailSalesUnits: json["retail_sales_units"] ?? 0,
+      wholesaleSalesUnits: json["wholesale_sales_units"] ?? 0,
     );
   }
 }
