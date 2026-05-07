@@ -22,6 +22,8 @@ class _SupplierLocationCardState extends State<SupplierLocationCard> {
   String location = "";
   bool isExpanded = false;
   List<SupplierModel> suppliers = [];
+  final TextEditingController brokerNameController = TextEditingController();
+   final TextEditingController brokerNumController = TextEditingController();
 
 
  
@@ -107,6 +109,7 @@ void initState() {
         ),
         child: Row(
           children: [
+             SizedBox(width: size.width * 0.02),
             Icon(Icons.store_outlined, color: AppColors.light),
             SizedBox(width: size.width * 0.02),
 
@@ -171,6 +174,7 @@ void initState() {
             ),
             child: Row(
               children: [
+                 SizedBox(width: size.width * 0.02),
                 Icon(Icons.location_on_outlined, color: AppColors.light),
     SizedBox(width: size.width * 0.02),
 
@@ -193,7 +197,49 @@ void initState() {
             ),
           ),
           SizedBox(height:size.height*0.01),
-          Text("Auto-filled based on selected supplier",style: AppTextStyles.bodyText14, )
+          Text("Auto-filled based on selected supplier",style: AppTextStyles.bodyText14, ),
+
+           SizedBox(height: size.height*0.02),
+
+             Text("Broker Name",style: AppTextStyles.buttonText16,),
+             const SizedBox(height: 6),
+
+             Container(  
+             padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: AppColors.containerColor,
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(color: AppColors.border),
+            ),child: TextField(
+               controller: brokerNameController, 
+    decoration: InputDecoration(
+      prefixIcon: Icon(Icons.person_outlined,color: AppColors.light,),
+      hintText: "Enter broker name",
+      border: InputBorder.none,
+    ),
+            ),
+            ),
+               SizedBox(height: size.height*0.02),
+
+             Text("Broker Contact Number",style: AppTextStyles.buttonText16,),
+             const SizedBox(height: 6),
+
+             Container(  
+             padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: AppColors.containerColor,
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(color: AppColors.border),
+            ),child: TextField(
+               controller: brokerNumController, 
+    decoration: InputDecoration(
+      prefixIcon: Icon(Icons.phone_outlined,color:AppColors.light,),
+      hintText: "Enter broker number",
+      border: InputBorder.none,
+    ),
+            ),
+            )
+          
           
         ],
       ]),
