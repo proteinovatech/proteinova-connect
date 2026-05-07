@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:proteinova_connect/branch_bottom_navigator.dart';
+
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
+import 'package:proteinova_connect/features/branch/branch_bottom_navigator.dart';
 import 'package:proteinova_connect/features/purchase/purchase_bottom_navigator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
