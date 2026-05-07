@@ -57,6 +57,8 @@ final TextEditingController loadingController=TextEditingController();
 final TextEditingController unloadingController=TextEditingController();
 final TextEditingController transportController=TextEditingController();
 final TextEditingController miscController=TextEditingController();
+final TextEditingController brokerNameController = TextEditingController();
+ final TextEditingController brokerNumController = TextEditingController();
 
 bool _isDataLoaded = false;
 void calculateSummary() {
@@ -210,6 +212,8 @@ void dispose() {
   totalAdditionalCostController.dispose();
   costPerTrayController.dispose();
   totalCostController.dispose();
+   brokerNameController.dispose();
+   brokerNumController.dispose();
 
   super.dispose();
 }
@@ -235,6 +239,7 @@ List<ProductInput> products = [ProductInput(),];
     return Scaffold(backgroundColor: AppColors.background1,
       appBar: AppBar(
         backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
         title:  Text("New Purchase",style: AppTextStyles.headingText25,),
 
       actions: [

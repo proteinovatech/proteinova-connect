@@ -160,7 +160,6 @@ void updateTotalEggs(ProductInput product) {
             const SizedBox(height: 10),
             const Divider(),
 
-            // ➕ ADD PRODUCT BUTTON
             Align(
               alignment: Alignment.centerRight,
               child: IconButton(
@@ -203,11 +202,13 @@ void updateTotalEggs(ProductInput product) {
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
+                  color: AppColors.containerColor,
                   border: Border.all(color: AppColors.border),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   children: [
+                    SizedBox(width: size.width*0.02,),
                     Icon(Icons.calendar_today_outlined,color:AppColors.textSecondary),
                     SizedBox(width: 20),
                     Text(
