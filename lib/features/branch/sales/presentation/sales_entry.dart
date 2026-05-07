@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
@@ -23,32 +23,21 @@ class SalesEntry extends StatefulWidget {
 
 class _SalesEntryState extends State<SalesEntry> {
   final TextEditingController categoryController = TextEditingController();
-
   final TextEditingController quantityController = TextEditingController();
-
   final TextEditingController nameController = TextEditingController();
-
   final TextEditingController notesController = TextEditingController();
   final baseUrl = dotenv.env['BASE_URL'];
   bool isLoading = true;
-
   Map<String, dynamic> header = {};
-
   List<dynamic> productDetails = [];
-
   List<dynamic> offers = [];
-
   List<dynamic> paymentMethods = [];
-
   Map<String, dynamic> billSummary = {};
-
   @override
   void initState() {
     super.initState();
-
     fetchSalesData();
   }
-
   Future<void> fetchSalesData() async {
     try {
       // final response = await http.get(
@@ -56,67 +45,46 @@ class _SalesEntryState extends State<SalesEntry> {
       //   headers: {"Accept": "application/json"},
       // );
       final prefs = await SharedPreferences.getInstance();
-
       final branchId = prefs.getInt("branch_id");
-
       print("BRANCH ID => $branchId");
-
       final response = await http.get(
         Uri.parse("$baseUrl/api/sales/dashboard?branch_id=$branchId"),
-
         headers: {"Accept": "application/json"},
       );
-
       print("STATUS CODE : ${response.statusCode}");
-
       print("STATUS CODE : ${response.statusCode}");
-
       print("BODY : ${response.body}");
-
       if (response.statusCode == 200) {
         final decodedData = jsonDecode(response.body);
-
-        /// IMPORTANT FIX
-
-        final data = decodedData["data"] ?? decodedData;
-
+               final data = decodedData["data"] ?? decodedData;
         setState(() {
           header = Map<String, dynamic>.from(data["header"] ?? {});
-
           productDetails = List<Map<String, dynamic>>.from(
             data["product_details"] ?? [],
           );
-
           offers = List<Map<String, dynamic>>.from(data["offers"] ?? []);
-
           paymentMethods = List<String>.from(data["payment_methods"] ?? []);
-
           billSummary = Map<String, dynamic>.from(
             data["bill_summary_defaults"] ?? {},
           );
-
           isLoading = false;
         });
-
         print("PRODUCT DETAILS : $productDetails");
       } else {
         setState(() {
           isLoading = false;
         });
-
         print("ERROR STATUS : ${response.statusCode}");
       }
     } catch (e) {
       setState(() {
         isLoading = false;
       });
-
       print("ERROR : $e");
     }
   }
 Future<void> generateAndPrintPdf() async {
   final pdf = pw.Document();
-
   pdf.addPage(
     pw.Page(
       margin: const pw.EdgeInsets.all(20),
@@ -124,15 +92,13 @@ Future<void> generateAndPrintPdf() async {
         return pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-
-            /// 🔹 HEADER
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text("X Eggs Farms",
+                    pw.Text("ProteinOva",
                         style: pw.TextStyle(
                             fontSize: 16,
                             fontWeight: pw.FontWeight.bold)),
@@ -149,9 +115,7 @@ Future<void> generateAndPrintPdf() async {
                 ),
               ],
             ),
-
             pw.SizedBox(height: 10),
-
             pw.Divider(),
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -174,10 +138,7 @@ Future<void> generateAndPrintPdf() async {
                 ),
               ],
             ),
-
             pw.SizedBox(height: 20),
-
-            /// 🔹 TABLE HEADER
             pw.Table(
               border: pw.TableBorder.all(),
               columnWidths: {
@@ -204,8 +165,6 @@ Future<void> generateAndPrintPdf() async {
                         child: pw.Text("Total")),
                   ],
                 ),
-
-                /// 🔹 SAMPLE DATA (Replace with your list)
                 ...productDetails.map((product) {
                   return pw.TableRow(
                     children: [
@@ -226,10 +185,7 @@ Future<void> generateAndPrintPdf() async {
                 }).toList(),
               ],
             ),
-
             pw.SizedBox(height: 20),
-
-            /// 🔹 TOTAL SECTION
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.end,
               children: [
@@ -250,18 +206,15 @@ Future<void> generateAndPrintPdf() async {
                 ),
               ],
             ),
-
             pw.SizedBox(height: 20),
-
-            /// 🔹 FOOTER
             pw.Text("Thank you for your business!",
                 style: pw.TextStyle(fontStyle: pw.FontStyle.italic)),
           ],
         );
       },
     ),
+    
   );
-
   await Printing.layoutPdf(
     onLayout: (format) async => pdf.save(),
   );
@@ -284,69 +237,328 @@ pw.Widget _pdfRow(String title, String value, {bool isBold = false}) {
     ),
   );
 }
-Future<void> downloadPdf() async {
-  final pdf = pw.Document();
 
-  pdf.addPage(
-    pw.Page(
+Future<void> downloadPdf() async {
+  try {
+    final pdf = pw.Document();
+    pdf.addPage(
+      pw.Page(
+      margin: const pw.EdgeInsets.all(20),
       build: (pw.Context context) {
-        return pw.Center(
-          child: pw.Text("Sales Invoice - ₹$totalAmount"),
+        return pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text("ProteinOva",
+                        style: pw.TextStyle(
+                            fontSize: 16,
+                            fontWeight: pw.FontWeight.bold)),
+                    pw.Text("Kattuva"),
+                    pw.Text("City, State, ZIP"),
+                    pw.Text("Phone Number:"),
+                  ],
+                ),
+                pw.Text(
+                  "INVOICE",
+                  style: pw.TextStyle(
+                      fontSize: 24,
+                      fontWeight: pw.FontWeight.bold),
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 10),
+            pw.Divider(),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text("Bill To:",
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    pw.Text("Name :"),
+                    pw.Text("Address :"),
+                  ],
+                ),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  children: [
+                    pw.Text("Date: ${DateTime.now().toString().split(' ')[0]}"),
+                    pw.Text("Invoice #: 001"),
+                  ],
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 20),
+            pw.Table(
+              border: pw.TableBorder.all(),
+              columnWidths: {
+                0: const pw.FlexColumnWidth(4),
+                1: const pw.FlexColumnWidth(2),
+                2: const pw.FlexColumnWidth(2),
+                3: const pw.FlexColumnWidth(2),
+              },
+              children: [
+                pw.TableRow(
+                  decoration: const pw.BoxDecoration(color: PdfColors.grey300),
+                  children: [
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(5),
+                        child: pw.Text("Description")),
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(5),
+                        child: pw.Text("Qty")),
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(5),
+                        child: pw.Text("Unit Price")),
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(5),
+                        child: pw.Text("Total")),
+                  ],
+                ),
+                ...productDetails.map((product) {
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(5),
+                          child: pw.Text(product["product_name"].toString())),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(5),
+                          child: pw.Text("1")),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(5),
+                          child: pw.Text("₹${product["per_tray_price"]}")),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(5),
+                          child: pw.Text("₹${product["per_tray_price"]}")),
+                    ],
+                  );
+                }).toList(),
+              ],
+            ),
+            pw.SizedBox(height: 20),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.end,
+              children: [
+                pw.Container(
+                  width: 200,
+                  child: pw.Column(
+                    children: [
+                      _pdfRow("Subtotal", "₹$totalAmount"),
+                      _pdfRow("Tax", "₹0"),
+                      pw.Divider(),
+                      _pdfRow(
+                        "Total",
+                        "₹$totalAmount",
+                        isBold: true,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 20),
+            pw.Text("Thank you for your business!",
+                style: pw.TextStyle(fontStyle: pw.FontStyle.italic)),
+          ],
         );
       },
     ),
-  );
-
-  final dir = await getApplicationDocumentsDirectory();
-  final file = File("${dir.path}/sales_invoice.pdf");
-
-  await file.writeAsBytes(await pdf.save());
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text("PDF saved in ${file.path}")),
-  );
+  
+  
+    );
+    final dir = await getTemporaryDirectory();
+    final file = File(
+      "${dir.path}/sales_invoice.pdf",
+    );
+    await file.writeAsBytes(
+      await pdf.save(),
+      flush: true,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text(
+          "PDF Downloaded Successfully",
+        ),
+        action: SnackBarAction(
+          label: "VIEW",
+          onPressed: () async {
+            if (await file.exists()) {
+              final result =
+                  await OpenFilex.open(file.path);
+              print(result.message);
+            }
+          },
+        ),
+      ),
+    );
+  } catch (e) {
+    print("PDF ERROR : $e");
+  }
 }
 Future<void> saveSale(double totalAmount) async {
-    print("Saving sale: ₹$totalAmount");
-
+   print(
+  "Saving sale: ₹${totalAmount % 1 == 0 ? totalAmount.toInt() : totalAmount}"
+);
   await Future.delayed(const Duration(seconds: 1));
-
   ScaffoldMessenger.of(context).showSnackBar(
     const SnackBar(content: Text("Sale saved successfully")),
   );
 }
 void showPaymentOptions() {
-  showModalBottomSheet(
+  showDialog(
     context: context,
     builder: (context) {
-      return Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.print),
-              title: const Text("Print"),
-              onTap: () {
-                Navigator.pop(context);
-                generateAndPrintPdf();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.picture_as_pdf),
-              title: const Text("Download PDF"),
-              onTap: () {
-                Navigator.pop(context);
-                downloadPdf();
-              },
-            ),
-          ],
+      return Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              const CircleAvatar(
+                radius: 35,
+                backgroundColor: Colors.green,
+                child: Icon(
+                  Icons.check,
+                  color: Colors.white,
+                  size: 40,
+                ),
+              ),
+               SizedBox(height: 15),
+                          const Text(
+                "Payment Successfully",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 25),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                       Navigator.pop(context);
+await downloadPdf();
+if (mounted) {
+  Navigator.pushReplacement(
+    this.context,
+    MaterialPageRoute(
+      builder: (_) => const SalesEntry(),
+    ),
+  );
+}
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius:
+                              BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.red.shade200,
+                          ),
+                        ),
+                        child: Column(
+                          children: const [
+                            Icon(
+                              Icons.picture_as_pdf,
+                              color: Colors.red,
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              "Download PDF",
+                              style: TextStyle(
+                                fontWeight:
+                                    FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                       Navigator.pop(context);
+await generateAndPrintPdf();
+if (mounted) {
+  Navigator.pushReplacement(
+    this.context,
+    MaterialPageRoute(
+      builder: (_) => const SalesEntry(),
+    ),
+  );
+}
+                      },
+
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          borderRadius:
+                              BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.blue.shade200,
+                          ),
+                        ),
+                        child: Column(
+                          children: const [
+                            Icon(
+                              Icons.print,
+                              color: Colors.blue,
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              "Print",
+                              style: TextStyle(
+                                fontWeight:
+                                    FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 10),
+            ],
+          ),
         ),
       );
     },
   );
 }
-  @override
+@override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
 
@@ -365,8 +577,7 @@ void showPaymentOptions() {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: size.height * 0.06),
-
-            Padding(
+              Padding(
               padding: EdgeInsets.only(left: size.width * 0.72),
               child: Row(
                 children: [
