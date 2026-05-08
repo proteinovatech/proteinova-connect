@@ -12,6 +12,7 @@ import 'package:proteinova_connect/features/branch/branch_dashboard/widget/lowst
 import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stock.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stockdetails.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/widget/zigzagclipper.dart';
+import 'package:proteinova_connect/features/branch/sales/presentation/sales_entry.dart';
 
 
 class BranchDashboard extends StatefulWidget {
@@ -153,7 +154,24 @@ class _BranchDashboardState extends State<BranchDashboard> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+  floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.blue,
+        child: const Icon(
+          Icons.shopping_cart,
+          color: Colors.white,
+        ),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const SalesEntry(),
+            ),
+          );
+        },
+      ),
 
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.endFloat,
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
 

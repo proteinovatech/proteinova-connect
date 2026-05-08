@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/features/branch_dashboard/presentation/add_supplier_screen.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/add_supplier_screen.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/editbutton.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/statusbadge.dart';
 
