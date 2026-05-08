@@ -7,6 +7,7 @@ import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/sup
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_event.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_state.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/supplier_model.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/add_supplier_pop.dart';
 
 class SupplierLocationCard extends StatefulWidget {
    final Function(String supplier, String location,int supplierId) onChanged; 
@@ -21,6 +22,7 @@ class _SupplierLocationCardState extends State<SupplierLocationCard> {
   String? selectedCompany;
   String location = "";
   bool isExpanded = false;
+  DateTime? deliveryDate;
   List<SupplierModel> suppliers = [];
   final TextEditingController brokerNameController = TextEditingController();
    final TextEditingController brokerNumController = TextEditingController();
@@ -157,7 +159,50 @@ void initState() {
     return const SizedBox();
   },
 ),
-          SizedBox(height: size.height*0.02),
+ SizedBox(height: size.height*0.01),
+
+Align(
+  alignment: Alignment.centerRight,
+  child: ElevatedButton.icon(
+                  // onPressed: () {
+                  //   Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //       builder: (context) => const AddSupplierScreen(),
+                  //     ),
+                  //   );
+                  // },
+                  onPressed: () async {
+                     final result = await showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => const AddSupplierPopup(),
+  );
+  
+                    if (result != null) {
+                      print(result["supplier"]);
+                      print(result["contactperson"]);
+  
+                      /// here add your card list update logic
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xfffacc15),
+                    foregroundColor: Colors.black,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text("Add Supplier"),
+                ),
+),
+          SizedBox(height: size.height*0.01),
 
              Text("Origin Location",style: AppTextStyles.buttonText16,),
     
@@ -231,14 +276,58 @@ void initState() {
               borderRadius: BorderRadius.circular(5),
               border: Border.all(color: AppColors.border),
             ),child: TextField(
-               controller: brokerNumController, 
+               controller: brokerNumController,
+                 keyboardType: TextInputType.number, 
     decoration: InputDecoration(
       prefixIcon: Icon(Icons.phone_outlined,color:AppColors.light,),
       hintText: "Enter broker number",
       border: InputBorder.none,
     ),
             ),
-            )
+            ),
+            SizedBox(height: size.height*0.02),
+             const Text("Delivery Date",
+                style: AppTextStyles.buttonText16),
+            const SizedBox(height: 6),
+
+            InkWell(
+              onTap: () async {
+                DateTime? picked = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime(2100),
+                );
+
+                if (picked != null) {
+                  setState(() {
+                    deliveryDate = picked;
+                  });
+                }
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.containerColor,
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    SizedBox(width: size.width*0.02,),
+                    Icon(Icons.calendar_today_outlined,color:AppColors.textSecondary),
+                    SizedBox(width: 20),
+                    Text(
+                      deliveryDate == null
+                          ? "Select Delivery Date"
+                          : deliveryDate.toString().split(" ")[0],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
           
           
         ],
