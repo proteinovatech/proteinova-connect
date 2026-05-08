@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
 import 'package:proteinova_connect/features/branch/branch_bottom_navigator.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
@@ -146,7 +147,16 @@ Widget build(BuildContext context) {
             builder: (_) => const BranchBottomNavigator(),
           ),
         );
-      } else if (state is AuthFailure) {
+      } 
+      else if (state is AuthSuccessBranch) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const AdminDashboard(),
+          ),
+        );
+      } 
+      else if (state is AuthFailure) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(state.message)),
         );

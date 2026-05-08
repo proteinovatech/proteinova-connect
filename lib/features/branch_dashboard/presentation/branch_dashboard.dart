@@ -82,6 +82,19 @@ class _BranchDashboardState extends State<BranchDashboard> {
             )
             .toList();
 
+        // recentActivity = result.recentActivity
+        //     .map(
+        //       (e) => {
+        //         "title": e.title,
+
+        //         "description": e.description,
+
+        //         "time": e.time,
+
+        //         "tag": e.tag,
+        //       },
+        //     )
+        //     .toList();
         recentActivity = result.recentActivity
             .map(
               (e) => {

@@ -36,29 +36,27 @@ class _DashboardCardState extends State<DashboardCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                widget.title,
-                style: AppTextStyles.bodyText12
+              Expanded(
+                child: Text(
+                  widget.title,
+                  style: AppTextStyles.bodyText12semibold,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-
+              
+              Icon(widget.icon,
+                  color: widget.iconColor, size: 20),
+              const SizedBox(width: 3),
               
             ],
           ),
-          const SizedBox(height: 25),
+          const SizedBox(height: 10),
                     Text(
             widget.value,
             style: AppTextStyles.headingText22,
           ),
-                    const SizedBox(height: 5),
-                    Row(
-            children: [
-               Icon(widget.icon,
-                  color: widget.iconColor, size: 13),
-              const SizedBox(width: 3),
-             
-            
-            ],
-          ),
+                  
         ],
       ),
     );

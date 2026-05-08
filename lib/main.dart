@@ -28,7 +28,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:proteinova_connect/admin_inventory/presentation/admin_inventory.dart';
+import 'package:proteinova_connect/admin_bottom_navigator.dart';
+import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
 
 import 'package:proteinova_connect/core/services/app_bloc.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
@@ -42,7 +43,9 @@ Future<void> main() async {
 
   await dotenv.load(fileName: ".env");
   await Hive.initFlutter();
+  await Hive.initFlutter();
 
+  await Hive.openBox('purchaseBox');
   await Hive.openBox('purchaseBox');
 
   final prefs = await SharedPreferences.getInstance();
@@ -68,7 +71,9 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   final Widget? startScreen;
+  final Widget? startScreen;
 
+  const MyApp({super.key, this.startScreen});
   const MyApp({super.key, this.startScreen});
 
   @override
@@ -78,7 +83,9 @@ class MyApp extends StatelessWidget {
 
       routes: {"/signup": (context) => const SignupScreen()},
 
-      home:startScreen ,
+     // home: startScreen ?? const SignupScreen(),
+     home:AdminBottomNavigator(),
     );
   }
 }
+
