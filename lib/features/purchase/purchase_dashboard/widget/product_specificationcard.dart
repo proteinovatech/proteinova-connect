@@ -16,7 +16,7 @@ class ProductSpecificationCard extends StatefulWidget {
   final TextEditingController neccController;
   final TextEditingController minusController;
   final TextEditingController rateController;
-  final TextEditingController notesController;
+  
   final TextEditingController loadingController;
   final TextEditingController unloadingController;
   final TextEditingController transportController;
@@ -33,7 +33,7 @@ class ProductSpecificationCard extends StatefulWidget {
     required this.neccController,
     required this.minusController,
     required this.rateController,
-    required this.notesController,
+    
     required this.loadingController,
     required this.unloadingController,
     required this.transportController,
@@ -49,7 +49,7 @@ class ProductSpecificationCard extends StatefulWidget {
 class _ProductSpecificationCardState extends State<ProductSpecificationCard> {
   bool isExpanded = false;
 
-  DateTime? deliveryDate;
+  
 
  late List<ProductInput> products;
   List<TextEditingController> quantityControllers = [];
@@ -85,8 +85,8 @@ void initState() {
   String? selectedTray;
   List<ProductSummary> productList = [];
   final List<String> eggCategories = [
-    "AA",
-    "Brown",
+    "Classic",
+    "Premium",
     "Medium"
   ];
 
@@ -179,49 +179,8 @@ void updateTotalEggs(ProductInput product) {
               ),
             ),
 
-            const Text("Delivery Date",
-                style: AppTextStyles.buttonText16),
-            const SizedBox(height: 6),
-
-            InkWell(
-              onTap: () async {
-                DateTime? picked = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime(2100),
-                );
-
-                if (picked != null) {
-                  setState(() {
-                    deliveryDate = picked;
-                  });
-                }
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.containerColor,
-                  border: Border.all(color: AppColors.border),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    SizedBox(width: size.width*0.02,),
-                    Icon(Icons.calendar_today_outlined,color:AppColors.textSecondary),
-                    SizedBox(width: 20),
-                    Text(
-                      deliveryDate == null
-                          ? "Select Delivery Date"
-                          : deliveryDate.toString().split(" ")[0],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
+           
+           
 
             ...products.asMap().entries.map((entry) {
   int index = entry.key;

@@ -5,9 +5,12 @@ class StatusBadge extends StatelessWidget {
   final String text;
   final Color bgColor;
   final Color textColor;
+    final IconData? icon;
+
 
   const StatusBadge({
     super.key,
+    this.icon,
     required this.text,
     required this.bgColor,
     required this.textColor,
@@ -16,17 +19,30 @@ class StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 13),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(
-        text,
-        style: AppTextStyles.bodyText16.copyWith(
-          color: textColor,
-          fontSize: 12,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+            if (icon != null) ...[
+            Icon(
+              icon,
+              color: textColor,
+              size: 18,
+            ),
+            const SizedBox(width: 6),
+          ],
+          Text(
+            text,
+            style: AppTextStyles.bodyText16.copyWith(
+              color: textColor,
+              fontSize: 12,
+            ),
+          ),
+        ],
       ),
     );
   }

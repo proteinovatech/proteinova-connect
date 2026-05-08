@@ -9,14 +9,16 @@ class PurchaseEmployeecard extends StatefulWidget {
   final TextEditingController numberController;
   final TextEditingController typeController;
   final TextEditingController contactController;
-  final TextEditingController notesController;
+  final TextEditingController descriptionController;
+  
   const PurchaseEmployeecard({super.key,
   required this.driverController,
   required this.branchController,
   required this.numberController,
   required this.typeController,
   required this.contactController,
-  required this.notesController,
+  required this.descriptionController,
+  
   });
 
   @override
@@ -135,6 +137,14 @@ class _PurchaseEmployeecardState extends State<PurchaseEmployeecard> {
             icon:Icons.phone_outlined),
 
              SizedBox(height: size.height*0.02),
+              Text("Description",style: AppTextStyles.buttonText16,),
+             
+           const SizedBox(height: 6),
+           _buildField(
+            controller:widget.descriptionController , 
+            hint: "Add description",
+            
+            icon:Icons.edit_outlined),
 
             
           

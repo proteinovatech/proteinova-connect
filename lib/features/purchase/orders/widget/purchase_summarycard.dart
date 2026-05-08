@@ -20,14 +20,15 @@ for (var item in purchase.items) {
 double productTotal = 0;
 
 for (var item in purchase.items) {
-  productTotal += item.trays * item.capacity * item.price;
+  productTotal += item.trays * item.capacity * item.perEggPrice;
 }
 
 final additionalTotal =
     purchase.loadingCharge +
     purchase.unloadingCharge +
     purchase.transportCharge +
-    purchase.miscExpense;
+    purchase.miscExpense+
+    purchase.brokerFee;
 
 final totalCost = productTotal + additionalTotal;
     return Container(
@@ -50,7 +51,7 @@ final totalCost = productTotal + additionalTotal;
           SizedBox(height: size.height*0.01),
          _buildRow("Supplier", purchase.supplierName),
          SizedBox(height: size.height*0.01),
-         _buildRow("Product",purchase.items.map((e) => e.grade).join(", "),),
+         _buildRow("Product",purchase.items.map((e) => e.eggCategoryGrade).join(", "),),
           SizedBox(height: size.height*0.01),
          _buildRow("Total Quantity", "$totalQty trays"),
           

@@ -44,9 +44,7 @@ class PurchaseCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              EditButton(onTap: onEditTap,
-                
-              ),
+             
             ],
           ),
 
@@ -93,6 +91,9 @@ class PurchaseCard extends StatelessWidget {
                   text: movementStatus == "RECEIVED"
                       ? "Received"
                       : "Mark as Arrival",
+                   icon: movementStatus == "RECEIVED"
+        ? Icons.check_circle
+        : Icons.local_shipping_outlined,
                   bgColor: movementStatus == "RECEIVED"
                       ? Colors.green
                       : Colors.blue,
