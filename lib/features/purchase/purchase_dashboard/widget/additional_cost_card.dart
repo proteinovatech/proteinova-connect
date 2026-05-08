@@ -7,6 +7,7 @@ class AdditionalCostCard extends StatefulWidget {
   final TextEditingController unloadingController;
   final TextEditingController transportController;
   final TextEditingController miscController;
+  final TextEditingController brokerFeeController;
 
   const AdditionalCostCard({
     super.key,
@@ -14,6 +15,7 @@ class AdditionalCostCard extends StatefulWidget {
     required this.unloadingController,
     required this.transportController,
     required this.miscController,
+    required this.brokerFeeController,
   });
 
   @override
@@ -42,7 +44,7 @@ class _AdditionalCostCardState extends State<AdditionalCostCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 🔹 HEADER (same style as product card)
+          
           InkWell(
             onTap: () {
               setState(() {
@@ -92,11 +94,8 @@ class _AdditionalCostCardState extends State<AdditionalCostCard> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "Additional Costs",
-          style:AppTextStyles.buttonText16,
-        ),
-        const SizedBox(height: 12),
+       
+        const SizedBox(height: 10),
 
         Row(
           children: [
@@ -109,11 +108,11 @@ class _AdditionalCostCardState extends State<AdditionalCostCard> {
             ),
             
             ]),
-            const SizedBox(width: 10),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
-                  child: _costField("Transport", widget.transportController),
+                  child:  _costField("Broker Fee", widget.brokerFeeController)
                 ),
              
             const SizedBox(width: 10),
@@ -122,7 +121,9 @@ class _AdditionalCostCardState extends State<AdditionalCostCard> {
             ),
              ],
             ),
-         
+            const SizedBox(height: 12),
+
+        
       ],
     ),
   );
@@ -133,7 +134,7 @@ Widget _costField(String title, TextEditingController controller) {
     children: [
       Text(
         title,
-        style: AppTextStyles.bodyText14,
+        style: AppTextStyles.buttonText16,
       ),
       const SizedBox(height: 6),
       Container(

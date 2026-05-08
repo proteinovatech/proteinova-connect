@@ -178,101 +178,19 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
 
                         const SizedBox(height: 15),
 
-                        /// SEARCH
-                        Container(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 12),
-                          height: 45,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                                color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.search,
-                                  color: Colors.grey),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: TextField(
-                                  controller: searchController,
-                                  onChanged: (value) {
-                                    context
-                                        .read<PurchaseBloc>()
-                                        .add(SearchPurchaseEvent(value));
-                                  },
-                                  decoration: const InputDecoration(
-                                    hintText:
-                                        "Search drafts by Id or supplier ...",
-                                    border: InputBorder.none,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 15),
-
-                        /// FILTER
-                        GestureDetector(
-                          onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (context) {
-                                return Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    ListTile(
-                                      title:
-                                          const Text("Last 7 days"),
-                                      onTap: () {
-                                        setState(() =>
-                                            selectedDateFilter =
-                                                "Last 7 days");
-                                        Navigator.pop(context);
-                                      },
-                                    ),
-                                    ListTile(
-                                      title:
-                                          const Text("Last 30 days"),
-                                      onTap: () {
-                                        setState(() =>
-                                            selectedDateFilter =
-                                                "Last 30 days");
-                                        Navigator.pop(context);
-                                      },
-                                    ),
-                                    ListTile(
-                                      title:
-                                          const Text("Last 90 days"),
-                                      onTap: () {
-                                        setState(() =>
-                                            selectedDateFilter =
-                                                "Last 90 days");
-                                        Navigator.pop(context);
-                                      },
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                          child: filterBox(Icons.calendar_today,
-                              selectedDateFilter),
-                        ),
-
-                        const SizedBox(height: 20),
-
                         /// PURCHASE LIST
                         ...state.purchases.map((p) {
   final items = p["items"] ?? [];
   final expenses = p["expenses"] ?? [];
-
   final itemsCost = items.fold(
-    0.0,
-    (sum, e) => sum + ((e["per_egg_price"] ?? 0) * (e["capacity"] ?? 0)),
-  );
+  0.0,
+  (sum, e) =>
+      sum +
+      ((e["trays"] ?? 0) *
+          (e["capacity"] ?? 0) *
+          (e["per_egg_price"] ?? 0)),
+);
+  
 
   final expenseCost = expenses.fold(
     0.0,
@@ -309,17 +227,7 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
               : "",
           itemboxes:
               "${items.fold(0, (sum, e) => sum + (e["trays"] as int))} Trays",
-               onEditTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => Newpurchase(
-          isEdit: true,
-          purchaseData: p,
-        ),
-      ),
-    );
-  },
+              
               
         ),
 
