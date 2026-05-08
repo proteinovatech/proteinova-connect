@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:proteinova_connect/admin_inventory/widget/inventory_card.dart';
+import 'package:proteinova_connect/features/admin/widget/inventory_card.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 
 class AdminInventory extends StatefulWidget {

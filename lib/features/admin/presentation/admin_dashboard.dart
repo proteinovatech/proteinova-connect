@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/admin/widget/actions_required_card.dart';
 import 'package:proteinova_connect/features/admin/widget/dashboardcard.dart';
+import 'package:proteinova_connect/features/admin/widget/recent_activity_card.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -92,19 +94,82 @@ class _AdminDashboardState extends State<AdminDashboard> {
           
          
         ],),
-      body: Column(
-        children: [
-          Row(
+
+      body: Padding(
+        padding: const EdgeInsets.all(12),
+        child: SingleChildScrollView(
+          child: Column(
             children: [
-              DashboardCard(
-                title: "Total Sales", 
-                value: "45,000", 
-               
-                icon: Icons.shopping_bag, 
-               
-                 iconColor: Colors.blue)
-            ],)
-            ],),  
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: DashboardCard(
+                      title: "Total Revenue", 
+                      value: "₹3606", 
+                      icon: Icons.payments_outlined, 
+                      iconColor: AppColors.blueAccent),
+                  ),
+                   const SizedBox(width: 10),
+                     Expanded(
+                       child: DashboardCard(
+                                         title: "Total Stock Value", 
+                                         value: "₹154494", 
+                                         icon: Icons.stacked_bar_chart, 
+                                         iconColor: AppColors.green),
+                     )
+                ],),
+                const SizedBox(height: 10),
+                 Row(
+                children: [
+                  Expanded(
+                    child: DashboardCard(
+                      title: "Incoming Stock", 
+                      value: "1,88,640 Eggs", 
+                      icon: Icons.local_shipping_outlined, 
+                      iconColor: AppColors.deepOrange),
+                  ),
+                   const SizedBox(width: 10),
+                     Expanded(
+                       child: DashboardCard(
+                                         title: "Dispatched Stock ", 
+                                         value: "1,890 Eggs", 
+                                         icon: Icons.send_outlined, 
+                                         iconColor: AppColors.green),
+                     )
+                ],),
+                const SizedBox(height: 10),
+                 Row(
+                children: [
+                  Expanded(
+                    child: DashboardCard(
+                      title: "Branch Sales Revenue", 
+                      value: "₹3606", 
+                      icon: Icons.store_outlined, 
+                      iconColor: AppColors.deepOrange),
+                  ),
+                   const SizedBox(width: 10),
+                     Expanded(
+                       child: DashboardCard(
+                                         title: "Total Stock Eggs", 
+                                         value: "26,190 Eggs", 
+                                         icon: Icons.egg_outlined, 
+                                         iconColor: AppColors.blueAccent),
+                     )
+                ],),
+                const SizedBox(height: 10),
+                DashboardCard(
+                    title: "Branch Eggs Sold", 
+                    value: "26,190 Eggs", 
+                    icon: Icons.egg_outlined, 
+                    iconColor: AppColors.green),
+                const SizedBox(height: 10),
+                RecentActivityCard(),
+                const SizedBox(height: 10),
+                ActionsRequiredCard(),
+                ],),
+        ),
+      ),  
     );
   }
 }

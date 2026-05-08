@@ -152,8 +152,9 @@ class _BranchDashboardState extends State<BranchDashboard> {
       );
     }
 
-  return groups;
-}
+    return groups;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -716,7 +717,6 @@ class _BranchDashboardState extends State<BranchDashboard> {
                       ],
                     ),
 
-                   
                     recentActivity.isEmpty
                         ? const Center(child: Text("No Recent Activity"))
                         : ListView.builder(
