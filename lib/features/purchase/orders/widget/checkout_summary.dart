@@ -29,7 +29,7 @@ class _CheckoutSummaryState extends State<CheckoutSummary> {
 double totalTrays = 0;
 
 for (var item in widget.purchase.items) {
-  productTotal += item.trays * item.capacity * item.price;
+  productTotal += item.trays * item.capacity * item.perEggPrice;
   totalTrays += item.trays;
 }
 
@@ -37,7 +37,8 @@ final additionalTotal =
     widget.purchase.loadingCharge +
     widget.purchase.unloadingCharge +
     widget.purchase.transportCharge +
-    widget.purchase.miscExpense;
+    widget.purchase.miscExpense+
+    widget.purchase.brokerFee;
 
 final totalCost = productTotal + additionalTotal;
 
@@ -69,7 +70,7 @@ final costPerTray =
 
           // 🔹 Empty rows (placeholders)
           _buildRow("Supplier",widget.purchase.supplierName),
-          _buildRow("Location",widget.purchase.warehouseLocation),
+          _buildRow("Location",widget.purchase.location),
           Divider(),
           ...widget.purchase.items.asMap().entries.map((entry) {
   final index = entry.key;
@@ -87,9 +88,9 @@ final costPerTray =
 
       const SizedBox(height: 6),
 
-      _buildRow("Category", item.grade),
+      _buildRow("Category", item.eggCategoryGrade),
       _buildRow("Quantity", item.trays.toString()),
-      _buildRow("Rate", "₹ ${item.price}"),
+      _buildRow("Rate", "₹ ${item.perEggPrice}"),
       _buildRow(
         "Total Eggs",
         (item.trays * item.capacity).toString(),
@@ -104,8 +105,9 @@ final costPerTray =
           Text("Additional Costs",style: AppTextStyles.formInputs15dark,),
           _buildRow("Loading Charges", "₹ ${widget.purchase.loadingCharge}"),
 _buildRow("Unloading Charges", "₹ ${widget.purchase.unloadingCharge}"),
-_buildRow("Transport", "₹ ${widget.purchase.transportCharge}"),
+ //_buildRow("Transport", "₹ ${widget.purchase.transportCharge}"),
 _buildRow("Misc Expense", "₹ ${widget.purchase.miscExpense}"),
+_buildRow("Broker Fee", "₹ ${widget.purchase.brokerFee}"),
            Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children:  [
@@ -222,7 +224,7 @@ _buildRow("Misc Expense", "₹ ${widget.purchase.miscExpense}"),
         ),
       )
     : Row(
-        mainAxisAlignment: MainAxisAlignment.center, // ✅ better alignment
+        mainAxisAlignment: MainAxisAlignment.center, 
         children: [
           Icon(Icons.lock_outline, color: AppColors.dark),
 

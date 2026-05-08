@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
-import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/supplier_screen.dart';
+import 'package:proteinova_connect/features/purchase/supplier/supplier_screen.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/presentation/purchase_dashboard.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';

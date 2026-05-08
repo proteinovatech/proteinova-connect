@@ -45,7 +45,7 @@ final TextEditingController neccController = TextEditingController();
 final TextEditingController minusController = TextEditingController();
 final TextEditingController trayController = TextEditingController();
 final TextEditingController rateController = TextEditingController();
-final TextEditingController notesController = TextEditingController();
+final TextEditingController descriptionController = TextEditingController();
  final TextEditingController totalEggsController = TextEditingController();
 final TextEditingController branchController=TextEditingController();
 final TextEditingController numberController=TextEditingController();
@@ -59,6 +59,7 @@ final TextEditingController transportController=TextEditingController();
 final TextEditingController miscController=TextEditingController();
 final TextEditingController brokerNameController = TextEditingController();
  final TextEditingController brokerNumController = TextEditingController();
+ final TextEditingController brokerFeeController=TextEditingController();
 
 bool _isDataLoaded = false;
 void calculateSummary() {
@@ -91,6 +92,7 @@ void initState() {
   unloadingController.addListener(_refresh);
   transportController.addListener(_refresh);
   miscController.addListener(_refresh);
+  brokerFeeController.addListener(_refresh);
 
    WidgetsBinding.instance.addPostFrameCallback((_) {
     if (widget.isEdit && widget.purchaseData != null) {
@@ -359,7 +361,7 @@ if (supplierState is SupplierLoaded) {
                 neccController: neccController,
                 minusController: minusController,
                 rateController: rateController,
-                notesController: notesController,
+               
                 loadingController: loadingController,
                 unloadingController: unloadingController,
                 transportController: transportController,
@@ -373,6 +375,7 @@ if (supplierState is SupplierLoaded) {
   unloadingController: unloadingController,
   transportController: transportController,
   miscController: miscController,
+  brokerFeeController: brokerFeeController,
 ),
 
 SizedBox(height: size.height * 0.02),
@@ -383,11 +386,12 @@ SizedBox(height: size.height * 0.02),
                 numberController: numberController,
                 typeController: typeController,
                 contactController: contactController,
-                notesController: notesController,
+                descriptionController: descriptionController,
+                
               ),
 
               SizedBox(height: size.height * 0.02),
-
+            
               PurchaseSummaryCard(
                 supplier: supplier,
                 location: location,
@@ -397,6 +401,10 @@ SizedBox(height: size.height * 0.02),
                 unloading: unloadingController.text,
                 transport: transportController.text,
                 misc: miscController.text,
+                brokerFee: brokerFeeController.text,
+               brokerName: brokerNameController.text,
+               brokerNumber: brokerNumController.text,
+               description: descriptionController.text,
               ),
 
               SizedBox(height: size.height * 0.02),

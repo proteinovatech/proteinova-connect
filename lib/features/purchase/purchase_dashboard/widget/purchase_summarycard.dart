@@ -13,6 +13,10 @@ class PurchaseSummaryCard extends StatelessWidget {
   final String unloading;
   final String transport;
   final String misc;
+  final String brokerName;
+  final String brokerFee;
+  final String brokerNumber;
+  final String description;
   final List<ProductSummary> products;
 
   
@@ -26,6 +30,10 @@ class PurchaseSummaryCard extends StatelessWidget {
     required this.unloading,
     required this.transport,
     required this.misc,
+     required this.brokerFee,
+    required this.brokerNumber,
+    required this.brokerName,
+    required this.description,
     });
 
   @override
@@ -46,8 +54,8 @@ final load = double.tryParse(loading) ?? 0;
 final unload = double.tryParse(unloading) ?? 0;
 final trans = double.tryParse(transport) ?? 0;
 final miscCost = double.tryParse(misc) ?? 0;
-
-final additionalTotal = load + unload + trans + miscCost;
+final parsedBrokerFee=double.tryParse(brokerFee) ??0;
+final additionalTotal = load + unload + trans + miscCost +parsedBrokerFee;
 final totalCost = productTotal + additionalTotal;
 double totalTrays = 0;
     for (var p in products) {
@@ -116,8 +124,9 @@ const SizedBox(height: 8),
           Text("Additional Costs",style: AppTextStyles.formInputs15dark,),
           _buildRow("Loading Charges", "₹ $loading"),
           _buildRow("Unloading Charges", "₹ $unloading"),
-          _buildRow("Transport", "₹ $transport"),
+         // _buildRow("Transport", "₹ $transport"),
           _buildRow("Misc Expense", "₹ $misc"),
+          _buildRow("Broker Fee",  "₹ $brokerFee",),
            Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children:  [
@@ -192,11 +201,13 @@ const SizedBox(height: 8),
             ),
           
           child: ElevatedButton(
+            
             onPressed: () {
-
+  
   final purchase = PurchaseRequest(
     supplierName: supplier,
-    supplierId: 1, 
+    supplierId: 1,
+    location: location, 
     warehouseLocation: warehouselocation,
     expectedArrival: "2026-04-26", // pass properly
 
@@ -207,21 +218,27 @@ const SizedBox(height: 8),
 
     loadingCharge: double.tryParse(loading) ?? 0,
     unloadingCharge: double.tryParse(unloading) ?? 0,
-    transportCharge: double.tryParse(transport) ?? 0,
+    transportCharge: 0,
     miscExpense: double.tryParse(misc) ?? 0,
 
+    brokerFee: double.tryParse(brokerFee) ?? 0,
+    brokerName: brokerName,
+    brokerNumber: brokerNumber,
+
     purchaseStatus: "PURCHASED",
+     description: description,
+
 
     items: products.map((p) {
   return PurchaseItem(
-    grade: p.category,
+    eggCategoryGrade: p.category,
     trays: int.tryParse(p.quantity) ?? 0,
     capacity: 30,
-    price: double.tryParse(p.rate) ?? 0,
+    perEggPrice: double.tryParse(p.rate) ?? 0,
 
     marketPriceMinus: double.tryParse(p.marketPriceMinus ?? "0") ?? 0,
     neccRate: double.tryParse(p.neccRate ?? "0") ?? 0,
-    trayType: p.trayType ?? "", // 🚨 MUST NOT BE NULL
+    trayType: p.trayType ?? "", 
   );
 }).toList(),
   );

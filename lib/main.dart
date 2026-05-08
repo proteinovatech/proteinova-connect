@@ -30,6 +30,7 @@ import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:proteinova_connect/core/services/app_bloc.dart';
+import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
 import 'package:proteinova_connect/features/branch/branch_bottom_navigator.dart';
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 import 'package:proteinova_connect/purchase_bottom_navigator.dart';
@@ -82,7 +83,7 @@ class MyApp extends StatelessWidget {
         "/signup": (context) => const SignupScreen(),
       },
 
-      home: startScreen,
+      home:startScreen ,
     );
   }
 }
