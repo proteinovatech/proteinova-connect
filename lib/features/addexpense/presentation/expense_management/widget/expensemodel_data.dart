@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 // import 'package:proteinova_connect/features/addexpense/presentation/expense_management/widget/expensemodel.dart';
+=======
+>>>>>>> af8c37e4efde2d7cf7caf32ece421051f1e0de36
 import 'package:proteinova_connect/features/branch/addexpense/presentation/expense_management/widget/expensemodel.dart';
 
 final List<ExpenseModel> expenses = [
