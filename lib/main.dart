@@ -39,9 +39,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: ".env");
-   await Hive.initFlutter();
+  await Hive.initFlutter();
 
-   await Hive.openBox('purchaseBox');
+  await Hive.openBox('purchaseBox');
 
   final prefs = await SharedPreferences.getInstance();
 
@@ -61,28 +61,22 @@ Future<void> main() async {
     startScreen = const SignupScreen();
   }
 
-  runApp(
-    AppBlocProvider(
-      child: MyApp(startScreen: startScreen),
-    ),
-  );
+  runApp(AppBlocProvider(child: MyApp(startScreen: startScreen)));
 }
 
 class MyApp extends StatelessWidget {
-  final Widget startScreen;
+  final Widget? startScreen;
 
-  const MyApp({super.key, required this.startScreen});
+  const MyApp({super.key, this.startScreen});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
 
-      routes: {
-        "/signup": (context) => const SignupScreen(),
-      },
+      routes: {"/signup": (context) => const SignupScreen()},
 
-      home: startScreen,
+      home: startScreen ?? const SignupScreen(),
     );
   }
 }
