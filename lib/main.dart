@@ -69,21 +69,38 @@ Future<void> main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
-  final Widget startScreen;
+// class MyApp extends StatelessWidget {
+//   final Widget startScreen;
 
-  const MyApp({super.key, required this.startScreen});
+//   const MyApp({super.key, required this.startScreen});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       debugShowCheckedModeBanner: false,
+
+//       routes: {
+//         "/signup": (context) => const SignupScreen(),
+//       },
+
+//       home:startScreen ,
+//     );
+//   }
+// }
+class MyApp extends StatelessWidget {
+  final Widget? startScreen;
+
+  const MyApp({super.key, this.startScreen});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
 
-      routes: {
-        "/signup": (context) => const SignupScreen(),
-      },
+      routes: {"/signup": (context) => const SignupScreen()},
 
-      home:startScreen ,
+      home: startScreen ?? const SignupScreen(),
+     
     );
   }
 }
