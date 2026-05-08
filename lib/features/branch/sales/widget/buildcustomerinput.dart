@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 
-Widget buildCustomerInput() {
+Widget buildCustomerInput(BuildContext context) {
   return Container(
     padding: const EdgeInsets.all(10),
     decoration: BoxDecoration(
@@ -19,9 +19,9 @@ Widget buildCustomerInput() {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Customer Name", style: AppTextStyles.bodyText14dark),
+                  Text("Customer Number", style: AppTextStyles.bodyText14dark),
                   const SizedBox(height: 4),
-                  _inputField("Enter name"),
+                  _inputField("Enter number"),
                 ],
               ),
             ),
@@ -30,18 +30,53 @@ Widget buildCustomerInput() {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Dispatch Date", style: AppTextStyles.bodyText14dark),
+                  Text("Customer Name", style: AppTextStyles.bodyText14dark),
                   const SizedBox(height: 4),
-                  _inputField("Enter date"),
+                  _inputField("Name"),
                 ],
               ),
             ),
           ],
         ),
         const SizedBox(height: 10),
-        Text("Customer Number", style: AppTextStyles.bodyText14dark),
-        const SizedBox(height: 4),
-        _inputField("Enter number", isNumber: true),
+        Text(
+  "Sales Date",
+  style: AppTextStyles.bodyText14dark,
+),
+
+const SizedBox(height: 4),
+
+TextField(
+  readOnly: true,
+
+  decoration: InputDecoration(
+    hintText: "DD/MM/YY",
+
+    suffixIcon: IconButton(
+      onPressed: () async {
+        DateTime? pickedDate =
+            await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(2020),
+          lastDate: DateTime(2100),
+        );
+
+        if (pickedDate != null) {
+          print(pickedDate);
+        }
+      },
+
+      icon: const Icon(
+        Icons.calendar_month,
+      ),
+    ),
+
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+    ),
+  ),
+),
       ],
     ),
   );

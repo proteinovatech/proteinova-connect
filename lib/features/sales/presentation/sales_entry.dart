@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -37,12 +36,17 @@ class _SalesEntryState extends State<SalesEntry> {
   List<dynamic> paymentMethods = [];
 
   Map<String, dynamic> billSummary = {};
+  Map<String, dynamic> offerCard = {};
+List<dynamic> offersList = [];
+bool isLoadingOffers = true;
 
   @override
   void initState() {
     super.initState();
 
-    fetchSalesData();
+  fetchSalesData();
+  fetchOffers();
+   
   }
 
   Future<void> fetchSalesData() async {
@@ -72,9 +76,7 @@ class _SalesEntryState extends State<SalesEntry> {
       if (response.statusCode == 200) {
         final decodedData = jsonDecode(response.body);
 
-        /// IMPORTANT FIX
-
-        final data = decodedData["data"] ?? decodedData;
+               final data = decodedData["data"] ?? decodedData;
 
         setState(() {
           header = Map<String, dynamic>.from(data["header"] ?? {});
@@ -110,8 +112,45 @@ class _SalesEntryState extends State<SalesEntry> {
       print("ERROR : $e");
     }
   }
+Future<void> fetchOffers() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
 
-  @override
+    final branchId = prefs.getInt("branch_id");
+
+    final response = await http.get(
+      Uri.parse(
+        "$baseUrl/api/offers/dashboard?branch_id=$branchId",
+      ),
+
+      headers: {
+        "Accept": "application/json",
+      },
+    );
+
+    print("OFFERS STATUS : ${response.statusCode}");
+
+    print("OFFERS BODY : ${response.body}");
+
+    if (response.statusCode == 200) {
+
+      final decodedData = jsonDecode(response.body);
+
+      setState(() {
+
+        offerCard =
+            decodedData["data"]["card"] ?? {};
+
+        offersList =
+            decodedData["data"]["offers_list"] ?? [];
+      });
+    }
+  } catch (e) {
+
+    print("OFFERS ERROR : $e");
+  }
+}
+ @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
 
@@ -212,8 +251,6 @@ class _SalesEntryState extends State<SalesEntry> {
                     ),
 
                     SizedBox(height: size.height * 0.02),
-
-                    /// PRODUCT DETAILS
                     productDetails.isEmpty
                         ? const Center(child: Text("No Products"))
                         : ListView.builder(
@@ -324,8 +361,6 @@ class _SalesEntryState extends State<SalesEntry> {
                       ),
 
                     SizedBox(height: size.height * 0.02),
-
-                    /// PAYMENT METHODS
                     if (paymentMethods.isNotEmpty)
                       Wrap(
                         spacing: 10,
@@ -344,11 +379,29 @@ class _SalesEntryState extends State<SalesEntry> {
                             child: Text(e.toString()),
                           );
                         }).toList(),
+                        
                       ),
+   Container(
+            padding:
+                const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 10,
+            ),
 
+            decoration: BoxDecoration(
+              color: AppColors.background,
+
+              borderRadius:
+                  BorderRadius.circular(10),
+
+              border: Border.all(
+                color: Colors.grey.shade300,
+              ),
+            ),
+
+            child: const Text("Debit"),
+          ),
                     SizedBox(height: size.height * 0.02),
-
-                    /// BILL SUMMARY
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
@@ -381,56 +434,56 @@ class _SalesEntryState extends State<SalesEntry> {
 
                     SizedBox(height: size.height * 0.02),
 
-                    Visibility(
-                      visible: false,
-                      child: Column(
-                        children: [
-                          StockPreviewCard(
-                            available: productDetails.isNotEmpty
-                                ? productDetails[0]["stock_trays"].toString()
-                                : "0",
+                    // Visibility(
+                    //   visible: false,
+                    //   child: Column(
+                    //     children: [
+                    //       StockPreviewCard(
+                    //         available: productDetails.isNotEmpty
+                    //             ? productDetails[0]["stock_trays"].toString()
+                    //             : "0",
 
-                            selling: quantityController.text.isEmpty
-                                ? "- 0"
-                                : "- ${quantityController.text}",
+                    //         selling: quantityController.text.isEmpty
+                    //             ? "- 0"
+                    //             : "- ${quantityController.text}",
 
-                            remaining: productDetails.isNotEmpty
-                                ? (productDetails[0]["stock_trays"] -
-                                          (int.tryParse(
-                                                quantityController.text,
-                                              ) ??
-                                              0))
-                                      .toString()
-                                : "0",
+                    //         remaining: productDetails.isNotEmpty
+                    //             ? (productDetails[0]["stock_trays"] -
+                    //                       (int.tryParse(
+                    //                             quantityController.text,
+                    //                           ) ??
+                    //                           0))
+                    //                   .toString()
+                    //             : "0",
 
-                            onReceiveTap: () {},
-                          ),
+                    //         onReceiveTap: () {},
+                    //       ),
 
-                          SizedBox(height: size.height * 0.02),
+                    //       SizedBox(height: size.height * 0.02),
 
-                          RecentSalesCard(
-                            sales: [
-                              SaleItem(
-                                time: "Today",
-                                quantity: header["today_sales"]?["count"] ?? 0,
-                                customer: "Today's Sales",
-                              ),
+                    //       RecentSalesCard(
+                    //         sales: [
+                    //           SaleItem(
+                    //             time: "Today",
+                    //             quantity: header["today_sales"]?["count"] ?? 0,
+                    //             customer: "Today's Sales",
+                    //           ),
 
-                              SaleItem(
-                                time: "Stock",
-                                quantity: productDetails.isNotEmpty
-                                    ? productDetails[0]["stock_trays"]
-                                    : 0,
-                                customer: productDetails.isNotEmpty
-                                    ? productDetails[0]["product_name"]
-                                          .toString()
-                                    : "Product",
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+                    //           SaleItem(
+                    //             time: "Stock",
+                    //             quantity: productDetails.isNotEmpty
+                    //                 ? productDetails[0]["stock_trays"]
+                    //                 : 0,
+                    //             customer: productDetails.isNotEmpty
+                    //                 ? productDetails[0]["product_name"]
+                    //                       .toString()
+                    //                 : "Product",
+                    //           ),
+                    //         ],
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
 
                     SizedBox(height: size.height * 0.05),
                   ],

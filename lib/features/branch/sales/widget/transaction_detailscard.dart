@@ -61,6 +61,7 @@ class _TransactionDetailscardState extends State<TransactionDetailscard> {
     Icons.phone_android_outlined,
     Icons.credit_card,
   ];
+  List<dynamic> customers = [];
   void showTrayList() {
     showModalBottomSheet(
       context: context,
@@ -220,33 +221,143 @@ class _TransactionDetailscardState extends State<TransactionDetailscard> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
       ),
+      
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Product Details", style: AppTextStyles.headingText20),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.search, color: Colors.grey),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      hintText: "Search Product by name",
-                      border: InputBorder.none,
-                    ),
+           Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Customer Details",
+                        style: AppTextStyles.headingText22,
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            showCustomerInput = !showCustomerInput;
+                          });
+                        },
+                        child: Icon(
+                          showCustomerInput
+                              ? Icons.keyboard_arrow_down
+                              : Icons.keyboard_arrow_up,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 10),
+                  const Divider(),
+                  const SizedBox(height: 10),
+             if (showCustomerInput)
+
+  customers.isEmpty
+
+      ? Container(
+          width: double.infinity,
+
+          padding:
+              const EdgeInsets.all(20),
+
+          decoration: BoxDecoration(
+            color: Colors.white,
+
+            borderRadius:
+                BorderRadius.circular(10),
+
+            border: Border.all(
+              color:
+                  Colors.grey.shade300,
             ),
           ),
+
+          child: const Center(
+            child: Text(
+              "No Customers Found",
+            ),
+          ),
+        )
+
+      : ListView.builder(
+
+          itemCount: customers.length,
+
+          shrinkWrap: true,
+
+          physics:
+              const NeverScrollableScrollPhysics(),
+
+          itemBuilder: (context, index) {
+
+            final customer =
+                customers[index];
+
+            return Container(
+
+              margin:
+                  const EdgeInsets.only(
+                bottom: 10,
+              ),
+
+              padding:
+                  const EdgeInsets.all(12),
+
+              decoration: BoxDecoration(
+
+                color: Colors.white,
+
+                borderRadius:
+                    BorderRadius.circular(10),
+
+                border: Border.all(
+                  color:
+                      Colors.grey.shade300,
+                ),
+              ),
+
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+
+                children: [
+
+                  Text(
+                    customer["name"]
+                            ?.toString() ??
+                        "No Name",
+
+                    style:
+                        const TextStyle(
+                      fontSize: 16,
+
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 5,
+                  ),
+
+                  Text(
+                    customer["number"]
+                            ?.toString() ??
+                        "No Number",
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+                ],
+              ),
+              SizedBox(height: 10),
+          Text("Product Details", style: AppTextStyles.headingText20),
           const SizedBox(height: 10),
+         
           const Text("Select Product", style: AppTextStyles.buttonText16),
           const SizedBox(height: 6),
           Container(
@@ -283,7 +394,7 @@ class _TransactionDetailscardState extends State<TransactionDetailscard> {
               ],
             ),
           ),
-          // const SizedBox(height: 14),
+           const SizedBox(height: 14),
           // Visibility(
           //   visible: false, // 👈 change to true when needed
           //   child: Column(
@@ -620,37 +731,7 @@ class _TransactionDetailscardState extends State<TransactionDetailscard> {
                 ),
               ),
               SizedBox(height: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Customer Details",
-                        style: AppTextStyles.headingText22,
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            showCustomerInput = !showCustomerInput;
-                          });
-                        },
-                        child: Icon(
-                          showCustomerInput
-                              ? Icons.keyboard_arrow_down
-                              : Icons.keyboard_arrow_up,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  const Divider(),
-                  const SizedBox(height: 10),
-                  if (showCustomerInput) buildCustomerInput(),
-                ],
-              ),
-              SizedBox(height: 10),
+             
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(14),
@@ -756,15 +837,7 @@ class _TransactionDetailscardState extends State<TransactionDetailscard> {
                         border: Border.all(color: AppColors.border),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      // child: const TextField(
-                      //   keyboardType: TextInputType.number,
-                      //   decoration: InputDecoration(
-                      //     prefixText: "₹ ",
-                      //     hintText: "Enter amount",
-                      //     border: InputBorder.none,
-                      //   ),
-                      // ),
-                      child: TextField(
+                                           child: TextField(
                         controller: cashController,
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(
@@ -774,6 +847,30 @@ class _TransactionDetailscardState extends State<TransactionDetailscard> {
                         ),
                       ),
                     ),
+                      const SizedBox(height: 16),
+                   Text(
+  "Debit(Optional)",
+  style: AppTextStyles.headingText20,
+),
+const SizedBox(height: 10),
+
+Container(
+  width: double.infinity,
+  padding: const EdgeInsets.symmetric(horizontal: 10),
+  decoration: BoxDecoration(
+    color: AppColors.background,
+    border: Border.all(color: AppColors.border),
+    borderRadius: BorderRadius.circular(8),
+  ),
+
+  child: TextField(
+    keyboardType: TextInputType.number,
+    decoration: const InputDecoration(
+      hintText: "Enter debit amount",
+      border: InputBorder.none,
+    ),
+  ),
+),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
