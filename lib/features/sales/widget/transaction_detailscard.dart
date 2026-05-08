@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/branch/sales/widget/buildcustomerinput.dart';
+import 'package:proteinova_connect/features/branch/sales/widget/buildrow.dart';
+import 'package:proteinova_connect/features/branch/sales/widget/eggitemcard.dart';
 import 'package:proteinova_connect/features/purchase/orders/presentation/checkout.dart';
-import 'package:proteinova_connect/features/sales/widget/buildcustomerinput.dart';
-import 'package:proteinova_connect/features/sales/widget/buildrow.dart';
-import 'package:proteinova_connect/features/sales/widget/eggitemcard.dart';
+
 
 class TransactionDetailscard extends StatefulWidget {
   final TextEditingController categoryController;
