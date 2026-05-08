@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:proteinova_connect/features/addexpense/presentation/expense_management/widget/expensemodel.dart';
+import 'package:proteinova_connect/features/branch/addexpense/presentation/expense_management/widget/expensemodel.dart';
 
 class ExpenseCard extends StatelessWidget {
   final ExpenseModel item;
