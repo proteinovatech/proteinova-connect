@@ -3,7 +3,7 @@ abstract class AuthState {}
 class AuthInitial extends AuthState {}
 
 class AuthLoading extends AuthState {}
-class AuthSuccessPurchase extends AuthState {}   // ✅ ADD THIS
+class AuthSuccessPurchase extends AuthState {}   
 
 class AuthSuccessBranch extends AuthState {} 
 

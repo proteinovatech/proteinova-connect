@@ -42,12 +42,30 @@ class _ResentactivityState
 
         setState(() {
 
-          recentActivity =
-              data["recent_activity"] ?? [];
+  recentActivity =
 
-          isLoading = false;
-        });
+      (data["recent_activity"] as List)
 
+          .map(
+            (e) => {
+
+              "title":
+                  e["actor_name"],
+
+              "description":
+                  e["activity"],
+
+              "time":
+                  e["created_at"],
+
+              "tag":
+                  e["activity_type"],
+            },
+          )
+          .toList();
+
+  isLoading = false;
+});
       } else {
 
         setState(() {

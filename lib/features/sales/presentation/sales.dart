@@ -1,11 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:http/http.dart' as http;
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/sales/bloc/auth_bloc.dart';
 import 'package:proteinova_connect/features/sales/bloc/auth_state.dart';
-import 'package:proteinova_connect/features/sales/widget/Salesorders.dart';
 import 'package:proteinova_connect/features/sales/presentation/sales_entry.dart';
+import 'package:proteinova_connect/features/sales/widget/Salesorders.dart';
 import 'package:proteinova_connect/features/sales/widget/dashboardcard.dart';
 import 'package:proteinova_connect/features/sales/widget/dashboardcard2.dart';
 import 'package:proteinova_connect/features/sales/widget/dispatchcard.dart';
@@ -13,7 +15,6 @@ import 'package:proteinova_connect/services/sales_service.dart';
 
 class Sales extends StatefulWidget {
   const Sales({super.key});
-
   @override
   State<Sales> createState() => _SalesState();
 }
@@ -67,6 +68,14 @@ class _SalesState extends State<Sales> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(
+          child:
+              CircularProgressIndicator(),
+        ),
+      );
+    }
     return BlocProvider(
       create: (_) => SalesBloc(),
       child: Scaffold(

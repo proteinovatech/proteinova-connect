@@ -5,6 +5,7 @@ class DashboardModel {
   final List<ActiveOffer> activeOffers;
   final List<DailySalesVolume> dailySalesVolume;
   final List<RecentActivity> recentActivity;
+  
 
   DashboardModel({
     required this.branchId,
@@ -13,6 +14,7 @@ class DashboardModel {
     required this.activeOffers,
     required this.dailySalesVolume,
     required this.recentActivity,
+    
   });
 
   factory DashboardModel.fromJson(Map<String, dynamic> json) {
@@ -29,9 +31,18 @@ class DashboardModel {
           .map((e) => DailySalesVolume.fromJson(e))
           .toList(),
 
-      recentActivity: (json["recent_activity"] as List)
-          .map((e) => RecentActivity.fromJson(e))
-          .toList(),
+    recentActivity:
+
+        json["recent_activity"] != null
+
+            ? (json["recent_activity"] as List)
+
+                .map(
+                  (e) => RecentActivity.fromJson(e),
+                )
+                .toList()
+
+            : [],
     );
   }
 }
@@ -103,24 +114,35 @@ class DailySalesVolume {
 }
 
 class RecentActivity {
-  final String title;
-  final String description;
-  final String time;
-  final String tag;
+
+  final String actorName;
+  final String activityType;
+  final String activity;
+  final String createdAt;
 
   RecentActivity({
-    required this.title,
-    required this.description,
-    required this.time,
-    required this.tag,
+    required this.actorName,
+    required this.activityType,
+    required this.activity,
+    required this.createdAt,
   });
 
-  factory RecentActivity.fromJson(Map<String, dynamic> json) {
+  factory RecentActivity.fromJson(
+    Map<String, dynamic> json,
+  ) {
     return RecentActivity(
-      title: json["title"] ?? "",
-      description: json["description"] ?? "",
-      time: json["time"] ?? "",
-      tag: json["tag"] ?? "",
+
+      actorName:
+          json["actor_name"] ?? "",
+
+      activityType:
+          json["activity_type"] ?? "",
+
+      activity:
+          json["activity"] ?? "",
+
+      createdAt:
+          json["created_at"] ?? "",
     );
   }
 }

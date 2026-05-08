@@ -38,7 +38,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
   List<Map<String, dynamic>> dailySalesVolume = [];
 
   List<Map<String, dynamic>> recentActivity = [];
-  List<Map<String, dynamic>> lowStockAlerts = [];
+  List lowStockAlerts = [];
 
   @override
   void initState() {
@@ -142,9 +142,8 @@ class _BranchDashboardState extends State<BranchDashboard> {
       );
     }
 
-    return groups;
-  }
-
+  return groups;
+}
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -707,8 +706,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                       ],
                     ),
 
-                    const SizedBox(height: 20),
-
+                   
                     recentActivity.isEmpty
                         ? const Center(child: Text("No Recent Activity"))
                         : ListView.builder(
