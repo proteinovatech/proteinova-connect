@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/features/branch/addexpense/presentation/expense_management/presentation/expense_management.dart';
+import 'package:proteinova_connect/features/admin/menu/presentation/sales_dashoard.dart';
+import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
+import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
+
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
+import 'package:proteinova_connect/features/branch/addexpense/presentation/expense_management/presentation/expense_management.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/branch_dashboard.dart';
 import 'package:proteinova_connect/features/branch/branch_details/presentation/branch_details.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/presentation/daily_closing.dart';
 import 'package:proteinova_connect/features/branch/inventory/presentation/inventory.dart';
 import 'package:proteinova_connect/features/branch/inventory/presentation/receivestock.dart';
 import 'package:proteinova_connect/features/branch/sales/presentation/sales.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
-import 'branch_dashboard/presentation/branch_dashboard.dart';
 
-class BranchBottomNavigator extends StatefulWidget {
-  const BranchBottomNavigator({super.key});
+class AdminBottomNavigator extends StatefulWidget {
+  const AdminBottomNavigator({super.key});
 
   @override
-  State<BranchBottomNavigator> createState() => _BranchBottomNavigatorState();
+  State<AdminBottomNavigator> createState() => _BranchBottomNavigatorState();
 }
 
-class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
+class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
   void _handleLogout() {
     showDialog(
       context: context,
@@ -81,9 +84,9 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
   int selectedIndex = 0;
 
   final List<Widget> pages = [
-        BranchDashboard(),
-         Sales(),
-     Inventory(),
+    AdminDashboard(),
+    AdminInventory(),
+    Sales(),
     DailyClosing(),
   ];
   @override
@@ -100,10 +103,10 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-             _buildNavItem(Icons.grid_view, 0),
-            _buildNavItem(Icons.shopping_cart_outlined, 1),
-            _buildNavItem(Icons.inventory_2_outlined, 2),
-            _buildNavItem(Icons.receipt_long, 3),
+            _buildNavItem(Icons.dashboard_rounded, 0),
+            _buildNavItem(Icons.currency_rupee_rounded, 1),
+            _buildNavItem(Icons.local_shipping_rounded, 2),
+            _buildNavItem(Icons.verified_rounded, 3),
             _buildNavItem(Icons.menu_outlined, 4),
           ],
         ),
@@ -142,7 +145,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
           if (isSelected) const SizedBox(height: 4),
 
           if (isSelected)
-            Text(_getLabel(index), style: AppTextStyles.bodyText16),
+            Text(_getLabel(index), style: AppTextStyles.bodyText14dark),
         ],
       ),
     );
@@ -151,13 +154,13 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
   String _getLabel(int index) {
     switch (index) {
       case 0:
-       return "Dashboard";
-             case 1:
-        return "Sales";
+        return "Dashboard";
+      case 1:
+        return "Add Price";
       case 2:
-       return "Inventory";       
+        return "Distribution";
       case 3:
-        return "Daily closing";
+        return "Approval";
       case 4:
         return "Menu";
       default:
@@ -181,8 +184,8 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
 
                   _menuTile(
                     Icons.agriculture,
-                    "Incoming Stock from warehouse",
-                    Receivestock(),
+                    "SalesDashboard",
+                   SalesDashboardPage(),
                   ),
 
                   _menuTile(Icons.store, "Branches", BranchDetails()),
@@ -190,7 +193,6 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                   _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
 
                   _menuTile(Icons.money, "Expenses", ExpenseManagement()),
-                   _menuTile(Icons.money, "Admin in", AdminInventory()),
 
                   const SizedBox(height: 20),
                   Divider(),

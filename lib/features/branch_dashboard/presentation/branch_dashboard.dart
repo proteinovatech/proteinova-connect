@@ -82,16 +82,26 @@ class _BranchDashboardState extends State<BranchDashboard> {
             )
             .toList();
 
+        // recentActivity = result.recentActivity
+        //     .map(
+        //       (e) => {
+        //         "title": e.title,
+
+        //         "description": e.description,
+
+        //         "time": e.time,
+
+        //         "tag": e.tag,
+        //       },
+        //     )
+        //     .toList();
         recentActivity = result.recentActivity
             .map(
               (e) => {
-                "title": e.title,
-
-                "description": e.description,
-
-                "time": e.time,
-
-                "tag": e.tag,
+                "title": e.actorName,
+                "description": e.activity,
+                "time": e.createdAt,
+                "tag": e.activityType,
               },
             )
             .toList();
@@ -142,8 +152,9 @@ class _BranchDashboardState extends State<BranchDashboard> {
       );
     }
 
-  return groups;
-}
+    return groups;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -706,7 +717,6 @@ class _BranchDashboardState extends State<BranchDashboard> {
                       ],
                     ),
 
-                   
                     recentActivity.isEmpty
                         ? const Center(child: Text("No Recent Activity"))
                         : ListView.builder(
