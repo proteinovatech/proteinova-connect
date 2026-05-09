@@ -69,38 +69,23 @@ Future<void> main() async {
   runApp(AppBlocProvider(child: MyApp(startScreen: startScreen)));
 }
 
-// class MyApp extends StatelessWidget {
-//   final Widget startScreen;
-
-//   const MyApp({super.key, required this.startScreen});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       debugShowCheckedModeBanner: false,
-
-//       routes: {
-//         "/signup": (context) => const SignupScreen(),
-//       },
-
-//       home: startScreen,
-//     );
-//   }
-// }
 class MyApp extends StatelessWidget {
   final Widget? startScreen;
 
+
   const MyApp({super.key, this.startScreen});
+ 
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
 
-      // routes: {"/signup": (context) => const SignupScreen()},
+      routes: {"/signup": (context) => const SignupScreen()},
 
       // home: startScreen ?? const SignupScreen(),
       home: AdminBottomNavigator(),
     );
   }
 }
+

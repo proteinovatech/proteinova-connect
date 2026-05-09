@@ -4,10 +4,15 @@ import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/admin/Distribution/presentation/distribution_page.dart';
 import 'package:proteinova_connect/features/admin/addprice/presentation/add_price.dart';
 import 'package:proteinova_connect/features/admin/approval/screens/approvals_queue_screen.dart';
-import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
+import 'package:proteinova_connect/features/admin/expense/screens/admin_expense_screen.dart';
+import 'package:proteinova_connect/features/admin/menu/AssetManagement/presentation/asset_management_page.dart';
+import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/presentation/receive_trays_screen.dart';
+import 'package:proteinova_connect/features/admin/menu/SalesDashboard/presentation/sales_dashoard.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
-import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
+import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
+import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
+import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
 
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 import 'package:proteinova_connect/features/branch/addexpense/presentation/expense_management/presentation/expense_management.dart';
@@ -185,16 +190,45 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                 children: [
                   const SizedBox(height: 16),
 
-                  // _menuTile(
-                  //   Icons.agriculture,
-                  //   "SalesDashboard",
-                  //   SalesDashboardPage(),
-                  // ),
-                  _menuTile(Icons.inventory, "Incoming Stock", IncomingStock()),
+                  _menuTile(
+                    Icons.agriculture,
+                    "SalesDashboard",
+                    SalesDashboardPage(),
+                  ),
 
-                  _menuTile(Icons.sell_outlined, "Offer Price", OfferPrice()),
+                  _menuTile(Icons.store, "Branches", BranchDetails()),
 
-                  // _menuTile(Icons.money, "Expenses", ExpenseManagement()),
+                  _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
+
+                  _menuTile(Icons.money, "Expenses", AdminExpenseScreen()),
+                  _menuTile(
+                    Icons.agriculture,
+                    "Supplier",
+                    AdminSuppliersScreen(),
+                  ),
+                  _menuTile(
+                    Icons.account_balance_wallet_outlined,
+                    "Asset Management",
+                    AssetManagementPage(),
+                  ),
+
+                  _menuTile(
+                    Icons.inventory_2_outlined,
+                    "ReceiveTrays",
+                    ReceiveTraysScreen(),
+                  ),
+
+                  _menuTile(
+                    Icons.warehouse_outlined,
+                    "AdminInventory",
+                    AdminInventory(),
+                  ),
+                  _menuTile(
+                    Icons.report,
+                    "Report",
+                    AdminReportDashboardScreen(),
+                  ),
+                  _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
                   const SizedBox(height: 20),
                   Divider(),
                   ListTile(
