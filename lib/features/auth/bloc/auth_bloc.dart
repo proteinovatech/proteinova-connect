@@ -17,6 +17,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           role: event.role.toLowerCase(),
         );
         print("2");
+      
+
         if (result != null && result['user'] != null) {
           final prefs = await SharedPreferences.getInstance();
 
