@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
-import 'package:proteinova_connect/features/admin/approval/screens/approvals_queue_screen.dart';
-import 'package:proteinova_connect/features/admin/expense/screens/admin_expense_screen.dart';
 import 'package:proteinova_connect/features/admin/menu/presentation/sales_dashoard.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
@@ -194,7 +191,11 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                     SalesDashboardPage(),
                   ),
 
-                  _menuTile(Icons.store, "Branches", BranchDetails()),
+                  _menuTile(
+                    Icons.store,
+                    "Branch Management",
+                    BranchManagement(),
+                  ),
 
                   _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
 

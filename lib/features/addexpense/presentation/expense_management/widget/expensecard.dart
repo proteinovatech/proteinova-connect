@@ -15,27 +15,23 @@ class ExpenseCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(item.date, style: const TextStyle(fontSize: 12)),
-    
+
             Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: Colors.green,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 item.status,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                ),
+                style: const TextStyle(color: Colors.white, fontSize: 12),
               ),
             ),
           ],
         ),
-    
+
         const SizedBox(height: 8),
-    
+
         /// Middle Row
         Row(
           children: [
@@ -48,7 +44,7 @@ class ExpenseCard extends StatelessWidget {
               child: Icon(item.icon, size: 16),
             ),
             const SizedBox(width: 8),
-    
+
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,16 +60,14 @@ class ExpenseCard extends StatelessWidget {
                 ],
               ),
             ),
-    
+
             Text(
               item.amount,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ],
         ),
-        Divider()
+        Divider(),
       ],
     );
   }

@@ -19,8 +19,12 @@ class AuthService {
         "role": role,
       }),
     );
+print(email);
+print(password);
+print(role);
 
     if (response.statusCode == 200) {
+      print("wwww");
       return jsonDecode(response.body);
     }
     return null;
