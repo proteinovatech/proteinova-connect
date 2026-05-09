@@ -71,10 +71,10 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   final Widget? startScreen;
-  final Widget? startScreen;
+
 
   const MyApp({super.key, this.startScreen});
-  const MyApp({super.key, this.startScreen});
+ 
 
   @override
   Widget build(BuildContext context) {
