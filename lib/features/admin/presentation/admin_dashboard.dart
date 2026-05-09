@@ -17,63 +17,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.containerColor2,
-       drawer: Drawer(
-    child: ListView(
-      padding: const EdgeInsets.symmetric(
-      horizontal: 12,
-      vertical: 20,
-    ),
-      children: [
-        SizedBox(height: 25),
-        Container(
-  padding: const EdgeInsets.symmetric(
-    horizontal: 16,
-    vertical: 14,
-  ),
-  margin: const EdgeInsets.only(
-    bottom: 20,
-  ),
-  decoration: BoxDecoration(
-    color: AppColors.amber600, // header color
-    borderRadius: BorderRadius.circular(12),
-  ),
-
-  child: const Text(
-    "Menu",
-    style: TextStyle(
-      fontSize: 20,
-      fontWeight: FontWeight.bold,
-      color: Colors.white,
-    ),
-  ),
-),
-
-        ListTile(
-          leading: Icon(Icons.add_circle_outline),
-          title: Text('Create Purchase Order'),
-          onTap: () {},
-        ),
-
-        ListTile(
-          leading: Icon(Icons.local_shipping_outlined),
-          title: Text('Dispatch Items'),
-          onTap: () {},
-        ),
-
-        ListTile(
-          leading: Icon(Icons.add_shopping_cart_outlined),
-          title: Text('New Sales Entry'),
-          onTap: () {},
-        ),
-         ListTile(
-          leading: Icon(Icons.download_outlined),
-          title: Text('Export Report'),
-          onTap: () {},
-        ),
-      ],
-    ),
-  ),
-
+      
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,

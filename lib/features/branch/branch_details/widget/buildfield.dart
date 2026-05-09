@@ -5,9 +5,28 @@ Widget buildField(String title) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(title, style: AppTextStyles.bodyText14dark),
+      RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: title.replaceAll("*", ""),
+              style: AppTextStyles.bodyText14dark,
+            ),
+
+            if (title.contains("*"))
+              TextSpan(
+                text: " *",
+                style: AppTextStyles.bodyText14dark.copyWith(
+                  color: Colors.red,
+                ),
+              ),
+          ],
+        ),
+      ),
+
       const SizedBox(height: 4),
-      Text(title, style: AppTextStyles.bodyText14), // same text
+
+     
     ],
   );
 }
