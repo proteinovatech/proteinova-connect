@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-<<<<<<< HEAD
-import 'package:proteinova_connect/features/admin/approval/screens/approvals_queue_screen.dart';
-import 'package:proteinova_connect/features/admin/expense/screens/admin_expense_screen.dart';
-import 'package:proteinova_connect/features/admin/menu/presentation/branch_management.dart';
-import 'package:proteinova_connect/features/admin/menu/presentation/sales_dashoard.dart';
-=======
 import 'package:proteinova_connect/features/admin/Distribution/presentation/distribution_page.dart';
 import 'package:proteinova_connect/features/admin/addprice/presentation/add_price.dart';
+import 'package:proteinova_connect/features/admin/approval/screens/approvals_queue_screen.dart';
+import 'package:proteinova_connect/features/admin/expense/screens/admin_expense_screen.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/presentation/asset_management_page.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/presentation/receive_trays_screen.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/presentation/sales_dashoard.dart';
->>>>>>> d6fb63b3fe72b6c32202032250e9a2614d8d09e3
 import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
 import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
@@ -24,6 +19,7 @@ import 'package:proteinova_connect/features/branch/addexpense/presentation/expen
 import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/branch_dashboard.dart';
 import 'package:proteinova_connect/features/branch/branch_details/presentation/branch_details.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/presentation/daily_closing.dart';
+import 'package:proteinova_connect/features/branch/sales/presentation/sales.dart';
 
 import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
 
@@ -97,9 +93,9 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
 
   final List<Widget> pages = [
     AdminDashboard(),
-    AdminInventory(),
-    Sales(),
-    DailyClosing(),
+    AddPriceScreen(),
+    DistributionPage(),
+    ApprovalsQueueScreen(),
   ];
   @override
   Widget build(BuildContext context) {
@@ -209,6 +205,23 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                     Icons.agriculture,
                     "Supplier",
                     AdminSuppliersScreen(),
+                  ),
+                  _menuTile(
+                    Icons.account_balance_wallet_outlined,
+                    "Asset Management",
+                    AssetManagementPage(),
+                  ),
+
+                  _menuTile(
+                    Icons.inventory_2_outlined,
+                    "ReceiveTrays",
+                    ReceiveTraysScreen(),
+                  ),
+
+                  _menuTile(
+                    Icons.warehouse_outlined,
+                    "AdminInventory",
+                    AdminInventory(),
                   ),
                   _menuTile(
                     Icons.report,
