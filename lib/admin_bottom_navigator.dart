@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
+import 'package:proteinova_connect/features/admin/approval/screens/approvals_queue_screen.dart';
+import 'package:proteinova_connect/features/admin/expense/screens/admin_expense_screen.dart';
 import 'package:proteinova_connect/features/admin/menu/presentation/sales_dashoard.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
+import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
+import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
 
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 import 'package:proteinova_connect/features/branch/addexpense/presentation/expense_management/presentation/expense_management.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/branch_dashboard.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/supplier_screen.dart';
 import 'package:proteinova_connect/features/branch/branch_details/presentation/branch_details.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/presentation/daily_closing.dart';
 import 'package:proteinova_connect/features/branch/inventory/presentation/inventory.dart';
@@ -85,9 +91,9 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
 
   final List<Widget> pages = [
     AdminDashboard(),
-    AdminInventory(),
+    AdminReportDashboardScreen(),
     Sales(),
-    DailyClosing(),
+    ApprovalsQueueScreen(),
   ];
   @override
   Widget build(BuildContext context) {
@@ -185,15 +191,25 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   _menuTile(
                     Icons.agriculture,
                     "SalesDashboard",
-                   SalesDashboardPage(),
+                    SalesDashboardPage(),
                   ),
 
                   _menuTile(Icons.store, "Branches", BranchDetails()),
 
                   _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
 
-                  _menuTile(Icons.money, "Expenses", ExpenseManagement()),
-
+                  _menuTile(Icons.money, "Expenses", AdminExpenseScreen()),
+                  _menuTile(
+                    Icons.agriculture,
+                    "Supplier",
+                    AdminSuppliersScreen(),
+                  ),
+                  _menuTile(
+                    Icons.report,
+                    "Report",
+                    AdminReportDashboardScreen(),
+                  ),
+                  _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
                   const SizedBox(height: 20),
                   Divider(),
                   ListTile(
