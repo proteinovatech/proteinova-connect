@@ -10,6 +10,13 @@ import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/presentation
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/presentation/sales_dashoard.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
+import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
+import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
+import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
+import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
+import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
+import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
+import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
 import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
 import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
@@ -229,6 +236,16 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                     AdminReportDashboardScreen(),
                   ),
                   _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
+                  // _menuTile(
+                  //   Icons.agriculture,
+                  //   "SalesDashboard",
+                  //   SalesDashboardPage(),
+                  // ),
+                  _menuTile(Icons.inventory, "Incoming Stock", IncomingStock()),
+
+                  _menuTile(Icons.sell_outlined, "Offer Price", OfferPrice()),
+
+                  // _menuTile(Icons.money, "Expenses", ExpenseManagement()),
                   const SizedBox(height: 20),
                   Divider(),
                   ListTile(
