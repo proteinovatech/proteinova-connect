@@ -2,15 +2,16 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/features/branch_dashboard/dashboardoverview.dart';
-import 'package:proteinova_connect/features/branch_dashboard/presentation/resentactivity.dart';
-import 'package:proteinova_connect/features/branch_dashboard/repository/dashboard_repository.dart';
-import 'package:proteinova_connect/features/branch_dashboard/widget/activityitem.dart';
-import 'package:proteinova_connect/features/branch_dashboard/widget/legenditem.dart';
-import 'package:proteinova_connect/features/branch_dashboard/widget/lowstock.dart';
-import 'package:proteinova_connect/features/branch_dashboard/widget/stock.dart';
-import 'package:proteinova_connect/features/branch_dashboard/widget/stockdetails.dart';
-import 'package:proteinova_connect/features/branch_dashboard/widget/zigzagclipper.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/data/repository/dashboard_repository.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/dashboardoverview.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/resentactivity.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/widget/activityitem.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/widget/legenditem.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/widget/lowstock.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stock.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stockdetails.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/widget/zigzagclipper.dart';
+
 import 'package:proteinova_connect/model/dashboardmodel.dart';
 
 class BranchDashboard extends StatefulWidget {
@@ -82,29 +83,29 @@ class _BranchDashboardState extends State<BranchDashboard> {
             )
             .toList();
 
-        // recentActivity = result.recentActivity
-        //     .map(
-        //       (e) => {
-        //         "title": e.title,
-
-        //         "description": e.description,
-
-        //         "time": e.time,
-
-        //         "tag": e.tag,
-        //       },
-        //     )
-        //     .toList();
         recentActivity = result.recentActivity
             .map(
               (e) => {
-                "title": e.actorName,
-                "description": e.activity,
-                "time": e.createdAt,
-                "tag": e.activityType,
+                "title": e.title,
+
+                "description": e.description,
+
+                "time": e.time,
+
+                "tag": e.tag,
               },
             )
             .toList();
+        // recentActivity = result.recentActivity
+        //     .map(
+        //       (e) => {
+        //         "title": e.actorName,
+        //         "description": e.activity,
+        //         "time": e.createdAt,
+        //         "tag": e.activityType,
+        //       },
+        //     )
+        //     .toList();
 
         isLoading = false;
       });
