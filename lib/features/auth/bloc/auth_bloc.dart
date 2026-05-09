@@ -37,15 +37,34 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           print(result['user']['branch_id']);
           await prefs.setInt('branch_id', branchId ?? 0);
 
+          //         if (result['user']['role'] == "purchase") {
+          //           emit(AuthSuccessPurchase());
+          //         } else {
+          //           emit(AuthSuccessBranch());
+          //         }
+          //       } else {
+          //         emit(AuthFailure("Login failed"));
+          //       }
+          //     } catch (e) {
+          //       emit(AuthFailure("Something went wrong"));
+          //     }
+          //   });
+          // }
           if (result['user']['role'] == "purchase") {
             emit(AuthSuccessPurchase());
-          } else {
+          } else if (result['user']['role'] == "branch") {
             emit(AuthSuccessBranch());
+          } else if (result['user']['role'] == "admin") {
+            emit(AuthSuccessAdmin());
+          } else {
+            emit(AuthFailure("Invalid role"));
           }
         } else {
           emit(AuthFailure("Login failed"));
         }
       } catch (e) {
+        print(e);
+
         emit(AuthFailure("Something went wrong"));
       }
     });

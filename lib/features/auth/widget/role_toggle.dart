@@ -27,6 +27,7 @@ class _RoleToggleState extends State<RoleToggle> {
         children: [
           _buildTab("Purchase", 0),
           _buildTab("Branch", 1),
+          _buildTab("Admin", 2),
         ],
       ),
     );
