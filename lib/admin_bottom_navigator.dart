@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/admin/menu/presentation/sales_dashoard.dart';
+import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
+import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
 
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 import 'package:proteinova_connect/features/branch/addexpense/presentation/expense_management/presentation/expense_management.dart';
@@ -182,18 +184,16 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                 children: [
                   const SizedBox(height: 16),
 
-                  _menuTile(
-                    Icons.agriculture,
-                    "SalesDashboard",
-                   SalesDashboardPage(),
-                  ),
+                  // _menuTile(
+                  //   Icons.agriculture,
+                  //   "SalesDashboard",
+                  //   SalesDashboardPage(),
+                  // ),
+                  _menuTile(Icons.inventory, "Incoming Stock", IncomingStock()),
 
-                  _menuTile(Icons.store, "Branches", BranchDetails()),
+                  _menuTile(Icons.sell_outlined, "Offer Price", OfferPrice()),
 
-                  _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
-
-                  _menuTile(Icons.money, "Expenses", ExpenseManagement()),
-
+                  // _menuTile(Icons.money, "Expenses", ExpenseManagement()),
                   const SizedBox(height: 20),
                   Divider(),
                   ListTile(
