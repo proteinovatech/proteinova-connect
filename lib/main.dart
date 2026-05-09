@@ -43,7 +43,9 @@ Future<void> main() async {
 
   await dotenv.load(fileName: ".env");
   await Hive.initFlutter();
+  await Hive.initFlutter();
 
+  await Hive.openBox('purchaseBox');
   await Hive.openBox('purchaseBox');
 
   final prefs = await SharedPreferences.getInstance();
@@ -67,6 +69,7 @@ Future<void> main() async {
   runApp(AppBlocProvider(child: MyApp(startScreen: startScreen)));
 }
 
+<<<<<<< HEAD
 // class MyApp extends StatelessWidget {
 //   final Widget startScreen;
 
@@ -85,20 +88,29 @@ Future<void> main() async {
 //     );
 //   }
 // }
+=======
+>>>>>>> b3ea674c84feb8ed5b59a7f750a00b966dc36fd7
 class MyApp extends StatelessWidget {
   final Widget? startScreen;
 
+
   const MyApp({super.key, this.startScreen});
+ 
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
 
+<<<<<<< HEAD
       // routes: {"/signup": (context) => const SignupScreen()},
+=======
+      routes: {"/signup": (context) => const SignupScreen()},
+>>>>>>> b3ea674c84feb8ed5b59a7f750a00b966dc36fd7
 
       // home: startScreen ?? const SignupScreen(),
       home: AdminBottomNavigator(),
     );
   }
 }
+

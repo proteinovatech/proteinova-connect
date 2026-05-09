@@ -49,11 +49,13 @@ List<Map<String, String>> allTrays = [
 ];
 
 final List<String> tabs = [    
-     "Cash","UPI","Card",
+     "Cash","UPI",
      ];
   List<IconData> tabIcons = [
- Icons.money,Icons.phone_android_outlined, Icons.credit_card, 
+ Icons.money,Icons.phone_android_outlined, 
  ];
+ Map<String, dynamic> offerCard = {};
+ List<dynamic> offersList = [];
  void showTrayList() {
     showModalBottomSheet(
       context: context,
@@ -104,33 +106,44 @@ final List<String> tabs = [
       child: Column(
   crossAxisAlignment: CrossAxisAlignment.start,
   children: [
+     Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+       Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          "Customer Details",
+          style: AppTextStyles.headingText22,
+        ),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              showCustomerInput = !showCustomerInput;
+            });
+          },
+          child: Icon(
+            showCustomerInput
+                ? Icons.keyboard_arrow_down
+                : Icons.keyboard_arrow_up,
+          ),
+        ),
+      ],
+    ),
+    const SizedBox(height: 10),
+    const Divider(),
+    const SizedBox(height: 10),
+    if (showCustomerInput)buildCustomerInput(context),
+  ],
+),
+
     Text(
           "Product Details",
           style: AppTextStyles.headingText20,
         ),    
        const SizedBox(height: 10),
-    Container(
-  padding: const EdgeInsets.symmetric(horizontal: 12),
-  decoration: BoxDecoration(
-    color: Colors.grey.shade200,
-    borderRadius: BorderRadius.circular(12),
-  ),
-  child: Row(
-    children: [
-      const Icon(Icons.search, color: Colors.grey),
-      const SizedBox(width: 8),
-      Expanded(
-        child: TextField(
-          decoration: const InputDecoration(
-            hintText: "Search Product by name",
-            border: InputBorder.none,
-          ),
-        ),
-      ),
-    ],
-  ),
-),
- const SizedBox(height: 10),
+   
+   const SizedBox(height: 10),
         const Text("Select Product", style: AppTextStyles.buttonText16),
     const SizedBox(height: 6),
     Container(
@@ -168,65 +181,66 @@ final List<String> tabs = [
       ),
     ),
     const SizedBox(height: 14),
-   Visibility(
-  visible: false, // 👈 change to true when needed
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Text("Quantity Sold (Units/Trays)", style: AppTextStyles.buttonText16),
-      const SizedBox(height: 6),
-      _buildField(
-        controller: widget.quantityController,
-        hint: "Enter quantity",
-        icon: null,
-        isNumeric: true,
-      ),
-      const SizedBox(height: 10),
+//    Visibility(
+//   visible: false, 
+//   child: Column(
+//     crossAxisAlignment: CrossAxisAlignment.start,
+//     children: [
+//       const Text("Quantity Sold (Units/Trays)", style: AppTextStyles.buttonText16),
+//       const SizedBox(height: 6),
+//       _buildField(
+//         controller: widget.quantityController,
+//         hint: "Enter quantity",
+//         icon: null,
+//         isNumeric: true,
+//       ),
+//       const SizedBox(height: 10),
 
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [10, 20, 50, 100].map((value) {
-          final isSelected = selectedIncrement == value;
+//       Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//         children: [10, 20, 50, 100].map((value) {
+//           final isSelected = selectedIncrement == value;
 
-          return GestureDetector(
-            onTap: () {
-              int current = int.tryParse(widget.quantityController.text) ?? 0;
+//           return GestureDetector(
+//             onTap: () {
+//               int current = int.tryParse(widget.quantityController.text) ?? 0;
 
-              setState(() {
-                selectedIncrement = value;
-                widget.quantityController.text =
-                    (current + value).toString();
-              });
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.containerColor2
-                    : AppColors.containerColor,
-                border: Border.all(
-                  color: isSelected
-                      ? AppColors.border2
-                      : AppColors.border,
-                ),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                "+$value",
-                style: isSelected
-                    ? AppTextStyles.containerText.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.dark,
-                      )
-                    : AppTextStyles.containerText,
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    ],
-  ),
-),
+//               setState(() {
+//                 selectedIncrement = value;
+//                 widget.quantityController.text =
+//                     (current + value).toString();
+//               });
+//             },
+//             child: Container(
+//               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+//               decoration: BoxDecoration(
+//                 color: isSelected
+//                     ? AppColors.containerColor2
+//                     : AppColors.containerColor,
+//                 border: Border.all(
+//                   color: isSelected
+//                       ? AppColors.border2
+//                       : AppColors.border,
+//                 ),
+//                 borderRadius: BorderRadius.circular(20),
+//               ),
+//               child: Text(
+//                 "+$value",
+//                 style: isSelected
+//                     ? AppTextStyles.containerText.copyWith(
+//                         fontWeight: FontWeight.bold,
+//                         color: AppColors.dark,
+//                       )
+//                     : AppTextStyles.containerText,
+//               ),
+//             ),
+//           );
+//         }).toList(),
+//       ),
+//     ],
+//   ),
+// ),
+    
     const SizedBox(height: 14),
      Container(
   padding: const EdgeInsets.all(12),
@@ -374,364 +388,266 @@ int qty = int.tryParse(item["qty"] ?? "1") ?? 1;
         }).toList(),
       ],
     )),SizedBox(height: 10,),
-      Column(
+   Column(
   crossAxisAlignment: CrossAxisAlignment.start,
   children: [
     Text(
       "Offers",
       style: AppTextStyles.headingText20,
     ),
+
     const SizedBox(height: 10),
-     Container(
-      padding: const EdgeInsets.all(12),
+    Container(
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.background,
         border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
       ),
+
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          RichText(
-  text: TextSpan(
-    children: [
-      TextSpan(
-        text: "Buy 5 Trays Get 1 Free ",
-        style: AppTextStyles.headingText22.copyWith(
-          color: AppColors.textPrimary, // first color
-        ),
-      ),
-      TextSpan(
-        text: "(White eggs)",
-        style: AppTextStyles.headingText22.copyWith(
-          color: Colors.grey, // second color
-        ),
-      ),
-    ],
-  ),
-),
-          const SizedBox(height: 12),
-                   Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
 
-                          GestureDetector(
-                onTap: () {
-                                 },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.background1,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    "Remove",
-                    style: AppTextStyles.containerText,
-                  ),
-                ),
+              _offerCountCard(
+                "Active",
+                offerCard["active_offers"]?.toString() ?? "0",
+                Colors.green,
               ),
-              const SizedBox(width: 10),
-                            GestureDetector(
-                onTap: () {
-                                  },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.amber600,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    "Accept",
-                    style: AppTextStyles.containerText,
-                  ),
-                ),
+
+              _offerCountCard(
+                "Products",
+                offerCard["products_on_offer"]?.toString() ?? "0",
+                Colors.orange,
+              ),
+
+              _offerCountCard(
+                "Expiring",
+                offerCard["expiring_soon"]?.toString() ?? "0",
+                Colors.red,
+              ),
+
+              _offerCountCard(
+                "Inactive",
+                offerCard["deactive_offers"]?.toString() ?? "0",
+                Colors.grey,
               ),
             ],
           ),
-        ],
-      ),
-    ),
- SizedBox(height: 10,), 
-              SizedBox(height: 10,),
-     Align(
-   alignment: Alignment.centerLeft,
-   child: Text(
-     "Bill Summery",
-     style: AppTextStyles.headingText22,
-   ),
- ),
-          Container(
-   padding: const EdgeInsets.all(10),
-   margin: const EdgeInsets.all(12),
-   decoration: BoxDecoration(
-     color: Colors.white,
-     borderRadius: BorderRadius.circular(12),
-     border:Border.all(color: const Color.fromARGB(255, 218, 217, 217)) 
-      ),
-   child:Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    buildSummaryRow("Items(6- Trays)", "₹275"),
-    const SizedBox(height: 5),
-    const Divider(),
 
-    buildSummaryRow("Sub Total", "₹230", isBold: true),
-    const Divider(),
-
-    buildSummaryRow("Tax(0%)", "₹0"),
-    const SizedBox(height: 5),
-    const Divider(),
-
-    buildSummaryRow("Total Amount", "₹230", isBold: true),
-  ],
-)
- )
-        , SizedBox(height: 10,),  
-       Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-       Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          "Customer Details",
-          style: AppTextStyles.headingText22,
-        ),
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              showCustomerInput = !showCustomerInput;
-            });
-          },
-          child: Icon(
-            showCustomerInput
-                ? Icons.keyboard_arrow_down
-                : Icons.keyboard_arrow_up,
-          ),
-        ),
-      ],
-    ),
-    const SizedBox(height: 10),
-    const Divider(),
-    const SizedBox(height: 10),
-    if (showCustomerInput) buildCustomerInput(),
-  ],
-),
-SizedBox(height: 10,),
-   Container(
-  width: double.infinity,
-  padding: const EdgeInsets.all(14),
-  decoration: BoxDecoration(
-    color: AppColors.background,
-    border: Border.all(color: AppColors.border),
-    borderRadius: BorderRadius.circular(10),
-  ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-     Text(
-        "Payment Method",
-        style: AppTextStyles.headingText22,
-      ),
-      const SizedBox(height: 10),
-    SizedBox(
-   height: size.height * 0.05,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: tabs.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 20),
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                selectedIndex = index;
-              });
-            },
-        child: SizedBox(
-          height: 20,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [            
-              Row(
-                children: [
-                   Icon(
-                tabIcons[index],
-                color: selectedIndex == index
-            ? AppColors.dark
-            : Colors.grey,
-              ),
-          SizedBox(width: 5,),
-                  Text(
-                    tabs[index],
-                    style: AppTextStyles.bodyText16.copyWith(
-                      color: selectedIndex == index
-                          ? AppColors.dark
-                          : Colors.grey,
-                      fontWeight: FontWeight.bold,
+          const SizedBox(height: 16),
+          offersList.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Text(
+                      "No Offers Available",
+                      style: AppTextStyles.bodyText14,
                     ),
                   ),
-                ],
-              ),
-            ],          
-          ),
-        ),
-  );
-  },
-  ),),  
-    Stack(
-      children: [
-        Container(
-          height: 3,
-          width: double.infinity,
-          color: const Color.fromARGB(255, 250, 246, 246),
-        ),
-       AnimatedAlign(
-          duration: const Duration(milliseconds: 300),
-          alignment: Alignment(
-            -1 + (2 / (tabs.length - 1)) * selectedIndex,
-            0,
-          ),
-          child: Container(
-            height: 3,
-            width: 100,
-            decoration: BoxDecoration(
-              color: AppColors.amber500,
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
-      ],
-    ),
-      const SizedBox(height: 16),
-     Text(
-        "Cash Received",
-        style: AppTextStyles.headingText20,
-      ),
-      const SizedBox(height: 10),
-      Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          color: AppColors.background,
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const TextField(
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            prefixText: "₹ ",
-            hintText: "Enter amount",
-            border: InputBorder.none,
-          ),
-        ),
-      ),
-      const SizedBox(height: 16),
-           Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            "Change",
-            style: AppTextStyles.containerText,
-          ),
-          Text(
-            "₹20.00",
-            style: AppTextStyles.headingText20,
-          ),
+                )
+              : ListView.builder(
+                  itemCount: offersList.length,
+                  shrinkWrap: true,
+                  physics:
+                      const NeverScrollableScrollPhysics(),
+
+                  itemBuilder: (context, index) {
+
+                    final offer = offersList[index];
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+
+                      padding: const EdgeInsets.all(12),
+
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius:
+                            BorderRadius.circular(10),
+
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                        ),
+                      ),
+
+                      child: Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
+
+                        children: [
+
+                          RichText(
+                            text: TextSpan(
+                              children: [
+
+                                TextSpan(
+                                  text:
+                                      "${offer["offer_text"] ?? ""} ",
+                                  style:
+                                      AppTextStyles.headingText22
+                                          .copyWith(
+                                    color:
+                                        AppColors.textPrimary,
+                                  ),
+                                ),
+
+                                TextSpan(
+                                  text:
+                                      "(${offer["product_name"] ?? "Product"})",
+                                  style:
+                                      AppTextStyles.headingText22
+                                          .copyWith(
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          Row(
+                            mainAxisAlignment:
+                                MainAxisAlignment.end,
+
+                            children: [
+
+                              GestureDetector(
+                                onTap: () {},
+
+                                child: Container(
+                                  padding:
+                                      const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+
+                                  decoration: BoxDecoration(
+                                    color:
+                                        AppColors.background1,
+
+                                    borderRadius:
+                                        BorderRadius.circular(6),
+                                  ),
+
+                                  child: Text(
+                                    "Remove",
+                                    style:
+                                        AppTextStyles.containerText,
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(width: 10),
+
+                              GestureDetector(
+                                onTap: () {},
+
+                                child: Container(
+                                  padding:
+                                      const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+
+                                  decoration: BoxDecoration(
+                                    color: AppColors.amber600,
+
+                                    borderRadius:
+                                        BorderRadius.circular(6),
+                                  ),
+
+                                  child: Text(
+                                    "Accept",
+                                    style:
+                                        AppTextStyles.containerText,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
         ],
       ),
-      SizedBox(height: 10,),
-      Container(
-  width: double.infinity,
-  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-  decoration: BoxDecoration(
-    color: Colors.green,
-    border: Border.all(color: AppColors.border),
-    borderRadius: BorderRadius.circular(8),
-  ),
-  child: Center(
-    child: Text(
-      "Collect Payment   ₹230",
-      style: AppTextStyles.containerText.copyWith(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
-      ),
     ),
-  ),
-)
-    ],
-  ),
-)],
+  ],
 ),
-  Visibility(
-  visible: showNotesSection,
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Text("Additional Notes", style: AppTextStyles.buttonText16),
-      const SizedBox(height: 6),
+//  Visibility(
+  
+//   visible: showNotesSection,
+//   child: Column(
+//     crossAxisAlignment: CrossAxisAlignment.start,
+//     children: [
+//       const Text("Additional Notes", style: AppTextStyles.buttonText16),
+//       const SizedBox(height: 6),
 
-      _buildField(
-        controller: widget.notesController,
-        hint: "Add any details about this transaction...",
-        maxLines: 3,
-      ),
+//       _buildField(
+//         controller: widget.notesController,
+//         hint: "Add any details about this transaction...",
+//         maxLines: 3,
+//       ),
 
-      SizedBox(height: size.height * 0.03),
-      const Divider(),
-      SizedBox(height: size.height * 0.02),
+//       SizedBox(height: size.height * 0.03),
+//       const Divider(),
+//       SizedBox(height: size.height * 0.02),
 
-      Row(
-        children: [
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                widget.categoryController.clear();
-                widget.quantityController.clear();
-                widget.nameController.clear();
-                widget.notesController.clear();
+//       Row(
+//         children: [
+//           GestureDetector(
+//             onTap: () {
+//               setState(() {
+//                 widget.categoryController.clear();
+//                 widget.quantityController.clear();
+//                 widget.nameController.clear();
+//                 widget.notesController.clear();
 
-                selectedCategory = null;
-                selectedIncrement = null;
-                showNotesSection = false; // 👈 hide again
-              });
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: AppColors.background1,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text("Clear Form",
-                  style: AppTextStyles.containerText),
-            ),
-          ),
+//                 selectedCategory = null;
+//                 selectedIncrement = null;
+//                 showNotesSection = false; // 👈 hide again
+//               });
+//             },
+//             child: Container(
+//               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+//               decoration: BoxDecoration(
+//                 color: AppColors.background1,
+//                 borderRadius: BorderRadius.circular(6),
+//               ),
+//               child: Text("Clear Form",
+//                   style: AppTextStyles.containerText),
+//             ),
+//           ),
 
-          SizedBox(width: size.width * 0.29),
+//           SizedBox(width: size.width * 0.29),
 
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: AppColors.amber600,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.check, color: AppColors.dark),
-                const SizedBox(width: 4),
-                Text("Log Sale",
-                    style: AppTextStyles.containerText),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ],
-  ),
-)
+//           Container(
+//             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+//             decoration: BoxDecoration(
+//               color: AppColors.amber600,
+//               borderRadius: BorderRadius.circular(6),
+//             ),
+//             child: Row(
+//               children: [
+//                 Icon(Icons.check, color: AppColors.dark),
+//                 const SizedBox(width: 4),
+//                 Text("Log Sale",
+//                     style: AppTextStyles.containerText),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     ],
+//   ),
+// )
+  
   ],
 ),
   );}
@@ -740,7 +656,7 @@ SizedBox(height: 10,),
     required String hint,
     int maxLines = 1,
      IconData? icon,
-     bool isNumeric = false,  // 👈 add this
+     bool isNumeric = false,  
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -756,7 +672,7 @@ SizedBox(height: 10,),
          keyboardType:
           isNumeric ? TextInputType.number : TextInputType.text, 
       inputFormatters: isNumeric
-          ? [FilteringTextInputFormatter.digitsOnly] // 👈 only numbers
+          ? [FilteringTextInputFormatter.digitsOnly] 
           : [],
         decoration: InputDecoration(
           hintText: hint,
@@ -772,7 +688,7 @@ SizedBox(height: 10,),
       setState(() {
         selectedItems.add({
           "title": title,
-          "price": price.replaceAll("\$", ""), // ✅ REMOVE $
+          "price": price.replaceAll("\$", ""), 
           "stock": stock,
           "qty": "1",
         });
@@ -782,6 +698,47 @@ SizedBox(height: 10,),
       title: title,
       price: price,
       Stock: stock,
+    ),
+  );
+}
+Widget _offerCountCard(
+  String title,
+  String count,
+  Color color,
+) {
+  return Expanded(
+    child: Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+
+      child: Column(
+        children: [
+
+          Text(
+            count,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     ),
   );
 }}

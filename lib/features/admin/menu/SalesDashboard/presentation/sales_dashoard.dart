@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:proteinova_connect/features/admin/menu/widget/sales_row.dart';
+import 'package:proteinova_connect/features/admin/menu/SalesDashboard/presentation/sales_entry_page.dart';
+import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/sales_row.dart';
 
 class SalesDashboardPage extends StatelessWidget {
   const SalesDashboardPage({super.key});
@@ -74,30 +75,42 @@ class SalesDashboardPage extends StatelessWidget {
             const SizedBox(height: 10),
 
             /// BUTTON
-            Container(
-              height: 38,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: const Color(0xffFFD600),
-                borderRadius: BorderRadius.circular(14),
-              ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SalesEntryPage(),
+                  ),
+                );
+              },
 
-              child: const Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.add_circle_outline),
+              child: Container(
+                height: 38,
+                width: double.infinity,
 
-                    SizedBox(width: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xffFFD600),
+                  borderRadius: BorderRadius.circular(14),
+                ),
 
-                    Text(
-                      "New Sales Entry",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                child: const Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.add_circle_outline),
+
+                      SizedBox(width: 10),
+
+                      Text(
+                        "New Sales Entry",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

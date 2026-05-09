@@ -85,9 +85,13 @@ void initState() {
   String? selectedTray;
   List<ProductSummary> productList = [];
   final List<String> eggCategories = [
-    "Classic",
-    "Premium",
-    "Medium"
+    "White Medium",
+    "White Bullet",
+    "White Small Eggs",
+    "Brown Eggs",
+    "Country Eggs",
+    "Quail Eggs",
+    "Duck Eggs"
   ];
 
   final List<String> trayType = [
