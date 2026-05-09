@@ -4,6 +4,7 @@ import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/admin/Distribution/presentation/distribution_page.dart';
 import 'package:proteinova_connect/features/admin/addprice/presentation/add_price.dart';
 import 'package:proteinova_connect/features/admin/approval/screens/approvals_queue_screen.dart';
+<<<<<<< HEAD
 import 'package:proteinova_connect/features/admin/expense/screens/admin_expense_screen.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/presentation/asset_management_page.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/presentation/receive_trays_screen.dart';
@@ -13,6 +14,12 @@ import 'package:proteinova_connect/features/admin/presentation/admin_inventory.d
 import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
 import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
+=======
+import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
+import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
+import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
+import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
+>>>>>>> ef5ccf69312af4e92bee7ce72cb6e190a0d906ae
 
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 import 'package:proteinova_connect/features/branch/addexpense/presentation/expense_management/presentation/expense_management.dart';
@@ -190,6 +197,7 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                 children: [
                   const SizedBox(height: 16),
 
+<<<<<<< HEAD
                   _menuTile(
                     Icons.agriculture,
                     "SalesDashboard",
@@ -229,6 +237,18 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                     AdminReportDashboardScreen(),
                   ),
                   _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
+=======
+                  // _menuTile(
+                  //   Icons.agriculture,
+                  //   "SalesDashboard",
+                  //   SalesDashboardPage(),
+                  // ),
+                  _menuTile(Icons.inventory, "Incoming Stock", IncomingStock()),
+
+                  _menuTile(Icons.sell_outlined, "Offer Price", OfferPrice()),
+
+                  // _menuTile(Icons.money, "Expenses", ExpenseManagement()),
+>>>>>>> ef5ccf69312af4e92bee7ce72cb6e190a0d906ae
                   const SizedBox(height: 20),
                   Divider(),
                   ListTile(
