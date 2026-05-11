@@ -1,7 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../services/tray_receive_service.dart';
 
-class ReceiveTraysScreen extends StatelessWidget {
+class ReceiveTraysScreen extends StatefulWidget {
   const ReceiveTraysScreen({super.key});
+
+  @override
+  State<ReceiveTraysScreen> createState() => _ReceiveTraysScreenState();
+}
+
+class _ReceiveTraysScreenState extends State<ReceiveTraysScreen> {
+  final TrayReceiveService _trayReceiveService = TrayReceiveService();
+  List<dynamic> receiveNotes = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchReceiveNotes();
+  }
+
+  Future<void> _fetchReceiveNotes() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final notes = await _trayReceiveService.getTrayReceiveNotes();
+      setState(() {
+        receiveNotes = notes;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading records: $e')));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -357,55 +394,110 @@ class ReceiveTraysScreen extends StatelessWidget {
 
                             Divider(height: 1, color: Colors.grey.shade300),
 
-                            /// EMPTY
-                            Container(
-                              width: double.infinity,
+                            /// ROWS OR EMPTY
+                            if (isLoading)
+                              const Padding(
+                                padding: EdgeInsets.all(50),
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              )
+                            else if (receiveNotes.isEmpty)
+                              Container(
+                                width: double.infinity,
 
-                              padding: const EdgeInsets.symmetric(vertical: 50),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 50,
+                                ),
 
-                              child: Column(
-                                children: [
-                                  Container(
-                                    width: 120,
-                                    height: 120,
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      width: 120,
+                                      height: 120,
 
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Color(0xffF8FAFC),
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Color(0xffF8FAFC),
+                                      ),
+
+                                      child: const Icon(
+                                        Icons.inventory_2_outlined,
+                                        size: 58,
+                                        color: Color(0xff94A3B8),
+                                      ),
                                     ),
 
-                                    child: const Icon(
-                                      Icons.inventory_2_outlined,
-                                      size: 58,
-                                      color: Color(0xff94A3B8),
+                                    const SizedBox(height: 18),
+
+                                    Text(
+                                      "No records found",
+
+                                      style: TextStyle(
+                                        fontSize: isSmall ? 22 : 26,
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color(0xff0B132B),
+                                      ),
                                     ),
-                                  ),
 
-                                  const SizedBox(height: 18),
+                                    const SizedBox(height: 8),
 
-                                  Text(
-                                    "No records found",
+                                    Text(
+                                      "No tray receive notes yet.",
 
-                                    style: TextStyle(
-                                      fontSize: isSmall ? 22 : 26,
-                                      fontWeight: FontWeight.bold,
-                                      color: const Color(0xff0B132B),
+                                      style: TextStyle(
+                                        fontSize: isSmall ? 14 : 16,
+                                        color: Colors.grey.shade600,
+                                      ),
                                     ),
-                                  ),
+                                  ],
+                                ),
+                              )
+                            else
+                              ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: receiveNotes.length,
+                                separatorBuilder: (context, index) => Divider(
+                                  height: 1,
+                                  color: Colors.grey.shade300,
+                                ),
+                                itemBuilder: (context, index) {
+                                  final note = receiveNotes[index];
+                                  final dateStr = note['received_at'] != null
+                                      ? DateFormat('dd MMM yyyy').format(
+                                          DateTime.parse(note['received_at']),
+                                        )
+                                      : 'N/A';
 
-                                  const SizedBox(height: 8),
-
-                                  Text(
-                                    "No tray returns yet.",
-
-                                    style: TextStyle(
-                                      fontSize: isSmall ? 14 : 16,
-                                      color: Colors.grey.shade600,
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: 10,
                                     ),
-                                  ),
-                                ],
+                                    child: Row(
+                                      children: [
+                                        tableCell(dateStr),
+                                        tableCell(
+                                          note['warehouse_name'] ?? '-',
+                                        ),
+                                        tableCell(
+                                          "Tray Return #${note['tray_return_id']}",
+                                        ),
+                                        tableCell(
+                                          note['received_qty']?.toString() ??
+                                              '0',
+                                        ),
+                                        tableCell(
+                                          note['received_condition'] ?? '-',
+                                        ),
+                                        tableCell(note['notes'] ?? '-'),
+                                        tableCellAction(note),
+                                      ],
+                                    ),
+                                  );
+                                },
                               ),
-                            ),
                           ],
                         ),
                       ),
@@ -427,13 +519,43 @@ class ReceiveTraysScreen extends StatelessWidget {
     return Expanded(
       child: Text(
         title,
-
         textAlign: TextAlign.center,
-
         style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.bold,
           color: Colors.grey.shade700,
+        ),
+      ),
+    );
+  }
+
+  /// TABLE CELL
+  Widget tableCell(String text) {
+    return Expanded(
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: const TextStyle(fontSize: 13, color: Color(0xff0B132B)),
+      ),
+    );
+  }
+
+  /// TABLE CELL ACTION
+  Widget tableCellAction(dynamic note) {
+    return Expanded(
+      child: Center(
+        child: InkWell(
+          onTap: () {
+            // View action
+          },
+          child: const Text(
+            "View",
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
+            ),
+          ),
         ),
       ),
     );

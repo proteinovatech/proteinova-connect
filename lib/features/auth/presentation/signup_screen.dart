@@ -143,6 +143,13 @@ class _SignupScreenState extends State<SignupScreen> {
                               builder: (_) => const BranchBottomNavigator(),
                             ),
                           );
+                        } else if (state is AuthSuccessAdmin) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const AdminDashboard(),
+                            ),
+                          );
                         } else if (state is AuthFailure) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text(state.message)),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/features/admin/widget/inventory_card.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
+import 'package:proteinova_connect/core/network/dio_client.dart';
 
 class AdminInventory extends StatefulWidget {
   const AdminInventory({super.key});
@@ -10,6 +11,40 @@ class AdminInventory extends StatefulWidget {
 }
 
 class _AdminInventoryState extends State<AdminInventory> {
+  bool isLoading = false;
+  Map<String, dynamic>? inventoryStockData;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchInventoryStock();
+  }
+
+  Future<void> fetchInventoryStock() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final response = await DioClient().dio.get('/api/admin/inventoryStock');
+      if (response.statusCode == 200) {
+        final data = response.data['data'];
+        if (data is List && data.isNotEmpty) {
+          setState(() {
+            inventoryStockData = data.first;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Failed to fetch inventory stock: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
   final List<Map<String, dynamic>> inventoryData = [
     {"title": "White Export", "value": 11060, "progress": 0.82},
     {"title": "AA", "value": 5680, "progress": 0.48},
@@ -237,54 +272,65 @@ class _AdminInventoryState extends State<AdminInventory> {
                 mainAxisSpacing: 12,
                 childAspectRatio: 1.45,
 
-                children: const [
-                  InventoryCard(
-                    title: "Expected Today",
-                    value: "1 Shipments",
-                    subtitle: "Tracking Information",
-                    icon: Icons.calendar_today_outlined,
-                    iconColor: Colors.black87,
-                  ),
-
-                  InventoryCard(
-                    title: "Ready for Unloading",
-                    value: "4 Shipments",
-                    subtitle: "Awaiting Confirmation",
-                    icon: Icons.inventory_2_outlined,
-                    iconColor: Colors.green,
-                  ),
-
-                  InventoryCard(
-                    title: "Delayed in Transit",
-                    value: "12 Shipments",
-                    subtitle: "₹70,000 Loss / Pending",
-                    icon: Icons.warning_amber_rounded,
-                    iconColor: Colors.red,
-                  ),
-
+                children: [
                   InventoryCard(
                     title: "Current Stock",
-                    value: "30,990",
-                    subtitle: "+2.4% from last week",
-                    icon: Icons.refresh,
+                    value: isLoading
+                        ? "Loading..."
+                        : "${inventoryStockData?['total_stock'] ?? '0'}",
+                    subtitle: "Total stock units",
+                    icon: Icons.inventory_2_outlined,
                     iconColor: Colors.black87,
-                    isPositive: true,
-                  ),
-
-                  InventoryCard(
-                    title: "Damaged Stock",
-                    value: "21 Units",
-                    subtitle: "0.4% damage rate",
-                    icon: Icons.warning_amber_rounded,
-                    iconColor: Colors.red,
                   ),
 
                   InventoryCard(
                     title: "Stock Value",
-                    value: "₹ 192,894",
+                    value: isLoading
+                        ? "..."
+                        : "₹ ${inventoryStockData?['total_stock_value'] ?? '0'}",
                     subtitle: "Total inventory value",
                     icon: Icons.attach_money,
                     iconColor: Colors.green,
+                  ),
+
+                  InventoryCard(
+                    title: "In Transit",
+                    value: isLoading
+                        ? "..."
+                        : "${inventoryStockData?['in_transit'] ?? '0'} Units",
+                    subtitle: "Expected to arrive",
+                    icon: Icons.local_shipping_outlined,
+                    iconColor: Colors.orange,
+                  ),
+
+                  InventoryCard(
+                    title: "Dispatched Stock",
+                    value: isLoading
+                        ? "..."
+                        : "${inventoryStockData?['dispatched_stock'] ?? '0'} Units",
+                    subtitle: "Total dispatched",
+                    icon: Icons.call_made,
+                    iconColor: Colors.blue,
+                  ),
+
+                  InventoryCard(
+                    title: "Sales Revenue",
+                    value: isLoading
+                        ? "..."
+                        : "₹ ${inventoryStockData?['branch_sales_revenue'] ?? '0'}",
+                    subtitle: "Branch sales revenue",
+                    icon: Icons.trending_up,
+                    iconColor: Colors.purple,
+                  ),
+
+                  InventoryCard(
+                    title: "Profit Summary",
+                    value: isLoading
+                        ? "..."
+                        : "₹ ${inventoryStockData?['profit_summary'] ?? '0'}",
+                    subtitle: "Overall profit",
+                    icon: Icons.account_balance_wallet_outlined,
+                    iconColor: Colors.teal,
                   ),
                 ],
               ),
