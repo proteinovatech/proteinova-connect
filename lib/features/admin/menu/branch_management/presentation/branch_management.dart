@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/admin/data/model/branch_model.dart';
+import 'package:proteinova_connect/features/admin/data/services/branch_service.dart';
 import 'package:proteinova_connect/features/admin/menu/branch_management/presentation/add_branch_details.dart';
 import 'package:proteinova_connect/features/admin/menu/branch_management/widget/info_cards.dart';
 
@@ -12,6 +14,30 @@ class BranchManagement extends StatefulWidget {
 }
 
 class _BranchManagementState extends State<BranchManagement> {
+  List<BranchModel> branches = [];
+bool isLoading = true;
+@override
+void initState() {
+  super.initState();
+  loadBranches();
+}
+
+Future<void> loadBranches() async {
+  try {
+    final data = await BranchService().fetchBranches();
+
+    setState(() {
+      branches = data;
+      isLoading = false;
+    });
+  } catch (e) {
+    setState(() {
+      isLoading = false;
+    });
+
+    print(e);
+  }
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,332 +125,488 @@ class _BranchManagementState extends State<BranchManagement> {
         ],
       ),
 
-      body: Padding(
+      body: isLoading
+    ? const Center(
+        child: CircularProgressIndicator(),
+      )
+      :Padding(
         padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: InfoCards(
-                    title: "Total Active Branches",
-                    value: "0",
-                    percent: "+ 1",
-                    subtitle: "new branch this year",
-                    icon: Icons.trending_up,
-                    topIcon: Icons.store_outlined,
-                    topIconColor: AppColors.blueAccent,
-                    iconColor: AppColors.green,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: InfoCards(
-                    title: "Total Egg Stock",
-                    value: "0",
-                    percent: "Live",
-                    subtitle: "across all grades",
-                    icon: Icons.trending_up,
-                    topIcon: Icons.stacked_bar_chart,
-                    topIconColor: AppColors.deepOrange,
-                    iconColor: AppColors.green,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: InfoCards(
-                    title: "Total Sales Today",
-                    value: "₹0",
-                    percent: "+5.4%",
-                    subtitle: "vs yesterday",
-                    icon: Icons.trending_up,
-                    topIcon: Icons.currency_rupee,
-                    topIconColor: Colors.deepPurple,
-                    iconColor: AppColors.green,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: InfoCards(
-                    title: "Branch Revenue (MTD)",
-                    value: "₹0",
-                    percent: "+0%",
-                    subtitle: "vs last month",
-                    icon: Icons.trending_up,
-                    topIcon: Icons.currency_rupee,
-                    topIconColor: AppColors.green,
-                    iconColor: AppColors.green,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.all(16),
-
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Branch Directory",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AddBranchDetails(),
-                            ),
-                          );
-                        },
-
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
-                          ),
-
-                          decoration: BoxDecoration(
-                            color: const Color(0xffFACC15),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
+                  Expanded(
+                    child: InfoCards(
+                      title: "Total Active Branches",
+                      value: "0",
+                      percent: "+ 1",
+                      subtitle: "new branch this year",
+                      icon: Icons.trending_up,
+                      topIcon: Icons.store_outlined,
+                      topIconColor: AppColors.blueAccent,
+                      iconColor: AppColors.green,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: InfoCards(
+                      title: "Total Egg Stock",
+                      value: "0",
+                      percent: "Live",
+                      subtitle: "across all grades",
+                      icon: Icons.trending_up,
+                      topIcon: Icons.stacked_bar_chart,
+                      topIconColor: AppColors.deepOrange,
+                      iconColor: AppColors.green,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: InfoCards(
+                      title: "Total Sales Today",
+                      value: "₹0",
+                      percent: "+5.4%",
+                      subtitle: "vs yesterday",
+                      icon: Icons.trending_up,
+                      topIcon: Icons.currency_rupee,
+                      topIconColor: Colors.deepPurple,
+                      iconColor: AppColors.green,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: InfoCards(
+                      title: "Branch Revenue (MTD)",
+                      value: "₹0",
+                      percent: "+0%",
+                      subtitle: "vs last month",
+                      icon: Icons.trending_up,
+                      topIcon: Icons.currency_rupee,
+                      topIconColor: AppColors.green,
+                      iconColor: AppColors.green,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+          
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+          
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Icon(Icons.add, size: 18, color: Colors.black),
-
-                              SizedBox(width: 6),
-
-                              Text(
-                                "Add New Branch",
-                                style: TextStyle(fontWeight: FontWeight.w600),
+                              const Text(
+                                "Branch Directory",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                                
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const AddBranchDetails(),
+                                    ),
+                                  );
+                                },
+                                
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 10,
+                                  ),
+                                
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xffFACC15),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.add, size: 18, color: Colors.black),
+                                
+                                      SizedBox(width: 6),
+                                
+                                      Text(
+                                        "Add New Branch",
+                                        style: TextStyle(fontWeight: FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-
-                    child: const TextField(
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: "Filter name or location...",
-                        icon: Icon(Icons.search, size: 20),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  /// FILTER ROW
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-
-                            border: Border.all(color: Colors.grey.shade300),
-                          ),
-
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: "All Regions",
-
-                              isExpanded: true,
-
-                              items: const [
-                                DropdownMenuItem(
-                                  value: "All Regions",
-                                  child: Text("All Regions"),
-                                ),
-
-                                DropdownMenuItem(
-                                  value: "North",
-                                  child: Text("North"),
-                                ),
-
-                                DropdownMenuItem(
-                                  value: "South",
-                                  child: Text("South"),
-                                ),
-                              ],
-
-                              onChanged: (value) {},
+                                
+                          const SizedBox(height: 20),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                                
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                                
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                                
+                            child: const TextField(
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                hintText: "Filter name or location...",
+                                icon: Icon(Icons.search, size: 20),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-
-                      const SizedBox(width: 12),
-
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-
-                            border: Border.all(color: Colors.grey.shade300),
+                                
+                          const SizedBox(height: 10),
+                                
+                          /// FILTER ROW
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                
+                                    border: Border.all(color: Colors.grey.shade300),
+                                  ),
+                                
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: "All Regions",
+                                
+                                      isExpanded: true,
+                                
+                                      items: const [
+                                        DropdownMenuItem(
+                                          value: "All Regions",
+                                          child: Text("All Regions"),
+                                        ),
+                                
+                                        DropdownMenuItem(
+                                          value: "North",
+                                          child: Text("North"),
+                                        ),
+                                
+                                        DropdownMenuItem(
+                                          value: "South",
+                                          child: Text("South"),
+                                        ),
+                                      ],
+                                
+                                      onChanged: (value) {},
+                                    ),
+                                  ),
+                                ),
+                              ),
+                                
+                              const SizedBox(width: 12),
+                                
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                
+                                    border: Border.all(color: Colors.grey.shade300),
+                                  ),
+                                
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: "All Statuses",
+                                
+                                      isExpanded: true,
+                                
+                                      items: const [
+                                        DropdownMenuItem(
+                                          value: "All Statuses",
+                                          child: Text("All Statuses"),
+                                        ),
+                                
+                                        DropdownMenuItem(
+                                          value: "Active",
+                                          child: Text("Active"),
+                                        ),
+                                
+                                        DropdownMenuItem(
+                                          value: "Inactive",
+                                          child: Text("Inactive"),
+                                        ),
+                                      ],
+                                
+                                      onChanged: (value) {},
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: "All Statuses",
-
-                              isExpanded: true,
-
-                              items: const [
-                                DropdownMenuItem(
-                                  value: "All Statuses",
-                                  child: Text("All Statuses"),
+                          const SizedBox(height: 10),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.background1,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    "BRANCH\nDETAILS",
+                                    textAlign: TextAlign.center,
+                                    style: AppTextStyles.bodyText12dark,
+                                  ),
                                 ),
-
-                                DropdownMenuItem(
-                                  value: "Active",
-                                  child: Text("Active"),
+                                
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    "BRANCH\nMANAGER",
+                                    textAlign: TextAlign.center,
+                                    style: AppTextStyles.bodyText12dark,
+                                  ),
                                 ),
-
-                                DropdownMenuItem(
-                                  value: "Inactive",
-                                  child: Text("Inactive"),
+                                
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    "STATUS",
+                                    textAlign: TextAlign.center,
+                                    style: AppTextStyles.bodyText12dark,
+                                  ),
+                                ),
+                                
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    "CURRENT\nSTOCK",
+                                    textAlign: TextAlign.center,
+                                    style: AppTextStyles.bodyText12dark,
+                                  ),
+                                ),
+                                
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    "SALES\n(MTD)",
+                                    textAlign: TextAlign.center,
+                                    style: AppTextStyles.bodyText12dark,
+                                  ),
+                                ),
+                                
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    "ACTIONS",
+                                    textAlign: TextAlign.center,
+                                    style: AppTextStyles.bodyText12dark,
+                                  ),
                                 ),
                               ],
-
-                              onChanged: (value) {},
                             ),
                           ),
+                          const SizedBox(height: 20),
+                          branches.isEmpty
+                              ? Align(
+                                  alignment: Alignment.center,
+                                  child: Column(
+                                    children: [
+                      const SizedBox(height: 10),
+                      Text(
+                        "No branches found",
+                        style: AppTextStyles.bodyText14dark,
+                      ),
+                      Text(
+                        "Add a new branch to get started",
+                        style: AppTextStyles.bodyText14,
+                      ),
+                                    ],
+                                  ),
+                                )
+                              : ListView.separated(
+                                  shrinkWrap: true,
+                                  physics:
+                      const NeverScrollableScrollPhysics(),
+                      
+                                  itemCount: branches.length,
+                      
+                                  separatorBuilder: (_, __) =>
+                      const SizedBox(height: 10),
+                      
+                                  itemBuilder: (context, index) {
+                                    final branch = branches[index];
+                      
+                                    return Container(
+                      padding: const EdgeInsets.all(14),
+                      
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius:
+                            BorderRadius.circular(12),
+                      
+                        border: Border.all(
+                          color: Colors.grey.shade300,
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
+                      
+                      child: Row(
+                        children: [
+                      
+                          Expanded(
+                            flex: 3,
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  branch.branchName,
+                                  style: AppTextStyles
+                                      .bodyText14dark,
+                                ),
+                      
+                                Text(
+                                  branch.city,
+                                  style:
+                                      AppTextStyles.bodyText12,
+                                ),
+                              ],
+                            ),
+                          ),
+                      
+                          Expanded(
+                            flex: 3,
+                            child: Text(
+                              branch.managerEmail,
+                              textAlign: TextAlign.center,
+                              style:
+                                  AppTextStyles.bodyText12,
+                            ),
+                          ),
+                      
+                          Expanded(
+                            flex: 3,
+                            child: Center(
+                              child: Container(
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
+                                ),
+                      
+                                decoration: BoxDecoration(
+                                  color: branch.status ==
+                                          "Active"
+                                      ? Colors.green.shade100
+                                      : Colors.red.shade100,
+                      
+                                  borderRadius:
+                                      BorderRadius.circular(
+                                          20),
+                                ),
+                      
+                                child: Text(
+                                  branch.status,
+                                  style: TextStyle(
+                                    color: branch.status ==
+                                            "Active"
+                                        ? Colors.green
+                                        : Colors.red,
+                      
+                                    fontWeight:
+                                        FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                      
+                          Expanded(
+                            flex: 2,
+                            child: Text(
+                              "0 Eggs",
+                              textAlign: TextAlign.center,
+                              style:
+                                  AppTextStyles.bodyText12,
+                            ),
+                          ),
+                      
+                          Expanded(
+                            flex: 1,
+                            child: Text(
+                              "₹0",
+                              textAlign: TextAlign.center,
+                              style:
+                                  AppTextStyles.bodyText12,
+                            ),
+                          ),
+                      
+                          Expanded(
+                            flex: 2,
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.center,
+                              children: [
+                      
+                                Icon(
+                                  Icons.edit_outlined,
+                                  size: 18,
+                                ),
+                      
+                                const SizedBox(width: 10),
+                      
+                                Icon(
+                                  Icons.delete_outline,
+                                  size: 18,
+                                  color: Colors.red,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                                    );
+                                  },
+                                ),
+                          const SizedBox(height: 10),
+                        ],
+                      ),
                     ),
-                    decoration: BoxDecoration(
-                      color: AppColors.background1,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: Text(
-                            "BRANCH\nDETAILS",
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.bodyText12dark,
-                          ),
-                        ),
-
-                        Expanded(
-                          flex: 2,
-                          child: Text(
-                            "BRANCH\nMANAGER",
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.bodyText12dark,
-                          ),
-                        ),
-
-                        Expanded(
-                          flex: 2,
-                          child: Text(
-                            "STATUS",
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.bodyText12dark,
-                          ),
-                        ),
-
-                        Expanded(
-                          flex: 2,
-                          child: Text(
-                            "CURRENT\nSTOCK",
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.bodyText12dark,
-                          ),
-                        ),
-
-                        Expanded(
-                          flex: 2,
-                          child: Text(
-                            "SALES\n(MTD)",
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.bodyText12dark,
-                          ),
-                        ),
-
-                        Expanded(
-                          flex: 2,
-                          child: Text(
-                            "ACTIONS",
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.bodyText12dark,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Align(
-                    alignment: Alignment.center,
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 10),
-                        Text(
-                          "No branches found",
-                          style: AppTextStyles.bodyText14dark,
-                        ),
-                        Text(
-                          "Add a new branch to get started",
-                          style: AppTextStyles.bodyText14,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
