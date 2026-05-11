@@ -6,16 +6,26 @@ import 'package:proteinova_connect/features/admin/addprice/presentation/add_pric
 import 'package:proteinova_connect/features/admin/approval/screens/approvals_queue_screen.dart';
 import 'package:proteinova_connect/features/admin/expense/screens/admin_expense_screen.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/presentation/asset_management_page.dart';
+import 'package:proteinova_connect/features/admin/menu/branch_management/presentation/branch_management.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/presentation/receive_trays_screen.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/presentation/sales_dashoard.dart';
+import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
+import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
+import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
+import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
+import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
+import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
+import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
+<<<<<<< HEAD
+
+import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
+=======
 import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
 import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
 import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
-import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
-
-import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
+>>>>>>> e19de2fde8918fca8b355fb185d55b69bcaddde3
 
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 
@@ -196,7 +206,7 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                     SalesDashboardPage(),
                   ),
 
-                  _menuTile(Icons.store, "Branches", BranchDetails()),
+                  _menuTile(Icons.store, "Branch Management", BranchManagement()),
 
                   _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
 
