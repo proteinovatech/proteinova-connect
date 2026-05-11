@@ -30,7 +30,7 @@ class ExpenseTableRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          item(expense.date),
+          item(expense.expenseDate),
           item(expense.category),
           item(expense.description),
           item(expense.amount),

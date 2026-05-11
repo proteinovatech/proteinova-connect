@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-Widget buildLabel(String text) {
+Widget buildLabel(String text, {bool isRequired = true}) {
   return RichText(
     text: TextSpan(
       text: text,
@@ -9,18 +9,20 @@ Widget buildLabel(String text) {
         fontWeight: FontWeight.w600,
         color: Color(0xff374151),
       ),
-      children: const [
-        TextSpan(
-          text: " *",
-          style: TextStyle(color: Colors.red),
-        ),
+      children: [
+        if (isRequired)
+          const TextSpan(
+            text: " *",
+            style: TextStyle(color: Colors.red),
+          ),
       ],
     ),
   );
 }
 
-Widget buildTextField({required String hint}) {
+Widget buildTextField({required String hint, TextEditingController? controller}) {
   return TextField(
+    controller: controller,
     style: const TextStyle(fontSize: 14),
     decoration: InputDecoration(
       hintText: hint,
@@ -78,8 +80,9 @@ Widget buildDropdown({
   );
 }
 
-Widget buildDateField() {
+Widget buildDateField({TextEditingController? controller}) {
   return TextField(
+    controller: controller,
     readOnly: true,
     decoration: InputDecoration(
       hintText: "dd-mm-yyyy",

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:proteinova_connect/core/config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,7 +11,7 @@ class SalesService {
 
       final branchId = prefs.getInt("branch_id");
 
-      final baseUrl = dotenv.env['BASE_URL'];
+      final baseUrl = ApiConfig.baseUrl;
 
       final response = await http.get(
         Uri.parse("$baseUrl/api/sales/dashboard?branch_id=$branchId"),
@@ -35,7 +35,7 @@ class SalesService {
 
   static Future<List<dynamic>> fetchDispatches() async {
     try {
-      final baseUrl = dotenv.env['BASE_URL'];
+      final baseUrl = ApiConfig.baseUrl;
 
       final response = await http.get(
         Uri.parse("$baseUrl/api/dispatch"),
@@ -65,7 +65,7 @@ class SalesService {
 
       final branchId = prefs.getInt("branch_id");
 
-      final baseUrl = dotenv.env['BASE_URL'];
+      final baseUrl = ApiConfig.baseUrl;
 
       final response = await http.get(
         Uri.parse("$baseUrl/api/sales?branch_id=$branchId"),

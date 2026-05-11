@@ -14,16 +14,12 @@ import 'package:proteinova_connect/features/admin/report/screens/admin_report_da
 import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
 import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
 import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
-import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
-import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
+
 import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
 
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
-import 'package:proteinova_connect/features/branch/addexpense/presentation/expense_management/presentation/expense_management.dart';
-import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/branch_dashboard.dart';
+
 import 'package:proteinova_connect/features/branch/branch_details/presentation/branch_details.dart';
-import 'package:proteinova_connect/features/branch/daily_closing/presentation/daily_closing.dart';
-import 'package:proteinova_connect/features/branch/sales/presentation/sales.dart';
 
 import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
 
@@ -276,18 +272,4 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
       },
     );
   }
-}
-
-Widget _sectionTitle(String title) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    child: Text(
-      title,
-      style: const TextStyle(
-        color: Colors.grey,
-        fontSize: 12,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  );
 }
