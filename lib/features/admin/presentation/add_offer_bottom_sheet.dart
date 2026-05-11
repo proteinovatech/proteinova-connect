@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/features/admin/widget/add_offer_widget.dart';
+import 'package:proteinova_connect/services/offer_service.dart';
 
 class AddOfferBottomSheet {
-  static void show(BuildContext context) {
-    showModalBottomSheet(
+  static Future<dynamic> show(BuildContext context) {
+    return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -22,11 +23,90 @@ class AddOfferScreen extends StatefulWidget {
 }
 
 class _AddOfferScreenState extends State<AddOfferScreen> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController discountController = TextEditingController();
+  final TextEditingController buyQtyController = TextEditingController();
+  final TextEditingController freeQtyController = TextEditingController();
+  final TextEditingController startDateController = TextEditingController();
+  final TextEditingController endDateController = TextEditingController();
+
   String selectedProduct = "Select Egg Category";
   String selectedOfferType = "Fixed Amount";
   String selectedDiscountUnit = "Per Egg";
 
   bool isActive = true;
+  bool isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen to controller changes to update preview
+    nameController.addListener(() => setState(() {}));
+    discountController.addListener(() => setState(() {}));
+    buyQtyController.addListener(() => setState(() {}));
+    freeQtyController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    discountController.dispose();
+    buyQtyController.dispose();
+    freeQtyController.dispose();
+    startDateController.dispose();
+    endDateController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null) {
+      setState(() {
+        controller.text = picked.toIso8601String().split('T')[0];
+      });
+    }
+  }
+
+  Future<void> _saveOffer() async {
+    if (nameController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter offer name")));
+      return;
+    }
+
+    setState(() {
+      isSaving = true;
+    });
+
+    final offerData = {
+      "offer_name": nameController.text.trim(),
+      "product_name": selectedProduct == "Select Egg Category" ? null : selectedProduct,
+      "offer_type": selectedOfferType,
+      "discount_value": double.tryParse(discountController.text) ?? 0.0,
+      "discount_unit": selectedDiscountUnit,
+      "buy_qty": int.tryParse(buyQtyController.text) ?? 0,
+      "free_qty": int.tryParse(freeQtyController.text) ?? 0,
+      "start_date": startDateController.text,
+      "end_date": endDateController.text,
+      "is_active": isActive,
+    };
+
+    final success = await OfferService.createOffer(offerData);
+
+    setState(() {
+      isSaving = false;
+    });
+
+    if (success) {
+      Navigator.pop(context, true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Failed to create offer")));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,12 +179,12 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  /// OFFER NAME
-                  buildLabel("Offer Name"),
-
-                  const SizedBox(height: 12),
-
-                  buildTextField(hint: "e.g. Summer Offer"),
+                  buildLabel("Offer Name", isRequired: true),
+                  const SizedBox(height: 10),
+                  buildTextField(
+                    hint: "e.g. Summer Offer",
+                    controller: nameController,
+                  ),
 
                   const SizedBox(height: 20),
 
@@ -115,21 +195,12 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            buildLabel("Product Name"),
-                            const SizedBox(height: 12),
+                            buildLabel("Product", isRequired: true),
+                            const SizedBox(height: 10),
                             buildDropdown(
                               value: selectedProduct,
-                              items: const [
-                                "Select Egg Category",
-                                "Chicken Egg",
-                                "Duck Egg",
-                                "Organic Egg",
-                              ],
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedProduct = value!;
-                                });
-                              },
+                              items: ["Select Egg Category", "Brown Eggs", "White Eggs"],
+                              onChanged: (val) => setState(() => selectedProduct = val!),
                             ),
                           ],
                         ),
@@ -141,16 +212,12 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            buildLabel("Offer Type"),
-                            const SizedBox(height: 12),
+                            buildLabel("Offer Type", isRequired: true),
+                            const SizedBox(height: 10),
                             buildDropdown(
                               value: selectedOfferType,
-                              items: const ["Fixed Amount", "Percentage"],
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedOfferType = value!;
-                                });
-                              },
+                              items: ["Fixed Amount", "Percentage", "Buy X Get Y"],
+                              onChanged: (val) => setState(() => selectedOfferType = val!),
                             ),
                           ],
                         ),
@@ -158,46 +225,82 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
 
                   /// DISCOUNT VALUE + UNIT
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            buildLabel("Discount Value"),
-                            const SizedBox(height: 12),
-                            buildTextField(hint: "e.g. 0.20"),
-                          ],
+                  if (selectedOfferType != "Buy X Get Y")
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              buildLabel("Discount Value", isRequired: true),
+                              const SizedBox(height: 10),
+                              buildTextField(
+                                hint: "0.00",
+                                controller: discountController,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
 
-                      const SizedBox(width: 18),
+                        const SizedBox(width: 12),
 
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            buildLabel("Discount Unit"),
-                            const SizedBox(height: 12),
-                            buildDropdown(
-                              value: selectedDiscountUnit,
-                              items: const ["Per Egg", "Per Tray"],
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedDiscountUnit = value!;
-                                });
-                              },
-                            ),
-                          ],
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              buildLabel("Unit", isRequired: true),
+                              const SizedBox(height: 10),
+                              buildDropdown(
+                                value: selectedDiscountUnit,
+                                items: ["Per Egg", "Per Tray", "Total Bill"],
+                                onChanged: (val) => setState(() => selectedDiscountUnit = val!),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
 
-                  const SizedBox(height: 30),
+                  /// BUY X GET Y
+                  if (selectedOfferType == "Buy X Get Y")
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              buildLabel("Buy Quantity", isRequired: true),
+                              const SizedBox(height: 10),
+                              buildTextField(
+                                hint: "0",
+                                controller: buyQtyController,
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              buildLabel("Free Quantity", isRequired: true),
+                              const SizedBox(height: 10),
+                              buildTextField(
+                                hint: "0",
+                                controller: freeQtyController,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                  const SizedBox(height: 20),
 
                   /// DATES
                   Row(
@@ -206,56 +309,51 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            buildLabel("Start Date"),
-                            const SizedBox(height: 12),
-                            buildDateField(),
+                            buildLabel("Start Date", isRequired: true),
+                            const SizedBox(height: 10),
+                            InkWell(
+                              onTap: () => _selectDate(context, startDateController),
+                              child: IgnorePointer(
+                                child: buildDateField(controller: startDateController),
+                              ),
+                            ),
                           ],
                         ),
                       ),
 
-                      const SizedBox(width: 18),
+                      const SizedBox(width: 12),
 
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            buildLabel("End Date"),
-                            const SizedBox(height: 12),
-                            buildDateField(),
+                            buildLabel("End Date", isRequired: true),
+                            const SizedBox(height: 10),
+                            InkWell(
+                              onTap: () => _selectDate(context, endDateController),
+                              child: IgnorePointer(
+                                child: buildDateField(controller: endDateController),
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 20),
 
-                  /// ACTIVE CHECKBOX
+                  /// TOGGLE
                   Row(
                     children: [
-                      Transform.scale(
-                        scale: 1.2,
-                        child: Checkbox(
-                          value: isActive,
-                          activeColor: const Color(0xff2563EB),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          onChanged: (value) {
-                            setState(() {
-                              isActive = value!;
-                            });
-                          },
-                        ),
+                      Switch(
+                        value: isActive,
+                        onChanged: (val) => setState(() => isActive = val),
+                        activeColor: const Color(0xff2563EB),
                       ),
-
                       const Text(
                         "Is Active",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xff111827),
-                        ),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xff111827)),
                       ),
                     ],
                   ),
@@ -271,66 +369,11 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                   ),
 
                   const SizedBox(height: 20),
-
                   Divider(color: Colors.grey.shade300),
-
                   const SizedBox(height: 20),
 
                   /// PREVIEW BOX
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xffFAFAFA),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xffE5E7EB)),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          height: 56,
-                          width: 56,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: const Color(0xffEEF2FF),
-                          ),
-                          child: const Icon(
-                            Icons.local_offer_outlined,
-                            size: 28,
-                            color: Color(0xff374151),
-                          ),
-                        ),
-
-                        const SizedBox(width: 16),
-
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Offer Preview",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xff111827),
-                                ),
-                              ),
-
-                              SizedBox(height: 6),
-
-                              Text(
-                                "Preview will be shown here once you fill in the details.",
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  height: 1.4,
-                                  color: Color(0xff6B7280),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  _previewBox(),
 
                   const SizedBox(height: 20),
                 ],
@@ -339,56 +382,95 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
           ),
 
           /// BOTTOM BUTTONS
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
+          Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: Material(
               color: Colors.white,
-              border: Border(top: BorderSide(color: Colors.grey.shade300)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xffCBD5E1)),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        "Cancel",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xff111827),
-                        ),
-                      ),
-                    ),
-                  ),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(top: BorderSide(color: Colors.grey.shade300)),
                 ),
-
-                const SizedBox(width: 12),
-
-                Expanded(
-                  child: Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xff2563EB), Color(0xff3B82F6)],
-                      ),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        "Save Offer",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => Navigator.pop(context),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          height: 48,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xffCBD5E1)),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              "Cancel",
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xff111827)),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: InkWell(
+                        onTap: isSaving ? null : _saveOffer,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          height: 48,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            gradient: const LinearGradient(colors: [Color(0xff2563EB), Color(0xff3B82F6)]),
+                          ),
+                          child: Center(
+                            child: isSaving
+                                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                : const Text("Save Offer", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _previewBox() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xffFAFAFA),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xffE5E7EB)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 56,
+            width: 56,
+            decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xffEEF2FF)),
+            child: const Icon(Icons.local_offer_outlined, size: 28, color: Color(0xff374151)),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  nameController.text.isEmpty ? "Offer Preview" : nameController.text,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xff111827)),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _getPreviewDescription(),
+                  style: const TextStyle(fontSize: 13, height: 1.4, color: Color(0xff6B7280)),
                 ),
               ],
             ),
@@ -396,5 +478,20 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
         ],
       ),
     );
+  }
+
+  String _getPreviewDescription() {
+    if (selectedOfferType == "Buy X Get Y") {
+      if (buyQtyController.text.isEmpty || freeQtyController.text.isEmpty) {
+        return "Preview will be shown here once you fill in the details.";
+      }
+      return "Buy ${buyQtyController.text} and get ${freeQtyController.text} free on $selectedProduct.";
+    } else {
+      if (discountController.text.isEmpty) {
+        return "Preview will be shown here once you fill in the details.";
+      }
+      final symbol = selectedOfferType == "Percentage" ? "%" : "₹";
+      return "Get $symbol${discountController.text} off $selectedDiscountUnit on $selectedProduct.";
+    }
   }
 }

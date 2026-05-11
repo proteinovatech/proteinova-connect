@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
+import 'package:proteinova_connect/admin_bottom_navigator.dart';
 import 'package:proteinova_connect/features/branch/branch_bottom_navigator.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
@@ -147,7 +148,11 @@ class _SignupScreenState extends State<SignupScreen> {
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
+<<<<<<< HEAD
                               builder: (_) => const AdminDashboard(),
+=======
+                              builder: (_) => const AdminBottomNavigator(),
+>>>>>>> ea3e69cdb2c09331bdc464ea5b45b3ec1a494c3e
                             ),
                           );
                         } else if (state is AuthFailure) {

@@ -59,8 +59,12 @@ Future<void> main() async {
   if (isLoggedIn) {
     if (role == 'purchase') {
       startScreen = const PurchaseBottomNavigator();
-    } else {
+    } else if (role == 'branch') {
       startScreen = const BranchBottomNavigator();
+    } else if (role == 'admin') {
+      startScreen = const AdminBottomNavigator();
+    } else {
+      startScreen = const SignupScreen();
     }
   } else {
     startScreen = const SignupScreen();
@@ -69,28 +73,12 @@ Future<void> main() async {
   runApp(AppBlocProvider(child: MyApp(startScreen: startScreen)));
 }
 
-// class MyApp extends StatelessWidget {
-//   final Widget startScreen;
-
-//   const MyApp({super.key, required this.startScreen});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       debugShowCheckedModeBanner: false,
-
-//       routes: {
-//         "/signup": (context) => const SignupScreen(),
-//       },
-
-//       home: startScreen,
-//     );
-//   }
-// }
 class MyApp extends StatelessWidget {
   final Widget? startScreen;
 
+
   const MyApp({super.key, this.startScreen});
+ 
 
   @override
   Widget build(BuildContext context) {
@@ -98,10 +86,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
 
       routes: {"/signup": (context) => const SignupScreen()},
-      // routes: {"/signup": (context) => const SignupScreen()},
 
-      // home: startScreen ?? const SignupScreen(),
-      home: AdminBottomNavigator(),
+      // routes: {"/signup": (context) => const SignupScreen()},
+      home: startScreen ?? const SignupScreen(),
+      // home: AdminBottomNavigator(),
     );
   }
 }
+
