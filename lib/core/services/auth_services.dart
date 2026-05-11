@@ -9,7 +9,7 @@ class AuthService {
     
   }) async {
     final response = await http.post(
-      Uri.parse("https://proteinova-system.onrender.com/login"),
+      Uri.parse("https://proteinova-system-q3ob.onrender.com/login"),
       headers: {
         "Content-Type": "application/json",
       },

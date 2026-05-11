@@ -51,10 +51,7 @@ bool isLoadingOffers = true;
 
   Future<void> fetchSalesData() async {
     try {
-      // final response = await http.get(
-      //   Uri.parse("$baseUrl/api/sales/dashboard?branch_id=1"),
-      //   headers: {"Accept": "application/json"},
-      // );
+     
       final prefs = await SharedPreferences.getInstance();
 
       final branchId = prefs.getInt("branch_id");
@@ -204,7 +201,7 @@ Future<void> fetchOffers() async {
                     Row(
                       children: [
                         Text(
-                          header["title"]?.toString() ?? "Daily Sales Entry",
+                          "Daily Sales Entry",
                           style: AppTextStyles.headingText22,
                         ),
 
@@ -421,9 +418,7 @@ Future<void> fetchOffers() async {
                           ),
 
                           summaryRow("Tax", "₹ ${billSummary["tax"] ?? 0}"),
-
                           const Divider(),
-
                           summaryRow(
                             "Total Amount",
                             "₹ ${billSummary["total_amount"] ?? 0}",
@@ -431,9 +426,7 @@ Future<void> fetchOffers() async {
                         ],
                       ),
                     ),
-
                     SizedBox(height: size.height * 0.02),
-
                     // Visibility(
                     //   visible: false,
                     //   child: Column(

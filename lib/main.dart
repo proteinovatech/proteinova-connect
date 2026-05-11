@@ -95,10 +95,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
 
-      //routes: {"/signup": (context) => const SignupScreen()},
+      routes: {"/signup": (context) => const SignupScreen()},
 
-     // home: startScreen ?? const SignupScreen(),
-     home:AdminBottomNavigator(),
+     home: startScreen ?? const SignupScreen(),
+    //  home:BranchBottomNavigator(),
     );
   }
 }
