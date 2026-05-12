@@ -1,3 +1,4 @@
+import 'package:proteinova_connect/core/network/dio_client.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
@@ -14,7 +15,6 @@ import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stock
 import 'package:proteinova_connect/features/branch/branch_dashboard/widget/zigzagclipper.dart';
 import 'package:proteinova_connect/features/branch/sales/presentation/sales_entry.dart';
 
-
 class BranchDashboard extends StatefulWidget {
   const BranchDashboard({super.key});
 
@@ -25,26 +25,16 @@ class BranchDashboard extends StatefulWidget {
 class _BranchDashboardState extends State<BranchDashboard> {
   Size get size => MediaQuery.of(context).size;
 
-  final DashboardRepository repository = DashboardRepository();
+  late final DashboardRepository repository;
 
   bool isLoading = true;
-
   bool isShopOpen = false;
-
   DashboardModel? dashboardModel;
-
-  Map<String, dynamic> cards = {};
-
-  List<Map<String, dynamic>> activeOffers = [];
-
-  List<Map<String, dynamic>> dailySalesVolume = [];
-
-  List<Map<String, dynamic>> recentActivity = [];
-  List lowStockAlerts = [];
 
   @override
   void initState() {
     super.initState();
+    repository = DashboardRepository(DioClient().dio);
     fetchDashboard();
   }
 
@@ -53,51 +43,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
       final result = await repository.fetchDashboardData();
 
       setState(() {
-        DashboardModel != DashboardModel;
-        cards = {
-          "opening_stocks": result.cards.openingStocks,
-
-          "incoming_stock_in_transit": result.cards.incomingStockInTransit,
-
-          "damaged_stock": result.cards.damagedStock,
-
-          "sales_today": result.cards.salesToday,
-
-          "today_expense": result.cards.todayExpense,
-
-          "today_tray_sold": result.cards.todayTraySold,
-
-          "closing_stock": result.cards.closingStock,
-        };
-
-        activeOffers = result.activeOffers
-            .map((e) => {"title": e.title, "condition": e.condition})
-            .toList();
-
-        dailySalesVolume = result.dailySalesVolume
-            .map(
-              (e) => {
-                "sale_date": e.saleDate,
-                "retail_sales_units": e.retailSalesUnits,
-                "wholesale_sales_units": e.wholesaleSalesUnits,
-              },
-            )
-            .toList();
-
-        recentActivity = result.recentActivity
-            .map(
-              (e) => {
-                "title": e.title,
-
-                "description": e.description,
-
-                "time": e.time,
-
-                "tag": e.tag,
-              },
-            )
-            .toList();
-
+        dashboardModel = result;
         isLoading = false;
       });
     } catch (e) {
@@ -110,33 +56,26 @@ class _BranchDashboardState extends State<BranchDashboard> {
   }
 
   List<BarChartGroupData> _barData() {
+    if (dashboardModel == null) return [];
     List<BarChartGroupData> groups = [];
 
-    for (int i = 0; i < dailySalesVolume.length; i++) {
-      final item = dailySalesVolume[i];
+    for (int i = 0; i < dashboardModel!.dailySalesVolume.length; i++) {
+      final item = dashboardModel!.dailySalesVolume[i];
 
       groups.add(
         BarChartGroupData(
           x: i,
-
           barRods: [
             BarChartRodData(
-              toY: double.parse(item["retail_sales_units"].toString()),
-
+              toY: item.retailSalesUnits.toDouble(),
               color: Colors.orange,
-
               width: 8,
-
               borderRadius: BorderRadius.circular(4),
             ),
-
             BarChartRodData(
-              toY: double.parse(item["wholesale_sales_units"].toString()),
-
+              toY: item.wholesaleSalesUnits.toDouble(),
               color: Colors.blue,
-
               width: 8,
-
               borderRadius: BorderRadius.circular(4),
             ),
           ],
@@ -144,34 +83,35 @@ class _BranchDashboardState extends State<BranchDashboard> {
       );
     }
 
-  return groups;
-}
+    return groups;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    if (dashboardModel == null) {
+      return const Scaffold(
+        body: Center(child: Text("Error loading dashboard data")),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
-  floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
-        child: const Icon(
-          Icons.shopping_cart,
-          color: Colors.white,
-        ),
+        child: const Icon(Icons.shopping_cart, color: Colors.white),
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => const SalesEntryPage(),
-            ),
+            MaterialPageRoute(builder: (_) => const SalesEntryPage()),
           );
         },
       ),
 
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.endFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
 
@@ -187,67 +127,68 @@ class _BranchDashboardState extends State<BranchDashboard> {
               children: [
                 Image.asset("assets/erplogo.png", height: 40, width: 130),
 
-                Row(
-                  children: [
-                    Text(
-                      isShopOpen ? "OPEN" : "CLOSED",
+                // Row(
+                //   children: [
+                //     Text(
+                //       isShopOpen ? "OPEN" : "CLOSED",
 
-                      style: TextStyle(
-                        color: isShopOpen ? Colors.green : Colors.red,
+                //       style: TextStyle(
+                //         color: isShopOpen ? Colors.green : Colors.red,
 
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                //         fontWeight: FontWeight.bold,
+                //       ),
+                //     ),
 
-                    const SizedBox(width: 10),
+                //     const SizedBox(width: 10),
 
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          isShopOpen = !isShopOpen;
-                        });
-                      },
+                //     GestureDetector(
+                //       onTap: () {
+                //         setState(() {
+                //           isShopOpen = !isShopOpen;
+                //         });
+                //       },
 
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
+                //       child: AnimatedContainer(
+                //         duration: const Duration(milliseconds: 300),
 
-                        width: 50,
+                //         width: 50,
 
-                        height: 30,
+                //         height: 30,
 
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
+                //         decoration: BoxDecoration(
+                //           borderRadius: BorderRadius.circular(20),
 
-                          color: isShopOpen
-                              ? Colors.green.shade100
-                              : Colors.red.shade100,
-                        ),
+                //           color: isShopOpen
+                //               ? Colors.green.shade100
+                //               : Colors.red.shade100,
+                //         ),
 
-                        child: AnimatedAlign(
-                          duration: const Duration(milliseconds: 300),
+                //         child: AnimatedAlign(
+                //           duration: const Duration(milliseconds: 300),
 
-                          alignment: isShopOpen
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
+                //           alignment: isShopOpen
+                //               ? Alignment.centerRight
+                //               : Alignment.centerLeft,
 
-                          child: Container(
-                            width: 22,
+                //           child: Container(
+                //             width: 22,
 
-                            height: 22,
+                //             height: 22,
 
-                            margin: const EdgeInsets.all(4),
+                //             margin: const EdgeInsets.all(4),
 
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
+                //             decoration: BoxDecoration(
+                //               shape: BoxShape.circle,
 
-                              color: isShopOpen ? Colors.green : Colors.red,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                //               color: isShopOpen ? Colors.green : Colors.red,
+                //             ),
+                //           ),
+                //         ),
+
+                //       ),
+                //     ),
+                //   ],
+                // ),
               ],
             ),
 
@@ -329,7 +270,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                           const SizedBox(height: 15),
 
                           Text(
-                            "${cards["opening_stocks"] ?? 0} Trays",
+                            "${dashboardModel!.cards.openingStocks} Trays",
 
                             style: AppTextStyles.headingText20,
                           ),
@@ -345,7 +286,8 @@ class _BranchDashboardState extends State<BranchDashboard> {
                           child: Stockdetails(
                             title: "Today Tray Sold",
 
-                            value: "${cards["today_tray_sold"] ?? 0} trays",
+                            value:
+                                "${dashboardModel!.cards.todayTraySold} trays",
 
                             icon: Icons.check_circle_outline,
 
@@ -363,7 +305,8 @@ class _BranchDashboardState extends State<BranchDashboard> {
                           child: Stock(
                             title: "Closing Stock",
 
-                            value: "${cards["closing_stock"] ?? 0} trays",
+                            value:
+                                "${dashboardModel!.cards.closingStock} trays",
 
                             percent: "0%",
 
@@ -385,7 +328,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
 
                     Text("Active Offers", style: AppTextStyles.headingText22),
                     GridView.builder(
-                      itemCount: activeOffers.length,
+                      itemCount: dashboardModel!.activeOffers.length,
 
                       shrinkWrap: true,
 
@@ -399,7 +342,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                             childAspectRatio: 1.3,
                           ),
                       itemBuilder: (context, index) {
-                        final offer = activeOffers[index];
+                        final offer = dashboardModel!.activeOffers[index];
                         return Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
@@ -438,7 +381,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
 
                                   Expanded(
                                     child: Text(
-                                      offer["title"],
+                                      offer.title,
 
                                       maxLines: 2,
 
@@ -457,7 +400,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                               const SizedBox(height: 8),
 
                               Text(
-                                offer["condition"],
+                                offer.condition,
 
                                 maxLines: 2,
 
@@ -513,40 +456,26 @@ class _BranchDashboardState extends State<BranchDashboard> {
 
                           const SizedBox(height: 15),
 
-                          lowStockAlerts.isEmpty
+                          dashboardModel!.lowStockAlerts.isEmpty
                               ? const Center(
                                   child: Padding(
                                     padding: EdgeInsets.all(20),
                                     child: Text("No Low Stock Alerts"),
                                   ),
                                 )
-                              : GridView.builder(
-                                  itemCount: lowStockAlerts.length,
-
+                              : ListView.builder(
+                                  itemCount: dashboardModel!.lowStockAlerts.length,
                                   shrinkWrap: true,
-
                                   physics: const NeverScrollableScrollPhysics(),
-
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 2,
-
-                                        crossAxisSpacing: 15,
-
-                                        mainAxisSpacing: 15,
-
-                                        childAspectRatio: 2.4,
-                                      ),
-
                                   itemBuilder: (context, index) {
-                                    final item = lowStockAlerts[index];
-
-                                    return lowStockBox(
-                                      title: item["title"] ?? "",
-
-                                      subtitle: item["subtitle"] ?? "",
-
-                                      stock: item["stock"] ?? "",
+                                    final alert = dashboardModel!.lowStockAlerts[index];
+                                    return Padding(
+                                      padding: const EdgeInsets.only(bottom: 10),
+                                      child: lowStockBox(
+                                        title: alert.title,
+                                        subtitle: alert.subtitle,
+                                        stock: alert.stock,
+                                      ),
                                     );
                                   },
                                 ),
@@ -611,12 +540,16 @@ class _BranchDashboardState extends State<BranchDashboard> {
                                       getTitlesWidget: (value, meta) {
                                         final index = value.toInt();
 
-                                        if (index >= dailySalesVolume.length) {
+                                        if (index >=
+                                            dashboardModel!
+                                                .dailySalesVolume
+                                                .length) {
                                           return const SizedBox();
                                         }
 
-                                        final date =
-                                            dailySalesVolume[index]["sale_date"];
+                                        final date = dashboardModel!
+                                            .dailySalesVolume[index]
+                                            .saleDate;
 
                                         return Padding(
                                           padding: const EdgeInsets.only(
@@ -637,23 +570,17 @@ class _BranchDashboardState extends State<BranchDashboard> {
                                 ),
 
                                 barGroups: List.generate(
-                                  dailySalesVolume.length,
+                                  dashboardModel!.dailySalesVolume.length,
 
                                   (i) {
-                                    final item = dailySalesVolume[i];
+                                    final item =
+                                        dashboardModel!.dailySalesVolume[i];
 
-                                    final retail =
-                                        double.tryParse(
-                                          item["retail_sales_units"].toString(),
-                                        ) ??
-                                        0;
+                                    final retail = item.retailSalesUnits
+                                        .toDouble();
 
-                                    final wholesale =
-                                        double.tryParse(
-                                          item["wholesale_sales_units"]
-                                              .toString(),
-                                        ) ??
-                                        0;
+                                    final wholesale = item.wholesaleSalesUnits
+                                        .toDouble();
 
                                     return BarChartGroupData(
                                       x: i,
@@ -725,18 +652,18 @@ class _BranchDashboardState extends State<BranchDashboard> {
                       ],
                     ),
 
-                   
-                    recentActivity.isEmpty
+                    dashboardModel!.recentActivity.isEmpty
                         ? const Center(child: Text("No Recent Activity"))
                         : ListView.builder(
-                            itemCount: recentActivity.length,
+                            itemCount: dashboardModel!.recentActivity.length,
 
                             shrinkWrap: true,
 
                             physics: const NeverScrollableScrollPhysics(),
 
                             itemBuilder: (context, index) {
-                              final item = recentActivity[index];
+                              final item =
+                                  dashboardModel!.recentActivity[index];
 
                               return Column(
                                 children: [
@@ -750,13 +677,13 @@ class _BranchDashboardState extends State<BranchDashboard> {
                                       ),
                                     ),
 
-                                    title: item["title"],
+                                    title: item.title,
 
-                                    subtitle: Text(item["description"]),
+                                    subtitle: Text(item.description),
 
-                                    time: item["time"] ?? "",
+                                    time: item.time,
 
-                                    tag: item["tag"] ?? "",
+                                    tag: item.tag,
                                   ),
 
                                   const SizedBox(height: 10),

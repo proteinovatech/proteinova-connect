@@ -1,8 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:proteinova_connect/core/network/dio_client.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/data/model/dashboard_model.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/data/repository/dashboard_repository.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stock.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stockdetails.dart';
 
@@ -18,60 +18,28 @@ class _DashboardoverviewState
     extends State<Dashboardoverview> {
 
   bool isLoading = true;
-
-  Map<String, dynamic> cards = {};
+  DashboardModel? dashboardModel;
+  late final DashboardRepository repository;
 
   @override
   void initState() {
     super.initState();
+    repository = DashboardRepository(DioClient().dio);
     fetchDashboardData();
   }
 
   Future<void> fetchDashboardData() async {
-
     try {
+      final result = await repository.fetchDashboardData();
 
-      final response = await http.get(
-
-        Uri.parse(
-          "https://proteinova-system.onrender.com/api/branch/dashboard",
-        ),
-
-        headers: {
-          "Accept": "application/json",
-        },
-      );
-
-      print(response.body);
-
-      if (response.statusCode == 200) {
-
-        final data = jsonDecode(response.body);
-
-        setState(() {
-
-          cards = data["cards"] ?? {};
-
-          isLoading = false;
-        });
-
-      } else {
-
-        setState(() {
-          isLoading = false;
-        });
-
-        print(
-          "STATUS CODE : ${response.statusCode}",
-        );
-      }
-
+      setState(() {
+        dashboardModel = result;
+        isLoading = false;
+      });
     } catch (e) {
-
       setState(() {
         isLoading = false;
       });
-
       print(e);
     }
   }
@@ -122,7 +90,7 @@ class _DashboardoverviewState
                         "Closing Stock",
 
                     value:
-                        "${cards["closing_stock"] ?? 0} trays",
+                        "${dashboardModel!.cards.closingStock} trays",
 
                     percent:
                         "13.5%",
@@ -157,7 +125,7 @@ class _DashboardoverviewState
                         "Opening Stock",
 
                     value:
-                        "${cards["opening_stocks"] ?? 0} trays",
+                        "${dashboardModel!.cards.openingStocks} trays",
 
                     icon:
                         Icons.inventory,
@@ -186,7 +154,7 @@ class _DashboardoverviewState
                         "Sales Today",
 
                     value:
-                        "₹ ${cards["sales_today"] ?? 0}",
+                        "₹ ${dashboardModel!.cards.salesToday}",
 
                     percent:
                         "-2%",
@@ -221,7 +189,7 @@ class _DashboardoverviewState
                         "Incoming Stocks",
 
                     value:
-                        "${cards["incoming_stock_in_transit"] ?? 0} trays",
+                        "${dashboardModel!.cards.incomingStockInTransit} trays",
 
                     icon:
                         Icons.local_shipping,
@@ -250,7 +218,7 @@ class _DashboardoverviewState
                         "Damage stock",
 
                     value:
-                        "${cards["damaged_stock"] ?? 0} trays",
+                        "${dashboardModel!.cards.damagedStock} trays",
 
                     icon:
                         Icons.send_outlined,
@@ -279,7 +247,7 @@ class _DashboardoverviewState
                         "Today Expense",
 
                     value:
-                        "₹ ${cards["today_expense"] ?? 0}",
+                        "₹ ${dashboardModel!.cards.todayExpense}",
 
                     icon:
                         Icons.trending_up,
