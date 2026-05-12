@@ -166,12 +166,12 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
 
               Row(
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(Icons.arrow_back_ios_new),
-                  ),
+IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+        ),
                   const Expanded(
                     child: Text(
                       "Suppliers",

@@ -118,7 +118,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                             Navigator.pop(context);
                           },
 
-                          child: const Icon(Icons.arrow_back_ios_new, size: 22),
+                          child: const Icon(Icons.arrow_back, size: 22),
                         ),
                         const SizedBox(width: 12),
 
@@ -166,9 +166,9 @@ class _AdminInventoryState extends State<AdminInventory> {
                           ],
                         ),
 
-                        const Spacer(),
+                        // const Spacer(),
 
-                        const Icon(Icons.notifications_none_outlined, size: 24),
+                        // const Icon(Icons.notifications_none_outlined, size: 24),
                       ],
                     ),
 

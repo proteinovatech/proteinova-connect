@@ -119,11 +119,11 @@ class _BranchManagementState extends State<BranchManagement> {
               },
 
               child: const Padding(
-                padding: EdgeInsets.only(top: 2),
+                padding: EdgeInsets.only(top: 6),
 
                 child: Icon(
-                  Icons.arrow_back_ios_new,
-                  size: 20,
+                  Icons.arrow_back,
+                  size: 22,
                   color: Colors.black,
                 ),
               ),
