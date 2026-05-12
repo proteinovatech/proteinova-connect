@@ -5,8 +5,8 @@ class StatusBadge extends StatelessWidget {
   final String text;
   final Color bgColor;
   final Color textColor;
-    final IconData? icon;
-
+  final IconData? icon;
+  final VoidCallback? onPressed;
 
   const StatusBadge({
     super.key,
@@ -14,20 +14,27 @@ class StatusBadge extends StatelessWidget {
     required this.text,
     required this.bgColor,
     required this.textColor,
+    this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 13),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(20),
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: bgColor,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 13),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        minimumSize: Size.zero,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-            if (icon != null) ...[
+          if (icon != null) ...[
             Icon(
               icon,
               color: textColor,
