@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../widgets/profile_textfield.dart';
 
@@ -10,6 +11,30 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController roleController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileData();
+  }
+
+  Future<void> _loadProfileData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      emailController.text = prefs.getString('email') ?? '';
+
+      // Capitalize the first letter of the role
+      String role = prefs.getString('role') ?? '';
+      if (role.isNotEmpty) {
+        roleController.text = role[0].toUpperCase() + role.substring(1);
+      }
+    });
+  }
+
   void onUploadImage() {
     debugPrint("Upload Image");
   }
@@ -261,21 +286,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 34),
 
                     /// FIELDS
-                    const Row(
+                    Row(
                       children: [
                         Expanded(
                           child: ProfileTextField(
                             label: "Full Name",
-                            hint: "Alex Carter",
+                            hint: "Enter Full Name",
+                            controller: nameController,
                           ),
                         ),
 
-                        SizedBox(width: 18),
+                        const SizedBox(width: 18),
 
                         Expanded(
                           child: ProfileTextField(
                             label: "Email Address",
-                            hint: "alex.carter@distriflow.com",
+                            hint: "user@example.com",
+                            controller: emailController,
                           ),
                         ),
                       ],
@@ -283,22 +310,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     const SizedBox(height: 22),
 
-                    const Row(
+                    Row(
                       children: [
                         Expanded(
                           child: ProfileTextField(
                             label: "Phone Number",
-                            hint: "+1 (555) 019-2834",
+                            hint: "Enter Phone Number",
+                            controller: phoneController,
                           ),
                         ),
 
-                        SizedBox(width: 18),
+                        const SizedBox(width: 18),
 
                         Expanded(
                           child: ProfileTextField(
                             label: "Role",
-                            hint: "Ops Manager",
+                            hint: "Role",
                             enabled: false,
+                            controller: roleController,
                           ),
                         ),
                       ],

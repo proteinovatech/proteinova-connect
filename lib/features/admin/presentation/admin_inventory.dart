@@ -111,7 +111,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                                      Row(
+                    Row(
                       children: [
                         InkWell(
                           onTap: () {

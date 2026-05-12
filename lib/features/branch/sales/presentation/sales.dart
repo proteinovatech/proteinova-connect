@@ -144,7 +144,7 @@ class _SalesState extends State<Sales> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => SalesEntry()),
+                      MaterialPageRoute(builder: (_) => SalesEntryPage()),
                     );
                   },
                   child: Container(
@@ -239,85 +239,353 @@ class _SalesState extends State<Sales> {
                       ],
                     ),
                     const SizedBox(height: 15),
-                    SizedBox(
-                      height: 45,
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        scrollDirection: Axis.horizontal,
-                        itemCount: tabs.length,
-                        itemBuilder: (context, index) {
-                          final isSelected = selectedIndex == index;
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                selectedIndex = index;
-                              });
-                              _scrollController.animateTo(
-                                index * 120, // adjust spacing if needed
-                                duration: Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    tabs[index],
-                                    style: AppTextStyles.bodyText16.copyWith(
-                                      color: isSelected
-                                          ? AppColors.dark
-                                          : Colors.grey,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+//                     SizedBox(
+//                       height: 45,
+//                       child: ListView.builder(
+//                         controller: _scrollController,
+//                         scrollDirection: Axis.horizontal,
+//                         itemCount: tabs.length,
+//                         itemBuilder: (context, index) {
+//                           final isSelected = selectedIndex == index;
+//                           return GestureDetector(
+//                             onTap: () {
+//                               setState(() {
+//                                 selectedIndex = index;
+//                               });
+//                               _scrollController.animateTo(
+//                                 index * 120, // adjust spacing if needed
+//                                 duration: Duration(milliseconds: 300),
+//                                 curve: Curves.easeInOut,
+//                               );
+//                             },
+//                             child: Container(
+//                               padding: const EdgeInsets.symmetric(
+//                                 horizontal: 12,
+//                               ),
+//                               child: Column(
+//                                 mainAxisAlignment: MainAxisAlignment.center,
+//                                 children: [
+//                                   Text(
+//                                     tabs[index],
+//                                     style: AppTextStyles.bodyText16.copyWith(
+//                                       color: isSelected
+//                                           ? AppColors.dark
+//                                           : Colors.grey,
+//                                       fontWeight: FontWeight.bold,
+//                                     ),
+//                                   ),
 
-                                  const SizedBox(height: 5),
-                                  AnimatedContainer(
-                                    duration: Duration(milliseconds: 300),
-                                    height: 3,
-                                    width: isSelected ? 110 : 0,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.blueAccent,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
+//                                   const SizedBox(height: 5),
+//                                   AnimatedContainer(
+//                                     duration: Duration(milliseconds: 300),
+//                                     height: 3,
+//                                     width: isSelected ? 110 : 0,
+//                                     decoration: BoxDecoration(
+//                                       color: AppColors.blueAccent,
+//                                       borderRadius: BorderRadius.circular(10),
+//                                     ),
+//                                   ),
+//                                 ],
+//                               ),
+//                             ),
+//                           );
+//                         },
+//                       ),
+//                     ),
+// SizedBox(height: 15),
+
+Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(16),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(14),
+    border: Border.all(
+      color: Colors.grey.shade300,
+    ),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        mainAxisAlignment:
+            MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            "Recent Sales Orders",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          Container(
+            padding:
+                const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.blue.shade200,
+              ),
+              borderRadius:
+                  BorderRadius.circular(8),
+            ),
+            child: const Row(
+              children: [
+                Icon(
+                  Icons.open_in_new,
+                  color: Colors.blue,
+                  size: 18,
+                ),
+                SizedBox(width: 5),
+                Text(
+                  "Export",
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+
+      const SizedBox(height: 20),
+
+      // table header
+      Container(
+        padding: const EdgeInsets.symmetric(
+          vertical: 14,
+          horizontal: 10,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius:
+              BorderRadius.circular(8),
+        ),
+        child: const Row(
+          children: [
+            Expanded(
+              flex: 2,
+              child: Text(
+                "ORDER ID",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+
+            Expanded(
+              flex: 2,
+              child: Text(
+                "DATE",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+
+            Expanded(
+              flex: 2,
+              child: Text(
+                "CUSTOMER",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+
+            Expanded(
+              flex: 2,
+              child: Text(
+                "ITEMS (QTY)",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+
+            Expanded(
+              flex: 2,
+              child: Text(
+                "AMOUNT",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+
+            Expanded(
+              flex: 2,
+              child: Text(
+                "STATUS",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+
+      const SizedBox(height: 10),
+
+      ListView.separated(
+        itemCount: salesOrders.length,
+
+        shrinkWrap: true,
+
+        physics:
+            const NeverScrollableScrollPhysics(),
+
+        separatorBuilder:
+            (context, index) => Divider(
+              color: Colors.grey.shade300,
+            ),
+
+        itemBuilder: (context, index) {
+          final order = salesOrders[index];
+
+          return Padding(
+            padding:
+                const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 10,
+                ),
+
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    "SO-${order["id"]}",
+                    style: const TextStyle(
+                      fontWeight:
+                          FontWeight.w600,
+                    ),
+                  ),
+                ),
+
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    order["dispatch_date"]
+                        .toString(),
+                  ),
+                ),
+
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        order["customer_name"]
+                            .toString(),
+                        style: const TextStyle(
+                          fontWeight:
+                              FontWeight.w600,
+                        ),
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      Text(
+                        order["payment_method"]
+                                ?.toString() ??
+                            "CASH",
+                      ),
+                    ],
+                  ),
+                ),
+
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    "${order["total_trays"] ?? 0} Trays",
+                  ),
+                ),
+
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    "₹${order["total_amount"]}",
+                    style: const TextStyle(
+                      fontWeight:
+                          FontWeight.w600,
+                    ),
+                  ),
+                ),
+
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    alignment: Alignment.center,
+                    padding:
+                        const EdgeInsets.symmetric(
+                          vertical: 8,
+                        ),
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius:
+                          BorderRadius.circular(
+                            30,
+                          ),
+                    ),
+                    child: Text(
+                      order["payment_status"]
+                          .toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight:
+                            FontWeight.bold,
                       ),
                     ),
-
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    ],
+  ),
+),
                     const SizedBox(height: 10),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Text(
-                          "Active dispatches",
-                          style: AppTextStyles.headingText22,
-                        ),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.filter_alt_outlined,
-                              color: Colors.blue,
-                              size: 20,
-                            ),
-                            SizedBox(width: 4),
-                            Text(
-                              "Filter",
-                              style: TextStyle(color: Colors.blue),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //   children: const [
+                    //     Text(
+                    //       "Active dispatches",
+                    //       style: AppTextStyles.headingText22,
+                    //     ),
+                    //     Row(
+                    //       children: [
+                    //         Icon(
+                    //           Icons.filter_alt_outlined,
+                    //           color: Colors.blue,
+                    //           size: 20,
+                    //         ),
+                    //         SizedBox(width: 4),
+                    //         Text(
+                    //           "Filter",
+                    //           style: TextStyle(color: Colors.blue),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ],
+                    // ),
 
                     // const SizedBox(height: 15),
                     // DispatchCard(
@@ -330,77 +598,78 @@ class _SalesState extends State<Sales> {
                     //   firstIcon: Icons.location_on,
                     //   secondIcon: Icons.more_vert,
                     // ),
-                    ListView.builder(
-                      itemCount: dispatches.length,
+                  //   ListView.builder(
+                  //     itemCount: dispatches.length,
 
-                      shrinkWrap: true,
+                  //     shrinkWrap: true,
 
-                      physics: const NeverScrollableScrollPhysics(),
+                  //     physics: const NeverScrollableScrollPhysics(),
 
-                      itemBuilder: (context, index) {
-                        final dispatch = dispatches[index];
+                  //     itemBuilder: (context, index) {
+                  //       final dispatch = dispatches[index];
 
-                        return DispatchCard(
-                          id: dispatch["dispatch_id"].toString(),
+                  //       return DispatchCard(
+                  //         id: dispatch["dispatch_id"].toString(),
 
-                          status: dispatch["status"].toString(),
+                  //         status: dispatch["status"].toString(),
 
-                          branch: dispatch["destination"].toString(),
+                  //         branch: dispatch["destination"].toString(),
 
-                          vehicle: dispatch["vehicle_driver"].toString(),
+                  //         vehicle: dispatch["vehicle_driver"].toString(),
 
-                          driver: "${dispatch["total_trays"]} Trays",
+                  //         driver: "${dispatch["total_trays"]} Trays",
 
-                          items: "${dispatch["items_qty"]} units",
+                  //         items: "${dispatch["items_qty"]} units",
 
-                          firstIcon: Icons.location_on,
+                  //         firstIcon: Icons.location_on,
 
-                          secondIcon: Icons.more_vert,
-                        );
-                      },
-                    ),
+                  //         secondIcon: Icons.more_vert,
+                  //       );
+                  //     },
+                  //   ),
 
-                    const SizedBox(height: 5),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Text(
-                          "Resent Sales order",
-                          style: AppTextStyles.headingText22,
-                        ),
-                        Text("View All", style: TextStyle(color: Colors.blue)),
-                      ],
-                    ),
-                    SizedBox(height: 5),
-                    ListView.builder(
-                      itemCount: salesOrders.length,
+                  //   const SizedBox(height: 5),
+                  //   Row(
+                  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //     children: const [
+                  //       Text(
+                  //         "Resent Sales order",
+                  //         style: AppTextStyles.headingText22,
+                  //       ),
+                  //       Text("View All", style: TextStyle(color: Colors.blue)),
+                  //     ],
+                  //   ),
+                  //   SizedBox(height: 5),
+                  //   ListView.builder(
+                  //     itemCount: salesOrders.length,
 
-                      shrinkWrap: true,
+                  //     shrinkWrap: true,
 
-                      physics: const NeverScrollableScrollPhysics(),
+                  //     physics: const NeverScrollableScrollPhysics(),
 
-                      itemBuilder: (context, index) {
-                        final order = salesOrders[index];
+                  //     itemBuilder: (context, index) {
+                  //       final order = salesOrders[index];
 
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
+                  //       return Padding(
+                  //         padding: const EdgeInsets.only(bottom: 8),
 
-                          child: Salesorders(
-                            id: "#SO-${order["id"]}",
+                  //         child: Salesorders(
+                  //           id: "#SO-${order["id"]}",
 
-                            status: order["payment_status"].toString(),
+                  //           status: order["payment_status"].toString(),
 
-                            branch: order["customer_name"].toString(),
+                  //           branch: order["customer_name"].toString(),
 
-                            vehicle: order["dispatch_date"].toString(),
+                  //           vehicle: order["dispatch_date"].toString(),
 
-                            items: "₹ ${order["total_amount"]}",
+                  //           items: "₹ ${order["total_amount"]}",
 
-                            icon: Icons.print_outlined,
-                          ),
-                        );
-                      },
-                    ),
+                  //           icon: Icons.print_outlined,
+                  //         ),
+                  //       );
+                  //     },
+                  //   ),
+                  // 
                   ],
                 ),
               ),

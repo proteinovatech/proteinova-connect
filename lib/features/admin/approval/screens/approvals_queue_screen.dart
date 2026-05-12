@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:proteinova_connect/core/network/dio_client.dart';
 
-import '../data/approval_dummy_data.dart';
 import '../models/approval_model.dart';
 import '../widgets/approval_empty_widget.dart';
 import '../widgets/approval_filter_dropdown.dart';
 import '../widgets/approval_search_field.dart';
 import '../widgets/approval_table_header.dart';
 import '../widgets/approval_table_row.dart';
+import 'dart:async';
 
 class ApprovalsQueueScreen extends StatefulWidget {
   const ApprovalsQueueScreen({super.key});
@@ -20,57 +22,201 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
 
   String selectedStatus = "Pending Review";
 
-  List<ApprovalModel> approvals = approvalDummyData;
-
+  List<ApprovalModel> approvals = [];
   List<ApprovalModel> filteredApprovals = [];
+
+  bool isLoading = false;
+  String? errorText;
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
 
-    filterApprovals();
+    _fetchApprovals();
   }
 
-  void filterApprovals() {
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    searchController.dispose();
+    super.dispose();
+  }
+
+  String _apiStatusFromUi(String uiStatus) {
+    switch (uiStatus) {
+      case "Approved":
+        return "APPROVED";
+      case "Rejected":
+        return "REJECTED";
+      case "Pending Review":
+      default:
+        return "PENDING_REVIEW";
+    }
+  }
+
+  String _uiStatusFromApi(String apiStatus) {
+    switch (apiStatus.toUpperCase()) {
+      case "APPROVED":
+        return "Approved";
+      case "REJECTED":
+        return "Rejected";
+      case "PENDING_REVIEW":
+      default:
+        return "Pending Review";
+    }
+  }
+
+  int? _extractApprovalId(String requestId) {
+    // Supports "#APR-12", "APR-12", "12", etc.
+    final match = RegExp(r'(\d+)').firstMatch(requestId);
+    if (match == null) return null;
+    final n = int.tryParse(match.group(1) ?? "");
+    return (n != null && n > 0) ? n : null;
+  }
+
+  String _formatDate(dynamic dateValue) {
+    if (dateValue == null) return "";
+    try {
+      final dt = DateTime.tryParse(dateValue.toString());
+      if (dt == null) return dateValue.toString();
+      return DateFormat('dd MMM yyyy').format(dt.toLocal());
+    } catch (_) {
+      return dateValue.toString();
+    }
+  }
+
+  String _buildDetails(Map<String, dynamic> details) {
+    final branchName = (details["branch_name"] ?? "").toString().trim();
+    final totalTrays = details["total_trays"];
+    final totalEggs = details["total_eggs"];
+    final totalAmount = details["total_amount"];
+
+    final parts = <String>[];
+    if (branchName.isNotEmpty) parts.add(branchName);
+    if (totalTrays != null) parts.add("${totalTrays.toString()} trays");
+    if (totalEggs != null) parts.add("${totalEggs.toString()} eggs");
+    if (totalAmount != null) parts.add("₹${totalAmount.toString()}");
+
+    return parts.isEmpty ? "-" : parts.join(" • ");
+  }
+
+  String _pickCustomer(Map<String, dynamic> details) {
+    final customerName = (details["customer_name"] ?? "").toString().trim();
+    if (customerName.isNotEmpty) return customerName;
+    final branchName = (details["branch_name"] ?? "").toString().trim();
+    if (branchName.isNotEmpty) return branchName;
+    return "N/A";
+  }
+
+  Future<void> _fetchApprovals() async {
     setState(() {
-      filteredApprovals = approvals.where((approval) {
-        final matchesSearch =
-            approval.customer.toLowerCase().contains(
-              searchController.text.toLowerCase(),
-            ) ||
-            approval.requestId.toLowerCase().contains(
-              searchController.text.toLowerCase(),
-            );
+      isLoading = true;
+      errorText = null;
+    });
 
-        final matchesStatus = approval.status == selectedStatus;
+    try {
+      final q = searchController.text.trim();
+      final apiStatus = _apiStatusFromUi(selectedStatus);
 
-        return matchesSearch && matchesStatus;
+      final response = await DioClient().dio.get(
+        '/api/admin/approvals',
+        queryParameters: {
+          'status': apiStatus,
+          if (q.isNotEmpty) 'q': q,
+        },
+      );
+
+      final data = response.data;
+      final approvalsList = (data is Map<String, dynamic>)
+          ? (data['approvals'] as List? ?? [])
+          : <dynamic>[];
+
+      final mapped = approvalsList.map((row) {
+        final map = (row is Map) ? Map<String, dynamic>.from(row) : <String, dynamic>{};
+        final detailsRaw = map['details'];
+        final details = (detailsRaw is Map) ? Map<String, dynamic>.from(detailsRaw) : <String, dynamic>{};
+
+        return ApprovalModel(
+          requestId: (map['request_id'] ?? '').toString(),
+          type: (map['type'] ?? '-').toString(),
+          customer: _pickCustomer(details),
+          details: _buildDetails(details),
+          date: _formatDate(map['date_time']),
+          requester: (map['requester'] ?? '-').toString(),
+          status: _uiStatusFromApi((map['status'] ?? '').toString()),
+        );
       }).toList();
-    });
+
+      setState(() {
+        approvals = mapped;
+        filteredApprovals = mapped;
+      });
+    } catch (e) {
+      setState(() {
+        errorText = "Failed to load approvals";
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
   }
 
-  void approveRequest(ApprovalModel approval) {
-    setState(() {
-      approval.status = "Approved";
-    });
+  Future<void> approveRequest(ApprovalModel approval) async {
+    final id = _extractApprovalId(approval.requestId);
+    if (id == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invalid approval id")),
+      );
+      return;
+    }
 
-    filterApprovals();
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("${approval.requestId} Approved")));
+    try {
+      await DioClient().dio.post(
+        '/api/admin/approvals/$id/approve',
+        data: {},
+      );
+      await _fetchApprovals();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("${approval.requestId} Approved")),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to approve request")),
+      );
+    }
   }
 
-  void rejectRequest(ApprovalModel approval) {
-    setState(() {
-      approval.status = "Rejected";
-    });
+  Future<void> rejectRequest(ApprovalModel approval) async {
+    final id = _extractApprovalId(approval.requestId);
+    if (id == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invalid approval id")),
+      );
+      return;
+    }
 
-    filterApprovals();
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("${approval.requestId} Rejected")));
+    try {
+      await DioClient().dio.post(
+        '/api/admin/approvals/$id/reject',
+        data: {},
+      );
+      await _fetchApprovals();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("${approval.requestId} Rejected")),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to reject request")),
+      );
+    }
   }
 
   void viewRequest(ApprovalModel approval) {
@@ -167,7 +313,10 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
                   ApprovalSearchField(
                     controller: searchController,
                     onChanged: (value) {
-                      filterApprovals();
+                      _debounce?.cancel();
+                      _debounce = Timer(const Duration(milliseconds: 400), () {
+                        if (mounted) _fetchApprovals();
+                      });
                     },
                   ),
 
@@ -177,8 +326,7 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
                     value: selectedStatus,
                     onChanged: (value) {
                       selectedStatus = value!;
-
-                      filterApprovals();
+                      _fetchApprovals();
                     },
                   ),
                 ],
@@ -219,11 +367,30 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
                         ),
 
                         /// EMPTY
-                        if (filteredApprovals.isEmpty)
+                        if (isLoading)
+                          const Expanded(
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
+
+                        if (!isLoading && errorText != null)
+                          Expanded(
+                            child: Center(
+                              child: Text(
+                                errorText!,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ),
+
+                        if (!isLoading &&
+                            errorText == null &&
+                            filteredApprovals.isEmpty)
                           const Expanded(child: ApprovalEmptyWidget()),
 
                         /// TABLE DATA
-                        if (filteredApprovals.isNotEmpty)
+                        if (!isLoading &&
+                            errorText == null &&
+                            filteredApprovals.isNotEmpty)
                           Expanded(
                             child: ListView.builder(
                               itemCount: filteredApprovals.length,

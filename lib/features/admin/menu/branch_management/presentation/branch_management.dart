@@ -109,51 +109,87 @@ class _BranchManagementState extends State<BranchManagement> {
         elevation: 0,
 
         titleSpacing: 16,
-
-        title: Column(
+        title: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
+
           children: [
-            const Text(
-              "Branch Management",
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+            InkWell(
+              onTap: () {
+                Navigator.pop(context);
+              },
+
+              child: const Padding(
+                padding: EdgeInsets.only(top: 2),
+
+                child: Icon(
+                  Icons.arrow_back_ios_new,
+                  size: 20,
+                  color: Colors.black,
+                ),
               ),
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(width: 12),
 
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
 
-              decoration: BoxDecoration(
-                color: const Color(0xffFFF7D6),
-                borderRadius: BorderRadius.circular(30),
-              ),
-
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.verified_user_outlined,
-                    size: 14,
-                    color: Colors.black,
+                  const Text(
+                    "Branch Management",
+
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
 
-                  SizedBox(width: 6),
+                  const SizedBox(height: 8),
 
-                  Text(
-                    "Role: Inventory & Ops Admin",
-                    style: TextStyle(fontSize: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+
+                    decoration: BoxDecoration(
+                      color: const Color(0xffFFF7D6),
+
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+
+                      children: [
+                        Icon(
+                          Icons.verified_user_outlined,
+                          size: 14,
+                          color: Colors.black,
+                        ),
+
+                        SizedBox(width: 6),
+
+                        Flexible(
+                          child: Text(
+                            "Role: Inventory & Ops Admin",
+
+                            overflow: TextOverflow.ellipsis,
+
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
           ],
         ),
-
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 10, top: 12, bottom: 12),

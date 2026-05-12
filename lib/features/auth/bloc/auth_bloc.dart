@@ -27,6 +27,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           await prefs.setBool('isLoggedIn', true);
 
           await prefs.setString('role', result['user']['role']);
+          if (result['user']['email'] != null) {
+            await prefs.setString('email', result['user']['email']);
+          }
 
           /// SAVE BRANCH ID
 

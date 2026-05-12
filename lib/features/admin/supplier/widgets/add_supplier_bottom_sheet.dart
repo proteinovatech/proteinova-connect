@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/features/admin/supplier/models/supplier_model.dart';
+import 'package:proteinova_connect/features/admin/supplier/services/supplier_service.dart';
 
 class AddSupplierBottomSheet extends StatefulWidget {
-  const AddSupplierBottomSheet({super.key});
+  final Supplier? supplierToEdit;
+
+  const AddSupplierBottomSheet({super.key, this.supplierToEdit});
 
   @override
   State<AddSupplierBottomSheet> createState() =>
@@ -14,8 +18,23 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
   final TextEditingController contactController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
+  final SupplierService _supplierService = SupplierService();
 
   String status = "Active";
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.supplierToEdit != null) {
+      companyController.text = widget.supplierToEdit!.name;
+      locationController.text = widget.supplierToEdit!.location;
+      contactController.text = widget.supplierToEdit!.owner;
+      emailController.text = widget.supplierToEdit!.email;
+      phoneController.text = widget.supplierToEdit!.phone;
+      status = widget.supplierToEdit!.active ? "Active" : "Inactive";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +75,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
 
                     const Expanded(
                       child: Text(
-                        "Add New Supplier",
+                        "Supplier Details",
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
@@ -325,23 +344,60 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                               borderRadius: BorderRadius.circular(16),
                             ),
                           ),
-                          onPressed: () {
+                          onPressed: isLoading ? null : () async {
+                            if (companyController.text.trim().isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Company name is required")),
+                              );
+                              return;
+                            }
 
-                            Navigator.pop(context);
+                            setState(() {
+                              isLoading = true;
+                            });
 
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Supplier Added"),
-                              ),
-                            );
+                            try {
+                              final newSupplier = Supplier(
+                                id: widget.supplierToEdit?.id ?? '',
+                                name: companyController.text.trim(),
+                                location: locationController.text.trim(),
+                                owner: contactController.text.trim(),
+                                phone: phoneController.text.trim(),
+                                email: emailController.text.trim(),
+                                active: status == 'Active',
+                              );
+
+                              if (widget.supplierToEdit != null) {
+                                await _supplierService.updateSupplier(widget.supplierToEdit!.id, newSupplier);
+                              } else {
+                                await _supplierService.addSupplier(newSupplier);
+                              }
+
+                              Navigator.pop(context);
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(widget.supplierToEdit != null ? "Supplier Updated" : "Supplier Added"),
+                                ),
+                              );
+                            } catch (e) {
+                              setState(() {
+                                isLoading = false;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Error: $e")),
+                              );
+                            }
                           },
-                          child: const Text(
-                            "Save Supplier",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                          child: isLoading 
+                            ? const CircularProgressIndicator(color: Colors.black)
+                            : Text(
+                                widget.supplierToEdit != null ? "Update Supplier" : "Save Supplier",
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                         ),
                       ),
                     ),

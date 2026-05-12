@@ -16,49 +16,43 @@ class TopBranchTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-
         Wrap(
-          alignment:
-              WrapAlignment.spaceBetween,
+          alignment: WrapAlignment.spaceBetween,
+
           runSpacing: 8,
 
           children: [
-
             SizedBox(
               width: 180,
 
               child: Text(
                 branch,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                ),
+
+                maxLines: 2,
+
+                overflow: TextOverflow.ellipsis,
+
+                style: const TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
 
-            Text(
-              amount,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+            Text(amount, style: const TextStyle(fontWeight: FontWeight.w700)),
           ],
         ),
 
         const SizedBox(height: 10),
 
         ClipRRect(
-          borderRadius:
-              BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20),
 
           child: LinearProgressIndicator(
-            value: progress,
+            value: progress.clamp(0.0, 1.0),
+
             minHeight: 8,
-            backgroundColor:
-                const Color(0xffE5E7EB),
-            valueColor:
-                const AlwaysStoppedAnimation(
-              Color(0xffFACC15),
-            ),
+
+            backgroundColor: const Color(0xffE5E7EB),
+
+            valueColor: const AlwaysStoppedAnimation(Color(0xffFACC15)),
           ),
         ),
       ],
