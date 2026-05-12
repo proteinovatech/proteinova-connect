@@ -83,7 +83,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
   final List<Widget> pages = [
         BranchDashboard(),
          Sales(),
-     Inventory(),
+    //  Inventory(),
     DailyClosing(),
   ];
   @override
@@ -102,7 +102,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
           children: [
              _buildNavItem(Icons.grid_view, 0),
             _buildNavItem(Icons.shopping_cart_outlined, 1),
-            _buildNavItem(Icons.inventory_2_outlined, 2),
+            // _buildNavItem(Icons.inventory_2_outlined, 2),
             _buildNavItem(Icons.receipt_long, 3),
             _buildNavItem(Icons.menu_outlined, 4),
           ],
@@ -179,18 +179,18 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                 children: [
                   const SizedBox(height: 16),
 
-                  _menuTile(
-                    Icons.agriculture,
-                    "Incoming Stock from warehouse",
-                    Receivestock(),
-                  ),
+                  // _menuTile(
+                  //   Icons.agriculture,
+                  //   "Incoming Stock from warehouse",
+                  //   Receivestock(),
+                  // ),
 
-                  _menuTile(Icons.store, "Branches", BranchDetails()),
+                  // _menuTile(Icons.store, "Branches", BranchDetails()),
 
                   _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
 
                   _menuTile(Icons.money, "Expenses", ExpenseManagement()),
-                   _menuTile(Icons.money, "Admin in", AdminInventory()),
+                  //  _menuTile(Icons.money, "Admin in", AdminInventory()),
 
                   const SizedBox(height: 20),
                   Divider(),
