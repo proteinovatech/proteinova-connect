@@ -108,13 +108,8 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
             _buildNavItem(Icons.grid_view, 0),
             _buildNavItem(Icons.shopping_cart_outlined, 1),
             // _buildNavItem(Icons.inventory_2_outlined, 2),
-<<<<<<< HEAD
-            _buildNavItem(Icons.receipt_long, 3),
-            _buildNavItem(Icons.menu_outlined, 4),
-=======
             _buildNavItem(Icons.receipt_long, 2),
             _buildNavItem(Icons.menu_outlined, 3),
->>>>>>> 3932f4493cb2846aa06ff0d936b8a08c9b6c1a6f
           ],
         ),
       ),
