@@ -280,7 +280,7 @@ class _OfferPriceState extends State<OfferPrice> {
                                                           child: Row(
                                                             children: [
                                                               _bodyCell(offer['offer_name'] ?? "-", 150, isBold: true),
-                                                              _bodyCell(offer['product_name'] ?? "All", 100),
+                                                              _bodyCell((offer['product_name'] == null || offer['product_name'].toString().isEmpty) ? "All" : offer['product_name'], 100),
                                                               _bodyCell(_formatOfferDetails(offer), 120),
                                                               _bodyCell("${offer['start_date']} to ${offer['end_date']}", 130),
                                                               _statusCell(offer['status'] ?? "inactive", 80),
@@ -368,12 +368,19 @@ class _OfferPriceState extends State<OfferPrice> {
   }
 
   String _formatOfferDetails(Map<String, dynamic> offer) {
-    if (offer['offer_type'] == 'Fixed Amount') {
-      return "₹${offer['discount_value']} off ${offer['discount_unit']}";
-    } else if (offer['offer_type'] == 'Percentage') {
-      return "${offer['discount_value']}% off ${offer['discount_unit']}";
-    } else if (offer['offer_type'] == 'Buy X Get Y') {
-      return "Buy ${offer['buy_qty']} Get ${offer['free_qty']}";
+    final type = offer['offer_type']?.toString().toLowerCase() ?? '';
+    final unit = (offer['discount_unit']?.toString() ?? '').replaceAll('_', ' ');
+
+    if (type == 'fixed_amount' || type == 'fixed amount') {
+      final val = offer['discount_value']?.toString() ?? '0';
+      return "₹$val off $unit".trim();
+    } else if (type == 'percentage') {
+      final val = offer['discount_value']?.toString() ?? '0';
+      return "$val% off $unit".trim();
+    } else if (type == 'buy_x_get_y' || type == 'buy x get y') {
+      final buy = offer['buy_qty']?.toString() ?? '0';
+      final free = offer['free_qty']?.toString() ?? '0';
+      return "Buy $buy Get $free";
     }
     return "-";
   }

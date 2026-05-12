@@ -16,11 +16,16 @@ import 'package:proteinova_connect/features/admin/report/screens/admin_report_da
 import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
 import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
 import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
+<<<<<<< HEAD
 import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
 import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
 import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
+=======
+
+import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
+>>>>>>> a8bcba938783a275eaea08cd95b75f2e57f06e55
 
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 
@@ -231,7 +236,6 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                     "AdminInventory",
                     AdminInventory(),
                   ),
-
                   // _menuTile(
                   //   Icons.agriculture,
                   //   "SalesDashboard",

@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
 import 'package:proteinova_connect/features/admin/widget/inventory_card.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
+<<<<<<< HEAD
 import 'package:proteinova_connect/core/network/dio_client.dart';
+=======
+import '../inventory/data/inventory_repository.dart';
+import '../inventory/models/inventory_model.dart';
+>>>>>>> a8bcba938783a275eaea08cd95b75f2e57f06e55
 
 class AdminInventory extends StatefulWidget {
   const AdminInventory({super.key});
@@ -11,11 +17,57 @@ class AdminInventory extends StatefulWidget {
 }
 
 class _AdminInventoryState extends State<AdminInventory> {
+<<<<<<< HEAD
   bool isLoading = false;
   Map<String, dynamic>? inventoryStockData;
   List<Map<String, dynamic>> inventoryData = [];
   List<Map<String, dynamic>> activities = [];
   List<Map<String, dynamic>> orders = [];
+=======
+  final InventoryRepository _repository = InventoryRepository();
+  AdminInventoryModel? inventoryModel;
+  bool isLoading = true;
+  String searchQuery = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    setState(() => isLoading = true);
+    try {
+      final data = await _repository.fetchInventoryData();
+      final purchasesList = await _repository.fetchPurchases();
+      setState(() {
+        inventoryModel = AdminInventoryModel(
+          metrics: data.metrics,
+          purchases: purchasesList,
+        );
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() => isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error fetching inventory: $e")));
+      }
+    }
+  }
+
+  List<PurchaseModel> get _filteredPurchases {
+    final list = inventoryModel?.purchases ?? [];
+    if (searchQuery.isEmpty) return list;
+    return list.where((p) {
+      final query = searchQuery.toLowerCase();
+      return p.poNumber.toLowerCase().contains(query) ||
+          p.supplierName.toLowerCase().contains(query) ||
+          p.productName.toLowerCase().contains(query);
+    }).toList();
+  }
+>>>>>>> a8bcba938783a275eaea08cd95b75f2e57f06e55
 
   @override
   void initState() {
@@ -25,6 +77,7 @@ class _AdminInventoryState extends State<AdminInventory> {
     fetchDashboardActivity();
   }
 
+<<<<<<< HEAD
   Future<void> fetchInventoryStock() async {
     setState(() {
       isLoading = true;
@@ -189,11 +242,16 @@ class _AdminInventoryState extends State<AdminInventory> {
     return Colors.grey;
   }
 
+=======
+>>>>>>> a8bcba938783a275eaea08cd95b75f2e57f06e55
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
-
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(12),
@@ -213,8 +271,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    /// HEADER
-                    Row(
+                                      Row(
                       children: [
                         InkWell(
                           onTap: () {
@@ -307,7 +364,14 @@ class _AdminInventoryState extends State<AdminInventory> {
                         ),
 
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => IncomingStock(),
+                              ),
+                            ).then((_) => _fetchData());
+                          },
 
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xffFFD400),
@@ -323,7 +387,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                           ),
 
                           child: const Text(
-                            "+ Add Sale",
+                            "View Queue",
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -349,6 +413,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                 childAspectRatio: 1.45,
 
                 children: [
+<<<<<<< HEAD
                   InventoryCard(
                     title: "Current Stock",
                     value: isLoading
@@ -357,13 +422,61 @@ class _AdminInventoryState extends State<AdminInventory> {
                     subtitle: "Total stock units",
                     icon: Icons.inventory_2_outlined,
                     iconColor: Colors.black87,
+=======
+                  InventoryCard(
+                    title: "Expected Today",
+                    value:
+                        "${inventoryModel?.metrics.expectedToday ?? 0} Shipments",
+                    subtitle: "Tracking Information",
+                    icon: Icons.calendar_today_outlined,
+                    iconColor: Colors.black87,
+                  ),
+
+                  InventoryCard(
+                    title: "Ready for Unloading",
+                    value:
+                        "${inventoryModel?.metrics.readyForUnloading ?? 0} Shipments",
+                    subtitle: "Awaiting Confirmation",
+                    icon: Icons.inventory_2_outlined,
+                    iconColor: Colors.green,
+                  ),
+
+                  InventoryCard(
+                    title: "Delayed in Transit",
+                    value:
+                        "${inventoryModel?.metrics.delayedInTransit ?? 0} Shipments",
+                    subtitle: "Pending updates",
+                    icon: Icons.warning_amber_rounded,
+                    iconColor: Colors.red,
+                  ),
+
+                  InventoryCard(
+                    title: "Current Stock",
+                    value: "${inventoryModel?.metrics.currentStock ?? 0}",
+                    subtitle: "Total units available",
+                    icon: Icons.refresh,
+                    iconColor: Colors.black87,
+                    isPositive: true,
+                  ),
+
+                  InventoryCard(
+                    title: "Damaged Stock",
+                    value: "${inventoryModel?.metrics.damagedStock ?? 0} Units",
+                    subtitle: "Reported damages",
+                    icon: Icons.warning_amber_rounded,
+                    iconColor: Colors.red,
+>>>>>>> a8bcba938783a275eaea08cd95b75f2e57f06e55
                   ),
 
                   InventoryCard(
                     title: "Stock Value",
+<<<<<<< HEAD
                     value: isLoading
                         ? "..."
                         : "₹ ${inventoryStockData?['total_stock_value'] ?? '0'}",
+=======
+                    value: "₹ ${inventoryModel?.metrics.stockValue ?? 0}",
+>>>>>>> a8bcba938783a275eaea08cd95b75f2e57f06e55
                     subtitle: "Total inventory value",
                     icon: Icons.attach_money,
                     iconColor: Colors.green,
@@ -460,6 +573,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                     ),
 
                     const SizedBox(height: 20),
+<<<<<<< HEAD
 
                     if (inventoryData.isEmpty)
                       const Padding(
@@ -524,6 +638,8 @@ class _AdminInventoryState extends State<AdminInventory> {
                         );
                       },
                     ),
+=======
+>>>>>>> a8bcba938783a275eaea08cd95b75f2e57f06e55
                   ],
                 ),
               ),
@@ -669,6 +785,11 @@ class _AdminInventoryState extends State<AdminInventory> {
 
                     const SizedBox(height: 12),
                     TextField(
+                      onChanged: (value) {
+                        setState(() {
+                          searchQuery = value;
+                        });
+                      },
                       decoration: InputDecoration(
                         hintText: "Search PO, Supplier, or Items...",
                         prefixIcon: const Icon(Icons.search),
@@ -677,7 +798,6 @@ class _AdminInventoryState extends State<AdminInventory> {
                         contentPadding: const EdgeInsets.symmetric(
                           vertical: 14,
                         ),
-
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide.none,
@@ -698,10 +818,10 @@ class _AdminInventoryState extends State<AdminInventory> {
                       ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: orders.length,
+                      itemCount: _filteredPurchases.length,
 
                       itemBuilder: (context, index) {
-                        final item = orders[index];
+                        final item = _filteredPurchases[index];
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 5),
@@ -728,7 +848,7 @@ class _AdminInventoryState extends State<AdminInventory> {
 
                                     children: [
                                       Text(
-                                        item["po"].toString(),
+                                        item.poNumber,
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
@@ -737,9 +857,9 @@ class _AdminInventoryState extends State<AdminInventory> {
 
                                       const SizedBox(height: 4),
 
-                                      const Text(
-                                        "07 May 2026 • 10:45 AM",
-                                        style: TextStyle(
+                                      Text(
+                                        item.createdAt,
+                                        style: const TextStyle(
                                           color: Colors.grey,
                                           fontSize: 12,
                                         ),
@@ -777,7 +897,7 @@ class _AdminInventoryState extends State<AdminInventory> {
 
                                   Expanded(
                                     child: Text(
-                                      "${item["supplier"]} • ${item["location"]}",
+                                      "${item.supplierName} • ${item.location}",
                                       style: const TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w500,
@@ -803,7 +923,7 @@ class _AdminInventoryState extends State<AdminInventory> {
 
                                   Expanded(
                                     child: Text(
-                                      item["product"].toString(),
+                                      item.productName,
                                       style: const TextStyle(fontSize: 14),
                                     ),
                                   ),
@@ -812,7 +932,7 @@ class _AdminInventoryState extends State<AdminInventory> {
 
                               const SizedBox(height: 14),
 
-                              _buildStatus(item["status"].toString()),
+                              _buildStatus(item.status),
                             ],
                           ),
                         );

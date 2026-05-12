@@ -1,139 +1,210 @@
- import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-Widget salesRow({
-    required String order,
-    required String date,
-    required String customer,
-    required String items,
-    required String amount,
-    required String status,
-    required bool paid,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
+class SalesRow extends StatelessWidget {
+  final String order;
+  final String date;
+  final String customer;
+  final String branch;
+  final String items;
+  final String amount;
+  final String status;
+  final bool paid;
 
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-      ),
+  const SalesRow({
+    super.key,
+    required this.order,
+    required this.date,
+    required this.customer,
+    required this.branch,
+    required this.items,
+    required this.amount,
+    required this.status,
+    required this.paid,
+  });
 
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          /// ORDER DETAILS
-          Expanded(
-            flex: 32,
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
 
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Container(
+        width: 700,
 
-              children: [
-                Text(
-                  order,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
+
+        decoration: BoxDecoration(
+          color: Colors.white,
+
+          border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+        ),
+
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+
+          children: [
+            /// ORDER DETAILS
+            Expanded(
+              flex: 32,
+
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+
+                children: [
+                  Text(
+                    order,
+
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 4),
+                  const SizedBox(height: 4),
 
-                Text(date, style: const TextStyle(fontSize: 12)),
-
-                const SizedBox(height: 4),
-
-                Text(customer, style: const TextStyle(fontSize: 12)),
-              ],
+                  Text(date, style: const TextStyle(fontSize: 12)),
+                ],
+              ),
             ),
-          ),
 
-          /// ITEMS
-          Expanded(
-            flex: 18,
+            /// CUSTOMER
+            Expanded(
+              flex: 20,
 
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-
-              children: [
-                Text(
-                  items,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
                   ),
-                ),
 
-                const SizedBox(height: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
 
-                const Text("Eggs", style: TextStyle(fontSize: 12)),
-              ],
-            ),
-          ),
+                  child: Text(
+                    customer,
 
-          /// AMOUNT
-          Expanded(
-            flex: 18,
-
-            child: Center(
-              child: Text(
-                amount,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.blue.shade900,
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
 
-          /// STATUS
-          Expanded(
-            flex: 20,
+            /// BRANCH
+            Expanded(
+              flex: 20,
 
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+
+                  child: Text(
+                    branch,
+
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.orange.shade900,
+                    ),
+                  ),
                 ),
+              ),
+            ),
 
-                decoration: BoxDecoration(
-                  color: paid ? Colors.green : Colors.red.withOpacity(.1),
+            /// ITEMS
+            Expanded(
+              flex: 18,
 
-                  borderRadius: BorderRadius.circular(30),
-
-                  border: paid ? null : Border.all(color: Colors.red),
-                ),
-
+              child: Center(
                 child: Text(
-                  status,
-                  style: TextStyle(
-                    color: paid ? Colors.white : Colors.red,
+                  items,
 
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 11,
+                    fontSize: 13,
                   ),
                 ),
               ),
             ),
-          ),
 
-          /// ACTION
-          const Expanded(
-            flex: 14,
+            /// AMOUNT
+            Expanded(
+              flex: 18,
 
-            child: Column(
-              children: [
-                Icon(Icons.remove_red_eye_outlined, size: 18),
+              child: Center(
+                child: Text(
+                  amount,
 
-                SizedBox(height: 2),
-
-                Text("View", style: TextStyle(fontSize: 11)),
-              ],
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
             ),
-          ),
-        ],
+
+            /// STATUS
+            Expanded(
+              flex: 18,
+
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+
+                  decoration: BoxDecoration(
+                    color: paid ? Colors.green : Colors.red.withOpacity(.1),
+
+                    borderRadius: BorderRadius.circular(30),
+
+                    border: paid ? null : Border.all(color: Colors.red),
+                  ),
+
+                  child: Text(
+                    status,
+
+                    style: TextStyle(
+                      color: paid ? Colors.white : Colors.red,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            /// ACTION
+            const Expanded(
+              flex: 14,
+
+              child: Column(
+                children: [
+                  Icon(Icons.remove_red_eye_outlined, size: 18),
+
+                  SizedBox(height: 2),
+
+                  Text("View", style: TextStyle(fontSize: 11)),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-
+}
