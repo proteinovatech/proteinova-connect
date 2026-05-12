@@ -84,51 +84,40 @@ class PurchaseCard extends StatelessWidget {
             children: [
               Text(bottomId, style: AppTextStyles.headingText22),
 
-             GestureDetector(
-  onTap: isLoading
-      ? null
-      : movementStatus == "RECEIVED"
-          ? null
-          : onArrivalTap,
-
-  child: isLoading
-      ? Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 10,
-          ),
-
-          decoration: BoxDecoration(
-            color: Colors.blue,
-            borderRadius:
-                BorderRadius.circular(12),
-          ),
-
-          child: const SizedBox(
-            height: 18,
-            width: 18,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Colors.white,
-            ),
-          ),
-        )
-      : StatusBadge(
-          text: movementStatus == "RECEIVED"
-              ? "Received"
-              : "Mark as Arrival",
-
-          icon: movementStatus == "RECEIVED"
-              ? Icons.check_circle
-              : Icons.local_shipping_outlined,
-
-          bgColor: movementStatus == "RECEIVED"
-              ? Colors.green
-              : Colors.blue,
-
-          textColor: Colors.white,
+            isLoading
+    ? Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 10,
         ),
-)
+        decoration: BoxDecoration(
+          color: Colors.blue,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const SizedBox(
+          height: 18,
+          width: 18,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: Colors.white,
+          ),
+        ),
+      )
+    : StatusBadge(
+        text: movementStatus == "RECEIVED"
+            ? "Received"
+            : "Mark as Arrival",
+        icon: movementStatus == "RECEIVED"
+            ? Icons.check_circle
+            : Icons.local_shipping_outlined,
+        bgColor: movementStatus == "RECEIVED"
+            ? Colors.green
+            : Colors.blue,
+        textColor: Colors.white,
+        onPressed: movementStatus == "RECEIVED"
+            ? null
+            : onArrivalTap,
+      )
             ],
           ),
         ],
