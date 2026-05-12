@@ -144,7 +144,7 @@ class _SalesState extends State<Sales> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => SalesEntry()),
+                      MaterialPageRoute(builder: (_) => SalesEntryPage()),
                     );
                   },
                   child: Container(
