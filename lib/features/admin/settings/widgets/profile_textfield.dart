@@ -4,12 +4,14 @@ class ProfileTextField extends StatelessWidget {
   final String label;
   final String hint;
   final bool enabled;
+  final TextEditingController? controller;
 
   const ProfileTextField({
     super.key,
     required this.label,
     required this.hint,
     this.enabled = true,
+    this.controller,
   });
 
   @override
@@ -31,9 +33,9 @@ class ProfileTextField extends StatelessWidget {
         const SizedBox(height: 10),
 
         TextFormField(
+          controller: controller,
           enabled: enabled,
-
-          initialValue: hint,
+          initialValue: controller == null ? hint : null,
 
           decoration: InputDecoration(
             filled: true,

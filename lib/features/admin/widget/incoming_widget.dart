@@ -73,30 +73,34 @@ Widget buildOverviewCard({
 }
 
 /// FILTER BOX
-Widget buildFilterBox({required IconData icon, required String text}) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: Colors.grey.shade300),
-    ),
-    child: Row(
-      children: [
-        Icon(icon, size: 16),
-
-        const SizedBox(width: 6),
-
-        Expanded(
-          child: Text(
-            text,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+Widget buildFilterBox({
+  required IconData icon,
+  required String text,
+  VoidCallback? onTap,
+}) {
+  return InkWell(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 16),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              text,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+            ),
           ),
-        ),
-
-        const Icon(Icons.keyboard_arrow_down, size: 18),
-      ],
+          const Icon(Icons.keyboard_arrow_down, size: 18),
+        ],
+      ),
     ),
   );
 }
@@ -111,6 +115,7 @@ Widget buildTableRow({
   required String type,
   required String status,
   bool isReceive = false,
+  VoidCallback? onReceive,
 }) {
   return Container(
     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -202,27 +207,30 @@ Widget buildTableRow({
           child: Align(
             alignment: Alignment.centerLeft,
             child: isReceive
-                ? Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFD600),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      "Receive Stock",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 11,
+                ? InkWell(
+                    onTap: onReceive,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD600),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        "Receive Stock",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
                       ),
                     ),
                   )
-                : const Text(
-                    "PENDING",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                : Text(
+                    status.replaceAll('_', ' ').toUpperCase(),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                   ),
           ),
         ),

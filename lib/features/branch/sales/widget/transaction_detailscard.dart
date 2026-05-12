@@ -8,6 +8,7 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/buildrow.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/eggitemcard.dart';
+import 'package:proteinova_connect/features/branch/sales/widget/info_box.dart';
 
 class TransactionDetailscard extends StatefulWidget {
   final TextEditingController categoryController;
@@ -325,18 +326,7 @@ Future<void> saveCustomer() async {
           "Customer Details",
           style: AppTextStyles.headingText22,
         ),
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              showCustomerInput = !showCustomerInput;
-            });
-          },
-          child: Icon(
-            showCustomerInput
-                ? Icons.keyboard_arrow_down
-                : Icons.keyboard_arrow_up,
-          ),
-        ),
+       
       ],
     ),
 
@@ -344,7 +334,7 @@ Future<void> saveCustomer() async {
     const Divider(),
     const SizedBox(height: 10),
 
-    if (showCustomerInput)
+    
       Container(
         padding: const EdgeInsets.all(15),
 
@@ -669,74 +659,7 @@ Align(
             ),
           ),
            const SizedBox(height: 14),
-          // Visibility(
-          //   visible: false, // 👈 change to true when needed
-          //   child: Column(
-          //     crossAxisAlignment: CrossAxisAlignment.start,
-          //     children: [
-          //       const Text(
-          //         "Quantity Sold (Units/Trays)",
-          //         style: AppTextStyles.buttonText16,
-          //       ),
-          //       const SizedBox(height: 6),
-          //       _buildField(
-          //         controller: widget.quantityController,
-          //         hint: "Enter quantity",
-          //         icon: null,
-          //         isNumeric: true,
-          //       ),
-          //       const SizedBox(height: 10),
-
-          //       Row(
-          //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          //         children: [10, 20, 50, 100].map((value) {
-          //           final isSelected = selectedIncrement == value;
-
-          //           return GestureDetector(
-          //             onTap: () {
-          //               int current =
-          //                   int.tryParse(widget.quantityController.text) ?? 0;
-
-          //               setState(() {
-          //                 selectedIncrement = value;
-          //                 widget.quantityController.text = (current + value)
-          //                     .toString();
-          //               });
-          //             },
-          //             child: Container(
-          //               padding: const EdgeInsets.symmetric(
-          //                 horizontal: 16,
-          //                 vertical: 8,
-          //               ),
-          //               decoration: BoxDecoration(
-          //                 color: isSelected
-          //                     ? AppColors.containerColor2
-          //                     : AppColors.containerColor,
-          //                 border: Border.all(
-          //                   color: isSelected
-          //                       ? AppColors.border2
-          //                       : AppColors.border,
-          //                 ),
-          //                 borderRadius: BorderRadius.circular(20),
-          //               ),
-          //               child: Text(
-          //                 "+$value",
-          //                 style: isSelected
-          //                     ? AppTextStyles.containerText.copyWith(
-          //                         fontWeight: FontWeight.bold,
-          //                         color: AppColors.dark,
-          //                       )
-          //                     : AppTextStyles.containerText,
-          //               ),
-          //             ),
-          //           );
-          //         }).toList(),
-          //       ),
-          //     ],
-          //   ),
-          // ),
-          // const SizedBox(height: 14),
-          
+         
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -794,96 +717,158 @@ Align(
                   var item = entry.value;
                   int price = int.tryParse(item["price"] ?? "0") ?? 0;
                   int qty = int.tryParse(item["qty"] ?? "1") ?? 1;
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: AppColors.containerColor.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: AppColors.containerColor2),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item["title"] ?? "",
-                              style: AppTextStyles.headingText20,
-                            ),
-                            Text("${item["price"] ?? "0"} per tray"),
-                            Text(
-                              item["stock"] ?? "",
-                              style: AppTextStyles.bodyText14,
-                            ),
-                          ],
-                        ),
+                 return Container(
+  margin: const EdgeInsets.only(bottom: 8),
+  padding: const EdgeInsets.all(10),
+  decoration: BoxDecoration(
+    color: AppColors.containerColor.withOpacity(0.2),
+    borderRadius: BorderRadius.circular(6),
+    border: Border.all(color: AppColors.containerColor2),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+            Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+                    Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                (item["title"] ?? "").toString(),
+                style: AppTextStyles.headingText20,
+              ),
+              Text("${item["price"] ?? 0} per tray"),
+              Text(
+                (item["stock"] ?? "").toString(),
+                style: AppTextStyles.bodyText14,
+              ),
+            ],
+          ),
+      Column(
+  children: [
+    Text(
+      "Dozen",
+      style: TextStyle(
+        fontSize: 14,
+        color: Colors.grey.shade700,
+        fontWeight: FontWeight.w500,
+      ),
+    ),
 
-                        Row(
-                          children: [
-                            /// ➖ BUTTON
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  int qty = int.parse(item["qty"] ?? "1");
-                                  if (qty > 1) {
-                                    qty--;
-                                    item["qty"] = qty.toString();
-                                  }
-                                });
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Icon(Icons.remove, size: 18),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              item["qty"] ?? "1",
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                            const SizedBox(width: 6),
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  int qty = int.parse(item["qty"] ?? "1");
-                                  qty++;
-                                  item["qty"] = qty.toString();
-                                });
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Icon(Icons.add, size: 18),
-                              ),
-                            ),
+    const SizedBox(height: 5),
 
-                            const SizedBox(width: 10),
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  selectedItems.removeAt(index);
-                                });
-                              },
-                              child: const Icon(
-                                Icons.delete_outline,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
+    Row(
+      children: [
+
+                GestureDetector(
+          onTap: () {
+            setState(() {
+              int qty =
+                  int.tryParse(item["qty"].toString()) ?? 1;
+
+              if (qty > 1) qty--;
+
+              item["qty"] = qty.toString();
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Icon(
+              Icons.remove,
+              size: 18,
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 6),
+
+        /// QTY
+        Text(
+          (item["qty"] ?? 1).toString(),
+          style: const TextStyle(fontSize: 16),
+        ),
+
+        const SizedBox(width: 6),
+
+        /// PLUS
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              int qty =
+                  int.tryParse(item["qty"].toString()) ?? 1;
+
+              qty++;
+
+              item["qty"] = qty.toString();
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Icon(
+              Icons.add,
+              size: 18,
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 10),
+
+        /// DELETE
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              selectedItems.remove(item);
+            });
+          },
+          child: const Icon(
+            Icons.delete_outline,
+            size: 20,
+            color: Colors.red,
+          ),
+        ),
+      ],
+    ),
+  ],
+)],
+      ),
+
+      const SizedBox(height: 14),
+
+      /// BOTTOM SECTION
+    Row(
+  children: [
+
+    Expanded(
+      child: InfoBox(
+        title: "Rate Per Egg",
+        value:
+            "₹${((double.tryParse(item["price"].toString()) ?? 0) / 30).toStringAsFixed(2)}",
+      ),
+    ),
+
+    const SizedBox(width: 10),
+
+    Expanded(
+      child: InfoBox(
+        title: "Total Amount",
+        value:
+            "₹${(double.tryParse(item["price"].toString()) ?? 0) * (int.tryParse(item["qty"].toString()) ?? 1)}",
+      ),
+    ),
+  ],
+) ],
+  ),
+);}).toList(),
               ],
             ),
           ),

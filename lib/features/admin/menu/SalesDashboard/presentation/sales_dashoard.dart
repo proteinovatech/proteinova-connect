@@ -1,9 +1,110 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/features/admin/menu/SalesDashboard/data/datasource/sales_remote_datasource.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/presentation/sales_entry_page.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/sales_row.dart';
 
-class SalesDashboardPage extends StatelessWidget {
+class SalesDashboardPage extends StatefulWidget {
   const SalesDashboardPage({super.key});
+
+  @override
+  State<SalesDashboardPage> createState() => _SalesDashboardPageState();
+}
+
+class _SalesDashboardPageState extends State<SalesDashboardPage> {
+  final SalesRemoteDatasource datasource = SalesRemoteDatasource();
+  TextEditingController searchController = TextEditingController();
+  DateTime? selectedDate;
+  String selectedWarehouse = "All Branches";
+  String formattedDate = "Select Date";
+  Map<String, dynamic> salesData = {};
+  List<String> warehouseList = [];
+  List recentOrders = [];
+  List filteredOrders = [];
+  bool isLoading = true;
+  int currentPage = 1;
+
+  int itemsPerPage = 10;
+  List get paginatedOrders {
+    final startIndex = (currentPage - 1) * itemsPerPage;
+
+    final endIndex = startIndex + itemsPerPage;
+
+    if (startIndex >= filteredOrders.length) {
+      return [];
+    }
+
+    return filteredOrders.sublist(
+      startIndex,
+      endIndex > filteredOrders.length ? filteredOrders.length : endIndex,
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getWarehouseList();
+    getSales();
+  }
+
+  Future<void> getSales() async {
+    try {
+      final response = await datasource.getSales();
+      print("SALES DASHBOARD RESPONSE =>");
+
+      print("SALES RESPONSE =>");
+      print(response);
+
+      setState(() {
+        salesData = response;
+
+        recentOrders =
+            response['sales'] ??
+            response['recent_orders'] ??
+            response['data'] ??
+            [];
+
+        filteredOrders = recentOrders;
+
+        isLoading = false;
+      });
+
+      print("RECENT ORDERS =>");
+      print(recentOrders);
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+
+      print("GET SALES ERROR =>");
+      print(e.toString());
+    }
+  }
+
+  Future<void> getWarehouseList() async {
+    try {
+      final response = await datasource.getSalesDashboard();
+      print("WAREHOUSE API =>");
+      print(response);
+
+      /// API FIELD
+      final List warehouseData = response["warehouse_list"] ?? [];
+
+      setState(() {
+        warehouseList = [
+          "All Branches",
+          ...warehouseData.map((e) => e.toString()),
+        ];
+
+        if (warehouseList.isNotEmpty) {
+          selectedWarehouse = warehouseList.first;
+        }
+      });
+
+      print("WAREHOUSE LIST => $warehouseList");
+    } catch (e) {
+      print("WAREHOUSE ERROR => ${e.toString()}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,390 +167,692 @@ class SalesDashboardPage extends StatelessWidget {
         ),
       ),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 10),
 
-            /// BUTTON
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SalesEntryPage(),
+                  /// BUTTON
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SalesEntryPage(),
+                        ),
+                      );
+                    },
+
+                    child: Container(
+                      height: 38,
+                      width: double.infinity,
+
+                      decoration: BoxDecoration(
+                        color: const Color(0xffFFD600),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+
+                      child: const Center(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.add_circle_outline),
+
+                            SizedBox(width: 10),
+
+                            Text(
+                              "New Sales Entry",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                );
-              },
 
-              child: Container(
-                height: 38,
-                width: double.infinity,
+                  const SizedBox(height: 24),
 
-                decoration: BoxDecoration(
-                  color: const Color(0xffFFD600),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-
-                child: const Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                  /// DASHBOARD CARDS
+                  Row(
                     children: [
-                      Icon(Icons.add_circle_outline),
+                      /// TOTAL SALES
+                      /// TOTAL SALES
+                      Expanded(
+                        child: dashboardCard(
+                          title: "Total Sales Revenue",
 
-                      SizedBox(width: 10),
+                          value:
+                              "₹ ${salesData['cards']?['total_sales']?['value'] ?? salesData['cards']?['sales_today']?['amount'] ?? 0}",
+                          icon: Icons.layers_outlined,
 
-                      Text(
-                        "New Sales Entry",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          iconColor: Colors.blue,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+
+                      /// TOTAL ORDERS
+                      Expanded(
+                        child: dashboardCard(
+                          title: "Total Orders",
+
+                          value:
+                              "${salesData['cards']?['total_orders']?['value'] ?? salesData['header']?['today_sales']?['count'] ?? recentOrders.length}",
+
+                          icon: Icons.receipt_long_outlined,
+
+                          iconColor: Colors.green,
+                        ),
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      /// TOTAL EGGS
+                      Expanded(
+                        child: dashboardCard(
+                          title: "Total Sales Eggs",
+
+                          value:
+                              "${salesData['cards']?['total_sales_eggs']?['value'] ?? salesData['total_eggs'] ?? 0}",
+
+                          icon: Icons.egg_outlined,
+
+                          iconColor: Colors.orange,
                         ),
                       ),
                     ],
                   ),
-                ),
-              ),
-            ),
+                  const SizedBox(height: 18),
 
-            const SizedBox(height: 24),
-
-            /// DASHBOARD CARDS
-            Row(
-              children: [
-                Expanded(
-                  child: dashboardCard(
-                    title: "Total Sales Revenue",
-                    value: "₹ 20,994",
-                    icon: Icons.layers_outlined,
-                    iconColor: Colors.blue,
-                  ),
-                ),
-
-                const SizedBox(width: 10),
-
-                Expanded(
-                  child: dashboardCard(
-                    title: "Total Orders",
-                    value: "9",
-                    icon: Icons.receipt_long_outlined,
-                    iconColor: Colors.green,
-                  ),
-                ),
-
-                const SizedBox(width: 12),
-
-                Expanded(
-                  child: dashboardCard(
-                    title: "Total Sales Eggs",
-                    value: "840",
-                    icon: Icons.egg_outlined,
-                    iconColor: Colors.orange,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 18),
-
-            /// TITLE
-            const Text(
-              "Recent Sales",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 2),
-
-            Text(
-              "Review and manage your latest branch sales and customer orders",
-              style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
-            ),
-
-            const SizedBox(height: 10),
-
-            /// SEARCH
-            TextField(
-              decoration: InputDecoration(
-                hintText: "Search orders, customers...",
-                prefixIcon: const Icon(Icons.search),
-
-                filled: true,
-                fillColor: Colors.white,
-
-                contentPadding: const EdgeInsets.symmetric(vertical: 8),
-
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            /// FILTERS
-            Row(
-              children: [
-                Expanded(
-                  child: filterBox(
-                    icon: Icons.calendar_today_outlined,
-                    text: "dd mm yyyy",
-                  ),
-                ),
-
-                const SizedBox(width: 12),
-
-                Expanded(
-                  child: filterBox(
-                    icon: Icons.home_work_outlined,
-                    text: "All Branches",
-                  ),
-                ),
-
-                const SizedBox(width: 12),
-
-                Container(
-                  height: 40,
-                  width: 40,
-
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-
-                  child: const Icon(Icons.refresh),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 10),
-
-            /// TABLE HEADER
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
-
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(12),
-              ),
-
-              child: const Row(
-                children: [
-                  Expanded(
-                    flex: 32,
-                    child: Text(
-                      "ORDER DETAILS",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ),
-
-                  Expanded(
-                    flex: 18,
-                    child: Center(
-                      child: Text(
-                        "ITEMS",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  Expanded(
-                    flex: 18,
-                    child: Center(
-                      child: Text(
-                        "AMOUNT",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  Expanded(
-                    flex: 18,
-                    child: Center(
-                      child: Text(
-                        "STATUS",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  Expanded(
-                    flex: 14,
-                    child: Center(
-                      child: Text(
-                        "ACTION",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            /// SALES ROWS
-            salesRow(
-              order: "SO-40",
-              date: "08 May 2025 • 08:22 am",
-              customer: "Rajan",
-              items: "4 Units",
-              amount: "₹ 0",
-              status: "Paid",
-              paid: true,
-            ),
-
-            salesRow(
-              order: "SO-39",
-              date: "08 May 2025\n 08:21 am",
-              customer: "Rajan",
-              items: "2 Units",
-              amount: "₹ 0",
-              status: "Paid",
-              paid: true,
-            ),
-
-            salesRow(
-              order: "REQ-1",
-              date: "08 May 2025\n 07:50 am",
-              customer: "Jino",
-              items: "4 Units",
-              amount: "₹ 0",
-              status: "Rejected",
-              paid: false,
-            ),
-            salesRow(
-              order: "SO-39",
-              date: "08 May 2025\n 08:21 am",
-              customer: "Rajan",
-              items: "2 Units",
-              amount: "₹ 0",
-              status: "Paid",
-              paid: true,
-            ),
-
-            salesRow(
-              order: "REQ-1",
-              date: "08 May 2025\n 07:50 am",
-              customer: "Jino",
-              items: "4 Units",
-              amount: "₹ 0",
-              status: "Rejected",
-              paid: false,
-            ),
-
-            /// PAGINATION
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                children: [
-                  /// TEXT
+                  /// TITLE
                   const Text(
-                    "Showing 1 to 10 of 10 records",
-                    style: TextStyle(fontSize: 13, color: Colors.black87),
+                    "Recent Sales",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
 
-                  /// BUTTONS
+                  const SizedBox(height: 2),
+
+                  Text(
+                    "Review and manage your latest branch sales and customer orders",
+                    style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  /// SEARCH
+                  TextField(
+                    controller: searchController,
+
+                    onChanged: (value) {
+                      setState(() {
+                        currentPage = 1;
+
+                        if (value.isEmpty) {
+                          filteredOrders = recentOrders;
+                        } else {
+                          filteredOrders = recentOrders.where((order) {
+                            return order['customer']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains(value.toLowerCase()) ||
+                                order['order_id']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains(value.toLowerCase());
+                          }).toList();
+                        }
+                      });
+                    },
+
+                    decoration: InputDecoration(
+                      hintText: "Search orders, customers...",
+                      prefixIcon: const Icon(Icons.search),
+
+                      filled: true,
+                      fillColor: Colors.white,
+
+                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  /// FILTERS
+                  /// FILTERS
                   Row(
                     children: [
-                      /// PREVIOUS
-                      Container(
-                        height: 38,
-                        width: 38,
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () async {
+                            DateTime? pickedDate = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2020),
+                              lastDate: DateTime(2100),
+                            );
 
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
+                            if (pickedDate != null) {
+                              setState(() {
+                                selectedDate = pickedDate;
 
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
+                                formattedDate =
+                                    "${pickedDate.day.toString().padLeft(2, '0')} / "
+                                    "${pickedDate.month.toString().padLeft(2, '0')} / "
+                                    "${pickedDate.year}";
 
-                        child: Icon(
-                          Icons.chevron_left,
-                          color: Colors.grey.shade400,
+                                filteredOrders = recentOrders.where((order) {
+                                  final orderDate = DateTime.tryParse(
+                                    order['date'].toString(),
+                                  );
+
+                                  if (orderDate == null) {
+                                    return false;
+                                  }
+
+                                  return orderDate.year == pickedDate.year &&
+                                      orderDate.month == pickedDate.month &&
+                                      orderDate.day == pickedDate.day;
+                                }).toList();
+
+                                currentPage = 1;
+                              });
+                            }
+                          },
+
+                          child: filterBox(
+                            icon: Icons.calendar_today_outlined,
+                            text: formattedDate,
+                          ),
                         ),
                       ),
 
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
 
-                      /// CURRENT PAGE
-                      Container(
-                        height: 38,
-                        width: 38,
+                      Expanded(
+                        child: Container(
+                          height: 40,
 
-                        decoration: BoxDecoration(
-                          color: const Color(0xff14213D),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
 
-                        child: const Center(
-                          child: Text(
-                            "1",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+
+                            borderRadius: BorderRadius.circular(12),
+
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: selectedWarehouse,
+
+                              isExpanded: true,
+
+                              icon: const Icon(
+                                Icons.keyboard_arrow_down,
+                                size: 18,
+                              ),
+
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+
+                              dropdownColor: Colors.white,
+
+                              items: warehouseList.map((String warehouse) {
+                                return DropdownMenuItem<String>(
+                                  value: warehouse,
+
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.home_work_outlined,
+                                        size: 15,
+                                        color: Colors.grey,
+                                      ),
+
+                                      const SizedBox(width: 8),
+
+                                      Flexible(
+                                        child: Text(
+                                          warehouse,
+
+                                          overflow: TextOverflow.ellipsis,
+
+                                          style: const TextStyle(fontSize: 13),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+
+                              onChanged: (String? value) {
+                                setState(() {
+                                  selectedWarehouse = value!;
+                                });
+
+                                print("SELECTED BRANCH => $selectedWarehouse");
+                              },
                             ),
                           ),
                         ),
                       ),
 
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
 
-                      /// NEXT
-                      Container(
-                        height: 38,
-                        width: 38,
+                      GestureDetector(
+                        onTap: () async {
+                          setState(() {
+                            isLoading = true;
+                          });
 
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
+                          searchController.clear();
 
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
+                          formattedDate = "Select Date";
 
-                        child: Icon(
-                          Icons.chevron_right,
-                          color: Colors.grey.shade400,
+                          selectedDate = null;
+
+                          currentPage = 1;
+
+                          await getSales();
+
+                          setState(() {
+                            isLoading = false;
+                          });
+                        },
+
+                        child: Container(
+                          height: 40,
+                          width: 40,
+
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+
+                            borderRadius: BorderRadius.circular(14),
+
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+
+                          child: const Icon(Icons.refresh),
                         ),
                       ),
                     ],
                   ),
+
+                  const SizedBox(height: 10),
+
+                  /// TABLE HEADER
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final bool isMobile = constraints.maxWidth < 600;
+
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+
+                        child: Container(
+                          /// RESPONSIVE WIDTH
+                          width: isMobile ? 700 : constraints.maxWidth,
+
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+
+                            borderRadius: BorderRadius.circular(14),
+
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+
+                          child: Column(
+                            children: [
+                              /// HEADER
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                  horizontal: 10,
+                                ),
+
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(14),
+
+                                    topRight: Radius.circular(14),
+                                  ),
+                                ),
+
+                                child: const Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 26,
+
+                                      child: Text(
+                                        "ORDER DETAILS",
+
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                    ),
+
+                                    Expanded(
+                                      flex: 16,
+
+                                      child: Center(
+                                        child: Text(
+                                          "CUSTOMER",
+
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    Expanded(
+                                      flex: 16,
+
+                                      child: Center(
+                                        child: Text(
+                                          "BRANCH",
+
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    Expanded(
+                                      flex: 14,
+
+                                      child: Center(
+                                        child: Text(
+                                          "ITEMS",
+
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    Expanded(
+                                      flex: 14,
+
+                                      child: Center(
+                                        child: Text(
+                                          "AMOUNT",
+
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    Expanded(
+                                      flex: 14,
+
+                                      child: Center(
+                                        child: Text(
+                                          "STATUS",
+
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    Expanded(
+                                      flex: 10,
+
+                                      child: Center(
+                                        child: Text(
+                                          "ACTION",
+
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              /// DATA
+                              ...List.generate(paginatedOrders.length, (index) {
+                                final order = paginatedOrders[index];
+
+                                return SalesRow(
+                                  order:
+                                      order['order_id']?.toString() ??
+                                      order['id']?.toString() ??
+                                      "-",
+
+                                  date:
+                                      order['date']?.toString() ??
+                                      order['created_at']?.toString() ??
+                                      "-",
+
+                                  customer:
+                                      order['customer']?.toString() ??
+                                      order['customer_name']?.toString() ??
+                                      "-",
+
+                                  branch:
+                                      order['branch']?.toString() ??
+                                      order['sales_happen']?.toString() ??
+                                      "Main Branch",
+
+                                  items:
+                                      "${order['items_qty'] ?? order['total_items'] ?? 0} Units",
+
+                                  amount:
+                                      "₹ ${order['amount'] ?? order['total_amount'] ?? 0}",
+
+                                  status:
+                                      order['payment_status']?.toString() ??
+                                      order['payment_method']?.toString() ??
+                                      "Pending",
+
+                                  paid:
+                                      (order['payment_status']
+                                              ?.toString()
+                                              .toLowerCase() ==
+                                          "paid") ||
+                                      (order['payment_method']
+                                              ?.toString()
+                                              .toLowerCase() ==
+                                          "cash"),
+                                );
+                              }),
+
+                              if (paginatedOrders.isEmpty)
+                                Container(
+                                  height: 120,
+
+                                  alignment: Alignment.center,
+
+                                  child: const Text(
+                                    "No recent orders found",
+
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                  /// PAGINATION
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 18,
+                    ),
+
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                      children: [
+                        /// TEXT
+                        Text(
+                          filteredOrders.isEmpty
+                              ? "Showing 0 records"
+                              : "Showing ${((currentPage - 1) * itemsPerPage) + 1} to "
+                                    "${(((currentPage - 1) * itemsPerPage) + paginatedOrders.length)} "
+                                    "of ${filteredOrders.length} records",
+
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.black87,
+                          ),
+                        ),
+
+                        /// BUTTONS
+                        Row(
+                          children: [
+                            /// PREVIOUS
+                            GestureDetector(
+                              onTap: () {
+                                if (currentPage > 1) {
+                                  setState(() {
+                                    currentPage--;
+                                  });
+                                }
+                              },
+
+                              child: Container(
+                                height: 38,
+                                width: 38,
+
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+
+                                child: Icon(
+                                  Icons.chevron_left,
+                                  color: currentPage > 1
+                                      ? Colors.black
+                                      : Colors.grey.shade400,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(width: 8),
+
+                            /// CURRENT PAGE
+                            Container(
+                              height: 38,
+                              width: 38,
+
+                              decoration: BoxDecoration(
+                                color: const Color(0xff14213D),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+
+                              child: Center(
+                                child: Text(
+                                  "$currentPage",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(width: 8),
+
+                            /// NEXT
+                            GestureDetector(
+                              onTap: () {
+                                if ((currentPage * itemsPerPage) <
+                                    filteredOrders.length) {
+                                  setState(() {
+                                    currentPage++;
+                                  });
+                                }
+                              },
+
+                              child: Container(
+                                height: 38,
+                                width: 38,
+
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+
+                                child: Icon(
+                                  Icons.chevron_right,
+                                  color:
+                                      (currentPage * itemsPerPage) <
+                                          filteredOrders.length
+                                      ? Colors.black
+                                      : Colors.grey.shade400,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -543,6 +946,4 @@ class SalesDashboardPage extends StatelessWidget {
       ),
     );
   }
-
-  /// SALES ROW
 }

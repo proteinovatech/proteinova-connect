@@ -201,13 +201,16 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                     SalesDashboardPage(),
                   ),
 
-                  _menuTile(Icons.store, "Branch Management", BranchManagement()),
+                  _menuTile(
+                    Icons.store,
+                    "Branch Management",
+                    BranchManagement(),
+                  ),
 
-                  _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
-
+                  // _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
                   _menuTile(Icons.money, "Expenses", AdminExpenseScreen()),
                   _menuTile(
-                    Icons.agriculture,
+                    Icons.local_shipping_rounded,
                     "Supplier",
                     AdminSuppliersScreen(),
                   ),
@@ -228,12 +231,6 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                     "AdminInventory",
                     AdminInventory(),
                   ),
-                  _menuTile(
-                    Icons.report,
-                    "Report",
-                    AdminReportDashboardScreen(),
-                  ),
-                  _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
                   // _menuTile(
                   //   Icons.agriculture,
                   //   "SalesDashboard",
@@ -242,7 +239,12 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   _menuTile(Icons.inventory, "Incoming Stock", IncomingStock()),
 
                   _menuTile(Icons.sell_outlined, "Offer Price", OfferPrice()),
-
+                  // _menuTile(
+                  //   Icons.report,
+                  //   "Report",
+                  //   AdminReportDashboardScreen(),
+                  // ),
+                  // _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
                   // _menuTile(Icons.money, "Expenses", ExpenseManagement()),
                   const SizedBox(height: 20),
                   Divider(),

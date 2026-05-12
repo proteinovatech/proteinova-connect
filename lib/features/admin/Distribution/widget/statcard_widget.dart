@@ -49,13 +49,11 @@ Widget statCard({
 
       decoration: BoxDecoration(
         color: Colors.white,
-
         borderRadius: BorderRadius.circular(18),
-
         boxShadow: [
           BoxShadow(
             blurRadius: 10,
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withOpacity(0.03),
             offset: const Offset(0, 4),
           ),
         ],
@@ -63,24 +61,18 @@ Widget statCard({
 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
-
                 decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.10),
-
+                  color: iconColor.withOpacity(0.10),
                   borderRadius: BorderRadius.circular(14),
                 ),
-
                 child: Icon(icon, color: iconColor),
               ),
-
               const Icon(Icons.chevron_right, color: Colors.grey),
             ],
           ),

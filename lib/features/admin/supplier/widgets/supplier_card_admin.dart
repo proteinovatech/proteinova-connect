@@ -68,13 +68,13 @@ class SupplierCardAdmin extends StatelessWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xffE8F8EA),
+                  color: supplier.active ? const Color(0xffE8F8EA) : const Color(0xffFEE2E2),
                   borderRadius: BorderRadius.circular(30),
                 ),
-                child: const Text(
-                  "ACTIVE",
+                child: Text(
+                  supplier.active ? "ACTIVE" : "INACTIVE",
                   style: TextStyle(
-                    color: Color(0xff1BA34A),
+                    color: supplier.active ? const Color(0xff1BA34A) : const Color(0xffDC2626),
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),
