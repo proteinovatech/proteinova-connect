@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show TextInputFormatter, FilteringTextInputFormatter, LengthLimitingTextInputFormatter;
 import 'package:proteinova_connect/features/admin/supplier/models/supplier_model.dart';
 import 'package:proteinova_connect/features/admin/supplier/services/supplier_service.dart';
 
