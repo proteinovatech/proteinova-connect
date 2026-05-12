@@ -1,694 +1,822 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
-import 'package:open_filex/open_filex.dart';
-
-import 'package:path_provider/path_provider.dart';
-import 'package:pdf/pdf.dart';
-import 'package:printing/printing.dart';
-import 'package:proteinova_connect/core/theme/app_colors.dart';
-import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-
-import 'package:proteinova_connect/features/branch/sales/widget/transaction_detailscard.dart';
-import 'package:proteinova_connect/features/purchase/orders/presentation/checkout.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pdf/widgets.dart' as pw;
 
 class SalesEntry extends StatefulWidget {
   const SalesEntry({super.key});
 
   @override
-  State<SalesEntry> createState() => _SalesEntryState();
+  State<SalesEntry> createState() => _SalesEntryPageState();
 }
 
-class _SalesEntryState extends State<SalesEntry> {
-  final TextEditingController categoryController = TextEditingController();
-  final TextEditingController quantityController = TextEditingController();
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController notesController = TextEditingController();
-  final baseUrl = dotenv.env['BASE_URL'];
-  bool isLoading = true;
-  Map<String, dynamic> header = {};
-  List<dynamic> productDetails = [];
-  List<dynamic> offers = [];
-  List<dynamic> paymentMethods = [];
-  Map<String, dynamic> billSummary = {};
+class _SalesEntryPageState extends State<SalesEntry> {
+  String selectedCategory = "All Categories";
+  List<String> selectedProducts = [
+    "Select Product",
+    "Select Product",
+    "Select Product",
+  ];
+  TextEditingController dateController = TextEditingController();
   @override
-  void initState() {
-    super.initState();
-    fetchSalesData();
-  }
-  Future<void> fetchSalesData() async {
-    try {
-      // final response = await http.get(
-      //   Uri.parse("$baseUrl/api/sales/dashboard?branch_id=1"),
-      //   headers: {"Accept": "application/json"},
-      // );
-      final prefs = await SharedPreferences.getInstance();
-      final branchId = prefs.getInt("branch_id");
-      print("BRANCH ID => $branchId");
-      final response = await http.get(
-        Uri.parse("$baseUrl/api/sales/dashboard?branch_id=$branchId"),
-        headers: {"Accept": "application/json"},
-      );
-      print("STATUS CODE : ${response.statusCode}");
-      print("STATUS CODE : ${response.statusCode}");
-      print("BODY : ${response.body}");
-      if (response.statusCode == 200) {
-        final decodedData = jsonDecode(response.body);
-               final data = decodedData["data"] ?? decodedData;
-        setState(() {
-          header = Map<String, dynamic>.from(data["header"] ?? {});
-          productDetails = List<Map<String, dynamic>>.from(
-            data["product_details"] ?? [],
-          );
-          offers = List<Map<String, dynamic>>.from(data["offers"] ?? []);
-          paymentMethods = List<String>.from(data["payment_methods"] ?? []);
-          billSummary = Map<String, dynamic>.from(
-            data["bill_summary_defaults"] ?? {},
-          );
-          isLoading = false;
-        });
-        print("PRODUCT DETAILS : $productDetails");
-      } else {
-        setState(() {
-          isLoading = false;
-        });
-        print("ERROR STATUS : ${response.statusCode}");
-      }
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      print("ERROR : $e");
-    }
-  }
-Future<void> generateAndPrintPdf() async {
-  final pdf = pw.Document();
-  pdf.addPage(
-    pw.Page(
-      margin: const pw.EdgeInsets.all(20),
-      build: (pw.Context context) {
-        return pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text("ProteinOva",
-                        style: pw.TextStyle(
-                            fontSize: 16,
-                            fontWeight: pw.FontWeight.bold)),
-                    pw.Text("Kattuva"),
-                    pw.Text("City, State, ZIP"),
-                    pw.Text("Phone Number:"),
-                  ],
-                ),
-                pw.Text(
-                  "INVOICE",
-                  style: pw.TextStyle(
-                      fontSize: 24,
-                      fontWeight: pw.FontWeight.bold),
-                ),
-              ],
-            ),
-            pw.SizedBox(height: 10),
-            pw.Divider(),
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text("Bill To:",
-                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                    pw.Text("Name :"),
-                    pw.Text("Address :"),
-                  ],
-                ),
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.end,
-                  children: [
-                    pw.Text("Date: ${DateTime.now().toString().split(' ')[0]}"),
-                    pw.Text("Invoice #: 001"),
-                  ],
-                ),
-              ],
-            ),
-            pw.SizedBox(height: 20),
-            pw.Table(
-              border: pw.TableBorder.all(),
-              columnWidths: {
-                0: const pw.FlexColumnWidth(4),
-                1: const pw.FlexColumnWidth(2),
-                2: const pw.FlexColumnWidth(2),
-                3: const pw.FlexColumnWidth(2),
-              },
-              children: [
-                pw.TableRow(
-                  decoration: const pw.BoxDecoration(color: PdfColors.grey300),
-                  children: [
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(5),
-                        child: pw.Text("Description")),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(5),
-                        child: pw.Text("Qty")),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(5),
-                        child: pw.Text("Unit Price")),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(5),
-                        child: pw.Text("Total")),
-                  ],
-                ),
-                ...productDetails.map((product) {
-                  return pw.TableRow(
-                    children: [
-                      pw.Padding(
-                          padding: const pw.EdgeInsets.all(5),
-                          child: pw.Text(product["product_name"].toString())),
-                      pw.Padding(
-                          padding: const pw.EdgeInsets.all(5),
-                          child: pw.Text("1")),
-                      pw.Padding(
-                          padding: const pw.EdgeInsets.all(5),
-                          child: pw.Text("₹${product["per_tray_price"]}")),
-                      pw.Padding(
-                          padding: const pw.EdgeInsets.all(5),
-                          child: pw.Text("₹${product["per_tray_price"]}")),
-                    ],
-                  );
-                }).toList(),
-              ],
-            ),
-            pw.SizedBox(height: 20),
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.end,
-              children: [
-                pw.Container(
-                  width: 200,
-                  child: pw.Column(
-                    children: [
-                      _pdfRow("Subtotal", "₹$totalAmount"),
-                      _pdfRow("Tax", "₹0"),
-                      pw.Divider(),
-                      _pdfRow(
-                        "Total",
-                        "₹$totalAmount",
-                        isBold: true,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            pw.SizedBox(height: 20),
-            pw.Text("Thank you for your business!",
-                style: pw.TextStyle(fontStyle: pw.FontStyle.italic)),
-          ],
-        );
-      },
-    ),
-    
-  );
-  await Printing.layoutPdf(
-    onLayout: (format) async => pdf.save(),
-  );
-}
-pw.Widget _pdfRow(String title, String value, {bool isBold = false}) {
-  return pw.Padding(
-    padding: const pw.EdgeInsets.symmetric(vertical: 4),
-    child: pw.Row(
-      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-      children: [
-        pw.Text(title),
-        pw.Text(
-          value,
-          style: pw.TextStyle(
-            fontWeight:
-                isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xffF5F6FA),
+
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: false,
+
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+        ),
+
+        titleSpacing: 0,
+
+        title: const Text(
+          "Sales Entry",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
         ),
-      ],
-    ),
-  );
-}
+      ),
 
-Future<void> downloadPdf() async {
-  try {
-    final pdf = pw.Document();
-    pdf.addPage(
-      pw.Page(
-      margin: const pw.EdgeInsets.all(20),
-      build: (pw.Context context) {
-        return pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text("ProteinOva",
-                        style: pw.TextStyle(
-                            fontSize: 16,
-                            fontWeight: pw.FontWeight.bold)),
-                    pw.Text("Kattuva"),
-                    pw.Text("City, State, ZIP"),
-                    pw.Text("Phone Number:"),
-                  ],
-                ),
-                pw.Text(
-                  "INVOICE",
-                  style: pw.TextStyle(
-                      fontSize: 24,
-                      fontWeight: pw.FontWeight.bold),
-                ),
-              ],
+            /// TITLE
+            Text(
+              "Log new sales transactions to automatically update branch inventory.",
+              style: TextStyle(color: Colors.grey.shade700, fontSize: 11),
             ),
-            pw.SizedBox(height: 10),
-            pw.Divider(),
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+
+            const SizedBox(height: 20),
+
+            /// VIEW TODAY SALES
+            Align(
+              alignment: Alignment.center,
+
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 104,
+                  vertical: 14,
+                ),
+
+                decoration: BoxDecoration(
+                  color: const Color(0xffEEF4FF),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.blue.shade100),
+                ),
+
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    pw.Text("Bill To:",
-                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                    pw.Text("Name :"),
-                    pw.Text("Address :"),
+                    Icon(Icons.list_alt, color: Colors.blue),
+
+                    SizedBox(width: 10),
+
+                    Text(
+                      "View Today's Sales",
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.end,
-                  children: [
-                    pw.Text("Date: ${DateTime.now().toString().split(' ')[0]}"),
-                    pw.Text("Invoice #: 001"),
-                  ],
-                ),
-              ],
+              ),
             ),
-            pw.SizedBox(height: 20),
-            pw.Table(
-              border: pw.TableBorder.all(),
-              columnWidths: {
-                0: const pw.FlexColumnWidth(4),
-                1: const pw.FlexColumnWidth(2),
-                2: const pw.FlexColumnWidth(2),
-                3: const pw.FlexColumnWidth(2),
-              },
-              children: [
-                pw.TableRow(
-                  decoration: const pw.BoxDecoration(color: PdfColors.grey300),
-                  children: [
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(5),
-                        child: pw.Text("Description")),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(5),
-                        child: pw.Text("Qty")),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(5),
-                        child: pw.Text("Unit Price")),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(5),
-                        child: pw.Text("Total")),
-                  ],
-                ),
-                ...productDetails.map((product) {
-                  return pw.TableRow(
+
+            const SizedBox(height: 20),
+
+            /// TRANSACTION DETAILS
+            buildCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Transaction Details",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  buildLabel("Customer Number"),
+
+                  const SizedBox(height: 8),
+
+                  buildTextField(hint: ""),
+
+                  const SizedBox(height: 18),
+
+                  buildLabel("Customer Name"),
+
+                  const SizedBox(height: 8),
+
+                  buildTextField(hint: "Enter customer name"),
+
+                  const SizedBox(height: 18),
+
+                  buildLabel("Sales Date"),
+
+                  const SizedBox(height: 8),
+
+                  buildDateField(),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            /// PRODUCT SELECTION
+            buildCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Product Selection",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  buildTextField(
+                    hint: "Search product by name",
+                    icon: Icons.search,
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  buildDropdown(),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            /// SALES ITEMS
+            buildCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
                     children: [
-                      pw.Padding(
-                          padding: const pw.EdgeInsets.all(5),
-                          child: pw.Text(product["product_name"].toString())),
-                      pw.Padding(
-                          padding: const pw.EdgeInsets.all(5),
-                          child: pw.Text("1")),
-                      pw.Padding(
-                          padding: const pw.EdgeInsets.all(5),
-                          child: pw.Text("₹${product["per_tray_price"]}")),
-                      pw.Padding(
-                          padding: const pw.EdgeInsets.all(5),
-                          child: pw.Text("₹${product["per_tray_price"]}")),
-                    ],
-                  );
-                }).toList(),
-              ],
-            ),
-            pw.SizedBox(height: 20),
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.end,
-              children: [
-                pw.Container(
-                  width: 200,
-                  child: pw.Column(
-                    children: [
-                      _pdfRow("Subtotal", "₹$totalAmount"),
-                      _pdfRow("Tax", "₹0"),
-                      pw.Divider(),
-                      _pdfRow(
-                        "Total",
-                        "₹$totalAmount",
-                        isBold: true,
+                      const Text(
+                        "Sales Items",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      Container(
+                        height: 40,
+                        width: 40,
+
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+
+                        child: const Icon(Icons.add, color: Colors.white),
                       ),
                     ],
                   ),
-                ),
-              ],
+
+                  const SizedBox(height: 20),
+
+                  /// TABLE HEADER
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 10,
+                    ),
+
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    child: const Row(
+                      children: [
+                        SizedBox(
+                          width: 18,
+                          child: Text(
+                            "#",
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(width: 6),
+
+                        Expanded(
+                          flex: 4,
+                          child: Text(
+                            "PRODUCT",
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(width: 6),
+
+                        SizedBox(
+                          width: 42,
+                          child: Center(
+                            child: Text(
+                              "DOZEN",
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(width: 8),
+
+                        SizedBox(
+                          width: 20,
+                          child: Center(
+                            child: Text(
+                              "EGGS",
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(width: 10),
+
+                        SizedBox(
+                          width: 32,
+                          child: Center(
+                            child: Text(
+                              "RATE",
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(width: 10),
+
+                        SizedBox(
+                          width: 34,
+                          child: Center(
+                            child: Text(
+                              "TOTAL",
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(width: 8),
+
+                        Icon(Icons.delete_outline, size: 16),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  salesItemRow(1),
+                  salesItemRow(2),
+                  salesItemRow(3),
+
+                  const SizedBox(height: 20),
+
+                  const Text(
+                    "Available Offers",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  Center(
+                    child: Text(
+                      "No active offers available.",
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            pw.SizedBox(height: 20),
-            pw.Text("Thank you for your business!",
-                style: pw.TextStyle(fontStyle: pw.FontStyle.italic)),
+
+            const SizedBox(height: 18),
+
+            /// PAYMENT METHOD
+            buildCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Payment Method",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  Row(
+                    children: [
+                      paymentTab("Cash", selected: true),
+
+                      const SizedBox(width: 20),
+
+                      paymentTab("UPI"),
+
+                      const SizedBox(width: 20),
+
+                      paymentTab("Card"),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  buildLabel("Cash Received"),
+
+                  const SizedBox(height: 8),
+
+                  buildTextField(hint: "0"),
+
+                  const SizedBox(height: 24),
+
+                  buildLabel("Debt (Optional)"),
+
+                  const SizedBox(height: 8),
+
+                  buildTextField(hint: "0"),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            /// BILL SUMMARY
+            buildCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Bill Summary",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  summaryRow("Items (0 - Trays)", "₹ 0"),
+
+                  const SizedBox(height: 16),
+
+                  summaryRow("Offers Discount", "- ₹ 0", red: true),
+
+                  const Divider(height: 30),
+
+                  summaryRow("Total Total", "₹ 0", bold: true),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            /// SUBMIT BUTTON
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+
+              child: ElevatedButton(
+                onPressed: () {},
+
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xff12B321),
+                  elevation: 0,
+
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+
+                  children: [
+                    Text(
+                      "Complete Transaction",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    SizedBox(width: 12),
+
+                    Icon(Icons.currency_rupee, color: Colors.white, size: 14),
+
+                    SizedBox(width: 2),
+
+                    Text(
+                      "0",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 30),
           ],
-        );
-      },
-    ),
-  
-  
-    );
-    final dir = await getTemporaryDirectory();
-    final file = File(
-      "${dir.path}/sales_invoice.pdf",
-    );
-    await file.writeAsBytes(
-      await pdf.save(),
-      flush: true,
-    );
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text(
-          "PDF Downloaded Successfully",
         ),
-        action: SnackBarAction(
-          label: "VIEW",
-          onPressed: () async {
-            if (await file.exists()) {
-              final result =
-                  await OpenFilex.open(file.path);
-              print(result.message);
-            }
+      ),
+    );
+  }
+
+  Widget buildDateField() {
+    return Container(
+      height: 55,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: dateController,
+              readOnly: true,
+
+              decoration: const InputDecoration(
+                hintText: "Enter Date",
+                border: InputBorder.none,
+              ),
+            ),
+          ),
+
+          GestureDetector(
+            onTap: () async {
+              DateTime? pickedDate = await showDatePicker(
+                context: context,
+
+                initialDate: DateTime.now(),
+
+                firstDate: DateTime(2020),
+
+                lastDate: DateTime(2100),
+              );
+
+              if (pickedDate != null) {
+                String formattedDate =
+                    "${pickedDate.day.toString().padLeft(2, '0')}-"
+                    "${pickedDate.month.toString().padLeft(2, '0')}-"
+                    "${pickedDate.year}";
+
+                setState(() {
+                  dateController.text = formattedDate;
+                });
+              }
+            },
+
+            child: const Icon(Icons.calendar_today, size: 20),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// COMMON CARD
+  Widget buildCard({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 10,
+            color: Colors.black.withValues(alpha: 0.03),
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+
+      child: child,
+    );
+  }
+
+  /// LABEL
+  Widget buildLabel(String text) {
+    return Text(
+      text,
+      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+    );
+  }
+
+  /// TEXT FIELD
+  Widget buildTextField({required String hint, IconData? icon}) {
+    return Container(
+      height: 55,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: hint,
+                border: InputBorder.none,
+              ),
+            ),
+          ),
+
+          if (icon != null) Icon(icon, size: 20),
+        ],
+      ),
+    );
+  }
+
+  Widget buildDropdown() {
+    return Container(
+      height: 55,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: selectedCategory,
+
+          isExpanded: true,
+
+          icon: const Icon(Icons.keyboard_arrow_down),
+
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+
+          items: ["All Categories", "White eggs"].map((String item) {
+            return DropdownMenuItem<String>(value: item, child: Text(item));
+          }).toList(),
+
+          onChanged: (value) {
+            setState(() {
+              selectedCategory = value!;
+            });
           },
         ),
       ),
     );
-  } catch (e) {
-    print("PDF ERROR : $e");
   }
-}
-Future<void> saveSale(double totalAmount) async {
-   print(
-  "Saving sale: ₹${totalAmount % 1 == 0 ? totalAmount.toInt() : totalAmount}"
-);
-  await Future.delayed(const Duration(seconds: 1));
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text("Sale saved successfully")),
-  );
-}
-void showPaymentOptions() {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              const CircleAvatar(
-                radius: 35,
-                backgroundColor: Colors.green,
-                child: Icon(
-                  Icons.check,
-                  color: Colors.white,
-                  size: 40,
-                ),
-              ),
-               SizedBox(height: 15),
-                          const Text(
-                "Payment Successfully",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 25),
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () async {
-                       Navigator.pop(context);
-await downloadPdf();
-if (mounted) {
-  Navigator.pushReplacement(
-    this.context,
-    MaterialPageRoute(
-      builder: (_) => const SalesEntry(),
-    ),
-  );
-}
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.red.shade50,
-                          borderRadius:
-                              BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.red.shade200,
-                          ),
-                        ),
-                        child: Column(
-                          children: const [
-                            Icon(
-                              Icons.picture_as_pdf,
-                              color: Colors.red,
-                            ),
-                            SizedBox(height: 6),
-                            Text(
-                              "Download PDF",
-                              style: TextStyle(
-                                fontWeight:
-                                    FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 15),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () async {
-                       Navigator.pop(context);
-await generateAndPrintPdf();
-if (mounted) {
-  Navigator.pushReplacement(
-    this.context,
-    MaterialPageRoute(
-      builder: (_) => const SalesEntry(),
-    ),
-  );
-}
-                      },
 
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade50,
-                          borderRadius:
-                              BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.blue.shade200,
-                          ),
-                        ),
-                        child: Column(
-                          children: const [
-                            Icon(
-                              Icons.print,
-                              color: Colors.blue,
-                            ),
-                            SizedBox(height: 6),
-                            Text(
-                              "Print",
-                              style: TextStyle(
-                                fontWeight:
-                                    FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+  /// SALES ITEM ROW
+  Widget salesItemRow(int no) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
 
-              const SizedBox(height: 10),
-            ],
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+
+      child: Row(
+        children: [
+          /// NUMBER
+          SizedBox(
+            width: 18,
+
+            child: Text(
+              "$no",
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
-@override
-  Widget build(BuildContext context) {
-    final Size size = MediaQuery.of(context).size;
 
-    if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
+          const SizedBox(width: 6),
 
-    return Scaffold(
-      backgroundColor: AppColors.background1,
-      body: Padding(
-        padding: EdgeInsets.only(
-          left: size.height * 0.01,
-          right: size.height * 0.01,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: size.height * 0.06),
-              Padding(
-              padding: EdgeInsets.only(left: size.width * 0.72),
-              child: Row(
-                children: [
-                  const Icon(Icons.notifications_outlined),
+          /// PRODUCT DROPDOWN
+          Expanded(
+            flex: 4,
 
-                  SizedBox(width: size.width * 0.02),
+            child: Container(
+              height: 38,
 
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: CircleAvatar(
-                      radius: 18,
-                      backgroundColor: Colors.grey.shade300,
-                      child: Icon(
-                        Icons.person,
-                        size: 20,
-                        color: AppColors.background,
-                      ),
-                    ),
-                  ),
-                ],
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+
+                border: Border.all(color: Colors.grey.shade300),
               ),
-            ),
 
-            const Divider(),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: selectedProducts[no - 1],
 
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                  
-                    Row(
-                      children: [
-                        Text(
-                          "Daily Sales Entry",
-                          style: AppTextStyles.headingText22,
-                        ),
+                  isExpanded: true,
 
-                        SizedBox(width: size.width * 0.07),
+                  icon: const Icon(Icons.keyboard_arrow_down, size: 16),
 
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.containerColor2,
-                            border: Border.all(color: AppColors.border2),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.menu, color: AppColors.blueAccent),
+                  style: const TextStyle(color: Colors.black, fontSize: 10),
 
-                              Text(
-                                "Today's Sales",
-                                style: AppTextStyles.blueText2,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                  items:
+                      [
+                        "Select Product",
+                        "White Medium",
+                        "White Bullet",
+                        "White Small Eggs",
+                        "Brown Eggs",
+                        "Country Eggs",
+                        "Quail Eggs",
+                        "Duck Eggs",
+                      ].map((String item) {
+                        return DropdownMenuItem<String>(
+                          value: item,
 
-                    SizedBox(height: size.height * 0.02),
+                          child: Text(item, overflow: TextOverflow.ellipsis),
+                        );
+                      }).toList(),
 
-                    Text(
-                      "Log new sales transactions to automatically update\nbranch inventory.",
-                      style: AppTextStyles.bodyText14,
-                    ),
-
-                    SizedBox(height: size.height * 0.02),
-
-                   TransactionDetailscard(
-  categoryController: categoryController,
-  quantityController: quantityController,
-  nameController: nameController,
-  notesController: notesController,
-
-  onCollectPayment: () async {
-    await saveSale(totalAmount);  
-    showPaymentOptions();          
-  },
-),
-
-                    SizedBox(height: size.height * 0.02),
-
-
-                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      selectedProducts[no - 1] = value!;
+                    });
+                  },
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+
+          const SizedBox(width: 6),
+
+          /// DOZEN
+          Container(
+            width: 42,
+            height: 38,
+
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+
+            child: const Center(
+              child: Text("1", style: TextStyle(fontSize: 12)),
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          /// EGGS
+          const SizedBox(
+            width: 20,
+
+            child: Center(child: Text("—", style: TextStyle(fontSize: 12))),
+          ),
+
+          const SizedBox(width: 10),
+
+          /// RATE
+          const SizedBox(
+            width: 32,
+
+            child: Text(
+              "₹0",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+            ),
+          ),
+
+          const SizedBox(width: 10),
+
+          /// TOTAL
+          const SizedBox(
+            width: 34,
+
+            child: Text(
+              "₹0",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.green,
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          /// DELETE
+          const Icon(Icons.delete_outline, size: 18),
+        ],
       ),
     );
   }
 
-  Widget summaryRow(String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title),
+  /// PAYMENT TAB
+  Widget paymentTab(String title, {bool selected = false}) {
+    return Column(
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            color: selected ? Colors.blue : Colors.black,
 
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
-        ],
-      ),
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        Container(
+          height: 3,
+          width: 40,
+
+          decoration: BoxDecoration(
+            color: selected ? Colors.blue : Colors.transparent,
+
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// SUMMARY ROW
+  Widget summaryRow(
+    String title,
+    String value, {
+    bool red = false,
+    bool bold = false,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: bold ? FontWeight.bold : FontWeight.w500,
+          ),
+        ),
+
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 18,
+            color: red ? Colors.red : Colors.black,
+
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 }
