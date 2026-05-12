@@ -71,7 +71,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 decoration: BoxDecoration(
                   color: const Color(0xffEEF4FF),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.blue.shade100),
+                  border: Border.all(color: Colors.blue.withOpacity(0.10)),
                 ),
 
                 child: const Row(
@@ -201,7 +201,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                     ),
 
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
+                      color: Colors.black.withOpacity(0.04),
                       borderRadius: BorderRadius.circular(12),
                     ),
 
@@ -317,7 +317,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                     child: Text(
                       "No active offers available.",
                       style: TextStyle(
-                        color: Colors.grey.shade500,
+                        color: Colors.orange.withOpacity(0.25),
                         fontSize: 16,
                       ),
                     ),
@@ -527,7 +527,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         boxShadow: [
           BoxShadow(
             blurRadius: 10,
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withOpacity(0.03),
             offset: const Offset(0, 4),
           ),
         ],

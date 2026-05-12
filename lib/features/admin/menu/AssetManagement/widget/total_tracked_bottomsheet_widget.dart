@@ -4,16 +4,20 @@
 
 import 'package:flutter/material.dart';
 
+import '../models/asset_model.dart';
+
 class TotalTrackedBottomsheetWidget extends StatelessWidget {
   final String title;
   final IconData icon;
   final Color iconColor;
+  final List<AssetModel> assets;
 
   const TotalTrackedBottomsheetWidget({
     super.key,
     required this.title,
     required this.icon,
     required this.iconColor,
+    required this.assets,
   });
 
   @override
@@ -56,10 +60,8 @@ class TotalTrackedBottomsheetWidget extends StatelessWidget {
                 /// ICON
                 Container(
                   padding: const EdgeInsets.all(12),
-
                   decoration: BoxDecoration(
-                    color: iconColor.withValues(alpha: 0.10),
-
+                    color: iconColor.withOpacity(0.10),
                     borderRadius: BorderRadius.circular(16),
                   ),
 
@@ -177,90 +179,117 @@ class TotalTrackedBottomsheetWidget extends StatelessWidget {
             ),
           ),
 
-          const Spacer(),
-
-          /// EMPTY ICON
-          Icon(
-            Icons.inventory_2_outlined,
-            size: 120,
-            color: Colors.grey.shade300,
-          ),
-
-          const SizedBox(height: 28),
-
-          /// TITLE
-          const Text(
-            "No assets match this category.",
-
-            textAlign: TextAlign.center,
-
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+          if (assets.isEmpty) ...[
+            const Spacer(),
+            Icon(
+              Icons.inventory_2_outlined,
+              size: 120,
+              color: Colors.grey.shade300,
             ),
-          ),
-
-          const SizedBox(height: 14),
-
-          /// SUBTITLE
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-
-            child: Text(
-              "Try adjusting your filters or clear them to see all assets.",
-
+            const SizedBox(height: 28),
+            const Text(
+              "No assets found.",
               textAlign: TextAlign.center,
-
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey.shade600,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 80),
+          ] else
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                itemCount: assets.length,
+                separatorBuilder: (context, index) =>
+                    Divider(color: Colors.grey.shade100),
+                itemBuilder: (context, index) {
+                  final asset = assets[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                asset.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              Text(
+                                asset.assetId,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            asset.category,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            asset.location,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: _buildStatus(asset.status),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
-          ),
-
-          const SizedBox(height: 32),
-
-          /// BUTTON
-          Container(
-            width: 220,
-            height: 58,
-
-            decoration: BoxDecoration(
-              color: Colors.white,
-
-              borderRadius: BorderRadius.circular(18),
-
-              border: Border.all(
-                color: Colors.grey.shade300,
-              ),
-            ),
-
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-
-              children: [
-
-                Icon(
-                  Icons.tune,
-                  size: 22,
-                ),
-
-                SizedBox(width: 10),
-
-                Text(
-                  "Adjust Filters",
-
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 80),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStatus(String status) {
+    Color color;
+    switch (status.toLowerCase()) {
+      case 'available':
+        color = Colors.green;
+        break;
+      case 'in use':
+        color = Colors.blue;
+        break;
+      case 'maintenance':
+        color = Colors.orange;
+        break;
+      case 'damaged':
+        color = Colors.red;
+        break;
+      default:
+        color = Colors.grey;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        status,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+        textAlign: TextAlign.center,
       ),
     );
   }

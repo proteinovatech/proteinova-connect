@@ -174,7 +174,7 @@ class _ActiveOffersDetailsScreenState extends State<ActiveOffersDetailsScreen> {
                                                         child: Row(
                                                           children: [
                                                             _cell(offer['offer_name'] ?? "-", 150, isBold: true),
-                                                            _cell(offer['product_name'] ?? "All", 100),
+                                                            _cell((offer['product_name'] == null || offer['product_name'].toString().isEmpty) ? "All" : offer['product_name'], 100),
                                                             _statusCell(offer['status'] ?? "inactive", 80),
                                                             _cell("${offer['start_date']}\n${offer['end_date']}", 100, fontSize: 10),
                                                           ],

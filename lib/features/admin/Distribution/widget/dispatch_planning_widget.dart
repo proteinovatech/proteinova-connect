@@ -24,28 +24,23 @@ Widget trayCard({
   required String subtitle,
   required String desc,
   required String extra,
+  required TextEditingController controller,
+  VoidCallback? onChanged,
 }) {
   return Container(
     padding: const EdgeInsets.all(16),
-
     decoration: BoxDecoration(
-      color: iconColor.withValues(alpha: 0.04),
-
+      color: iconColor.withOpacity(0.04),
       borderRadius: BorderRadius.circular(18),
-
-      border: Border.all(color: iconColor.withValues(alpha: 0.15)),
+      border: Border.all(color: iconColor.withOpacity(0.15)),
     ),
-
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-
       children: [
         Row(
           children: [
             Icon(Icons.shield_outlined, color: iconColor),
-
             const SizedBox(width: 8),
-
             Expanded(
               child: RichText(
                 text: TextSpan(
@@ -58,7 +53,6 @@ Widget trayCard({
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     TextSpan(
                       text: " $subtitle",
                       style: TextStyle(
@@ -72,24 +66,17 @@ Widget trayCard({
             ),
           ],
         ),
-
         const SizedBox(height: 14),
-
         Text(desc, style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
-
         if (extra.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 12),
-
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-
               decoration: BoxDecoration(
-                color: Colors.orange.withValues(alpha: 0.10),
-
+                color: Colors.orange.withOpacity(0.10),
                 borderRadius: BorderRadius.circular(30),
               ),
-
               child: const Text(
                 "Non - Returnable",
                 style: TextStyle(
@@ -100,26 +87,26 @@ Widget trayCard({
               ),
             ),
           ),
-
         const SizedBox(height: 18),
-
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
           children: [
             const Text("Trays", style: TextStyle(fontWeight: FontWeight.bold)),
-
             Container(
               width: 70,
               height: 42,
-
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-
                 border: Border.all(color: Colors.grey.shade300),
               ),
-
-              child: const Center(child: Text("0")),
+              child: TextField(
+                controller: controller,
+                textAlign: TextAlign.center,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+                decoration: const InputDecoration(border: InputBorder.none),
+                onChanged: (_) => onChanged?.call(),
+              ),
             ),
           ],
         ),

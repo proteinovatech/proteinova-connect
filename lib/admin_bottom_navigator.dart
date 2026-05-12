@@ -16,16 +16,8 @@ import 'package:proteinova_connect/features/admin/report/screens/admin_report_da
 import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
 import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
 import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
-<<<<<<< HEAD
 
 import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
-=======
-import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
-import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
-import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
-import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
-import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
->>>>>>> e19de2fde8918fca8b355fb185d55b69bcaddde3
 
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 
@@ -206,7 +198,11 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                     SalesDashboardPage(),
                   ),
 
-                  _menuTile(Icons.store, "Branch Management", BranchManagement()),
+                  _menuTile(
+                    Icons.store,
+                    "Branch Management",
+                    BranchManagement(),
+                  ),
 
                   _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
 
@@ -238,7 +234,7 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                     "Report",
                     AdminReportDashboardScreen(),
                   ),
-                  _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
+                  // _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
                   // _menuTile(
                   //   Icons.agriculture,
                   //   "SalesDashboard",
