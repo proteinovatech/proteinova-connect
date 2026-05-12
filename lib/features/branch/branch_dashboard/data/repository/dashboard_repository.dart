@@ -1,22 +1,23 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:proteinova_connect/core/network/api_constants.dart';
-import '../model/dashboard_model.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/data/model/dashboard_model.dart';
 
 class DashboardRepository {
-  Future<DashboardModel> fetchDashboardData() async {
-    final response = await http.get(
-      Uri.parse(ApiConstants.dashboard),
-      headers: {
-        "Accept": "application/json",
-      },
-    );
+  final Dio dio;
 
-    if (response.statusCode == 200) {
-      final jsonData = jsonDecode(response.body);
-      return DashboardModel.fromJson(jsonData);
-    } else {
-      throw Exception("Failed to load dashboard");
+  DashboardRepository(this.dio);
+
+  Future<DashboardModel> fetchDashboardData() async {
+    try {
+      final response = await dio.get(ApiConstants.dashboard);
+
+      if (response.statusCode == 200) {
+        return DashboardModel.fromJson(response.data);
+      } else {
+        throw Exception("Failed to load dashboard: ${response.statusCode}");
+      }
+    } catch (e) {
+      throw Exception("Connection Error: $e");
     }
   }
 }

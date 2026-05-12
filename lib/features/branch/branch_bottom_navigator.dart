@@ -115,7 +115,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
 
     return GestureDetector(
       onTap: () {
-        if (index == 4) {
+        if (index == 3) {
           _openSideMenu();
         } else {
           setState(() {

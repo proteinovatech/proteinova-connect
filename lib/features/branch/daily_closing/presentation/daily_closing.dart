@@ -124,12 +124,12 @@ class _DailyClosingState extends State<DailyClosing> {
               SizedBox(height: size.height * 0.07),
               Row(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
+                  // IconButton(
+                  //   icon: const Icon(Icons.arrow_back),
+                  //   onPressed: () {
+                  //     Navigator.pop(context);
+                  //   },
+                  // ),
                   Text("Daily Closing", style: AppTextStyles.headingText22),
                 ],
               ),

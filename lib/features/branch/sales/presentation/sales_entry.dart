@@ -59,10 +59,13 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     getWarehouseList();
   }
 
-  Future<void> getSalesEntry() async {
+  Future<void> getSalesEntry({String? warehouse}) async {
     try {
-      print("API CALL STARTED");
-      final response = await datasource.getSalesEntry(loginUserId: 1);
+      print("API CALL STARTED FOR WAREHOUSE: $warehouse");
+      final response = await datasource.getSalesEntry(
+        loginUserId: loginUserId,
+        branchName: warehouse,
+      );
       print("FULL API RESPONSE =>");
       print(response);
       print("CUSTOMER NUMBER =>");
@@ -566,7 +569,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               if (value != null) {
                 setState(() {
                   selectedWarehouse = value;
+                  isLoading = true;
                 });
+                getSalesEntry(warehouse: value);
               }
             },
           ),
