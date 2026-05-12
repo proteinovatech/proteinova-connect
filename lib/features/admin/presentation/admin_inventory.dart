@@ -2,12 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
 import 'package:proteinova_connect/features/admin/widget/inventory_card.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
-<<<<<<< HEAD
-import 'package:proteinova_connect/core/network/dio_client.dart';
-=======
 import '../inventory/data/inventory_repository.dart';
 import '../inventory/models/inventory_model.dart';
->>>>>>> a8bcba938783a275eaea08cd95b75f2e57f06e55
 
 class AdminInventory extends StatefulWidget {
   const AdminInventory({super.key});
@@ -17,13 +13,6 @@ class AdminInventory extends StatefulWidget {
 }
 
 class _AdminInventoryState extends State<AdminInventory> {
-<<<<<<< HEAD
-  bool isLoading = false;
-  Map<String, dynamic>? inventoryStockData;
-  List<Map<String, dynamic>> inventoryData = [];
-  List<Map<String, dynamic>> activities = [];
-  List<Map<String, dynamic>> orders = [];
-=======
   final InventoryRepository _repository = InventoryRepository();
   AdminInventoryModel? inventoryModel;
   bool isLoading = true;
@@ -67,183 +56,34 @@ class _AdminInventoryState extends State<AdminInventory> {
           p.productName.toLowerCase().contains(query);
     }).toList();
   }
->>>>>>> a8bcba938783a275eaea08cd95b75f2e57f06e55
 
-  @override
-  void initState() {
-    super.initState();
-    fetchInventoryStock();
-    fetchInventoryDetails();
-    fetchDashboardActivity();
-  }
+  final List<Map<String, dynamic>> activities = [
+    {
+      "title": "In Transit: PO-34",
+      "subtitle": "Arriving: 2024-05-06 • 2 hours ago",
+      "icon": Icons.local_shipping_outlined,
+      "color": Colors.red,
+    },
+    {
+      "title": "Received: PO-33",
+      "subtitle": "Received • 2 hours ago",
+      "icon": Icons.check,
+      "color": Colors.green,
+    },
+    {
+      "title": "In Transit: PO-32",
+      "subtitle": "Arriving: 2024-05-05 • 23 hours ago",
+      "icon": Icons.local_shipping_outlined,
+      "color": Colors.red,
+    },
+    {
+      "title": "Ordered: PO-31",
+      "subtitle": "Ordered • 23 hours ago",
+      "icon": Icons.description_outlined,
+      "color": Colors.grey,
+    },
+  ];
 
-<<<<<<< HEAD
-  Future<void> fetchInventoryStock() async {
-    setState(() {
-      isLoading = true;
-    });
-    try {
-      // Backend mounts adminStockRoutes under /api, so final endpoint is /api/inventoryStock
-      final response = await DioClient().dio.get('/api/inventoryStock');
-      if (response.statusCode == 200) {
-        final data = response.data['data'];
-        if (data is List && data.isNotEmpty) {
-          setState(() {
-            // Pick the most recently inserted row from returned list.
-            inventoryStockData = Map<String, dynamic>.from(data.last as Map);
-          });
-        } else {
-          setState(() {
-            inventoryStockData = null;
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint('Failed to fetch inventory stock: $e');
-    } finally {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    }
-  }
-
-  Future<void> fetchInventoryDetails() async {
-    try {
-      final response = await DioClient().dio.get('/api/admin/inventory');
-      if (response.statusCode != 200 || response.data is! Map<String, dynamic>) {
-        return;
-      }
-
-      final data = response.data as Map<String, dynamic>;
-      final categoryStock = (data['category_stock'] as List? ?? [])
-          .whereType<Map>()
-          .map((row) => Map<String, dynamic>.from(row))
-          .toList();
-      final purchases = (data['purchases'] as List? ?? [])
-          .whereType<Map>()
-          .map((row) => Map<String, dynamic>.from(row))
-          .toList();
-
-      final int maxCategory = categoryStock.fold<int>(
-        1,
-        (prev, item) => ((item['total'] as num?)?.toInt() ?? 0) > prev
-            ? ((item['total'] as num?)?.toInt() ?? 0)
-            : prev,
-      );
-
-      final mappedInventory = categoryStock.map((item) {
-        final total = ((item['total'] as num?)?.toInt() ?? 0);
-        final progress = maxCategory == 0 ? 0.0 : (total / maxCategory).clamp(0, 1).toDouble();
-        return {
-          "title": (item['egg_category_grade'] ?? 'Unknown').toString(),
-          "value": total,
-          "progress": progress,
-        };
-      }).toList();
-
-      final mappedOrders = purchases.map((item) {
-        final poId = (item['id'] ?? '').toString();
-        final source = (item['purchased_location'] ?? 'N/A').toString();
-        final location = (item['warehouse_location'] ?? 'N/A').toString();
-        final movementStatus = (item['movement_status'] ?? 'Pending').toString();
-        final arrival = (item['expected_arrival'] ?? 'N/A').toString();
-        return {
-          "po": "PO-$poId",
-          "supplier": source,
-          "location": location,
-          "product": "Expected: $arrival",
-          "status": _normalizeOrderStatus(movementStatus),
-        };
-      }).toList();
-
-      if (!mounted) return;
-      setState(() {
-        inventoryData = mappedInventory;
-        orders = mappedOrders;
-      });
-    } catch (e) {
-      debugPrint('Failed to fetch inventory details: $e');
-    }
-  }
-
-  Future<void> fetchDashboardActivity() async {
-    try {
-      final response = await DioClient().dio.get('/api/admin/dashboard');
-      if (response.statusCode != 200 || response.data is! Map<String, dynamic>) {
-        return;
-      }
-
-      final data = response.data as Map<String, dynamic>;
-      final recent = (data['recent_activity'] as List? ?? [])
-          .whereType<Map>()
-          .map((row) => Map<String, dynamic>.from(row))
-          .toList();
-
-      final mappedActivities = recent.map((item) {
-        final movementType = (item['movement_type'] ?? 'Movement').toString();
-        final status = (item['status'] ?? '').toString();
-        final from = (item['from_location'] ?? 'N/A').toString();
-        final to = (item['to_location'] ?? 'N/A').toString();
-        final trayId = (item['tray_id'] ?? '').toString();
-        final createdAt = _formatDateTime(item['created_at']);
-        return {
-          "title": "$movementType: Tray-$trayId",
-          "subtitle": "$from -> $to • $createdAt",
-          "icon": _activityIcon(status),
-          "color": _activityColor(status),
-        };
-      }).toList();
-
-      if (!mounted) return;
-      setState(() {
-        activities = mappedActivities;
-      });
-    } catch (e) {
-      debugPrint('Failed to fetch dashboard activity: $e');
-    }
-  }
-
-  String _normalizeOrderStatus(String status) {
-    final value = status.toUpperCase();
-    if (value == 'RECEIVED') return 'Received';
-    if (value == 'IN_TRANSIT') return 'In Transit';
-    if (value == 'DAMAGED') return 'Review Dmg';
-    return 'Pending';
-  }
-
-  String _formatDateTime(dynamic input) {
-    if (input == null) return 'N/A';
-    final dt = DateTime.tryParse(input.toString());
-    if (dt == null) return input.toString();
-    final local = dt.toLocal();
-    final yyyy = local.year.toString().padLeft(4, '0');
-    final mm = local.month.toString().padLeft(2, '0');
-    final dd = local.day.toString().padLeft(2, '0');
-    final hh = local.hour.toString().padLeft(2, '0');
-    final min = local.minute.toString().padLeft(2, '0');
-    return '$yyyy-$mm-$dd $hh:$min';
-  }
-
-  IconData _activityIcon(String status) {
-    final key = status.toUpperCase();
-    if (key == 'RECEIVED') return Icons.check;
-    if (key == 'IN_TRANSIT') return Icons.local_shipping_outlined;
-    if (key == 'DAMAGED') return Icons.report_problem_outlined;
-    return Icons.description_outlined;
-  }
-
-  Color _activityColor(String status) {
-    final key = status.toUpperCase();
-    if (key == 'RECEIVED') return Colors.green;
-    if (key == 'IN_TRANSIT') return Colors.orange;
-    if (key == 'DAMAGED') return Colors.red;
-    return Colors.grey;
-  }
-
-=======
->>>>>>> a8bcba938783a275eaea08cd95b75f2e57f06e55
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -271,7 +111,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                                      Row(
+                    Row(
                       children: [
                         InkWell(
                           onTap: () {
@@ -413,16 +253,6 @@ class _AdminInventoryState extends State<AdminInventory> {
                 childAspectRatio: 1.45,
 
                 children: [
-<<<<<<< HEAD
-                  InventoryCard(
-                    title: "Current Stock",
-                    value: isLoading
-                        ? "Loading..."
-                        : "${inventoryStockData?['total_stock'] ?? '0'}",
-                    subtitle: "Total stock units",
-                    icon: Icons.inventory_2_outlined,
-                    iconColor: Colors.black87,
-=======
                   InventoryCard(
                     title: "Expected Today",
                     value:
@@ -465,61 +295,14 @@ class _AdminInventoryState extends State<AdminInventory> {
                     subtitle: "Reported damages",
                     icon: Icons.warning_amber_rounded,
                     iconColor: Colors.red,
->>>>>>> a8bcba938783a275eaea08cd95b75f2e57f06e55
                   ),
 
                   InventoryCard(
                     title: "Stock Value",
-<<<<<<< HEAD
-                    value: isLoading
-                        ? "..."
-                        : "₹ ${inventoryStockData?['total_stock_value'] ?? '0'}",
-=======
                     value: "₹ ${inventoryModel?.metrics.stockValue ?? 0}",
->>>>>>> a8bcba938783a275eaea08cd95b75f2e57f06e55
                     subtitle: "Total inventory value",
                     icon: Icons.attach_money,
                     iconColor: Colors.green,
-                  ),
-
-                  InventoryCard(
-                    title: "In Transit",
-                    value: isLoading
-                        ? "..."
-                        : "${inventoryStockData?['in_transit'] ?? '0'} Units",
-                    subtitle: "Expected to arrive",
-                    icon: Icons.local_shipping_outlined,
-                    iconColor: Colors.orange,
-                  ),
-
-                  InventoryCard(
-                    title: "Dispatched Stock",
-                    value: isLoading
-                        ? "..."
-                        : "${inventoryStockData?['dispatched_stock'] ?? '0'} Units",
-                    subtitle: "Total dispatched",
-                    icon: Icons.call_made,
-                    iconColor: Colors.blue,
-                  ),
-
-                  InventoryCard(
-                    title: "Sales Revenue",
-                    value: isLoading
-                        ? "..."
-                        : "₹ ${inventoryStockData?['branch_sales_revenue'] ?? '0'}",
-                    subtitle: "Branch sales revenue",
-                    icon: Icons.trending_up,
-                    iconColor: Colors.purple,
-                  ),
-
-                  InventoryCard(
-                    title: "Profit Summary",
-                    value: isLoading
-                        ? "..."
-                        : "₹ ${inventoryStockData?['profit_summary'] ?? '0'}",
-                    subtitle: "Overall profit",
-                    icon: Icons.account_balance_wallet_outlined,
-                    iconColor: Colors.teal,
                   ),
                 ],
               ),
@@ -573,73 +356,6 @@ class _AdminInventoryState extends State<AdminInventory> {
                     ),
 
                     const SizedBox(height: 20),
-<<<<<<< HEAD
-
-                    if (inventoryData.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        child: Text(
-                          "No inventory levels found",
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      )
-                    else
-                      ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: inventoryData.length,
-
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 16),
-
-                      itemBuilder: (context, index) {
-                        final item = inventoryData[index];
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  item["title"].toString(),
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-
-                                Text(
-                                  item["value"].toString(),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade700,
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(height: 8),
-
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-
-                              child: LinearProgressIndicator(
-                                value: item["progress"],
-                                minHeight: 6,
-                                backgroundColor: const Color(0xffE9EDF5),
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                  Color(0xff1E73FF),
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-=======
->>>>>>> a8bcba938783a275eaea08cd95b75f2e57f06e55
                   ],
                 ),
               ),
@@ -668,16 +384,7 @@ class _AdminInventoryState extends State<AdminInventory> {
 
                     const SizedBox(height: 20),
 
-                    if (activities.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        child: Text(
-                          "No recent activity",
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      )
-                    else
-                      ListView.separated(
+                    ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: activities.length,
@@ -806,16 +513,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                     ),
 
                     const SizedBox(height: 18),
-                    if (orders.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        child: Text(
-                          "No purchase orders available",
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      )
-                    else
-                      ListView.builder(
+                    ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: _filteredPurchases.length,

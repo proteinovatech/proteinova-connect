@@ -6,7 +6,7 @@ class InventoryCard extends StatelessWidget {
   final String subtitle;
   final IconData icon;
   final Color iconColor;
- final bool isPositive;
+  final bool isPositive;
 
   const InventoryCard({
     super.key,
@@ -56,11 +56,7 @@ class InventoryCard extends StatelessWidget {
                   color: iconColor.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Icon(
-                  icon,
-                  size: 14,
-                  color: iconColor,
-                ),
+                child: Icon(icon, size: 14, color: iconColor),
               ),
             ],
           ),
@@ -69,10 +65,7 @@ class InventoryCard extends StatelessWidget {
 
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
 
           const SizedBox(height: 6),
@@ -80,23 +73,16 @@ class InventoryCard extends StatelessWidget {
           Row(
             children: [
               if (isPositive)
-                const Icon(
-                  Icons.trending_up,
-                  size: 14,
-                  color: Colors.green,
-                ),
+                const Icon(Icons.trending_up, size: 14, color: Colors.green),
 
-              if (isPositive)
-                const SizedBox(width: 4),
+              if (isPositive) const SizedBox(width: 4),
 
               Expanded(
                 child: Text(
                   subtitle,
                   style: TextStyle(
                     fontSize: 11,
-                    color: isPositive
-                        ? Colors.green
-                        : Colors.grey,
+                    color: isPositive ? Colors.green : Colors.grey,
                   ),
                 ),
               ),
