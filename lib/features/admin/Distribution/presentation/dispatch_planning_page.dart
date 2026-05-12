@@ -94,54 +94,83 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
   int get _grandTotalTrays => _totalProductTrays + _emptyPlasticTrays + _emptyPaperTrays;
 
   Future<void> _submitDispatch() async {
-    if (_selectedBranchId == null || _vehicleNoController.text.isEmpty || _driverNameController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please fill all required fields")));
+    if (_selectedBranchId == null ||
+        _vehicleNoController.text.isEmpty ||
+        _driverNameController.text.isEmpty ||
+        _dispatchDateController.text.isEmpty ||
+        _arrivalDateController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all required fields")),
+      );
       return;
     }
 
-    final activeItems = _dispatchItems.where((i) => i['category'] != null && i['eggs_to_dispatch'] > 0).toList();
+    final activeItems = _dispatchItems
+        .where((i) => i['category'] != null && i['eggs_to_dispatch'] > 0)
+        .toList();
 
     if (activeItems.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please add at least one item to dispatch")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please add at least one item with eggs")),
+      );
       return;
+    }
+
+    // Stock Validation
+    for (var item in activeItems) {
+      if (item['eggs_to_dispatch'] > item['available_eggs']) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                "Insufficient stock for ${item['category']}. Available: ${item['available_eggs']}"),
+          ),
+        );
+        return;
+      }
     }
 
     setState(() => _isSaving = true);
 
     try {
       final dispatchData = {
-        "destination_branch_id": _selectedBranchId,
+        "branch_id": _selectedBranchId,
         "dispatch_date": _dispatchDateController.text,
         "expected_arrival_date": _arrivalDateController.text,
         "vehicle_number": _vehicleNoController.text,
         "driver_name": _driverNameController.text,
-        "driver_contact": _driverNumberController.text,
+        "driver_number": _driverNumberController.text,
         "notes": _notesController.text,
         "empty_plastic_trays": _emptyPlasticTrays,
         "empty_paper_trays": _emptyPaperTrays,
-        "items": activeItems.map((i) => {
-          "product_category": i['category'],
-          "quantity_eggs": i['eggs_to_dispatch'],
-          "quantity_trays": i['trays_to_dispatch'],
-        }).toList(),
+        "dispatch_items": activeItems
+            .map((i) => {
+                  "product_category": i['category'],
+                  "quantity": i['eggs_to_dispatch'],
+                  "quantity_trays": i['trays_to_dispatch'],
+                })
+            .toList(),
       };
 
       final success = await DispatchService.createDispatch(dispatchData);
 
-      if (mounted) {
-        setState(() => _isSaving = false);
-        if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Dispatch created successfully")));
-          Navigator.pop(context, true);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Failed to create dispatch")));
-        }
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Dispatch created successfully!")),
+        );
+        Navigator.pop(context, true);
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to create dispatch. Please check your connection.")),
+        );
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isSaving = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e")),
+        );
       }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -242,11 +271,12 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                               final picked = await showDatePicker(
                                 context: context,
                                 initialDate: DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime(2101),
+                                firstDate: DateTime.now().subtract(const Duration(days: 7)),
+                                lastDate: DateTime.now().add(const Duration(days: 30)),
                               );
                               if (picked != null) {
-                                setState(() => _dispatchDateController.text = picked.toString().split(' ').first);
+                                setState(() => _dispatchDateController.text =
+                                    picked.toString().split(' ').first);
                               }
                             },
                           ),
@@ -265,12 +295,13 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                             onTap: () async {
                               final picked = await showDatePicker(
                                 context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime(2101),
+                                initialDate: DateTime.now().add(const Duration(days: 1)),
+                                firstDate: DateTime.now(),
+                                lastDate: DateTime.now().add(const Duration(days: 30)),
                               );
                               if (picked != null) {
-                                setState(() => _arrivalDateController.text = picked.toString().split(' ').first);
+                                setState(() => _arrivalDateController.text =
+                                    picked.toString().split(' ').first);
                               }
                             },
                           ),

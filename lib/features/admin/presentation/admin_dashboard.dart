@@ -267,7 +267,7 @@ Future<void> loadDashboard() async {
                   Expanded(
   child: DashboardCard(
     title: "Incoming Stock",
-    value: "${dashboard?.incomingStockEggs ?? 0}",
+    value: "${dashboard?.incomingStockEggs ?? 0} Eggs",
     icon: Icons.local_shipping_outlined,
     iconColor: AppColors.deepOrange,
 
@@ -307,7 +307,7 @@ Future<void> loadDashboard() async {
           const SizedBox(height: 10),
 
           Text(
-            "₹${dashboard?.incomingStockEggs ?? 0}",
+            "${dashboard?.incomingStockEggs ?? 0} Eggs",
             style:AppTextStyles.bodyText16
           ),
         ],
@@ -383,7 +383,7 @@ Future<void> loadDashboard() async {
                   Expanded(
                     child: DashboardCard(
                       title: "Branch Sales Revenue",
-                      value: "₹${dashboard?.revenue ?? 0}",
+                      value: "₹${dashboard?.branchRevenue ?? 0}",
                       icon: Icons.store_outlined,
                       iconColor: AppColors.deepOrange,
                       onTap: () {
@@ -422,7 +422,7 @@ Future<void> loadDashboard() async {
           const SizedBox(height: 10),
 
           Text(
-            "₹${dashboard?.revenue ?? 0}",
+            "₹${dashboard?.branchRevenue ?? 0}",
             style:AppTextStyles.bodyText16
           ),
         ],
@@ -495,7 +495,7 @@ Future<void> loadDashboard() async {
               const SizedBox(height: 10),
               DashboardCard(
                 title: "Branch Eggs Sold",
-                value:  "${dashboard?.totalStockEggs ?? 0} Eggs",
+                value:  "${dashboard?.branchSalesEggs ?? 0} Eggs",
                 icon: Icons.egg_outlined,
                 iconColor: AppColors.green,
                onTap: () {
@@ -534,7 +534,7 @@ Future<void> loadDashboard() async {
           const SizedBox(height: 10),
 
           Text(
-            "${dashboard?.totalStockEggs ?? 0} Eggs" ,
+            "${dashboard?.branchSalesEggs ?? 0} Eggs" ,
             style: AppTextStyles.bodyText16
           ),
         ],

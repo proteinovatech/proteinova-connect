@@ -86,6 +86,16 @@ class AppTextStyles {
     fontWeight: FontWeight.normal,
     color: AppColors.dark,
   );
+  static const TextStyle bodyText10dark = TextStyle(
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+    color: AppColors.dark,
+  );
+  static const TextStyle bodyText10 = TextStyle(
+    fontSize: 10,
+    fontWeight: FontWeight.normal,
+    color: AppColors.textSecondary,
+  );
 
   
   

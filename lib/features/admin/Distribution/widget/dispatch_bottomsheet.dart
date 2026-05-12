@@ -1,31 +1,21 @@
 import 'package:flutter/material.dart';
 
-Widget dispatchBottomSheet({
-  required String title,
-}) {
+Widget dispatchBottomSheet({required String title}) {
   /// TODAY DISPATCH EMPTY UI
   if (title == "Today's Dispatches") {
     return Container(
       height: 430,
 
-      padding: const EdgeInsets.fromLTRB(
-        16,
-        10,
-        16,
-        20,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
 
       decoration: const BoxDecoration(
         color: Colors.white,
 
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(28),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
 
       child: Column(
         children: [
-
           /// HANDLE
           Center(
             child: Container(
@@ -35,10 +25,7 @@ Widget dispatchBottomSheet({
               decoration: BoxDecoration(
                 color: Colors.grey.shade300,
 
-                borderRadius:
-                    BorderRadius.circular(
-                  20,
-                ),
+                borderRadius: BorderRadius.circular(20),
               ),
             ),
           ),
@@ -47,25 +34,21 @@ Widget dispatchBottomSheet({
 
           /// HEADER
           Row(
-            mainAxisAlignment:
-                MainAxisAlignment
-                    .spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
             children: [
-
               Text(
                 title,
                 style: const TextStyle(
                   fontSize: 20,
-                  fontWeight:
-                      FontWeight.bold,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
 
-              const Icon(
-                Icons.close,
-                color: Colors.grey,
-              ),
+              // const Icon(
+              //   Icons.close,
+              //   color: Colors.grey,
+              // ),
             ],
           ),
 
@@ -81,21 +64,14 @@ Widget dispatchBottomSheet({
 
           const Text(
             "No records found",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight:
-                  FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
 
           const SizedBox(height: 8),
 
           Text(
             "No dispatches found for today.",
-            style: TextStyle(
-              color: Colors.grey.shade600,
-              fontSize: 13,
-            ),
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
           ),
 
           const SizedBox(height: 24),
@@ -105,32 +81,22 @@ Widget dispatchBottomSheet({
             width: double.infinity,
 
             decoration: BoxDecoration(
-              borderRadius:
-                  BorderRadius.circular(
-                14,
-              ),
+              borderRadius: BorderRadius.circular(14),
 
-              border: Border.all(
-                color: Colors.grey.shade300,
-              ),
+              border: Border.all(color: Colors.grey.shade300),
             ),
 
             child: const Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
 
               children: [
-
                 Icon(Icons.tune, size: 18),
 
                 SizedBox(width: 8),
 
                 Text(
                   "Change Filter",
-                  style: TextStyle(
-                    fontWeight:
-                        FontWeight.bold,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -146,27 +112,18 @@ Widget dispatchBottomSheet({
   return Container(
     height: 430,
 
-    padding: const EdgeInsets.fromLTRB(
-      16,
-      10,
-      16,
-      20,
-    ),
+    padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
 
     decoration: const BoxDecoration(
       color: Colors.white,
 
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(28),
-      ),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),
 
     child: Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
 
       children: [
-
         /// HANDLE
         Center(
           child: Container(
@@ -176,10 +133,7 @@ Widget dispatchBottomSheet({
             decoration: BoxDecoration(
               color: Colors.grey.shade300,
 
-              borderRadius:
-                  BorderRadius.circular(
-                20,
-              ),
+              borderRadius: BorderRadius.circular(20),
             ),
           ),
         ),
@@ -188,25 +142,18 @@ Widget dispatchBottomSheet({
 
         /// HEADER
         Row(
-          mainAxisAlignment:
-              MainAxisAlignment
-                  .spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
           children: [
-
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight:
-                    FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
-            const Icon(
-              Icons.close,
-              color: Colors.grey,
-            ),
+            // const Icon(
+            //   Icons.close,
+            //   color: Colors.grey,
+            // ),
           ],
         ),
 
@@ -219,29 +166,23 @@ Widget dispatchBottomSheet({
           padding: const EdgeInsets.all(14),
 
           decoration: BoxDecoration(
-            borderRadius:
-                BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(18),
 
-            border: Border.all(
-              color: Colors.grey.shade300,
-            ),
+            border: Border.all(color: Colors.grey.shade300),
           ),
 
           child: Column(
             children: [
-
               /// TABLE HEADER
               Row(
                 children: const [
-
                   Expanded(
                     flex: 2,
                     child: Text(
                       "DISPATCH RECORD",
                       style: TextStyle(
                         fontSize: 7,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                         color: Colors.grey,
                       ),
                     ),
@@ -253,8 +194,7 @@ Widget dispatchBottomSheet({
                       "DESTINATION",
                       style: TextStyle(
                         fontSize: 7,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                         color: Colors.grey,
                       ),
                     ),
@@ -266,8 +206,7 @@ Widget dispatchBottomSheet({
                       "VEHICLE & DRIVER",
                       style: TextStyle(
                         fontSize: 7,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                         color: Colors.grey,
                       ),
                     ),
@@ -278,13 +217,11 @@ Widget dispatchBottomSheet({
                     child: Text(
                       "QUANTITY\nTOTAL EGGS",
 
-                      textAlign:
-                          TextAlign.center,
+                      textAlign: TextAlign.center,
 
                       style: TextStyle(
                         fontSize: 7,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                         color: Colors.grey,
                       ),
                     ),
@@ -295,13 +232,11 @@ Widget dispatchBottomSheet({
                     child: Text(
                       "STATUS",
 
-                      textAlign:
-                          TextAlign.center,
+                      textAlign: TextAlign.center,
 
                       style: TextStyle(
                         fontSize: 7,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                         color: Colors.grey,
                       ),
                     ),
@@ -313,29 +248,22 @@ Widget dispatchBottomSheet({
 
               /// DATA ROW
               Row(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: [
-
                   /// DISPATCH
                   Expanded(
                     flex: 2,
 
                     child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment
-                              .start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
 
                       children: [
-
                         const Text(
                           "DSP-1",
 
                           style: TextStyle(
-                            fontWeight:
-                                FontWeight
-                                    .bold,
+                            fontWeight: FontWeight.bold,
 
                             fontSize: 10,
                           ),
@@ -345,15 +273,12 @@ Widget dispatchBottomSheet({
 
                         Row(
                           children: const [
-
                             Icon(
-                              Icons
-                                  .calendar_today,
+                              Icons.calendar_today,
 
                               size: 10,
 
-                              color:
-                                  Colors.grey,
+                              color: Colors.grey,
                             ),
 
                             SizedBox(width: 4),
@@ -361,12 +286,7 @@ Widget dispatchBottomSheet({
                             Text(
                               "30/4/2026",
 
-                              style: TextStyle(
-                                fontSize: 9,
-
-                                color: Colors
-                                    .grey,
-                              ),
+                              style: TextStyle(fontSize: 9, color: Colors.grey),
                             ),
                           ],
                         ),
@@ -382,8 +302,7 @@ Widget dispatchBottomSheet({
                       "Branch 034",
 
                       style: TextStyle(
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
 
                         fontSize: 10,
                       ),
@@ -395,19 +314,14 @@ Widget dispatchBottomSheet({
                     flex: 2,
 
                     child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment
-                              .start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
 
                       children: const [
-
                         Text(
                           "TN 32 B 2134",
 
                           style: TextStyle(
-                            fontWeight:
-                                FontWeight
-                                    .bold,
+                            fontWeight: FontWeight.bold,
 
                             fontSize: 10,
                           ),
@@ -418,12 +332,7 @@ Widget dispatchBottomSheet({
                         Text(
                           "Mani",
 
-                          style: TextStyle(
-                            color:
-                                Colors.grey,
-
-                            fontSize: 9,
-                          ),
+                          style: TextStyle(color: Colors.grey, fontSize: 9),
                         ),
                       ],
                     ),
@@ -434,19 +343,14 @@ Widget dispatchBottomSheet({
                     flex: 2,
 
                     child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment
-                              .center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
 
                       children: const [
-
                         Text(
                           "1,530 Eggs",
 
                           style: TextStyle(
-                            fontWeight:
-                                FontWeight
-                                    .bold,
+                            fontWeight: FontWeight.bold,
 
                             fontSize: 10,
                           ),
@@ -457,12 +361,7 @@ Widget dispatchBottomSheet({
                         Text(
                           "51 Trays",
 
-                          style: TextStyle(
-                            color:
-                                Colors.grey,
-
-                            fontSize: 9,
-                          ),
+                          style: TextStyle(color: Colors.grey, fontSize: 9),
                         ),
                       ],
                     ),
@@ -474,38 +373,26 @@ Widget dispatchBottomSheet({
 
                     child: Center(
                       child: Container(
-                        padding:
-                            const EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: 8,
                           vertical: 6,
                         ),
 
-                        decoration:
-                            BoxDecoration(
-                          color:
-                              const Color(
-                            0xffE8F3FF,
-                          ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xffE8F3FF),
 
-                          borderRadius:
-                              BorderRadius.circular(
-                            30,
-                          ),
+                          borderRadius: BorderRadius.circular(30),
                         ),
 
                         child: const Text(
                           "IN TRANSIT",
 
-                          textAlign:
-                              TextAlign.center,
+                          textAlign: TextAlign.center,
 
                           style: TextStyle(
-                            color:
-                                Colors.blue,
+                            color: Colors.blue,
 
-                            fontWeight:
-                                FontWeight
-                                    .bold,
+                            fontWeight: FontWeight.bold,
 
                             fontSize: 8,
                           ),
