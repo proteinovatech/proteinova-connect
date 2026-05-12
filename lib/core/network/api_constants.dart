@@ -1,11 +1,6 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiConstants {
-<<<<<<< HEAD
-  static String baseUrl = dotenv.env['BASE_URL'] ?? "";
-  static final String dashboard = "$baseUrl/api/branch/dashboard";
-  static final String salesEntry = "$baseUrl/api/sales/entry";
-=======
   static final String baseUrl = dotenv.env['BASE_URL'] ?? "";
 
   static final String dashboard = "$baseUrl/api/branch/dashboard";
@@ -18,5 +13,4 @@ class ApiConstants {
   static final String purchaseList = "$baseUrl/api/purchase";
   static final String branchIncomingStock = "$baseUrl/api/branch/incoming-stock";
   static final String assets = "$baseUrl/api/assets";
->>>>>>> 0dace55dca2ba7dfd6f695b5b67bbb20c93ecee5
 }

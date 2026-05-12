@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class SalesItemsWidget extends StatelessWidget {
+class SalesItemsWidget extends StatefulWidget {
   final int salesItemCount;
 
   final VoidCallback onAdd;
@@ -8,7 +8,7 @@ class SalesItemsWidget extends StatelessWidget {
   final List<Map<String, dynamic>> salesItems;
 
   final Widget Function(int) salesItemRow;
-
+  final Function(List<int>) onOffersApplied;
   final List offers;
 
   const SalesItemsWidget({
@@ -18,8 +18,15 @@ class SalesItemsWidget extends StatelessWidget {
     required this.salesItemRow,
     required this.offers,
     required this.salesItems,
+    required this.onOffersApplied,
   });
 
+  @override
+  State<SalesItemsWidget> createState() => _SalesItemsWidgetState();
+}
+
+class _SalesItemsWidgetState extends State<SalesItemsWidget> {
+  final Map<int, bool> appliedOffers = {};
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -57,7 +64,7 @@ class SalesItemsWidget extends StatelessWidget {
               ),
 
               GestureDetector(
-                onTap: onAdd,
+                onTap: widget.onAdd,
 
                 child: Container(
                   height: 40,
@@ -189,7 +196,10 @@ class SalesItemsWidget extends StatelessWidget {
           const SizedBox(height: 10),
 
           /// SALES ROWS
-          ...List.generate(salesItemCount, (index) => salesItemRow(index + 1)),
+          ...List.generate(
+            widget.salesItemCount,
+            (index) => widget.salesItemRow(index + 1),
+          ),
 
           const SizedBox(height: 25),
 
@@ -203,7 +213,7 @@ class SalesItemsWidget extends StatelessWidget {
           const SizedBox(height: 20),
 
           /// NO OFFERS
-          offers.isEmpty
+          widget.offers.isEmpty
               ? Center(
                   child: Text(
                     "No active offers available.",
@@ -213,8 +223,8 @@ class SalesItemsWidget extends StatelessWidget {
                 )
               /// OFFERS LIST
               : Column(
-                  children: List.generate(offers.length, (index) {
-                    final offer = offers[index];
+                  children: List.generate(widget.offers.length, (index) {
+                    final offer = widget.offers[index];
 
                     final String offerCategory =
                         offer["category"]?.toString().toLowerCase() ?? "";
@@ -222,14 +232,15 @@ class SalesItemsWidget extends StatelessWidget {
                     bool productMatched = false;
 
                     int totalEggs = 0;
+                    int totalDozens = 0;
 
                     /// LOOP SALES ITEMS
-                    for (int i = 0; i < salesItemCount; i++) {
-                      if (i >= salesItems.length) {
+                    for (int i = 0; i < widget.salesItemCount; i++) {
+                      if (i >= widget.salesItems.length) {
                         continue;
                       }
 
-                      final row = salesItems[i];
+                      final row = widget.salesItems[i];
 
                       final String productName = row["product_name"]
                           .toString()
@@ -244,22 +255,40 @@ class SalesItemsWidget extends StatelessWidget {
                         productMatched = true;
 
                         totalEggs += eggs;
+                        totalDozens += (eggs ~/ 12);
                       }
                     }
 
                     /// OFFER APPLY
-                    bool isApplied = false;
+                    final bool eligible = offer["offer_type"] == "buy_x_get_y"
+                        ? totalDozens >=
+                              (int.tryParse(
+                                    (offer["buy_qty"] ?? offer["buyTrays"] ?? 0)
+                                        .toString(),
+                                  ) ??
+                                  0)
+                        : productMatched;
 
-                    if (offer["offer_type"] == "buy_x_get_y") {
-                      /// API VALUE = EGGS COUNT
-                      final int needEggs =
-                          int.tryParse(offer["buyTrays"].toString()) ?? 0;
+                    bool isApplied = appliedOffers[index] == true;
 
-                      isApplied = totalEggs >= needEggs;
-                    } else {
-                      /// FIXED OFFER
-                      isApplied = productMatched;
-                    }
+                    // if (offer["offer_type"] == "buy_x_get_y") {
+                    //   /// API VALUE = EGGS COUNT
+                    //   // final int needEggs =
+                    //   //     int.tryParse(offer["buyTrays"].toString()) ?? 0;
+                    //   final int needEggs =
+                    //       int.tryParse(
+                    //         (offer["buyTrays"] ??
+                    //                 offer["buy_quantity"] ??
+                    //                 offer["minimum_quantity"] ??
+                    //                 0)
+                    //             .toString(),
+                    //       ) ??
+                    //       0;
+                    //   isApplied = totalDozens >= needEggs;
+                    // } else {
+                    //   /// FIXED OFFER
+                    //   isApplied = productMatched;
+                    // }
 
                     return Container(
                       width: double.infinity,
@@ -297,8 +326,8 @@ class SalesItemsWidget extends StatelessWidget {
                                 /// TITLE
                                 Text(
                                   offer["offer_type"] == "buy_x_get_y"
-                                      ? "${offer["name"]} — Buy ${offer["buyTrays"]} Get ${offer["getTrays"] ?? 1}"
-                                      : "${offer["name"]} — ₹${offer["amount"] ?? 0} OFF",
+                                      ? "${offer["name"]} — Buy ${offer["buy_qty"] ?? offer["buyTrays"]} Get ${offer["getTrays"] ?? offer["get_quantity"] ?? 1 ?? 1}"
+                                      : "${offer["name"]} — ₹${offer["discount_value"] ?? offer["amount"] ?? 50} OFF",
 
                                   style: const TextStyle(
                                     fontSize: 17,
@@ -324,8 +353,7 @@ class SalesItemsWidget extends StatelessWidget {
                                 const SizedBox(height: 6),
 
                                 Text(
-                                  "Entered Eggs : $totalEggs",
-
+                                  "Entered Dozens : $totalDozens",
                                   style: TextStyle(color: Colors.grey.shade700),
                                 ),
                               ],
@@ -335,45 +363,63 @@ class SalesItemsWidget extends StatelessWidget {
                           const SizedBox(width: 20),
 
                           /// STATUS BUTTON
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 22,
-                              vertical: 14,
-                            ),
+                          /// STATUS BUTTON
+                          GestureDetector(
+                            onTap: () {
+                              if (!eligible) return;
 
-                            decoration: BoxDecoration(
-                              color: !productMatched
-                                  ? Colors.grey.shade100
-                                  : isApplied
-                                  ? Colors.green
-                                  : Colors.orange.shade50,
+                              setState(() {
+                                appliedOffers[index] = true;
+                              });
 
-                              borderRadius: BorderRadius.circular(12),
+                              widget.onOffersApplied(
+                                appliedOffers.entries
+                                    .where((e) => e.value)
+                                    .map((e) => e.key)
+                                    .toList(),
+                              );
+                            },
 
-                              border: Border.all(
-                                color: !productMatched
-                                    ? Colors.grey.shade400
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 22,
+                                vertical: 14,
+                              ),
+
+                              decoration: BoxDecoration(
+                                color: !eligible
+                                    ? Colors.grey.shade100
                                     : isApplied
                                     ? Colors.green
-                                    : Colors.orange,
+                                    : Colors.blue.shade50,
+
+                                borderRadius: BorderRadius.circular(12),
+
+                                border: Border.all(
+                                  color: !eligible
+                                      ? Colors.grey.shade400
+                                      : isApplied
+                                      ? Colors.green
+                                      : Colors.blue,
+                                ),
                               ),
-                            ),
 
-                            child: Text(
-                              !productMatched
-                                  ? "Select ${offer["category"]}"
-                                  : isApplied
-                                  ? "✓ Applied"
-                                  : "Need More Eggs",
-
-                              style: TextStyle(
-                                color: !productMatched
-                                    ? Colors.grey
+                              child: Text(
+                                !eligible
+                                    ? "Need More"
                                     : isApplied
-                                    ? Colors.white
-                                    : Colors.orange,
+                                    ? "✓ Applied"
+                                    : "Apply Offer",
 
-                                fontWeight: FontWeight.bold,
+                                style: TextStyle(
+                                  color: !eligible
+                                      ? Colors.grey
+                                      : isApplied
+                                      ? Colors.white
+                                      : Colors.blue,
+
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),

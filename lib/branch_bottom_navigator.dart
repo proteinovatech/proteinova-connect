@@ -12,7 +12,6 @@ import 'package:proteinova_connect/features/branch/inventory/presentation/receiv
 import 'package:proteinova_connect/features/branch/sales/presentation/sales.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
 
-
 class BranchBottomNavigator extends StatefulWidget {
   const BranchBottomNavigator({super.key});
 

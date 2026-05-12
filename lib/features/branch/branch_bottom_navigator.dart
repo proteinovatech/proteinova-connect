@@ -81,9 +81,9 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
   int selectedIndex = 0;
 
   final List<Widget> pages = [
-        BranchDashboard(),
-         Sales(),
-     Inventory(),
+    BranchDashboard(),
+    Sales(),
+    Inventory(),
     DailyClosing(),
   ];
   @override
@@ -100,9 +100,9 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-             _buildNavItem(Icons.grid_view, 0),
+            _buildNavItem(Icons.grid_view, 0),
             _buildNavItem(Icons.shopping_cart_outlined, 1),
-            _buildNavItem(Icons.inventory_2_outlined, 2),
+            // _buildNavItem(Icons.inventory_2_outlined, 2),
             _buildNavItem(Icons.receipt_long, 3),
             _buildNavItem(Icons.menu_outlined, 4),
           ],
@@ -151,11 +151,11 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
   String _getLabel(int index) {
     switch (index) {
       case 0:
-       return "Dashboard";
-             case 1:
+        return "Dashboard";
+      case 1:
         return "Sales";
       case 2:
-       return "Inventory";       
+        return "Inventory";
       case 3:
         return "Daily closing";
       case 4:
@@ -190,7 +190,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                   _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
 
                   _menuTile(Icons.money, "Expenses", ExpenseManagement()),
-                   _menuTile(Icons.money, "Admin in", AdminInventory()),
+                  _menuTile(Icons.money, "Admin in", AdminInventory()),
 
                   const SizedBox(height: 20),
                   Divider(),

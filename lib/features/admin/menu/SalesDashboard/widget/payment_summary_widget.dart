@@ -3,12 +3,18 @@ import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/pri
 
 class PaymentSummaryWidget extends StatelessWidget {
   final String selectedPaymentMethod;
+  final TextEditingController amountController;
 
+  final TextEditingController debtController;
   final Widget Function(String) paymentTab;
 
   final Widget Function(String) buildLabel;
 
-  final Widget Function({required String hint}) buildTextField;
+  final Widget Function({
+    required String hint,
+    TextEditingController? controller,
+  })
+  buildTextField;
 
   final Widget Function(String, String, {bool red, bool bold}) summaryRow;
 
@@ -30,6 +36,8 @@ class PaymentSummaryWidget extends StatelessWidget {
     required this.offerDiscount,
     required this.grandTotal,
     required this.onSubmit,
+    required this.amountController,
+    required this.debtController,
   });
 
   Widget buildCard({required Widget child}) {
@@ -56,6 +64,7 @@ class PaymentSummaryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double discountValue = double.tryParse(offerDiscount) ?? 0;
     return Column(
       children: [
         /// PAYMENT METHOD
@@ -97,7 +106,7 @@ class PaymentSummaryWidget extends StatelessWidget {
 
               const SizedBox(height: 8),
 
-              buildTextField(hint: "0"),
+              buildTextField(hint: "0", controller: amountController),
 
               const SizedBox(height: 24),
 
@@ -105,7 +114,7 @@ class PaymentSummaryWidget extends StatelessWidget {
 
               const SizedBox(height: 8),
 
-              buildTextField(hint: "0"),
+              buildTextField(hint: "0", controller: debtController),
             ],
           ),
         ),
@@ -129,9 +138,10 @@ class PaymentSummaryWidget extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              summaryRow("Offers Discount", "- ₹ $offerDiscount", red: true),
+              if (discountValue > 0)
+                summaryRow("Offers Discount", "- ₹ $offerDiscount", red: true),
 
-              const Divider(height: 30),
+              if (discountValue > 0) const Divider(height: 30),
 
               summaryRow("Total Total", "₹ $grandTotal", bold: true),
             ],
@@ -147,6 +157,19 @@ class PaymentSummaryWidget extends StatelessWidget {
 
           child: ElevatedButton(
             onPressed: () async {
+              /// PAYMENT VALIDATION
+              if (amountController.text.trim().isEmpty ||
+                  amountController.text.trim() == "0") {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    backgroundColor: Colors.red,
+                    content: Text("Please enter payment amount"),
+                  ),
+                );
+
+                return;
+              }
+
               /// SAVE TO DB
               await onSubmit();
 

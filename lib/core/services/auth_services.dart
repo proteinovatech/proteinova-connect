@@ -11,11 +11,7 @@ class AuthService {
     required String role,
   }) async {
     final response = await http.post(
-<<<<<<< HEAD
-      Uri.parse("$baseUrl/login"),
-=======
       Uri.parse("${ApiConfig.baseUrl}${ApiConfig.login}"),
->>>>>>> 0dace55dca2ba7dfd6f695b5b67bbb20c93ecee5
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({"email": email, "password": password, "role": role}),
     );
