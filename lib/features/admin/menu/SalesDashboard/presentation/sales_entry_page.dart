@@ -333,7 +333,45 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               style: TextStyle(color: Colors.grey.shade700, fontSize: 11),
             ),
             const SizedBox(height: 20),
+<<<<<<< HEAD
             buildWarehouseDropdown(),
+=======
+
+            /// VIEW TODAY SALES
+            Align(
+              alignment: Alignment.center,
+
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 104,
+                  vertical: 14,
+                ),
+
+                decoration: BoxDecoration(
+                  color: const Color(0xffEEF4FF),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.blue.withOpacity(0.10)),
+                ),
+
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.list_alt, color: Colors.blue),
+
+                    SizedBox(width: 10),
+
+                    Text(
+                      "View Today's Sales",
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+>>>>>>> 0dace55dca2ba7dfd6f695b5b67bbb20c93ecee5
 
             const SizedBox(height: 20),
 
@@ -423,8 +461,154 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 });
               },
 
+<<<<<<< HEAD
               salesItemRow: (index) => salesItemRow(index),
               salesItems: salesItems,
+=======
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+
+                        child: const Icon(Icons.add, color: Colors.white),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// TABLE HEADER
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 10,
+                    ),
+
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.04),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    child: const Row(
+                      children: [
+                        SizedBox(
+                          width: 18,
+                          child: Text(
+                            "#",
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(width: 6),
+
+                        Expanded(
+                          flex: 4,
+                          child: Text(
+                            "PRODUCT",
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(width: 6),
+
+                        SizedBox(
+                          width: 42,
+                          child: Center(
+                            child: Text(
+                              "DOZEN",
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(width: 8),
+
+                        SizedBox(
+                          width: 20,
+                          child: Center(
+                            child: Text(
+                              "EGGS",
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(width: 10),
+
+                        SizedBox(
+                          width: 32,
+                          child: Center(
+                            child: Text(
+                              "RATE",
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(width: 10),
+
+                        SizedBox(
+                          width: 34,
+                          child: Center(
+                            child: Text(
+                              "TOTAL",
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(width: 8),
+
+                        Icon(Icons.delete_outline, size: 16),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  salesItemRow(1),
+                  salesItemRow(2),
+                  salesItemRow(3),
+
+                  const SizedBox(height: 20),
+
+                  const Text(
+                    "Available Offers",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  Center(
+                    child: Text(
+                      "No active offers available.",
+                      style: TextStyle(
+                        color: Colors.orange.withOpacity(0.25),
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+>>>>>>> 0dace55dca2ba7dfd6f695b5b67bbb20c93ecee5
             ),
 
             const SizedBox(height: 18),
@@ -646,7 +830,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         boxShadow: [
           BoxShadow(
             blurRadius: 10,
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withOpacity(0.03),
             offset: const Offset(0, 4),
           ),
         ],

@@ -4,8 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/features/sales/widget/recent_sales_card.dart';
-import 'package:proteinova_connect/features/sales/widget/stock_preview_card.dart';
+
 import 'package:proteinova_connect/features/sales/widget/transaction_detailscard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -51,10 +50,7 @@ bool isLoadingOffers = true;
 
   Future<void> fetchSalesData() async {
     try {
-      // final response = await http.get(
-      //   Uri.parse("$baseUrl/api/sales/dashboard?branch_id=1"),
-      //   headers: {"Accept": "application/json"},
-      // );
+     
       final prefs = await SharedPreferences.getInstance();
 
       final branchId = prefs.getInt("branch_id");
@@ -204,7 +200,7 @@ Future<void> fetchOffers() async {
                     Row(
                       children: [
                         Text(
-                          header["title"]?.toString() ?? "Daily Sales Entry",
+                          "Daily Sales Entry",
                           style: AppTextStyles.headingText22,
                         ),
 
@@ -421,9 +417,7 @@ Future<void> fetchOffers() async {
                           ),
 
                           summaryRow("Tax", "₹ ${billSummary["tax"] ?? 0}"),
-
                           const Divider(),
-
                           summaryRow(
                             "Total Amount",
                             "₹ ${billSummary["total_amount"] ?? 0}",
@@ -431,9 +425,7 @@ Future<void> fetchOffers() async {
                         ],
                       ),
                     ),
-
                     SizedBox(height: size.height * 0.02),
-
                     // Visibility(
                     //   visible: false,
                     //   child: Column(

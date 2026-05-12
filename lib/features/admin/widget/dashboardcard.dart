@@ -7,13 +7,14 @@ class DashboardCard extends StatefulWidget {
   final String value;
   final IconData icon;
   final Color iconColor;
-
+  final VoidCallback? onTap;
   const DashboardCard({
     super.key,
     required this.title,
     required this.value,
     required this.icon,
     required this.iconColor,
+    this.onTap,
   });
 
   @override
@@ -23,41 +24,44 @@ class DashboardCard extends StatefulWidget {
 class _DashboardCardState extends State<DashboardCard> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  widget.title,
-                  style: AppTextStyles.bodyText12semibold,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.title,
+                    style: AppTextStyles.bodyText12semibold,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-              
-              Icon(widget.icon,
-                  color: widget.iconColor, size: 20),
-              const SizedBox(width: 3),
-              
-            ],
-          ),
-          const SizedBox(height: 10),
-                    Text(
-            widget.value,
-            style: AppTextStyles.headingText22,
-          ),
-                  
-        ],
+                
+                Icon(widget.icon,
+                    color: widget.iconColor, size: 20),
+                const SizedBox(width: 3),
+                
+              ],
+            ),
+            const SizedBox(height: 10),
+                      Text(
+              widget.value,
+              style: AppTextStyles.headingText22,
+            ),
+                    
+          ],
+        ),
       ),
     );
   }

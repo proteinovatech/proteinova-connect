@@ -1,231 +1,410 @@
-/// =======================================
-/// asset_table_widget.dart
-/// =======================================
-
 import 'package:flutter/material.dart';
 
+import '../data/asset_repository.dart';
+import '../models/asset_model.dart';
+
 class AssetTableWidget extends StatelessWidget {
+  final List<AssetModel> assets;
+  final VoidCallback? onStatusChanged;
+
   const AssetTableWidget({
     super.key,
+    required this.assets,
+    this.onStatusChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-
       child: Container(
-        width: 450,
-
+        width: 650,
         padding: const EdgeInsets.all(16),
-
         decoration: BoxDecoration(
           color: Colors.white,
-
-          borderRadius:
-              BorderRadius.circular(24),
-
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
               blurRadius: 10,
-              color: Colors.black.withValues(
-                alpha: 0.03,
-              ),
+              color: Colors.black.withOpacity(0.03),
               offset: const Offset(0, 4),
             ),
           ],
         ),
-
         child: Column(
           children: [
-
             /// TABLE HEADER
-            Row(
-              children: const [
-
+            const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 150,
+                  child: Text(
+                    'ASSET DETAILS',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
                 SizedBox(
                   width: 100,
-
                   child: Text(
-                    "ASSET DETAILS",
-
+                    'CATEGORY',
                     style: TextStyle(
                       fontSize: 10,
                       color: Colors.grey,
-                      fontWeight:
-                          FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-
                 SizedBox(
-                  width: 70,
-
+                  width: 80,
                   child: Text(
-                    "CATEGORY",
-
+                    'QTY',
                     style: TextStyle(
                       fontSize: 10,
                       color: Colors.grey,
-                      fontWeight:
-                          FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-
                 SizedBox(
-                  width: 70,
-
+                  width: 100,
                   child: Text(
-                    "QUANTITY",
-
+                    'LOCATION',
                     style: TextStyle(
                       fontSize: 10,
                       color: Colors.grey,
-                      fontWeight:
-                          FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-
                 SizedBox(
-                  width: 70,
-
+                  width: 100,
                   child: Text(
-                    "LOCATION",
-
+                    'STATUS',
                     style: TextStyle(
                       fontSize: 10,
                       color: Colors.grey,
-                      fontWeight:
-                          FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-
                 SizedBox(
                   width: 50,
-
                   child: Text(
-                    "STATUS",
-
+                    'ACTION',
+                    textAlign: TextAlign.end,
                     style: TextStyle(
                       fontSize: 10,
                       color: Colors.grey,
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
-                  ),
-                ),
-
-                SizedBox(
-                  width: 50,
-
-                  child: Text(
-                    "ACTIONS",
-
-                    textAlign:
-                        TextAlign.end,
-
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.grey,
-                      fontWeight:
-                          FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ],
             ),
 
-            Divider(
-              height: 40,
-              color: Colors.grey.shade200,
-            ),
+            Divider(height: 30, color: Colors.grey.shade200),
 
-            const SizedBox(height: 40),
-
-            /// EMPTY ICON
-            Icon(
-              Icons.assignment_outlined,
-              size: 110,
-              color: Colors.grey.shade300,
-            ),
-
-            const SizedBox(height: 24),
-
-            const Text(
-              "No assets found",
-
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight:
-                    FontWeight.bold,
+            if (assets.isEmpty)
+              _buildEmptyState()
+            else
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: assets.length,
+                separatorBuilder: (context, index) =>
+                    Divider(height: 20, color: Colors.grey.shade100),
+                itemBuilder: (context, index) {
+                  return _buildRow(context, assets[index]);
+                },
               ),
-            ),
-
-            const SizedBox(height: 12),
-
-            Text(
-              "Get started by adding your first asset.",
-
-              textAlign:
-                  TextAlign.center,
-
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 15,
-              ),
-            ),
-
-            const SizedBox(height: 28),
-
-            /// BUTTON
-            Container(
-              width: 210,
-              height: 54,
-
-              decoration: BoxDecoration(
-                color: Colors.white,
-
-                borderRadius:
-                    BorderRadius.circular(
-                  16,
-                ),
-
-                border: Border.all(
-                  color:
-                      Colors.grey.shade300,
-                ),
-              ),
-
-              child: const Row(
-                mainAxisAlignment:
-                    MainAxisAlignment
-                        .center,
-
-                children: [
-
-                  Icon(Icons.add),
-
-                  SizedBox(width: 8),
-
-                  Text(
-                    "Add New Asset",
-
-                    style: TextStyle(
-                      fontWeight:
-                          FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 40),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildRow(BuildContext context, AssetModel asset) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          width: 150,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                asset.name,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                asset.assetId,
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          width: 100,
+          child: Text(asset.category, style: const TextStyle(fontSize: 12)),
+        ),
+        SizedBox(
+          width: 80,
+          child: Text(
+            asset.quantity.toString(),
+            style: const TextStyle(fontSize: 12),
+          ),
+        ),
+        SizedBox(
+          width: 100,
+          child: Text(
+            asset.location,
+            style: const TextStyle(fontSize: 12),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        SizedBox(
+          width: 100,
+          child: _buildStatus(asset.status),
+        ),
+        SizedBox(
+          width: 50,
+          child: GestureDetector(
+            onTap: () => _showActionSheet(context, asset),
+            child: const Icon(Icons.more_vert, size: 18, color: Colors.grey),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatus(String status) {
+    Color color;
+    switch (status.toLowerCase()) {
+      case 'available':
+        color = Colors.green;
+        break;
+      case 'in use':
+        color = Colors.blue;
+        break;
+      case 'maintenance':
+        color = Colors.orange;
+        break;
+      case 'damaged':
+        color = Colors.red;
+        break;
+      default:
+        color = Colors.grey;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        status,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+  void _showActionSheet(BuildContext context, AssetModel asset) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _AssetActionSheet(
+        asset: asset,
+        onStatusChanged: onStatusChanged,
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Column(
+      children: [
+        const SizedBox(height: 40),
+        Icon(
+          Icons.assignment_outlined,
+          size: 110,
+          color: Colors.grey.shade300,
+        ),
+        const SizedBox(height: 24),
+        const Text(
+          'No assets found',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Get started by adding your first asset.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.grey.shade600,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 40),
+      ],
+    );
+  }
+}
+
+/// ── Action Bottom Sheet ────────────────────────────────────────────────────
+
+class _AssetActionSheet extends StatefulWidget {
+  final AssetModel asset;
+  final VoidCallback? onStatusChanged;
+
+  const _AssetActionSheet({
+    required this.asset,
+    this.onStatusChanged,
+  });
+
+  @override
+  State<_AssetActionSheet> createState() => _AssetActionSheetState();
+}
+
+class _AssetActionSheetState extends State<_AssetActionSheet> {
+  final AssetRepository _repository = AssetRepository();
+  bool _isLoading = false;
+
+  static const _statuses = ['Available', 'In Use', 'Maintenance', 'Damaged'];
+
+  static Color _statusColor(String s) {
+    switch (s.toLowerCase()) {
+      case 'available':
+        return Colors.green;
+      case 'in use':
+        return Colors.blue;
+      case 'maintenance':
+        return Colors.orange;
+      case 'damaged':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Future<void> _updateStatus(String newStatus) async {
+    if (widget.asset.id == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Asset ID not found')),
+      );
+      return;
+    }
+    setState(() => _isLoading = true);
+    try {
+      await _repository.updateAssetStatus(widget.asset.id!, newStatus);
+      if (mounted) {
+        Navigator.pop(context);
+        widget.onStatusChanged?.call();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Status updated to $newStatus')),
+        );
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Handle bar
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+
+          // Asset name + id
+          Text(
+            widget.asset.name,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            widget.asset.assetId,
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+          ),
+
+          const SizedBox(height: 20),
+          const Text(
+            'Update Status',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 12),
+
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator())
+          else
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: _statuses.map((status) {
+                final isCurrent = widget.asset.status == status;
+                final color = _statusColor(status);
+                return GestureDetector(
+                  onTap: isCurrent ? null : () => _updateStatus(status),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isCurrent ? color : color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: color.withOpacity(0.4)),
+                    ),
+                    child: Text(
+                      status,
+                      style: TextStyle(
+                        color: isCurrent ? Colors.white : color,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+
+          const SizedBox(height: 24),
+        ],
       ),
     );
   }

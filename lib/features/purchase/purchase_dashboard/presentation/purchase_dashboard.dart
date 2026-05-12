@@ -25,22 +25,10 @@ class PurchaseDashboard extends StatefulWidget {
 }
 
 class _PurchaseDashboardState extends State<PurchaseDashboard> {
-  late TextEditingController searchController;
-  String selectedDateFilter = "Last 30 days";
+  
  static bool _hasLoadedOnce = false;
-
-  @override
-  void initState() {
-    super.initState();
-    searchController = TextEditingController();
-    context.read<PurchaseBloc>().add(GetCachedPurchasesEvent());
-  }
-
-  @override
-  void dispose() {
-    searchController.dispose();
-    super.dispose();
-  }
+String? loadingPurchaseId;
+  
 
   @override
   Widget build(BuildContext context) {
@@ -206,8 +194,14 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
       children: [
 
         PurchaseCard(
+           isLoading:
+      loadingPurchaseId == p['id'].toString(),
           movementStatus: p['movement_status'] ?? 'PENDING',
-            onArrivalTap: () {
+            onArrivalTap: () async {
+               setState(() {
+    loadingPurchaseId = p['id'].toString();
+  });
+
                          context.read<PurchaseBloc>().add(
                            UpdateArrivalEvent(
                              purchaseId: p['id'].toString(),

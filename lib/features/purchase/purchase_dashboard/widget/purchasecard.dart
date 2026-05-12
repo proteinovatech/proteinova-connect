@@ -7,7 +7,7 @@ class PurchaseCard extends StatelessWidget {
   final String movementStatus;
   final VoidCallback? onArrivalTap;
   final VoidCallback? onEditTap;
-
+  final bool isLoading;
   final String supplier;
   final String orderId;
   final String dateTime;
@@ -20,6 +20,7 @@ class PurchaseCard extends StatelessWidget {
     required this.movementStatus,
     this.onArrivalTap,
     this.onEditTap,
+    this.isLoading = false,
     required this.supplier,
     required this.orderId,
     required this.dateTime,
@@ -83,23 +84,40 @@ class PurchaseCard extends StatelessWidget {
             children: [
               Text(bottomId, style: AppTextStyles.headingText22),
 
-              GestureDetector(
-                onTap: movementStatus == "RECEIVED"
-                    ? null
-                    : onArrivalTap,
-                child: StatusBadge(
-                  text: movementStatus == "RECEIVED"
-                      ? "Received"
-                      : "Mark as Arrival",
-                   icon: movementStatus == "RECEIVED"
-        ? Icons.check_circle
-        : Icons.local_shipping_outlined,
-                  bgColor: movementStatus == "RECEIVED"
-                      ? Colors.green
-                      : Colors.blue,
-                  textColor: Colors.white,
-                ),
-              ),
+            isLoading
+    ? Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 10,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.blue,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const SizedBox(
+          height: 18,
+          width: 18,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: Colors.white,
+          ),
+        ),
+      )
+    : StatusBadge(
+        text: movementStatus == "RECEIVED"
+            ? "Received"
+            : "Mark as Arrival",
+        icon: movementStatus == "RECEIVED"
+            ? Icons.check_circle
+            : Icons.local_shipping_outlined,
+        bgColor: movementStatus == "RECEIVED"
+            ? Colors.green
+            : Colors.blue,
+        textColor: Colors.white,
+        onPressed: movementStatus == "RECEIVED"
+            ? null
+            : onArrivalTap,
+      )
             ],
           ),
         ],
