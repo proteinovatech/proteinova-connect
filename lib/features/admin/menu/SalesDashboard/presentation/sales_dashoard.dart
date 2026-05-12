@@ -109,12 +109,14 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffF7F7F7),
+      backgroundColor: Colors.white,
 
       /// APP BAR
       appBar: AppBar(
-        backgroundColor: const Color(0xffF7F7F7),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white, // IMPORTANT
         elevation: 0,
+        scrolledUnderElevation: 0, // IMPORTANT
 
         leading: IconButton(
           onPressed: () {

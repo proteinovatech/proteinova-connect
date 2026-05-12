@@ -65,10 +65,12 @@ class _DistributionPageState extends State<DistributionPage> {
     final pagination = dashboardData?['pagination'];
 
     return Scaffold(
-      backgroundColor: AppColors.background1,
+      backgroundColor: AppColors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.background1,
+        backgroundColor: AppColors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
+        scrolledUnderElevation: 0,
         automaticallyImplyLeading: false,
         toolbarHeight: 90,
         title: Column(

@@ -8,6 +8,7 @@ class DashboardCard extends StatefulWidget {
   final IconData icon;
   final Color iconColor;
   final VoidCallback? onTap;
+
   const DashboardCard({
     super.key,
     required this.title,
@@ -22,44 +23,108 @@ class DashboardCard extends StatefulWidget {
 }
 
 class _DashboardCardState extends State<DashboardCard> {
+  bool isPressed = false;
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: widget.onTap,
-      child: Container(
+
+      onTapDown: (_) {
+        setState(() {
+          isPressed = true;
+        });
+      },
+
+      onTapUp: (_) {
+        setState(() {
+          isPressed = false;
+        });
+      },
+
+      onTapCancel: () {
+        setState(() {
+          isPressed = false;
+        });
+      },
+
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+
+        transform: isPressed
+            ? (Matrix4.identity()..scale(0.97))
+            : Matrix4.identity(),
+
         padding: const EdgeInsets.all(12),
+
         decoration: BoxDecoration(
-          color: AppColors.background,
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(12),
+          color: isPressed ? Colors.grey.shade100 : AppColors.background,
+
+          borderRadius: BorderRadius.circular(14),
+
+          border: Border.all(
+            color: isPressed
+                ? widget.iconColor.withOpacity(0.3)
+                : Colors.grey.shade200,
+            width: 1,
+          ),
+
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.09),
+              blurRadius: 12,
+              spreadRadius: 1,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+
           children: [
+            /// TOP ROW
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
               children: [
                 Expanded(
                   child: Text(
                     widget.title,
-                    style: AppTextStyles.bodyText12semibold,
+
+                    style: AppTextStyles.bodyText12semibold.copyWith(
+                      color: Colors.grey.shade600,
+                    ),
+
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                
-                Icon(widget.icon,
-                    color: widget.iconColor, size: 20),
-                const SizedBox(width: 3),
-                
+
+                Container(
+                  padding: const EdgeInsets.all(4),
+
+                  decoration: BoxDecoration(
+                    color: widget.iconColor.withOpacity(0.10),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+
+                  child: Icon(widget.icon, color: widget.iconColor, size: 18),
+                ),
               ],
             ),
-            const SizedBox(height: 10),
-                      Text(
+
+            const SizedBox(height: 14),
+
+            /// VALUE
+            Text(
               widget.value,
-              style: AppTextStyles.headingText22,
+
+              style: AppTextStyles.headingText22.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
-                    
           ],
         ),
       ),
