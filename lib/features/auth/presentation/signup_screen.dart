@@ -148,11 +148,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-<<<<<<< HEAD
-                              builder: (_) => const AdminDashboard(),
-=======
                               builder: (_) => const AdminBottomNavigator(),
->>>>>>> ea3e69cdb2c09331bdc464ea5b45b3ec1a494c3e
                             ),
                           );
                         } else if (state is AuthFailure) {

@@ -13,11 +13,16 @@ class AdminInventory extends StatefulWidget {
 class _AdminInventoryState extends State<AdminInventory> {
   bool isLoading = false;
   Map<String, dynamic>? inventoryStockData;
+  List<Map<String, dynamic>> inventoryData = [];
+  List<Map<String, dynamic>> activities = [];
+  List<Map<String, dynamic>> orders = [];
 
   @override
   void initState() {
     super.initState();
     fetchInventoryStock();
+    fetchInventoryDetails();
+    fetchDashboardActivity();
   }
 
   Future<void> fetchInventoryStock() async {
@@ -25,12 +30,18 @@ class _AdminInventoryState extends State<AdminInventory> {
       isLoading = true;
     });
     try {
-      final response = await DioClient().dio.get('/api/admin/inventoryStock');
+      // Backend mounts adminStockRoutes under /api, so final endpoint is /api/inventoryStock
+      final response = await DioClient().dio.get('/api/inventoryStock');
       if (response.statusCode == 200) {
         final data = response.data['data'];
         if (data is List && data.isNotEmpty) {
           setState(() {
-            inventoryStockData = data.first;
+            // Pick the most recently inserted row from returned list.
+            inventoryStockData = Map<String, dynamic>.from(data.last as Map);
+          });
+        } else {
+          setState(() {
+            inventoryStockData = null;
           });
         }
       }
@@ -45,73 +56,138 @@ class _AdminInventoryState extends State<AdminInventory> {
     }
   }
 
-  final List<Map<String, dynamic>> inventoryData = [
-    {"title": "White Export", "value": 11060, "progress": 0.82},
-    {"title": "AA", "value": 5680, "progress": 0.48},
-    {"title": "White Small Egg", "value": 2400, "progress": 0.22},
-    {"title": "White Medium", "value": 3060, "progress": 0.40},
-    {"title": "Medium", "value": 560, "progress": 0.15},
-    {"title": "White", "value": 5390, "progress": 0.47},
-    {"title": "Brown", "value": 4790, "progress": 0.55},
-  ];
+  Future<void> fetchInventoryDetails() async {
+    try {
+      final response = await DioClient().dio.get('/api/admin/inventory');
+      if (response.statusCode != 200 || response.data is! Map<String, dynamic>) {
+        return;
+      }
 
-  final List<Map<String, dynamic>> activities = [
-    {
-      "title": "In Transit: PO-34",
-      "subtitle": "Arriving: 2024-05-06 • 2 hours ago",
-      "icon": Icons.local_shipping_outlined,
-      "color": Colors.red,
-    },
-    {
-      "title": "Received: PO-33",
-      "subtitle": "Received • 2 hours ago",
-      "icon": Icons.check,
-      "color": Colors.green,
-    },
-    {
-      "title": "In Transit: PO-32",
-      "subtitle": "Arriving: 2024-05-05 • 23 hours ago",
-      "icon": Icons.local_shipping_outlined,
-      "color": Colors.red,
-    },
-    {
-      "title": "Ordered: PO-31",
-      "subtitle": "Ordered • 23 hours ago",
-      "icon": Icons.description_outlined,
-      "color": Colors.grey,
-    },
-  ];
+      final data = response.data as Map<String, dynamic>;
+      final categoryStock = (data['category_stock'] as List? ?? [])
+          .whereType<Map>()
+          .map((row) => Map<String, dynamic>.from(row))
+          .toList();
+      final purchases = (data['purchases'] as List? ?? [])
+          .whereType<Map>()
+          .map((row) => Map<String, dynamic>.from(row))
+          .toList();
 
-  final List<Map<String, dynamic>> orders = [
-    {
-      "po": "PO-34",
-      "supplier": "X Eggs Farms",
-      "location": "Chennai",
-      "product": "40 Trays",
-      "status": "Pending",
-    },
-    {
-      "po": "PO-33",
-      "supplier": "GD Farms",
-      "location": "Chennai",
-      "product": "White export, white small eggs",
-      "status": "Received",
-    },
-    {
-      "po": "PO-32",
-      "supplier": "Oval Acres",
-      "location": "Chennai",
-      "product": "Brown eggs",
-      "status": "In Transit",
-    },
-    {
-      "po": "PO-31",
-      "supplier": "J Farms",
-      "location": "Salem",
-      "product": "White export size",
-      "status": "Review Dmg",
-    },
-  ];
+      final int maxCategory = categoryStock.fold<int>(
+        1,
+        (prev, item) => ((item['total'] as num?)?.toInt() ?? 0) > prev
+            ? ((item['total'] as num?)?.toInt() ?? 0)
+            : prev,
+      );
+
+      final mappedInventory = categoryStock.map((item) {
+        final total = ((item['total'] as num?)?.toInt() ?? 0);
+        final progress = maxCategory == 0 ? 0.0 : (total / maxCategory).clamp(0, 1).toDouble();
+        return {
+          "title": (item['egg_category_grade'] ?? 'Unknown').toString(),
+          "value": total,
+          "progress": progress,
+        };
+      }).toList();
+
+      final mappedOrders = purchases.map((item) {
+        final poId = (item['id'] ?? '').toString();
+        final source = (item['purchased_location'] ?? 'N/A').toString();
+        final location = (item['warehouse_location'] ?? 'N/A').toString();
+        final movementStatus = (item['movement_status'] ?? 'Pending').toString();
+        final arrival = (item['expected_arrival'] ?? 'N/A').toString();
+        return {
+          "po": "PO-$poId",
+          "supplier": source,
+          "location": location,
+          "product": "Expected: $arrival",
+          "status": _normalizeOrderStatus(movementStatus),
+        };
+      }).toList();
+
+      if (!mounted) return;
+      setState(() {
+        inventoryData = mappedInventory;
+        orders = mappedOrders;
+      });
+    } catch (e) {
+      debugPrint('Failed to fetch inventory details: $e');
+    }
+  }
+
+  Future<void> fetchDashboardActivity() async {
+    try {
+      final response = await DioClient().dio.get('/api/admin/dashboard');
+      if (response.statusCode != 200 || response.data is! Map<String, dynamic>) {
+        return;
+      }
+
+      final data = response.data as Map<String, dynamic>;
+      final recent = (data['recent_activity'] as List? ?? [])
+          .whereType<Map>()
+          .map((row) => Map<String, dynamic>.from(row))
+          .toList();
+
+      final mappedActivities = recent.map((item) {
+        final movementType = (item['movement_type'] ?? 'Movement').toString();
+        final status = (item['status'] ?? '').toString();
+        final from = (item['from_location'] ?? 'N/A').toString();
+        final to = (item['to_location'] ?? 'N/A').toString();
+        final trayId = (item['tray_id'] ?? '').toString();
+        final createdAt = _formatDateTime(item['created_at']);
+        return {
+          "title": "$movementType: Tray-$trayId",
+          "subtitle": "$from -> $to • $createdAt",
+          "icon": _activityIcon(status),
+          "color": _activityColor(status),
+        };
+      }).toList();
+
+      if (!mounted) return;
+      setState(() {
+        activities = mappedActivities;
+      });
+    } catch (e) {
+      debugPrint('Failed to fetch dashboard activity: $e');
+    }
+  }
+
+  String _normalizeOrderStatus(String status) {
+    final value = status.toUpperCase();
+    if (value == 'RECEIVED') return 'Received';
+    if (value == 'IN_TRANSIT') return 'In Transit';
+    if (value == 'DAMAGED') return 'Review Dmg';
+    return 'Pending';
+  }
+
+  String _formatDateTime(dynamic input) {
+    if (input == null) return 'N/A';
+    final dt = DateTime.tryParse(input.toString());
+    if (dt == null) return input.toString();
+    final local = dt.toLocal();
+    final yyyy = local.year.toString().padLeft(4, '0');
+    final mm = local.month.toString().padLeft(2, '0');
+    final dd = local.day.toString().padLeft(2, '0');
+    final hh = local.hour.toString().padLeft(2, '0');
+    final min = local.minute.toString().padLeft(2, '0');
+    return '$yyyy-$mm-$dd $hh:$min';
+  }
+
+  IconData _activityIcon(String status) {
+    final key = status.toUpperCase();
+    if (key == 'RECEIVED') return Icons.check;
+    if (key == 'IN_TRANSIT') return Icons.local_shipping_outlined;
+    if (key == 'DAMAGED') return Icons.report_problem_outlined;
+    return Icons.description_outlined;
+  }
+
+  Color _activityColor(String status) {
+    final key = status.toUpperCase();
+    if (key == 'RECEIVED') return Colors.green;
+    if (key == 'IN_TRANSIT') return Colors.orange;
+    if (key == 'DAMAGED') return Colors.red;
+    return Colors.grey;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -385,7 +461,16 @@ class _AdminInventoryState extends State<AdminInventory> {
 
                     const SizedBox(height: 20),
 
-                    ListView.separated(
+                    if (inventoryData.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          "No inventory levels found",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      )
+                    else
+                      ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: inventoryData.length,
@@ -467,7 +552,16 @@ class _AdminInventoryState extends State<AdminInventory> {
 
                     const SizedBox(height: 20),
 
-                    ListView.separated(
+                    if (activities.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          "No recent activity",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      )
+                    else
+                      ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: activities.length,
@@ -592,7 +686,16 @@ class _AdminInventoryState extends State<AdminInventory> {
                     ),
 
                     const SizedBox(height: 18),
-                    ListView.builder(
+                    if (orders.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          "No purchase orders available",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      )
+                    else
+                      ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: orders.length,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/features/admin/report/data/report_service.dart';
 import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/expense_report_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/sales_report_screen.dart';
@@ -18,6 +19,26 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
   String reportCategory = "Purchase Report";
   String selectedReport = "Purchase Report";
 
+  String fromDate = "dd-mm-yyyy";
+  String toDate = "dd-mm-yyyy";
+
+  final ReportService reportService = ReportService();
+
+  bool isLoading = true;
+
+  Map<String, dynamic>? purchaseData;
+
+  List<dynamic> purchaseStats = [];
+
+  List<dynamic> suppliers = [];
+  List<dynamic> spendBySupplier = [];
+
+  List<dynamic> volumeBySupplier = [];
+
+  List<dynamic> supplierList = [];
+
+  List<dynamic> avgUnitCost = [];
+  List<dynamic> monthlySummary = [];
   List<String> reportItems = [
     "Financial Summary",
     "Purchase Report",
@@ -25,634 +46,1082 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
     "Branch Sales Report",
     "Warehouse Report",
   ];
+
+  void showPurchaseBottomSheet({
+    required String title,
+    required String subtitle,
+    required List<Map<String, dynamic>> rows,
+  }) {
+    showModalBottomSheet(
+      context: context,
+
+      isScrollControlled: true,
+
+      backgroundColor: Colors.transparent,
+
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.72,
+
+          decoration: const BoxDecoration(
+            color: Colors.white,
+
+            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          ),
+
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+
+            children: [
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 12),
+
+                  width: 60,
+                  height: 6,
+
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(22),
+
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+
+                        style: const TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+
+                    IconButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22),
+
+                child: Text(
+                  subtitle,
+
+                  style: const TextStyle(color: Color(0xff64748B)),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(22),
+
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: const Color(0xffE5E7EB)),
+
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 18,
+                          ),
+
+                          decoration: const BoxDecoration(
+                            color: Color(0xffF8FAFC),
+
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(18),
+                            ),
+                          ),
+
+                          child: const Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  "SUPPLIER / PURCHASE",
+
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12,
+                                    color: Color(0xff94A3B8),
+                                  ),
+                                ),
+                              ),
+
+                              Expanded(
+                                child: Text(
+                                  "VALUE",
+
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12,
+                                    color: Color(0xff94A3B8),
+                                  ),
+                                ),
+                              ),
+
+                              Expanded(
+                                child: Text(
+                                  "DETAILS",
+
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12,
+                                    color: Color(0xff94A3B8),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        ...rows.map((e) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 18,
+                            ),
+
+                            decoration: BoxDecoration(
+                              border: Border(
+                                top: BorderSide(color: Colors.grey.shade200),
+                              ),
+                            ),
+
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    e["name"].toString(),
+
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+
+                                Expanded(
+                                  child: Text(
+                                    e["value"].toString(),
+
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+
+                                Expanded(
+                                  child: Text(
+                                    e["details"].toString(),
+
+                                    style: const TextStyle(
+                                      color: Color(0xff64748B),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    fetchPurchaseReport();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffF8F8F8),
 
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-
-            children: [
-              /// HEADER
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-
-                    icon: const Icon(Icons.arrow_back_ios_new),
-                  ),
-
-                  const SizedBox(width: 8),
-
-                  const Expanded(
-                    child: Text(
-                      "Purchase Report",
-
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-
-                    decoration: BoxDecoration(
-                      color: const Color(0xffFEF3C7),
-
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-
-                    child: const Row(
-                      children: [
-                        Icon(Icons.shield_outlined, size: 18),
-
-                        SizedBox(width: 6),
-
-                        Text(
-                          "Admin",
-
-                          style: TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(width: 12),
-
-                  const Icon(Icons.notifications_none, size: 28),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
-              /// FILTER CARD
-              Container(
-                padding: const EdgeInsets.all(18),
-
-                decoration: BoxDecoration(
-                  color: Colors.white,
-
-                  borderRadius: BorderRadius.circular(20),
-
-                  border: Border.all(color: const Color(0xffE5E7EB)),
-                ),
-
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(child: buildDateField("From Date")),
-
-                        const SizedBox(width: 14),
-
-                        Expanded(child: buildDateField("To Date")),
-
-                        const SizedBox(width: 14),
-
-                        Expanded(
-                          child: buildDropdownField(
-                            title: "View Mode",
-
-                            value: viewMode,
-
-                            items: const ["Monthly", "Weekly", "Yearly"],
-
-                            onChanged: (v) {
-                              setState(() {
-                                viewMode = v!;
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: buildDropdownField(
-                            title: "Supplier",
-
-                            value: supplier,
-
-                            items: const [
-                              "All Suppliers",
-
-                              "Valley Farms",
-
-                              "Sunrise Poultry",
-                            ],
-
-                            onChanged: (v) {
-                              setState(() {
-                                supplier = v!;
-                              });
-                            },
-                          ),
-                        ),
-
-                        const SizedBox(width: 14),
-
-                        Expanded(
-                          child: buildDropdownField(
-                            title: "Egg Type",
-
-                            value: eggType,
-
-                            items: const [
-                              "All Types",
-
-                              "White Egg",
-
-                              "Brown Egg",
-                            ],
-
-                            onChanged: (v) {
-                              setState(() {
-                                eggType = v!;
-                              });
-                            },
-                          ),
-                        ),
-
-                        const SizedBox(width: 14),
-
-                        Expanded(
-                          child: buildDropdownField(
-                            title: "Report Category",
-
-                            value: selectedReport,
-
-                            items: reportItems,
-
-                            onChanged: (value) {
-                              if (value == selectedReport) return;
-                              setState(() {
-                                selectedReport = value!;
-                              });
-
-                              Widget? nextScreen;
-                              if (value == "Financial Summary") {
-                                nextScreen = const AdminReportDashboardScreen();
-                              } else if (value == "Purchase Report") {
-                                nextScreen = const PurchaseReportScreen();
-                              } else if (value == "Expense Report") {
-                                nextScreen = const ExpenseReportScreen();
-                              } else if (value == "Branch Sales Report") {
-                                nextScreen = const SalesReportScreen();
-                              } else if (value == "Warehouse Report") {
-                                nextScreen = const WarehouseReportScreen();
-                              }
-
-                              if (nextScreen != null) {
-                                Navigator.pushReplacement(
-                                  context,
-                                  PageRouteBuilder(
-                                    pageBuilder: (_, __, ___) => nextScreen!,
-                                    transitionDuration: Duration.zero,
-                                    reverseTransitionDuration: Duration.zero,
-                                  ),
-                                );
-                              }
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-
-                      children: [
-                        buildActionButton(
-                          title: "Export PDF",
-
-                          icon: Icons.picture_as_pdf,
-
-                          bgColor: Colors.white,
-                        ),
-
-                        const SizedBox(width: 12),
-
-                        buildActionButton(
-                          title: "Print",
-
-                          icon: Icons.print,
-
-                          bgColor: const Color(0xffFACC15),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              /// STATS
-              GridView.count(
-                crossAxisCount: 2,
-
-                shrinkWrap: true,
-
-                physics: const NeverScrollableScrollPhysics(),
-
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-
-                childAspectRatio: 1.1,
-
-                children: const [
-                  PurchaseStatCard(
-                    title: "Total Spend",
-
-                    amount: "₹ 682,100",
-
-                    growth: "+4.4%",
-
-                    growthColor: Colors.green,
-
-                    icon: Icons.currency_rupee,
-
-                    iconBg: Color(0xffDBEAFE),
-                  ),
-
-                  PurchaseStatCard(
-                    title: "Total Volume (Units)",
-
-                    amount: "830K",
-
-                    growth: "+2.4%",
-
-                    growthColor: Colors.green,
-
-                    icon: Icons.inventory_2,
-
-                    iconBg: Color(0xffDCFCE7),
-                  ),
-
-                  PurchaseStatCard(
-                    title: "Avg Unit Cost",
-
-                    amount: "0.3",
-
-                    growth: "-1.4%",
-
-                    growthColor: Colors.red,
-
-                    icon: Icons.calculate,
-
-                    iconBg: Color(0xffFFEDD5),
-                  ),
-
-                  PurchaseStatCard(
-                    title: "Active Suppliers",
-
-                    amount: "14",
-
-                    growth: "0.0%",
-
-                    growthColor: Colors.grey,
-
-                    icon: Icons.groups,
-
-                    iconBg: Color(0xffE9D5FF),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-              Column(
-                children: [
-                  /// MONTHLY PURCHASE TREND
-                  Container(
-                    width: double.infinity,
-
-                    padding: const EdgeInsets.all(18),
-
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-
-                      borderRadius: BorderRadius.circular(20),
-
-                      border: Border.all(color: const Color(0xffE5E7EB)),
-                    ),
-
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-
-                      children: [
-                        const Text(
-                          "Monthly Purchase Trend",
-
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-
-                        const SizedBox(height: 18),
-
-                        const Wrap(
-                          spacing: 14,
-                          runSpacing: 8,
-
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-
-                              children: [
-                                Icon(
-                                  Icons.square,
-                                  color: Colors.blue,
-                                  size: 14,
-                                ),
-
-                                SizedBox(width: 6),
-
-                                Text("Spend (₹)"),
-                              ],
-                            ),
-
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-
-                              children: [
-                                Icon(
-                                  Icons.square,
-                                  color: Colors.green,
-                                  size: 14,
-                                ),
-
-                                SizedBox(width: 6),
-
-                                Text("Volume (Units)"),
-                              ],
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 30),
-
-                        SizedBox(
-                          height: 180,
-
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-
-                            children: [
-                              buildBar(80, 60, "Jan"),
-
-                              buildBar(110, 90, "Feb"),
-
-                              buildBar(70, 45, "Mar"),
-
-                              buildBar(140, 100, "Apr"),
-
-                              buildBar(100, 85, "May"),
-
-                              buildBar(140, 120, "Jun"),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        Container(
-                          height: 54,
-
-                          decoration: BoxDecoration(
-                            color: const Color(0xffF3F4F6),
-
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-
-                            children: [
-                              Text(
-                                "View Details",
-
-                                style: TextStyle(fontWeight: FontWeight.w700),
-                              ),
-
-                              SizedBox(width: 10),
-
-                              Icon(Icons.arrow_forward_ios, size: 16),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  /// TOP SUPPLIERS
-                  Container(
-                    width: double.infinity,
-
-                    padding: const EdgeInsets.all(18),
-
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-
-                      borderRadius: BorderRadius.circular(20),
-
-                      border: Border.all(color: const Color(0xffE5E7EB)),
-                    ),
-
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-
-                      children: [
-                        const Text(
-                          "Top Suppliers by Spend",
-
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        buildSupplierRow("Valley Farms", "₹ 245,000", 0.85),
-
-                        buildSupplierRow("Sunrise Poultry", "₹ 180,000", 0.65),
-
-                        buildSupplierRow("Green Pastures", "₹ 125,000", 0.45),
-
-                        buildSupplierRow("Meadowbrook", "₹ 65,000", 0.20),
-
-                        const SizedBox(height: 28),
-
-                        Container(
-                          height: 54,
-
-                          decoration: BoxDecoration(
-                            color: const Color(0xffF3F4F6),
-
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-
-                            children: [
-                              Text(
-                                "View All",
-
-                                style: TextStyle(fontWeight: FontWeight.w700),
-                              ),
-
-                              SizedBox(width: 10),
-
-                              Icon(Icons.arrow_forward_ios, size: 16),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              /// TABLE
-              Container(
-                padding: const EdgeInsets.all(18),
-
-                decoration: BoxDecoration(
-                  color: Colors.white,
-
-                  borderRadius: BorderRadius.circular(20),
-
-                  border: Border.all(color: const Color(0xffE5E7EB)),
-                ),
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
 
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
 
                   children: [
-                    const Text(
-                      "Month-wise Purchase Summary",
+                    /// HEADER
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
 
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
+                          icon: const Icon(Icons.arrow_back_ios_new),
+                        ),
+
+                        const SizedBox(width: 8),
+
+                        const Expanded(
+                          child: Text(
+                            "Purchase Report",
+
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+
+                          decoration: BoxDecoration(
+                            color: const Color(0xffFEF3C7),
+
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+
+                          child: const Row(
+                            children: [
+                              Icon(Icons.shield_outlined, size: 18),
+
+                              SizedBox(width: 6),
+
+                              Text(
+                                "Admin",
+
+                                style: TextStyle(fontWeight: FontWeight.w700),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        const Icon(Icons.notifications_none, size: 28),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    /// FILTER CARD
+                    Container(
+                      padding: const EdgeInsets.all(18),
+
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+
+                        borderRadius: BorderRadius.circular(20),
+
+                        border: Border.all(color: const Color(0xffE5E7EB)),
+                      ),
+
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: buildDateField(
+                                  title: "From Date",
+                                  value: fromDate,
+                                  onTap: () async {
+                                    DateTime? picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime(2020),
+                                      lastDate: DateTime.now(),
+                                    );
+                                    if (picked != null) {
+                                      setState(() {
+                                        fromDate =
+                                            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                                      });
+                                      fetchPurchaseReport();
+                                    }
+                                  },
+                                ),
+                              ),
+
+                              const SizedBox(width: 14),
+
+                              Expanded(
+                                child: buildDateField(
+                                  title: "To Date",
+                                  value: toDate,
+                                  onTap: () async {
+                                    DateTime? picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime(2020),
+                                      lastDate: DateTime.now(),
+                                    );
+                                    if (picked != null) {
+                                      setState(() {
+                                        toDate =
+                                            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                                      });
+                                      fetchPurchaseReport();
+                                    }
+                                  },
+                                ),
+                              ),
+
+                              const SizedBox(width: 14),
+
+                              Expanded(
+                                child: buildDropdownField(
+                                  title: "View Mode",
+
+                                  value: viewMode,
+
+                                  items: const ["Monthly", "Weekly", "Yearly"],
+
+                                  onChanged: (v) {
+                                    setState(() {
+                                      viewMode = v!;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 18),
+
+                          Row(
+                            children: [
+                              Expanded(
+                                child: buildDropdownField(
+                                  title: "Supplier",
+
+                                  value: supplier,
+
+                                  items: const [
+                                    "All Suppliers",
+
+                                    "Valley Farms",
+
+                                    "Sunrise Poultry",
+                                  ],
+
+                                  onChanged: (v) {
+                                    setState(() {
+                                      supplier = v!;
+                                    });
+                                  },
+                                ),
+                              ),
+
+                              const SizedBox(width: 14),
+
+                              Expanded(
+                                child: buildDropdownField(
+                                  title: "Egg Type",
+
+                                  value: eggType,
+
+                                  items: const [
+                                    "All Types",
+
+                                    "White Egg",
+
+                                    "Brown Egg",
+                                  ],
+
+                                  onChanged: (v) {
+                                    setState(() {
+                                      eggType = v!;
+                                    });
+                                  },
+                                ),
+                              ),
+
+                              const SizedBox(width: 14),
+
+                              Expanded(
+                                child: buildDropdownField(
+                                  title: "Report Category",
+
+                                  value: selectedReport,
+
+                                  items: reportItems,
+
+                                  onChanged: (value) {
+                                    if (value == selectedReport) return;
+                                    setState(() {
+                                      selectedReport = value!;
+                                    });
+
+                                    Widget? nextScreen;
+                                    if (value == "Financial Summary") {
+                                      nextScreen =
+                                          const AdminReportDashboardScreen();
+                                    } else if (value == "Purchase Report") {
+                                      nextScreen = const PurchaseReportScreen();
+                                    } else if (value == "Expense Report") {
+                                      nextScreen = const ExpenseReportScreen();
+                                    } else if (value == "Branch Sales Report") {
+                                      nextScreen = const SalesReportScreen();
+                                    } else if (value == "Warehouse Report") {
+                                      nextScreen =
+                                          const WarehouseReportScreen();
+                                    }
+
+                                    if (nextScreen != null) {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        PageRouteBuilder(
+                                          pageBuilder: (_, __, ___) =>
+                                              nextScreen!,
+                                          transitionDuration: Duration.zero,
+                                          reverseTransitionDuration:
+                                              Duration.zero,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+
+                            children: [
+                              buildActionButton(
+                                title: "Export PDF",
+
+                                icon: Icons.picture_as_pdf,
+
+                                bgColor: Colors.white,
+                              ),
+
+                              const SizedBox(width: 12),
+
+                              buildActionButton(
+                                title: "Print",
+
+                                icon: Icons.print,
+
+                                bgColor: const Color(0xffFACC15),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
 
                     const SizedBox(height: 24),
 
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
+                    /// STATS
+                    GridView.count(
+                      crossAxisCount: MediaQuery.of(context).size.width > 1000
+                          ? 4
+                          : 2,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: MediaQuery.of(context).size.width > 1000
+                          ? 2.0
+                          : 1.3,
+                      children: purchaseStats.map((e) {
+                        IconData getIcon(String name) {
+                          switch (name) {
+                            case "money":
+                              return Icons.currency_rupee;
+                            case "box":
+                              return Icons.inventory_2;
+                            case "calculator":
+                              return Icons.calculate;
+                            case "people":
+                              return Icons.group;
+                            default:
+                              return Icons.wallet_outlined;
+                          }
+                        }
 
-                      child: DataTable(
-                        columns: const [
-                          DataColumn(label: Text("PERIOD")),
+                        Color getColor(String name) {
+                          switch (name) {
+                            case "red":
+                              return Colors.red;
+                            case "blue":
+                              return Colors.blue;
+                            case "orange":
+                              return Colors.orange;
+                            case "grey":
+                              return const Color(0xff9CA3AF);
+                            case "green":
+                              return Colors.green;
+                            default:
+                              return Colors.green;
+                          }
+                        }
 
-                          DataColumn(label: Text("ORDERS")),
+                        Color iconColor = getColor(
+                          e["color"]?.toString() ?? "green",
+                        );
 
-                          DataColumn(label: Text("QUANTITY")),
+                        return PurchaseStatCard(
+                          title: e["title"].toString(),
 
-                          DataColumn(label: Text("AVG. UNIT RATE")),
+                          amount: e["title"].toString().contains("Spend")
+                              ? "₹ ${e["amount"]}"
+                              : e["amount"].toString(),
 
-                          DataColumn(label: Text("TOTAL SPEND")),
+                          growth: e["growth"].toString(),
 
-                          DataColumn(label: Text("MOM TREND")),
-                        ],
+                          icon: getIcon(e["icon"]?.toString() ?? ""),
 
-                        rows: const [
-                          DataRow(
-                            cells: [
-                              DataCell(Text("Jun 2023")),
+                          iconColor: iconColor,
 
-                              DataCell(Text("60")),
+                          iconBg: iconColor.withOpacity(0.1),
 
-                              DataCell(Text("160,000")),
+                          growthColor:
+                              e["growth"].toString().contains("-") &&
+                                  e["growth"].toString() != "-"
+                              ? Colors.red
+                              : Colors.green,
 
-                              DataCell(Text("₹ 0.78")),
+                          onTap: () {
+                            if (e["title"] == "Total Spend") {
+                              showPurchaseBottomSheet(
+                                title: "Spend by Supplier",
 
-                              DataCell(Text("₹ 148,400")),
+                                subtitle:
+                                    "Detailed purchase data for your selection",
 
-                              DataCell(
-                                Text(
-                                  "+12%",
-                                  style: TextStyle(color: Colors.green),
-                                ),
-                              ),
-                            ],
-                          ),
+                                rows: spendBySupplier.map<Map<String, dynamic>>(
+                                  (s) {
+                                    return {
+                                      "name": s["name"].toString(),
+                                      "value": s["value"].toString(),
+                                      "details": "Total Spend",
+                                    };
+                                  },
+                                ).toList(),
+                              );
+                            } else if (e["title"] == "Purchase Volume" ||
+                                e["title"] == "Total Volume (Units)") {
+                              showPurchaseBottomSheet(
+                                title: "Volume by Supplier",
 
-                          DataRow(
-                            cells: [
-                              DataCell(Text("May 2023")),
+                                subtitle:
+                                    "Detailed purchase data for your selection",
 
-                              DataCell(Text("55")),
+                                rows: volumeBySupplier
+                                    .map<Map<String, dynamic>>((s) {
+                                      return {
+                                        "name": s["name"].toString(),
+                                        "value": s["value"].toString(),
+                                        "details": "Trays",
+                                      };
+                                    })
+                                    .toList(),
+                              );
+                            } else if (e["title"] == "Supplier Count" ||
+                                e["title"] == "Active Suppliers") {
+                              showPurchaseBottomSheet(
+                                title: "Supplier List",
 
-                              DataCell(Text("150,000")),
+                                subtitle:
+                                    "Detailed purchase data for your selection",
 
-                              DataCell(Text("₹ 0.80")),
+                                rows: supplierList.map<Map<String, dynamic>>((
+                                  s,
+                                ) {
+                                  return {
+                                    "name": s["name"].toString(),
+                                    "value": s["value"].toString(),
+                                    "details": "Purchase Records",
+                                  };
+                                }).toList(),
+                              );
+                            } else if (e["title"] == "Avg Unit Cost") {
+                              showPurchaseBottomSheet(
+                                title: "Avg Unit Cost by Purchase",
 
-                              DataCell(Text("₹ 120,600")),
+                                subtitle:
+                                    "Detailed purchase data for your selection",
 
-                              DataCell(
-                                Text(
-                                  "+15%",
-                                  style: TextStyle(color: Colors.green),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                                rows: avgUnitCost.map<Map<String, dynamic>>((
+                                  s,
+                                ) {
+                                  return {
+                                    "name": s["name"].toString(),
+                                    "value": s["value"].toString(),
+                                    "details": s["details"].toString(),
+                                  };
+                                }).toList(),
+                              );
+                            }
+                          },
+                        );
+                      }).toList(),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
+                    Column(
+                      children: [
+                        /// MONTHLY PURCHASE TREND
+                        Container(
+                          width: double.infinity,
 
+                          padding: const EdgeInsets.all(18),
+
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+
+                            borderRadius: BorderRadius.circular(20),
+
+                            border: Border.all(color: const Color(0xffE5E7EB)),
+                          ),
+
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+
+                            children: [
+                              const Text(
+                                "Monthly Purchase Trend",
+
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+
+                              const SizedBox(height: 18),
+
+                              const Wrap(
+                                spacing: 14,
+                                runSpacing: 8,
+
+                                children: [
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+
+                                    children: [
+                                      Icon(
+                                        Icons.square,
+                                        color: Colors.blue,
+                                        size: 14,
+                                      ),
+
+                                      SizedBox(width: 6),
+
+                                      Text("Spend (₹)"),
+                                    ],
+                                  ),
+
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+
+                                    children: [
+                                      Icon(
+                                        Icons.square,
+                                        color: Colors.green,
+                                        size: 14,
+                                      ),
+
+                                      SizedBox(width: 6),
+
+                                      Text("Volume (Units)"),
+                                    ],
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 30),
+
+                              SizedBox(
+                                height: 180,
+
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+
+                                  children: [
+                                    buildBar(80, 60, "Jan"),
+
+                                    buildBar(110, 90, "Feb"),
+
+                                    buildBar(70, 45, "Mar"),
+
+                                    buildBar(140, 100, "Apr"),
+
+                                    buildBar(100, 85, "May"),
+
+                                    buildBar(140, 120, "Jun"),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: 24),
+
+                              Container(
+                                height: 54,
+
+                                decoration: BoxDecoration(
+                                  color: const Color(0xffF3F4F6),
+
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+
+                                  children: [
+                                    Text(
+                                      "View Details",
+
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+
+                                    SizedBox(width: 10),
+
+                                    Icon(Icons.arrow_forward_ios, size: 16),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        /// TOP SUPPLIERS
+                        Container(
+                          width: double.infinity,
+
+                          padding: const EdgeInsets.all(18),
+
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+
+                            borderRadius: BorderRadius.circular(20),
+
+                            border: Border.all(color: const Color(0xffE5E7EB)),
+                          ),
+
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+
+                            children: [
+                              const Text(
+                                "Top Suppliers by Spend",
+
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+
+                              const SizedBox(height: 24),
+
+                              ...suppliers.map((e) {
+                                return buildSupplierRow(
+                                  e["name"].toString(),
+                                  e["amount"].toString(),
+                                  double.tryParse(e["progress"].toString()) ??
+                                      0.0,
+                                );
+                              }),
+                              ...suppliers.map((e) {
+                                return buildSupplierRow(
+                                  e["name"].toString(),
+                                  e["amount"].toString(),
+                                  double.tryParse(e["progress"].toString()) ??
+                                      0.0,
+                                );
+                              }),
+                              ...suppliers.map((e) {
+                                return buildSupplierRow(
+                                  e["name"].toString(),
+                                  e["amount"].toString(),
+                                  double.tryParse(e["progress"].toString()) ??
+                                      0.0,
+                                );
+                              }),
+
+                              ...suppliers.map((e) {
+                                return buildSupplierRow(
+                                  e["name"].toString(),
+                                  e["amount"].toString(),
+                                  double.tryParse(e["progress"].toString()) ??
+                                      0.0,
+                                );
+                              }),
+                              const SizedBox(height: 28),
+
+                              Container(
+                                height: 54,
+
+                                decoration: BoxDecoration(
+                                  color: const Color(0xffF3F4F6),
+
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+
+                                  children: [
+                                    Text(
+                                      "View All",
+
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+
+                                    SizedBox(width: 10),
+
+                                    Icon(Icons.arrow_forward_ios, size: 16),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    /// TABLE
                     Container(
-                      padding: const EdgeInsets.all(14),
+                      padding: const EdgeInsets.all(18),
 
                       decoration: BoxDecoration(
-                        color: const Color(0xffEFF6FF),
+                        color: Colors.white,
 
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(20),
+
+                        border: Border.all(color: const Color(0xffE5E7EB)),
                       ),
 
-                      child: const Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+
                         children: [
-                          Icon(Icons.info, color: Colors.blue),
+                          const Center(
+                            child: Text(
+                              "Month-wise Purchase Summary",
 
-                          SizedBox(width: 10),
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
 
-                          Text(
-                            "All amounts are in iNR (₹)",
+                          const SizedBox(height: 24),
 
-                            style: TextStyle(
-                              color: Colors.blue,
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
 
-                              fontWeight: FontWeight.w600,
+                            child: DataTable(
+                              columnSpacing: 90,
+
+                              headingRowHeight: 56,
+
+                              dataRowMinHeight: 56,
+
+                              dataRowMaxHeight: 64,
+
+                              dividerThickness: 0.6,
+
+                              headingRowColor: MaterialStateProperty.all(
+                                const Color(0xffF8FAFC),
+                              ),
+
+                              columns: const [
+                                DataColumn(
+                                  label: Text(
+                                    "DATE",
+
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      letterSpacing: 0.8,
+                                      color: Color(0xff64748B),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+
+                                DataColumn(
+                                  label: Text(
+                                    "PURCHASE ID",
+
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      letterSpacing: 0.8,
+                                      color: Color(0xff64748B),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+
+                                DataColumn(
+                                  label: Text(
+                                    "SUPPLIER",
+
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      letterSpacing: 0.8,
+                                      color: Color(0xff64748B),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+
+                                DataColumn(
+                                  label: Text(
+                                    "TOTAL TRAYS",
+
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      letterSpacing: 0.8,
+                                      color: Color(0xff64748B),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+
+                                DataColumn(
+                                  label: Text(
+                                    "TOTAL AMOUNT",
+
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      letterSpacing: 0.8,
+                                      color: Color(0xff64748B),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+
+                                DataColumn(
+                                  label: Text(
+                                    "STATUS",
+
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      letterSpacing: 0.8,
+                                      color: Color(0xff64748B),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+
+                              rows: monthlySummary.map<DataRow>((e) {
+                                return DataRow(
+                                  cells: [
+                                    DataCell(
+                                      Text(
+                                        e["date"]?.toString() ??
+                                            e["period"]?.toString() ??
+                                            "",
+                                      ),
+                                    ),
+
+                                    DataCell(
+                                      Text(
+                                        e["purchaseId"]?.toString() ??
+                                            e["purchase_id"]?.toString() ??
+                                            e["id"]?.toString() ??
+                                            "-",
+                                      ),
+                                    ),
+
+                                    DataCell(
+                                      Text(
+                                        e["supplier"]?.toString() ??
+                                            e["supplierName"]?.toString() ??
+                                            "-",
+                                      ),
+                                    ),
+
+                                    DataCell(
+                                      Text(
+                                        "${e["quantity"] ?? e["qty"] ?? e["trays"] ?? 0}",
+                                      ),
+                                    ),
+
+                                    DataCell(
+                                      Text(
+                                        "₹ ${e["totalAmount"] ?? e["total_amount"] ?? e["totalSpend"] ?? e["total_spend"] ?? 0}",
+                                      ),
+                                    ),
+
+                                    DataCell(
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 7,
+                                        ),
+
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xffF1F5F9),
+
+                                          borderRadius: BorderRadius.circular(
+                                            30,
+                                          ),
+                                        ),
+
+                                        child: Text(
+                                          e["status"]?.toString() ?? "RECEIVED",
+
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xff475569),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
                             ),
                           ),
                         ],
@@ -661,44 +1130,88 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
       ),
     );
   }
 
-  Widget buildDateField(String title) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Future<void> fetchPurchaseReport() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
 
-      children: [
-        Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+      String? start = fromDate != "dd-mm-yyyy" ? fromDate : null;
+      String? end = toDate != "dd-mm-yyyy" ? toDate : null;
 
-        const SizedBox(height: 8),
+      final data = await reportService.getPurchaseReport(
+        startDate: start,
+        endDate: end,
+      );
 
-        Container(
-          height: 56,
+      setState(() {
+        purchaseData = data;
 
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+        purchaseStats = data["stats"] ?? [];
 
-          decoration: BoxDecoration(
-            color: Colors.white,
+        suppliers = data["suppliers"] ?? [];
 
-            borderRadius: BorderRadius.circular(14),
+        monthlySummary = data["monthlySummary"] ?? [];
+        debugPrint(monthlySummary.toString());
+        spendBySupplier = data["spendBySupplier"] ?? [];
 
-            border: Border.all(color: const Color(0xffE5E7EB)),
+        volumeBySupplier =
+            data["volumeBySupplier"] ??
+            suppliers.map((e) {
+              return {"name": e["name"], "value": e["volume"] ?? 0};
+            }).toList();
+
+        supplierList =
+            data["supplierList"] ??
+            suppliers.map((e) {
+              return {"name": e["name"], "value": e["count"] ?? 1};
+            }).toList();
+        avgUnitCost = data["avgUnitCost"] ?? [];
+
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint(e.toString());
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Widget buildDateField({
+    required String title,
+    required String value,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          Container(
+            height: 56,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xffE5E7EB)),
+            ),
+            child: Row(
+              children: [
+                Expanded(child: Text(value)),
+                const Icon(Icons.calendar_month),
+              ],
+            ),
           ),
-
-          child: const Row(
-            children: [
-              Expanded(child: Text("dd-mm-yyyy")),
-
-              Icon(Icons.calendar_month),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -856,118 +1369,112 @@ class PurchaseStatCard extends StatelessWidget {
   final String amount;
   final String growth;
   final IconData icon;
+  final Color iconColor;
   final Color iconBg;
   final Color growthColor;
-
+  final VoidCallback? onTap;
   const PurchaseStatCard({
     super.key,
     required this.title,
     required this.amount,
     required this.growth,
     required this.icon,
+    required this.iconColor,
     required this.iconBg,
     required this.growthColor,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
+    return GestureDetector(
+      onTap: onTap,
 
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xffE5E7EB)),
-      ),
-
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-
-        children: [
-          /// TOP
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xff6B7280),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xffE5E7EB)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 2,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xff4B5563),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: iconBg,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: iconColor, size: 18),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Text(
+              amount,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                if (growth != "-")
+                  Icon(
+                    growth.contains("-")
+                        ? Icons.trending_down
+                        : Icons.trending_up,
+                    size: 16,
+                    color: growthColor,
+                  ),
+                if (growth != "-") const SizedBox(width: 4),
+                Text(
+                  growth == "-" ? "- 0.0% vs last period" : growth,
+                  style: TextStyle(
+                    color: growth == "-"
+                        ? const Color(0xff9CA3AF)
+                        : growthColor,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
-
-              const SizedBox(width: 8),
-
-              Container(
-                padding: const EdgeInsets.all(8),
-
-                decoration: BoxDecoration(
-                  color: iconBg,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-
-                child: Icon(icon, size: 20),
-              ),
-            ],
-          ),
-
-          const Spacer(),
-
-          /// AMOUNT
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-
-            child: Text(
-              amount,
-
-              maxLines: 1,
-
-              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
+                if (growth != "-") const SizedBox(width: 4),
+                if (growth != "-")
+                  const Expanded(
+                    child: Text(
+                      "vs last period",
+                      style: TextStyle(color: Color(0xff9CA3AF), fontSize: 12),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+              ],
             ),
-          ),
-
-          const SizedBox(height: 10),
-
-          /// GROWTH
-          Wrap(
-            spacing: 4,
-            runSpacing: 2,
-            crossAxisAlignment: WrapCrossAlignment.center,
-
-            children: [
-              Icon(
-                growth.contains("-") ? Icons.trending_down : Icons.trending_up,
-
-                size: 16,
-                color: growthColor,
-              ),
-
-              Text(
-                growth,
-
-                style: TextStyle(
-                  color: growthColor,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                ),
-              ),
-
-              const Text(
-                "vs last period",
-
-                style: TextStyle(color: Colors.grey, fontSize: 12),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../services/tray_receive_service.dart';
+import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/services/tray_receive_service.dart';
 
 class ReceiveTraysScreen extends StatefulWidget {
   const ReceiveTraysScreen({super.key});
