@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/admin_addprice_skeleton_loader.dart';
 import 'package:proteinova_connect/services/offer_service.dart';
 
 class AddPriceScreen extends StatefulWidget {
@@ -155,7 +156,9 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
         ],
       ),
 
-      body: SingleChildScrollView(
+  body: isLoading
+    ? const AdminAddpriceSkeletonLoader()
+    : SingleChildScrollView(
         padding: const EdgeInsets.all(16),
 
         child: Column(

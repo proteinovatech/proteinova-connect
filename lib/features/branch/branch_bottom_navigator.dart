@@ -81,9 +81,14 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
   int selectedIndex = 0;
 
   final List<Widget> pages = [
+<<<<<<< HEAD
     BranchDashboard(),
     Sales(),
     Inventory(),
+=======
+        BranchDashboard(),
+         Sales(),
+>>>>>>> 3932f4493cb2846aa06ff0d936b8a08c9b6c1a6f
     DailyClosing(),
   ];
   @override
@@ -103,8 +108,13 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
             _buildNavItem(Icons.grid_view, 0),
             _buildNavItem(Icons.shopping_cart_outlined, 1),
             // _buildNavItem(Icons.inventory_2_outlined, 2),
+<<<<<<< HEAD
             _buildNavItem(Icons.receipt_long, 3),
             _buildNavItem(Icons.menu_outlined, 4),
+=======
+            _buildNavItem(Icons.receipt_long, 2),
+            _buildNavItem(Icons.menu_outlined, 3),
+>>>>>>> 3932f4493cb2846aa06ff0d936b8a08c9b6c1a6f
           ],
         ),
       ),
@@ -116,7 +126,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
 
     return GestureDetector(
       onTap: () {
-        if (index == 4) {
+        if (index == 3) {
           _openSideMenu();
         } else {
           setState(() {
@@ -154,11 +164,15 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
         return "Dashboard";
       case 1:
         return "Sales";
+       
       case 2:
+<<<<<<< HEAD
         return "Inventory";
       case 3:
+=======
+>>>>>>> 3932f4493cb2846aa06ff0d936b8a08c9b6c1a6f
         return "Daily closing";
-      case 4:
+      case 3:
         return "Menu";
       default:
         return "";
@@ -179,18 +193,22 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                 children: [
                   const SizedBox(height: 16),
 
-                  _menuTile(
-                    Icons.agriculture,
-                    "Incoming Stock from warehouse",
-                    Receivestock(),
-                  ),
+                  // _menuTile(
+                  //   Icons.agriculture,
+                  //   "Incoming Stock from warehouse",
+                  //   Receivestock(),
+                  // ),
 
-                  _menuTile(Icons.store, "Branches", BranchDetails()),
+                  // _menuTile(Icons.store, "Branches", BranchDetails()),
 
                   _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
 
                   _menuTile(Icons.money, "Expenses", ExpenseManagement()),
+<<<<<<< HEAD
                   _menuTile(Icons.money, "Admin in", AdminInventory()),
+=======
+                  //  _menuTile(Icons.money, "Admin in", AdminInventory()),
+>>>>>>> 3932f4493cb2846aa06ff0d936b8a08c9b6c1a6f
 
                   const SizedBox(height: 20),
                   Divider(),

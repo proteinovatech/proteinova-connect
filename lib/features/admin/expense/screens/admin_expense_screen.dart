@@ -249,7 +249,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                       ),
                     ),
 
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 12),
 
                     Expanded(
                       child: InkWell(
@@ -1158,7 +1158,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             scrollDirection: Axis.horizontal,
 
                             child: SizedBox(
-                              width: 450,
+                              width: 500,
 
                               child: Column(
                                 children: [

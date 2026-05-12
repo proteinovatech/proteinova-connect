@@ -258,31 +258,9 @@ class PaymentSummaryWidget extends StatelessWidget {
                                     backgroundColor: Colors.amber,
                                   ),
 
-                                  onPressed: () {
-                                    showDialog(
-                                      context: context,
-
-                                      builder: (context) {
-                                        return Dialog(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              20,
-                                            ),
-                                          ),
-
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(20),
-
-                                            child: PrintBillWidget(
-                                              grandTotal: grandTotal,
-
-                                              selectedPaymentMethod:
-                                                  selectedPaymentMethod,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    );
+                                  onPressed: () async {
+                                    /// OPEN PRINT PAGE
+                                    await generateThermalPdf();
                                   },
 
                                   icon: const Icon(

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:proteinova_connect/features/admin/Distribution/widget/dispatch_planning_widget.dart';
 import 'package:proteinova_connect/services/dispatch_service.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-
 
 class DispatchPlanningPage extends StatefulWidget {
   const DispatchPlanningPage({super.key});
@@ -19,16 +19,25 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
   final TextEditingController _driverNameController = TextEditingController();
   final TextEditingController _driverNumberController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
-  
-  final TextEditingController _plasticTraysController = TextEditingController(text: "0");
-  final TextEditingController _paperTraysController = TextEditingController(text: "0");
+
+  final TextEditingController _plasticTraysController = TextEditingController(
+    text: "0",
+  );
+  final TextEditingController _paperTraysController = TextEditingController(
+    text: "0",
+  );
 
   int? _selectedBranchId;
   List<Map<String, dynamic>> _branches = [];
   List<Map<String, dynamic>> _availableStock = [];
-  
+
   List<Map<String, dynamic>> _dispatchItems = [
-    {'category': null, 'available_eggs': 0, 'eggs_to_dispatch': 0, 'trays_to_dispatch': 0}
+    {
+      'category': null,
+      'available_eggs': 0,
+      'eggs_to_dispatch': 0,
+      'trays_to_dispatch': 0,
+    },
   ];
 
   bool _isSaving = false;
@@ -65,7 +74,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
         'category': null,
         'available_eggs': 0,
         'eggs_to_dispatch': 0,
-        'trays_to_dispatch': 0
+        'trays_to_dispatch': 0,
       });
     });
   }
@@ -87,72 +96,110 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
     });
   }
 
-  int get _totalEggs => _dispatchItems.fold(0, (sum, item) => sum + (item['eggs_to_dispatch'] as int));
-  int get _totalProductTrays => _dispatchItems.fold(0, (sum, item) => sum + (item['trays_to_dispatch'] as int));
+  int get _totalEggs => _dispatchItems.fold(
+    0,
+    (sum, item) => sum + (item['eggs_to_dispatch'] as int),
+  );
+  int get _totalProductTrays => _dispatchItems.fold(
+    0,
+    (sum, item) => sum + (item['trays_to_dispatch'] as int),
+  );
   int get _emptyPlasticTrays => int.tryParse(_plasticTraysController.text) ?? 0;
   int get _emptyPaperTrays => int.tryParse(_paperTraysController.text) ?? 0;
-  int get _grandTotalTrays => _totalProductTrays + _emptyPlasticTrays + _emptyPaperTrays;
+  int get _grandTotalTrays =>
+      _totalProductTrays + _emptyPlasticTrays + _emptyPaperTrays;
 
   Future<void> _submitDispatch() async {
-    if (_selectedBranchId == null || _vehicleNoController.text.isEmpty || _driverNameController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please fill all required fields")));
+    if (_selectedBranchId == null ||
+        _vehicleNoController.text.isEmpty ||
+        _driverNameController.text.isEmpty ||
+        _dispatchDateController.text.isEmpty ||
+        _arrivalDateController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all required fields")),
+      );
       return;
     }
 
-    final activeItems = _dispatchItems.where((i) => i['category'] != null && i['eggs_to_dispatch'] > 0).toList();
+    final activeItems = _dispatchItems
+        .where((i) => i['category'] != null && i['eggs_to_dispatch'] > 0)
+        .toList();
 
     if (activeItems.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please add at least one item to dispatch")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please add at least one item with eggs")),
+      );
       return;
+    }
+
+    // Stock Validation
+    for (var item in activeItems) {
+      if (item['eggs_to_dispatch'] > item['available_eggs']) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                "Insufficient stock for ${item['category']}. Available: ${item['available_eggs']}"),
+          ),
+        );
+        return;
+      }
     }
 
     setState(() => _isSaving = true);
 
     try {
       final dispatchData = {
-        "destination_branch_id": _selectedBranchId,
+        "branch_id": _selectedBranchId,
         "dispatch_date": _dispatchDateController.text,
         "expected_arrival_date": _arrivalDateController.text,
         "vehicle_number": _vehicleNoController.text,
         "driver_name": _driverNameController.text,
-        "driver_contact": _driverNumberController.text,
+        "driver_number": _driverNumberController.text,
         "notes": _notesController.text,
         "empty_plastic_trays": _emptyPlasticTrays,
         "empty_paper_trays": _emptyPaperTrays,
-        "items": activeItems.map((i) => {
-          "product_category": i['category'],
-          "quantity_eggs": i['eggs_to_dispatch'],
-          "quantity_trays": i['trays_to_dispatch'],
-        }).toList(),
+        "dispatch_items": activeItems
+            .map((i) => {
+                  "product_category": i['category'],
+                  "quantity": i['eggs_to_dispatch'],
+                  "quantity_trays": i['trays_to_dispatch'],
+                })
+            .toList(),
       };
 
       final success = await DispatchService.createDispatch(dispatchData);
 
-      if (mounted) {
-        setState(() => _isSaving = false);
-        if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Dispatch created successfully")));
-          Navigator.pop(context, true);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Failed to create dispatch")));
-        }
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Dispatch created successfully!")),
+        );
+        Navigator.pop(context, true);
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to create dispatch. Please check your connection.")),
+        );
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isSaving = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e")),
+        );
       }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background1,
+      backgroundColor: AppColors.white,
 
       appBar: AppBar(
-        backgroundColor: AppColors.background1,
+        backgroundColor: AppColors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
+        scrolledUnderElevation: 0,
 
         leading: IconButton(
           onPressed: () {
@@ -179,10 +226,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
 
             children: [
               /// TITLE
-              const Text(
-                "New Dispatch",
-                style: AppTextStyles.headingText25,
-              ),
+              const Text("New Dispatch", style: AppTextStyles.headingText25),
 
               const SizedBox(height: 4),
 
@@ -206,25 +250,45 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text("Select Shop *", style: TextStyle(fontWeight: FontWeight.w600)),
+                              const Text(
+                                "Select Shop *",
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
                               const SizedBox(height: 8),
                               Container(
                                 height: 54,
-                                padding: const EdgeInsets.symmetric(horizontal: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                ),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(color: Colors.grey.shade300),
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
                                 ),
                                 child: DropdownButtonHideUnderline(
                                   child: DropdownButton<int>(
                                     value: _selectedBranchId,
                                     isExpanded: true,
-                                    hint: Text("Select Branch", style: AppTextStyles.bodyText12),
-                                    items: _branches.map((b) => DropdownMenuItem<int>(
-                                      value: b['id'],
-                                      child: Text(b['branch_name'] ?? "", style: const TextStyle(fontSize: 13)),
-                                    )).toList(),
-                                    onChanged: (val) => setState(() => _selectedBranchId = val),
+                                    hint: Text(
+                                      "Select Branch",
+                                      style: AppTextStyles.bodyText12,
+                                    ),
+                                    items: _branches
+                                        .map(
+                                          (b) => DropdownMenuItem<int>(
+                                            value: b['id'],
+                                            child: Text(
+                                              b['branch_name'] ?? "",
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                    onChanged: (val) =>
+                                        setState(() => _selectedBranchId = val),
                                   ),
                                 ),
                               ),
@@ -242,11 +306,12 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                               final picked = await showDatePicker(
                                 context: context,
                                 initialDate: DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime(2101),
+                                firstDate: DateTime.now().subtract(const Duration(days: 7)),
+                                lastDate: DateTime.now().add(const Duration(days: 30)),
                               );
                               if (picked != null) {
-                                setState(() => _dispatchDateController.text = picked.toString().split(' ').first);
+                                setState(() => _dispatchDateController.text =
+                                    picked.toString().split(' ').first);
                               }
                             },
                           ),
@@ -263,14 +328,18 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                             controller: _arrivalDateController,
                             icon: Icons.calendar_today,
                             onTap: () async {
+                              final DateTime today = DateTime.now();
+
                               final picked = await showDatePicker(
                                 context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime(2101),
+                                initialDate: DateTime.now().add(const Duration(days: 1)),
+                                firstDate: DateTime.now(),
+                                lastDate: DateTime.now().add(const Duration(days: 30)),
                               );
+
                               if (picked != null) {
-                                setState(() => _arrivalDateController.text = picked.toString().split(' ').first);
+                                setState(() => _arrivalDateController.text =
+                                    picked.toString().split(' ').first);
                               }
                             },
                           ),
@@ -281,6 +350,14 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                             label: "Vehicle No. *",
                             hint: "TN 32 B 2134",
                             controller: _vehicleNoController,
+
+                            /// CAPITAL + NUMBER ONLY
+                            inputFormatters: [
+                              UpperCaseTextFormatter(),
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[A-Z0-9 ]'),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -293,15 +370,32 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                             label: "Driver Name *",
                             hint: "John Doe",
                             controller: _driverNameController,
+
+                            /// ONLY LETTERS + DOT + SPACE
+                            inputFormatters: [
+                              NameCapitalFormatter(),
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[A-Za-z ]'),
+                              ),
+                            ],
                           ),
                         ),
+
                         const SizedBox(width: 12),
+
                         Expanded(
                           child: buildField(
                             label: "Driver Number *",
                             hint: "9876543210",
                             controller: _driverNumberController,
                             keyboardType: TextInputType.phone,
+
+                            /// ONLY NUMBERS
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+
+                              LengthLimitingTextInputFormatter(10),
+                            ],
                           ),
                         ),
                       ],
@@ -324,16 +418,27 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                         GestureDetector(
                           onTap: _addItem,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xffE8C400)),
+                              border: Border.all(
+                                color: const Color(0xffE8C400),
+                              ),
                             ),
                             child: const Row(
                               children: [
                                 Icon(Icons.add, size: 16),
                                 SizedBox(width: 4),
-                                Text("Add Item", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                Text(
+                                  "Add Item",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -343,10 +448,49 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                     const SizedBox(height: 20),
                     const Row(
                       children: [
-                        Expanded(flex: 4, child: Text("Product", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold))),
-                        Expanded(flex: 2, child: Text("Available\n(Eggs)", textAlign: TextAlign.center, style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold))),
-                        Expanded(flex: 2, child: Text("Eggs\n(Entry)", textAlign: TextAlign.center, style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold))),
-                        Expanded(flex: 2, child: Text("Trays\n(Auto)", textAlign: TextAlign.center, style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold))),
+                        Expanded(
+                          flex: 4,
+                          child: Text(
+                            "Product",
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            "Available\n(Eggs)",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            "Eggs\n(Entry)",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            "Trays\n(Auto)",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -365,21 +509,39 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                               flex: 4,
                               child: Container(
                                 height: 42,
-                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                ),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey.shade300),
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
                                 ),
                                 child: DropdownButtonHideUnderline(
                                   child: DropdownButton<String>(
                                     value: item['category'],
                                     isExpanded: true,
-                                    hint: const Text("Category", style: TextStyle(fontSize: 11)),
-                                    items: _availableStock.map((s) => DropdownMenuItem<String>(
-                                      value: s['category'],
-                                      child: Text(s['category'] ?? "", style: const TextStyle(fontSize: 11), overflow: TextOverflow.ellipsis),
-                                    )).toList(),
-                                    onChanged: (val) => _updateItem(index, category: val),
+                                    hint: const Text(
+                                      "Category",
+                                      style: TextStyle(fontSize: 11),
+                                    ),
+                                    items: _availableStock
+                                        .map(
+                                          (s) => DropdownMenuItem<String>(
+                                            value: s['category'],
+                                            child: Text(
+                                              s['category'] ?? "",
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                    onChanged: (val) =>
+                                        _updateItem(index, category: val),
                                   ),
                                 ),
                               ),
@@ -388,7 +550,13 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                             Expanded(
                               flex: 2,
                               child: Center(
-                                child: Text("${item['available_eggs']}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                child: Text(
+                                  "${item['available_eggs']}",
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -398,14 +566,24 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                 height: 42,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey.shade300),
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
                                 ),
                                 child: TextField(
                                   textAlign: TextAlign.center,
                                   keyboardType: TextInputType.number,
-                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                  decoration: const InputDecoration(border: InputBorder.none),
-                                  onChanged: (val) => _updateItem(index, eggs: int.tryParse(val) ?? 0),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                  ),
+                                  onChanged: (val) => _updateItem(
+                                    index,
+                                    eggs: int.tryParse(val) ?? 0,
+                                  ),
                                 ),
                               ),
                             ),
@@ -416,11 +594,19 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                 height: 42,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey.shade300),
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
                                   color: Colors.grey.shade50,
                                 ),
                                 child: Center(
-                                  child: Text("${item['trays_to_dispatch']}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                  child: Text(
+                                    "${item['trays_to_dispatch']}",
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -434,9 +620,27 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("Total", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        Text("$_totalEggs Eggs", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                        Text("$_totalProductTrays Trays", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                        const Text(
+                          "Total",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          "$_totalEggs Eggs",
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          "$_totalProductTrays Trays",
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -454,7 +658,10 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                     const SizedBox(height: 6),
                     Text(
                       "Specify additional empty trays being dispatched along with the product",
-                      style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontSize: 13,
+                      ),
                     ),
                     const SizedBox(height: 20),
                     IntrinsicHeight(
@@ -466,7 +673,8 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                               iconColor: Colors.blue,
                               title: "Plastic Trays",
                               subtitle: "(Empty)",
-                              desc: "Durable plastic trays used for return purposes",
+                              desc:
+                                  "Durable plastic trays used for return purposes",
                               extra: "",
                               controller: _plasticTraysController,
                               onChanged: () => setState(() {}),
@@ -507,17 +715,33 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(color: Colors.blue.shade100),
                           ),
-                          child: const Icon(Icons.description, color: Colors.blue, size: 20),
+                          child: const Icon(
+                            Icons.description,
+                            color: Colors.blue,
+                            size: 20,
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 20),
-                    summaryRow("Total Products", "${_dispatchItems.where((i) => i['category'] != null).length} Types"),
+                    summaryRow(
+                      "Total Products",
+                      "${_dispatchItems.where((i) => i['category'] != null).length} Types",
+                    ),
                     summaryRow("Total Eggs", "$_totalEggs"),
                     summaryRow("Product Trays", "$_totalProductTrays"),
-                    summaryRow("Plastic Trays (Empty Returnable)", "$_emptyPlasticTrays"),
-                    summaryRow("Paper Trays (Empty Non-Returnable)", "$_emptyPaperTrays"),
-                    summaryRow("Grand Total Trays (Prod + Empty)", "$_grandTotalTrays"),
+                    summaryRow(
+                      "Plastic Trays (Empty Returnable)",
+                      "$_emptyPlasticTrays",
+                    ),
+                    summaryRow(
+                      "Paper Trays (Empty Non-Returnable)",
+                      "$_emptyPaperTrays",
+                    ),
+                    summaryRow(
+                      "Grand Total Trays (Prod + Empty)",
+                      "$_grandTotalTrays",
+                    ),
                   ],
                 ),
               ),
@@ -551,17 +775,35 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                       color: Colors.grey.withOpacity(0.08),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: Icon(Icons.shield_outlined, size: 20, color: Colors.grey.shade600),
+                                    child: Icon(
+                                      Icons.shield_outlined,
+                                      size: 20,
+                                      color: Colors.grey.shade600,
+                                    ),
                                   ),
                                   const SizedBox(width: 10),
                                   const Expanded(
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text("Plastic trays are returnable", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
+                                        Text(
+                                          "Plastic trays are returnable",
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
                                         SizedBox(height: 8),
-                                        Text("Paper trays are non - returnable", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
+                                        Text(
+                                          "Paper trays are non - returnable",
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -584,13 +826,21 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                 children: [
                                   const Row(
                                     children: [
-                                      Icon(Icons.check_circle, color: Colors.green, size: 20),
+                                      Icon(
+                                        Icons.check_circle,
+                                        color: Colors.green,
+                                        size: 20,
+                                      ),
                                       SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
                                           "Overall Dispatch",
                                           overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(color: Colors.green, fontSize: 14, fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                            color: Colors.green,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -598,7 +848,10 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                   const SizedBox(height: 12),
                                   Text(
                                     "$_grandTotalTrays Trays $_totalEggs Eggs",
-                                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -618,7 +871,13 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Notes", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                    const Text(
+                      "Notes",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 18),
                     Container(
                       width: double.infinity,
@@ -632,7 +891,10 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                         maxLines: 4,
                         decoration: const InputDecoration(
                           hintText: "Enter any additional notes...",
-                          hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
+                          hintStyle: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 13,
+                          ),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.all(14),
                         ),
@@ -655,10 +917,19 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                         decoration: BoxDecoration(
                           color: Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: Colors.grey.shade300, width: 1.2),
+                          border: Border.all(
+                            color: Colors.grey.shade300,
+                            width: 1.2,
+                          ),
                         ),
                         child: const Center(
-                          child: Text("Cancel", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          child: Text(
+                            "Cancel",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -675,8 +946,21 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                         ),
                         child: Center(
                           child: _isSaving
-                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                              : const Text("Dispatch Now", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.black,
+                                  ),
+                                )
+                              : const Text(
+                                  "Dispatch Now",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                         ),
                       ),
                     ),
@@ -757,38 +1041,63 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
     TextEditingController? controller,
     TextInputType? keyboardType,
     VoidCallback? onTap,
+
+    /// ADD THIS
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+
       children: [
         Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+
         const SizedBox(height: 8),
+
         InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(14),
+
           child: Container(
             height: 54,
+
             padding: const EdgeInsets.symmetric(horizontal: 14),
+
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
+
               border: Border.all(color: Colors.grey.shade300),
             ),
+
             child: Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: controller,
+
                     enabled: onTap == null && !dropdown,
+
                     keyboardType: keyboardType,
+
+                    /// ADD THIS
+                    inputFormatters: inputFormatters,
+
                     style: const TextStyle(fontSize: 13),
+
                     decoration: InputDecoration(
                       hintText: hint,
-                      hintStyle: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontSize: 13,
+                      ),
+
                       border: InputBorder.none,
                     ),
                   ),
                 ),
+
                 if (dropdown) const Icon(Icons.keyboard_arrow_down),
+
                 if (icon != null) Icon(icon, size: 20),
               ],
             ),
@@ -797,6 +1106,43 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
       ],
     );
   }
+}
 
-  
+/// CAPITAL LETTER FORMATTER
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+
+      selection: newValue.selection,
+    );
+  }
+}
+
+class NameCapitalFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    String text = newValue.text.toLowerCase();
+
+    /// Every word first letter capital
+    text = text
+        .split(' ')
+        .map((word) {
+          if (word.isEmpty) return '';
+          return word[0].toUpperCase() + word.substring(1);
+        })
+        .join(' ');
+
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+  }
 }

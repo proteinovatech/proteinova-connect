@@ -3,10 +3,49 @@ import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/add_supplier_screen.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/editbutton.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/statusbadge.dart';
+import 'package:proteinova_connect/features/admin/supplier/services/supplier_service.dart';
+import 'package:proteinova_connect/features/admin/supplier/models/supplier_model.dart';
 
-
-class SuppliersScreen extends StatelessWidget {
+class SuppliersScreen extends StatefulWidget {
   const SuppliersScreen({super.key});
+
+  @override
+  State<SuppliersScreen> createState() => _SuppliersScreenState();
+}
+
+class _SuppliersScreenState extends State<SuppliersScreen> {
+  final SupplierService _supplierService = SupplierService();
+  List<Supplier> _suppliers = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSuppliers();
+  }
+
+  Future<void> _fetchSuppliers() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final suppliers = await _supplierService.getSuppliers();
+      if (!mounted) return;
+      setState(() {
+        _suppliers = suppliers;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +55,6 @@ class SuppliersScreen extends StatelessWidget {
         backgroundColor: const Color(0xfff5f6fa),
         elevation: 0,
         toolbarHeight: 90,
-
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -29,29 +67,18 @@ class SuppliersScreen extends StatelessWidget {
                 color: Colors.black,
               ),
             ),
-
             SizedBox(height: 4),
-
             Text(
               "Manage your vendor relationships and track supply statuses",
               style: TextStyle(color: Colors.grey, fontSize: 13),
             ),
           ],
         ),
-
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Center(
               child: ElevatedButton.icon(
-                // onPressed: () {
-                //   Navigator.push(
-                //     context,
-                //     MaterialPageRoute(
-                //       builder: (context) => const AddSupplierScreen(),
-                //     ),
-                //   );
-                // },
                 onPressed: () async {
                   final result = await Navigator.push(
                     context,
@@ -60,11 +87,8 @@ class SuppliersScreen extends StatelessWidget {
                     ),
                   );
 
-                  if (result != null) {
-                    print(result["supplier"]);
-                    print(result["contactperson"]);
-
-                    /// here add your card list update logic
+                  if (result == true) {
+                    _fetchSuppliers();
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -88,225 +112,135 @@ class SuppliersScreen extends StatelessWidget {
       ),
       backgroundColor: const Color(0xfff5f6fa),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 10),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _error != null
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("Error: $_error"),
+                        const SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed: _fetchSuppliers,
+                          child: const Text("Retry"),
+                        ),
+                      ],
+                    ),
+                  )
+                : _suppliers.isEmpty
+                    ? const Center(child: Text("No suppliers found"))
+                    : RefreshIndicator(
+                        onRefresh: _fetchSuppliers,
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 10),
 
-                /// SEARCH
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      height: 45,
-                      width: 175,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: const [
-                          Icon(Icons.search, color: Colors.grey),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: TextField(
-                              decoration: InputDecoration(
-                                hintText: "Filter Supplier...",
-                                border: InputBorder.none,
-                              ),
+                                /// SEARCH
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      height: 45,
+                                      width: 175,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: Colors.grey.shade300,
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        children: const [
+                                          Icon(
+                                            Icons.search,
+                                            color: Colors.grey,
+                                          ),
+                                          SizedBox(width: 10),
+                                          Expanded(
+                                            child: TextField(
+                                              decoration: InputDecoration(
+                                                hintText: "Filter Supplier...",
+                                                border: InputBorder.none,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(width: size.width * 0.09),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      height: 45,
+                                      width: 95,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: Colors.grey.shade300,
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        children: const [
+                                          Icon(Icons.filter_alt_outlined),
+                                          SizedBox(width: 1),
+                                          Expanded(child: Text("Filter")),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      height: 45,
+                                      width: 55,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: Colors.grey.shade300,
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        children: const [
+                                          Icon(Icons.file_download_outlined),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                ..._suppliers.map(
+                                  (supplier) => PurchaseCards(
+                                    status:
+                                        supplier.active ? "Active" : "Inactive",
+                                    statusColor:
+                                        supplier.active
+                                            ? Colors.green
+                                            : Colors.grey,
+                                    textColor: Colors.white,
+                                    supplier: supplier.name,
+                                    orderId: 'ID: ${supplier.id}',
+                                    dateTime: '', // Not available in model
+                                    bottomId: '',
+                                    items: '',
+                                    itemboxes: '',
+                                    contactperson: supplier.owner,
+                                    contactnumber: supplier.phone,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                    SizedBox(width: size.width * 0.09),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      height: 45,
-                      width: 95,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: const [
-                          Icon(Icons.filter_alt_outlined),
-                          SizedBox(width: 1),
-                          Expanded(child: Text("Filter")),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      height: 45,
-                      width: 55,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: const [Icon(Icons.file_download_outlined)],
-                      ),
-                    ),
-                  ],
-                ),
-                PurchaseCards(
-                  status: "Active",
-                  statusColor: Colors.green,
-                  textColor: Colors.white,
-                  supplier: "Apex Farms",
-                  orderId: 'PO-1024',
-                  dateTime: 'Today, 10.45 PM',
-                  bottomId: '\$7,500.00',
-                  items: 'Jumbo White(Grade AA)',
-                  itemboxes: '500 Boxes',
-                  contactperson: 'Robert',
-                  contactnumber: '+91 1234567890',
-                ),
-                SizedBox(height: 10),
-                PurchaseCards(
-                  status: "Active",
-                  statusColor: Colors.green,
-                  textColor: Colors.white,
-                  supplier: "Golden",
-                  orderId: 'PO-1025',
-                  dateTime: 'Today, 10.45 PM',
-                  bottomId: '\$8,500.00',
-                  items: 'Jumbo White(Grade AA)',
-                  itemboxes: '500 Boxes',
-                  contactperson: 'James',
-                  contactnumber: '+91 1234567890',
-                ),
-                SizedBox(height: 10),
-                PurchaseCards(
-                  status: "Active",
-                  statusColor: Colors.green,
-                  textColor: Colors.white,
-                  supplier: "MR.D ",
-                  orderId: 'PO-1026',
-                  dateTime: 'Today, 10.45 PM',
-                  bottomId: '\$6,500.00',
-                  items: 'Jumbo White(Grade AA)',
-                  itemboxes: '500 Boxes',
-                  contactperson: 'David kim',
-                  contactnumber: '+91 1234567890',
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSupplierRow({
-    required String supplier,
-    required String id,
-    required String location,
-    required String person,
-    required String phone,
-    required String email,
-    required bool isActive,
-    bool isLast = false,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: isLast
-              ? BorderSide.none
-              : BorderSide(color: Colors.grey.shade200),
-        ),
-      ),
-      child: Row(
-        children: [
-          /// SUPPLIER
-          Expanded(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  supplier,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  id,
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-
-          /// LOCATION
-          Expanded(child: Text(location, style: const TextStyle(fontSize: 13))),
-
-          /// CONTACT PERSON
-          Expanded(child: Text(person, style: const TextStyle(fontSize: 13))),
-
-          /// CONTACT INFO
-          Expanded(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(phone, style: const TextStyle(fontSize: 13)),
-                const SizedBox(height: 4),
-                Text(
-                  email,
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                ),
-              ],
-            ),
-          ),
-
-          /// STATUS
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: isActive
-                    ? Colors.green.withOpacity(0.1)
-                    : Colors.grey.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: Text(
-                isActive ? "Active" : "Inactive",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: isActive ? Colors.green : Colors.grey.shade700,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-
-          /// ACTIONS
-          SizedBox(
-            width: 80,
-            child: Row(
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.edit_outlined, size: 18),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.more_vert, size: 18),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -348,7 +282,7 @@ class PurchaseCards extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade300),
       ),
       child: Column(
-        crossAxisAlignment: .start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           /// 🔹 STATUS
           Row(
@@ -363,8 +297,6 @@ class PurchaseCards extends StatelessWidget {
           ),
           Text(supplier, style: AppTextStyles.headingText22),
           Text(orderId, style: AppTextStyles.headingText20),
-
-          // Text(dateTime, style: AppTextStyles.bodyText16),
           const SizedBox(height: 30),
           Divider(color: Colors.grey.shade300),
 
@@ -383,19 +315,14 @@ class PurchaseCards extends StatelessWidget {
               Text(contactperson, style: AppTextStyles.bodyText16),
             ],
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Text(contactnumber, style: AppTextStyles.headingText22),
-
-          // Text(itemboxes, style: AppTextStyles.bodyText16),
-          // const SizedBox(height: 50),
-          // Divider(color: Colors.grey.shade300),
 
           /// 🔹 EDIT BUTTON
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              // Text(bottomId, style: AppTextStyles.headingText22),
-              const EditButton(),
+            children: const [
+              EditButton(),
             ],
           ),
         ],

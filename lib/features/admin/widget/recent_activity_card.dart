@@ -81,76 +81,61 @@ class RecentActivityCard extends StatelessWidget {
                   ),
 
                   itemBuilder: (context, index) {
-
-                    final item =
-                        activities[index];
+                    final item = activities[index] as Map<String, dynamic>;
+                    final trayId = item['tray_id'] ?? "Unknown Tray";
+                    final status = item['status'] ?? "Unknown";
+                    final movementType = item['movement_type'] ?? "Movement";
+                    final toLocation = item['to_location'] ?? "";
+                    final createdAt = item['created_at'] != null 
+                        ? DateTime.parse(item['created_at']).toString().split(' ').first 
+                        : "Recently";
 
                     return Row(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
                         Container(
                           height: 38,
                           width: 38,
-
-                          decoration: BoxDecoration(
-                            color:
-                                AppColors.background1,
-
+                          decoration: const BoxDecoration(
+                            color: AppColors.background1,
                             shape: BoxShape.circle,
                           ),
-
-                          child: const Center(
-                            child: Text(
-                              "P",
-                              style:
-                                  AppTextStyles.blueText2,
+                          child: Center(
+                            child: Icon(
+                              movementType == "DELIVERY" ? Icons.local_shipping : Icons.inventory,
+                              size: 18,
+                              color: AppColors.blueAccent,
                             ),
                           ),
                         ),
-
                         const SizedBox(width: 12),
-
                         Expanded(
                           child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment
-                                    .start,
-
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-
                               Text(
-                                item.toString(),
-                                style:
-                                    AppTextStyles.bodyText14,
+                                "$trayId - $status",
+                                style: AppTextStyles.bodyText14dark,
                               ),
-
-                              const SizedBox(
-                                  height: 6),
-
+                              const SizedBox(height: 4),
+                              Text(
+                                "$movementType ${toLocation.isNotEmpty ? 'to $toLocation' : ''}",
+                                style: AppTextStyles.bodyText12,
+                              ),
+                              const SizedBox(height: 6),
                               Row(
                                 children: [
-
                                   Icon(
                                     Icons.access_time,
                                     size: 14,
-                                    color: Colors
-                                        .grey
-                                        .shade600,
+                                    color: Colors.grey.shade600,
                                   ),
-
-                                  const SizedBox(
-                                      width: 4),
-
+                                  const SizedBox(width: 4),
                                   Text(
-                                    "Recently",
+                                    createdAt,
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors
-                                          .grey
-                                          .shade600,
+                                      color: Colors.grey.shade600,
                                     ),
                                   ),
                                 ],

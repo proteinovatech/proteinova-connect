@@ -36,7 +36,7 @@ class ApprovalEmptyWidget extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 24),
 
           OutlinedButton.icon(
             style: OutlinedButton.styleFrom(

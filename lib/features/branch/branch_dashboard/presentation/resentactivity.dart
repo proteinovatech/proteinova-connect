@@ -1,8 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:proteinova_connect/core/network/dio_client.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/data/model/dashboard_model.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/data/repository/dashboard_repository.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/widget/activityitem.dart';
 
 class Resentactivity extends StatefulWidget {
@@ -16,73 +16,29 @@ class Resentactivity extends StatefulWidget {
 class _ResentactivityState
     extends State<Resentactivity> {
 
-  List recentActivity = [];
-
+  DashboardModel? dashboardModel;
   bool isLoading = true;
+  late final DashboardRepository repository;
 
   @override
   void initState() {
     super.initState();
+    repository = DashboardRepository(DioClient().dio);
     fetchRecentActivity();
   }
 
   Future<void> fetchRecentActivity() async {
-
     try {
+      final result = await repository.fetchDashboardData();
 
-      final response = await http.get(
-        Uri.parse(
-          "https://proteinova-system.onrender.com/api/branch/dashboard",
-        ),
-      );
-
-      if (response.statusCode == 200) {
-
-        final data = jsonDecode(response.body);
-
-        setState(() {
-
-  recentActivity =
-
-      (data["recent_activity"] as List)
-
-          .map(
-            (e) => {
-
-              "title":
-                  e["actor_name"],
-
-              "description":
-                  e["activity"],
-
-              "time":
-                  e["created_at"],
-
-              "tag":
-                  e["activity_type"],
-            },
-          )
-          .toList();
-
-  isLoading = false;
-});
-      } else {
-
-        setState(() {
-          isLoading = false;
-        });
-
-        print(
-          "Status Code : ${response.statusCode}",
-        );
-      }
-
+      setState(() {
+        dashboardModel = result;
+        isLoading = false;
+      });
     } catch (e) {
-
       setState(() {
         isLoading = false;
       });
-
       print(e);
     }
   }
@@ -108,13 +64,10 @@ class _ResentactivityState
       ),
 
       body: isLoading
-
           ? const Center(
-              child:
-                  CircularProgressIndicator(),
+              child: CircularProgressIndicator(),
             )
-
-          : recentActivity.isEmpty
+          : dashboardModel!.recentActivity.isEmpty
 
               ? const Center(
                   child: Text(
@@ -130,15 +83,10 @@ class _ResentactivityState
                   ),
 
                   child: ListView.builder(
+                    itemCount: dashboardModel!.recentActivity.length,
 
-                    itemCount:
-                        recentActivity.length,
-
-                    itemBuilder:
-                        (context, index) {
-
-                      final activity =
-                          recentActivity[index];
+                    itemBuilder: (context, index) {
+                      final activity = dashboardModel!.recentActivity[index];
 
                       return Column(
 
@@ -157,8 +105,7 @@ class _ResentactivityState
                               child: Icon(
 
                                 getIcon(
-                                  activity["tag"]
-                                      .toString(),
+                                  activity.tag,
                                 ),
 
                                 color:
@@ -166,37 +113,19 @@ class _ResentactivityState
                               ),
                             ),
 
-                            title:
-                                activity["title"]
-                                        ?.toString() ??
-                                    "No Title",
+                            title: activity.title,
 
                             subtitle: Text(
-
-                              activity["description"]
-                                      ?.toString() ??
-                                  "No Description",
-
-                              style:
-                                  const TextStyle(
-
-                                fontWeight:
-                                    FontWeight
-                                        .bold,
-
+                              activity.description,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
                                 fontSize: 12,
                               ),
                             ),
 
-                            time:
-                                activity["time"]
-                                        ?.toString() ??
-                                    "",
+                            time: activity.time,
 
-                            tag:
-                                activity["tag"]
-                                        ?.toString() ??
-                                    "",
+                            tag: activity.tag,
                           ),
 
                           const SizedBox(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:proteinova_connect/features/admin/Distribution/presentation/dispatch_planning_page.dart';
 import 'package:proteinova_connect/features/admin/Distribution/widget/dispatchcard_widget.dart';
 import 'package:proteinova_connect/features/admin/Distribution/widget/statcard_widget.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/admin_distribution_skeleton_loader.dart';
 import 'package:proteinova_connect/services/dispatch_service.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
@@ -65,10 +66,12 @@ class _DistributionPageState extends State<DistributionPage> {
     final pagination = dashboardData?['pagination'];
 
     return Scaffold(
-      backgroundColor: AppColors.background1,
+      backgroundColor: AppColors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.background1,
+        backgroundColor: AppColors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
+        scrolledUnderElevation: 0,
         automaticallyImplyLeading: false,
         toolbarHeight: 90,
         title: Column(
@@ -128,7 +131,7 @@ class _DistributionPageState extends State<DistributionPage> {
       ),
       body: SafeArea(
         child: isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(child: AdminDistributionSkeletonLoader())
             : RefreshIndicator(
                 onRefresh: _fetchData,
                 child: ListView(
