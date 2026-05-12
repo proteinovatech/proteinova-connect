@@ -81,6 +81,11 @@ class AppTextStyles {
     fontWeight: FontWeight.normal,
     color: AppColors.textSecondary,
   );
+  static const TextStyle bodyText12dark = TextStyle(
+    fontSize: 10.5,
+    fontWeight: FontWeight.normal,
+    color: AppColors.dark,
+  );
 
   
   

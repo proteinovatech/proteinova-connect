@@ -1,27 +1,21 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:proteinova_connect/core/config/api_config.dart';
 
 class AuthService {
   static Future<Map<String, dynamic>?> login({
     required String email,
     required String password,
-    required String role
-    
+    required String role,
   }) async {
     final response = await http.post(
-      Uri.parse("https://proteinova-system-q3ob.onrender.com/login"),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode({
-        "email": email,
-        "password": password,
-        "role": role,
-      }),
+      Uri.parse("${ApiConfig.baseUrl}${ApiConfig.login}"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"email": email, "password": password, "role": role}),
     );
-print(email);
-print(password);
-print(role);
+    print(email);
+    print(password);
+    print(role);
 
     if (response.statusCode == 200) {
       print("wwww");

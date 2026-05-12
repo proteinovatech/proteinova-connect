@@ -4,8 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/features/sales/widget/recent_sales_card.dart';
-import 'package:proteinova_connect/features/sales/widget/stock_preview_card.dart';
+
 import 'package:proteinova_connect/features/sales/widget/transaction_detailscard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

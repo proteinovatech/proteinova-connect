@@ -3,15 +3,18 @@ abstract class AuthState {}
 class AuthInitial extends AuthState {}
 
 class AuthLoading extends AuthState {}
-class AuthSuccessPurchase extends AuthState {}   
 
-class AuthSuccessBranch extends AuthState {} 
+class AuthSuccessPurchase extends AuthState {}
+
+class AuthSuccessBranch extends AuthState {}
+
+class AuthSuccessAdmin extends AuthState {}
 
 class AuthSuccess extends AuthState {
   final Map<String, dynamic> user;
   final String role;
 
-  AuthSuccess(this.user,this.role);
+  AuthSuccess(this.user, this.role);
 }
 
 class AuthFailure extends AuthState {

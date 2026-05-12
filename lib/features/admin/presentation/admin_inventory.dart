@@ -11,41 +11,13 @@ class AdminInventory extends StatefulWidget {
 
 class _AdminInventoryState extends State<AdminInventory> {
   final List<Map<String, dynamic>> inventoryData = [
-    {
-      "title": "White Export",
-      "value": 11060,
-      "progress": 0.82,
-    },
-    {
-      "title": "AA",
-      "value": 5680,
-      "progress": 0.48,
-    },
-    {
-      "title": "White Small Egg",
-      "value": 2400,
-      "progress": 0.22,
-    },
-    {
-      "title": "White Medium",
-      "value": 3060,
-      "progress": 0.40,
-    },
-    {
-      "title": "Medium",
-      "value": 560,
-      "progress": 0.15,
-    },
-    {
-      "title": "White",
-      "value": 5390,
-      "progress": 0.47,
-    },
-    {
-      "title": "Brown",
-      "value": 4790,
-      "progress": 0.55,
-    },
+    {"title": "White Export", "value": 11060, "progress": 0.82},
+    {"title": "AA", "value": 5680, "progress": 0.48},
+    {"title": "White Small Egg", "value": 2400, "progress": 0.22},
+    {"title": "White Medium", "value": 3060, "progress": 0.40},
+    {"title": "Medium", "value": 560, "progress": 0.15},
+    {"title": "White", "value": 5390, "progress": 0.47},
+    {"title": "Brown", "value": 4790, "progress": 0.55},
   ];
 
   final List<Map<String, dynamic>> activities = [
@@ -132,11 +104,13 @@ class _AdminInventoryState extends State<AdminInventory> {
                   children: [
                                       Row(
                       children: [
-                        const Icon(
-                          Icons.menu,
-                          size: 22,
-                        ),
+                        InkWell(
+                          onTap: () {
+                            Navigator.pop(context);
+                          },
 
+                          child: const Icon(Icons.arrow_back_ios_new, size: 22),
+                        ),
                         const SizedBox(width: 12),
 
                         Column(
@@ -166,10 +140,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
-                                    Icons.person_outline,
-                                    size: 14,
-                                  ),
+                                  Icon(Icons.person_outline, size: 14),
 
                                   SizedBox(width: 5),
 
@@ -188,10 +159,7 @@ class _AdminInventoryState extends State<AdminInventory> {
 
                         const Spacer(),
 
-                        const Icon(
-                          Icons.notifications_none_outlined,
-                          size: 24,
-                        ),
+                        const Icon(Icons.notifications_none_outlined, size: 24),
                       ],
                     ),
 
@@ -203,8 +171,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                       children: [
                         Expanded(
                           child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: const [
                               Text(
                                 "Incoming Stock Queue",
@@ -231,18 +198,15 @@ class _AdminInventoryState extends State<AdminInventory> {
                           onPressed: () {},
 
                           style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color(0xffFFD400),
+                            backgroundColor: const Color(0xffFFD400),
                             foregroundColor: Colors.black,
                             elevation: 0,
-                            padding:
-                                const EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                               horizontal: 14,
                               vertical: 10,
                             ),
                             shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
 
@@ -265,8 +229,7 @@ class _AdminInventoryState extends State<AdminInventory> {
               /// GRID CARDS
               GridView.count(
                 shrinkWrap: true,
-                physics:
-                    const NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
 
                 crossAxisCount: 2,
                 crossAxisSpacing: 12,
@@ -340,8 +303,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                 child: Column(
                   children: [
                     Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
                           "Inventory Levels",
@@ -352,17 +314,14 @@ class _AdminInventoryState extends State<AdminInventory> {
                         ),
 
                         Container(
-                          padding:
-                              const EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 7,
                           ),
 
                           decoration: BoxDecoration(
-                            color:
-                                const Color(0xffEAF2FF),
-                            borderRadius:
-                                BorderRadius.circular(8),
+                            color: const Color(0xffEAF2FF),
+                            borderRadius: BorderRadius.circular(8),
                           ),
 
                           child: const Text(
@@ -381,33 +340,27 @@ class _AdminInventoryState extends State<AdminInventory> {
 
                     ListView.separated(
                       shrinkWrap: true,
-                      physics:
-                          const NeverScrollableScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       itemCount: inventoryData.length,
 
-                      separatorBuilder:
-                          (context, index) =>
-                              const SizedBox(height: 16),
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 16),
 
                       itemBuilder: (context, index) {
                         final item = inventoryData[index];
 
                         return Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
 
                           children: [
                             Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment
-                                      .spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   item["title"].toString(),
                                   style: const TextStyle(
                                     fontSize: 13,
-                                    fontWeight:
-                                        FontWeight.w600,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
 
@@ -415,8 +368,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                                   item["value"].toString(),
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color:
-                                        Colors.grey.shade700,
+                                    color: Colors.grey.shade700,
                                   ),
                                 ),
                               ],
@@ -425,21 +377,13 @@ class _AdminInventoryState extends State<AdminInventory> {
                             const SizedBox(height: 8),
 
                             ClipRRect(
-                              borderRadius:
-                                  BorderRadius.circular(
-                                      10),
+                              borderRadius: BorderRadius.circular(10),
 
-                              child:
-                                  LinearProgressIndicator(
-                                value:
-                                    item["progress"],
+                              child: LinearProgressIndicator(
+                                value: item["progress"],
                                 minHeight: 6,
-                                backgroundColor:
-                                    const Color(
-                                        0xffE9EDF5),
-                                valueColor:
-                                    const AlwaysStoppedAnimation<
-                                        Color>(
+                                backgroundColor: const Color(0xffE9EDF5),
+                                valueColor: const AlwaysStoppedAnimation<Color>(
                                   Color(0xff1E73FF),
                                 ),
                               ),
@@ -454,7 +398,7 @@ class _AdminInventoryState extends State<AdminInventory> {
 
               const SizedBox(height: 16),
 
-                         Container(
+              Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
 
@@ -464,8 +408,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                 ),
 
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       "Recent Activity",
@@ -479,16 +422,11 @@ class _AdminInventoryState extends State<AdminInventory> {
 
                     ListView.separated(
                       shrinkWrap: true,
-                      physics:
-                          const NeverScrollableScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       itemCount: activities.length,
 
-                      separatorBuilder:
-                          (context, index) =>
-                              const Padding(
-                        padding:
-                            EdgeInsets.symmetric(
-                                vertical: 14),
+                      separatorBuilder: (context, index) => const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 14),
                         child: Divider(height: 1),
                       ),
 
@@ -496,8 +434,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                         final item = activities[index];
 
                         return Row(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
                               height: 38,
@@ -519,29 +456,23 @@ class _AdminInventoryState extends State<AdminInventory> {
 
                             Expanded(
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment
-                                        .start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     item["title"],
-                                    style:
-                                        const TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 15,
-                                      fontWeight:
-                                          FontWeight.w600,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
 
-                                  const SizedBox(
-                                      height: 6),
+                                  const SizedBox(height: 6),
 
                                   Text(
                                     item["subtitle"],
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors
-                                          .grey.shade600,
+                                      color: Colors.grey.shade600,
                                     ),
                                   ),
                                 ],
@@ -566,12 +497,10 @@ class _AdminInventoryState extends State<AdminInventory> {
                 ),
 
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                                     Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
                           "Purchase Orders",
@@ -585,17 +514,12 @@ class _AdminInventoryState extends State<AdminInventory> {
                           children: [
                             IconButton(
                               onPressed: () {},
-                              icon: const Icon(
-                                Icons
-                                    .calendar_month,
-                              ),
+                              icon: const Icon(Icons.calendar_month),
                             ),
 
                             IconButton(
                               onPressed: () {},
-                              icon: const Icon(
-                                Icons.person_outline,
-                              ),
+                              icon: const Icon(Icons.person_outline),
                             ),
                           ],
                         ),
@@ -605,22 +529,16 @@ class _AdminInventoryState extends State<AdminInventory> {
                     const SizedBox(height: 12),
                     TextField(
                       decoration: InputDecoration(
-                        hintText:
-                            "Search PO, Supplier, or Items...",
-                        prefixIcon:
-                            const Icon(Icons.search),
+                        hintText: "Search PO, Supplier, or Items...",
+                        prefixIcon: const Icon(Icons.search),
                         filled: true,
-                        fillColor:
-                            Colors.grey.shade100,
-                        contentPadding:
-                            const EdgeInsets.symmetric(
+                        fillColor: Colors.grey.shade100,
+                        contentPadding: const EdgeInsets.symmetric(
                           vertical: 14,
                         ),
 
                         border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(
-                                  14),
+                          borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide.none,
                         ),
                       ),
@@ -629,67 +547,50 @@ class _AdminInventoryState extends State<AdminInventory> {
                     const SizedBox(height: 18),
                     ListView.builder(
                       shrinkWrap: true,
-                      physics:
-                          const NeverScrollableScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       itemCount: orders.length,
 
                       itemBuilder: (context, index) {
                         final item = orders[index];
 
                         return Container(
-                          margin:
-                              const EdgeInsets.only(
-                                  bottom: 5),
+                          margin: const EdgeInsets.only(bottom: 5),
 
-                          padding:
-                              const EdgeInsets.all(5),
+                          padding: const EdgeInsets.all(5),
 
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius:
-                                BorderRadius.circular(
-                                    18),
+                            borderRadius: BorderRadius.circular(18),
                           ),
 
                           child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment
-                                    .start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
 
                             children: [
-                                                          Row(
+                              Row(
                                 mainAxisAlignment:
-                                    MainAxisAlignment
-                                        .spaceBetween,
+                                    MainAxisAlignment.spaceBetween,
 
                                 children: [
                                   Column(
                                     crossAxisAlignment:
-                                        CrossAxisAlignment
-                                            .start,
+                                        CrossAxisAlignment.start,
 
                                     children: [
                                       Text(
-                                        item["po"]
-                                            .toString(),
-                                        style:
-                                            const TextStyle(
-                                          fontWeight:
-                                              FontWeight
-                                                  .bold,
+                                        item["po"].toString(),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
                                           fontSize: 16,
                                         ),
                                       ),
 
-                                      const SizedBox(
-                                          height: 4),
+                                      const SizedBox(height: 4),
 
                                       const Text(
                                         "07 May 2026 • 10:45 AM",
-                                        style:
-                                            TextStyle(
-                                          color:
-                                              Colors.grey,
+                                        style: TextStyle(
+                                          color: Colors.grey,
                                           fontSize: 12,
                                         ),
                                       ),
@@ -697,18 +598,15 @@ class _AdminInventoryState extends State<AdminInventory> {
                                   ),
 
                                   PopupMenuButton(
-                                    itemBuilder:
-                                        (context) => [
+                                    itemBuilder: (context) => [
                                       const PopupMenuItem(
                                         value: "view",
-                                        child:
-                                            Text("View"),
+                                        child: Text("View"),
                                       ),
 
                                       const PopupMenuItem(
                                         value: "edit",
-                                        child:
-                                            Text("Edit"),
+                                        child: Text("Edit"),
                                       ),
                                     ],
                                   ),
@@ -717,27 +615,22 @@ class _AdminInventoryState extends State<AdminInventory> {
 
                               const SizedBox(height: 14),
 
-                                                            Row(
+                              Row(
                                 children: [
                                   const Icon(
-                                    Icons
-                                        .storefront_outlined,
+                                    Icons.storefront_outlined,
                                     size: 18,
                                     color: Colors.grey,
                                   ),
 
-                                  const SizedBox(
-                                      width: 8),
+                                  const SizedBox(width: 8),
 
                                   Expanded(
                                     child: Text(
                                       "${item["supplier"]} • ${item["location"]}",
-                                      style:
-                                          const TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 14,
-                                        fontWeight:
-                                            FontWeight
-                                                .w500,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                   ),
@@ -746,30 +639,22 @@ class _AdminInventoryState extends State<AdminInventory> {
 
                               const SizedBox(height: 10),
 
-                                  Row(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment
-                                        .start,
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
 
                                 children: [
                                   const Icon(
-                                    Icons
-                                        .inventory_2_outlined,
+                                    Icons.inventory_2_outlined,
                                     size: 18,
                                     color: Colors.grey,
                                   ),
 
-                                  const SizedBox(
-                                      width: 8),
+                                  const SizedBox(width: 8),
 
                                   Expanded(
                                     child: Text(
-                                      item["product"]
-                                          .toString(),
-                                      style:
-                                          const TextStyle(
-                                        fontSize: 14,
-                                      ),
+                                      item["product"].toString(),
+                                      style: const TextStyle(fontSize: 14),
                                     ),
                                   ),
                                 ],
@@ -777,14 +662,10 @@ class _AdminInventoryState extends State<AdminInventory> {
 
                               const SizedBox(height: 14),
 
-                              _buildStatus(
-                                item["status"]
-                                    .toString(),
-                              ),
+                              _buildStatus(item["status"].toString()),
                             ],
                           ),
                         );
-                        
                       },
                     ),
                   ],
@@ -821,7 +702,6 @@ class _AdminInventoryState extends State<AdminInventory> {
         bgColor = Colors.red.shade100;
         textColor = Colors.red;
         break;
-        
 
       default:
         bgColor = Colors.grey.shade200;
@@ -832,10 +712,7 @@ class _AdminInventoryState extends State<AdminInventory> {
       alignment: Alignment.centerLeft,
 
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 8,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
 
         decoration: BoxDecoration(
           color: bgColor,
