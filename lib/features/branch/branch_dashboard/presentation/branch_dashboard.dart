@@ -164,7 +164,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => const SalesEntry(),
+              builder: (_) => const SalesEntryPage(),
             ),
           );
         },

@@ -102,8 +102,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildNavItem(Icons.grid_view, 0),
-            _buildNavItem(Icons.inventory_2_outlined, 1),
-            _buildNavItem(Icons.shopping_cart_outlined, 2),
+             _buildNavItem(Icons.shopping_cart_outlined, 2),
             _buildNavItem(Icons.receipt_long, 3),
             _buildNavItem(Icons.menu_outlined, 4),
           ],
@@ -153,13 +152,12 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
     switch (index) {
       case 0:
         return "Dashboard";
+    
       case 1:
-        return "Inventory";
-      case 2:
         return "Sales";
-      case 3:
+      case 2:
         return "Daily closing";
-      case 4:
+      case 3:
         return "Menu";
       default:
         return "";

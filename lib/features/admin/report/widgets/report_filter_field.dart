@@ -4,54 +4,64 @@ class ReportFilterField extends StatelessWidget {
   final String hint;
   final IconData? prefix;
   final bool dropdown;
+  final VoidCallback? onTap;
 
   const ReportFilterField({
     super.key,
     required this.hint,
     this.prefix,
     this.dropdown = false,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 58,
+    return InkWell(
+      onTap: onTap,
 
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-      ),
+      borderRadius: BorderRadius.circular(14),
 
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: const Color(0xffE5E7EB),
+      child: Container(
+        height: 58,
+
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
         ),
-      ),
 
-      child: Row(
-        children: [
+        decoration: BoxDecoration(
+          color: Colors.white,
 
-          if (prefix != null)
-            Icon(prefix),
+          borderRadius: BorderRadius.circular(14),
 
-          if (prefix != null)
-            const SizedBox(width: 10),
+          border: Border.all(
+            color: const Color(0xffE5E7EB),
+          ),
+        ),
 
-          Expanded(
-            child: Text(
-              hint,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
+        child: Row(
+          children: [
+            if (prefix != null) Icon(prefix),
+
+            if (prefix != null) const SizedBox(width: 10),
+
+            Expanded(
+              child: Text(
+                hint,
+
+                overflow: TextOverflow.ellipsis,
+
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-          ),
 
-          if (dropdown)
-            const Icon(
-              Icons.keyboard_arrow_down,
-            ),
-        ],
+            if (dropdown)
+              const Icon(
+                Icons.keyboard_arrow_down,
+              ),
+          ],
+        ),
       ),
     );
   }

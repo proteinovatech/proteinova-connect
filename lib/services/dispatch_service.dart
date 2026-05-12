@@ -1,17 +1,27 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:proteinova_connect/core/network/dio_client.dart';
 
 class DispatchService {
-  static String get baseUrl => dotenv.env['BASE_URL'] ?? 'http://localhost:5000';
+  static final dio = DioClient().dio;
 
-  static Future<Map<String, dynamic>?> fetchDispatchDashboard({int page = 1, int limit = 10, String search = '', String status = ''}) async {
+  static Future<Map<String, dynamic>?> fetchDispatchDashboard({
+    int page = 1,
+    int limit = 10,
+    String search = '',
+    String status = '',
+  }) async {
     try {
-      final url = Uri.parse('$baseUrl/api/dispatch/dashboard?page=$page&limit=$limit&search=$search&status=$status');
-      final response = await http.get(url);
+      final response = await dio.get(
+        '/api/dispatch/dashboard',
+        queryParameters: {
+          'page': page,
+          'limit': limit,
+          'search': search,
+          'status': status,
+        },
+      );
 
       if (response.statusCode == 200) {
-        return json.decode(response.body);
+        return response.data;
       }
       return null;
     } catch (e) {
@@ -22,11 +32,10 @@ class DispatchService {
 
   static Future<Map<String, dynamic>?> fetchSingleDispatch(String id) async {
     try {
-      final url = Uri.parse('$baseUrl/api/dispatch/$id');
-      final response = await http.get(url);
+      final response = await dio.get('/api/dispatch/$id');
 
       if (response.statusCode == 200) {
-        return json.decode(response.body);
+        return response.data;
       }
       return null;
     } catch (e) {
@@ -37,10 +46,9 @@ class DispatchService {
 
   static Future<List<Map<String, dynamic>>> fetchBranches() async {
     try {
-      final url = Uri.parse('$baseUrl/api/branches');
-      final response = await http.get(url);
+      final response = await dio.get('/api/branches');
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+        final data = response.data;
         return List<Map<String, dynamic>>.from(data['data'] ?? []);
       }
       return [];
@@ -52,16 +60,39 @@ class DispatchService {
 
   static Future<List<Map<String, dynamic>>> fetchWarehouseStock() async {
     try {
-      final url = Uri.parse('$baseUrl/api/admin/inventory');
-      final response = await http.get(url);
+      final response = await dio.get('/api/admin/inventory');
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        // Map category_stock to a cleaner list for the dropdown
-        final List<dynamic> stocks = data['category_stock'] ?? [];
-        return stocks.map((e) => {
-          'category': e['category'],
-          'total_eggs': int.tryParse(e['total_eggs'].toString()) ?? 0,
+        final data = response.data;
+        print("INVENTORY DATA: $data");
+        
+        // Try multiple common keys for the category list
+        dynamic list = data['category_stock'] ?? data['inventory'] ?? data['data'] ?? [];
+        if (list is Map && list.containsKey('data')) list = list['data'];
+        
+        final List<dynamic> stocks = (list is List) ? list : [];
+        
+        // Map the results with explicit type casting to avoid 'Map<String, Object>' errors
+        List<Map<String, dynamic>> results = stocks.map((e) => <String, dynamic>{
+          'category': (e['category'] ?? e['product_name'] ?? e['name'] ?? 'Unknown').toString(),
+          'total_eggs': int.tryParse((e['total_eggs'] ?? e['stock'] ?? e['quantity'] ?? '0').toString()) ?? 0,
         }).toList();
+
+        // 🔹 DYNAMIC DISCOVERY: Look into 'purchases' to find all categories in the database
+        final List<dynamic> purchases = data['purchases'] ?? [];
+        for (var p in purchases) {
+          final String? catName = p['product_name'] ?? p['category'];
+          if (catName != null && catName.isNotEmpty) {
+            // If this category isn't in our results yet, add it with 0 stock
+            if (!results.any((r) => r['category'].toString().toLowerCase() == catName.toLowerCase())) {
+              results.add(<String, dynamic>{
+                'category': catName,
+                'total_eggs': 0,
+              });
+            }
+          }
+        }
+        
+        return results;
       }
       return [];
     } catch (e) {
@@ -72,17 +103,12 @@ class DispatchService {
 
   static Future<bool> createDispatch(Map<String, dynamic> dispatchData) async {
     try {
-      final url = Uri.parse('$baseUrl/api/dispatch');
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(dispatchData),
-      );
-      
-      if (response.statusCode == 201) {
+      final response = await dio.post('/api/dispatch', data: dispatchData);
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
         return true;
       } else {
-        print("Create dispatch failed: ${response.body}");
+        print("Create dispatch failed: ${response.data}");
         return false;
       }
     } catch (e) {
