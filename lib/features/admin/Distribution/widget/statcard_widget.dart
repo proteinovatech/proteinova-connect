@@ -53,7 +53,7 @@ Widget statCard({
         boxShadow: [
           BoxShadow(
             blurRadius: 10,
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withOpacity(0.10),
             offset: const Offset(0, 4),
           ),
         ],

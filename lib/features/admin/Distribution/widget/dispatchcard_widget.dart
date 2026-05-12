@@ -169,7 +169,10 @@ Widget infoRow(IconData icon, String label, String value, {String? subtitle}) {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(color: Colors.grey, fontSize: 10)),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.grey, fontSize: 10),
+            ),
             const SizedBox(height: 2),
             Text(
               value,
