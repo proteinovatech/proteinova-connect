@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/admin/data/model/dashboard_model.dart';
+import 'package:proteinova_connect/features/admin/data/services/dashboard_service.dart';
 import 'package:proteinova_connect/features/admin/widget/actions_required_card.dart';
 import 'package:proteinova_connect/features/admin/widget/dashboardcard.dart';
 import 'package:proteinova_connect/features/admin/widget/recent_activity_card.dart';
+
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -13,6 +16,34 @@ class AdminDashboard extends StatefulWidget {
 }
 
 class _AdminDashboardState extends State<AdminDashboard> {
+ 
+  DashboardModel? dashboard;
+  bool isLoading = true;
+
+  @override
+void initState() {
+  super.initState();
+  loadDashboard();
+}
+
+Future<void> loadDashboard() async {
+  try {
+    final data =
+        await DashboardService().fetchDashboard();
+
+    setState(() {
+      dashboard = data;
+      isLoading = false;
+    });
+  } catch (e) {
+    setState(() {
+      isLoading = false;
+    });
+
+    print(e);
+  }
+}
+
   void showDashboardBottomSheet({
   required String title,
   required Widget content,
@@ -86,55 +117,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.containerColor2,
-      drawer: Drawer(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
-          children: [
-            SizedBox(height: 25),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              margin: const EdgeInsets.only(bottom: 20),
-              decoration: BoxDecoration(
-                color: AppColors.amber600, // header color
-                borderRadius: BorderRadius.circular(12),
-              ),
-
-              child: const Text(
-                "Menu",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-
-            ListTile(
-              leading: Icon(Icons.add_circle_outline),
-              title: Text('Create Purchase Order'),
-              onTap: () {},
-            ),
-
-            ListTile(
-              leading: Icon(Icons.local_shipping_outlined),
-              title: Text('Dispatch Items'),
-              onTap: () {},
-            ),
-
-            ListTile(
-              leading: Icon(Icons.add_shopping_cart_outlined),
-              title: Text('New Sales Entry'),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: Icon(Icons.download_outlined),
-              title: Text('Export Report'),
-              onTap: () {},
-            ),
-          ],
-        ),
-      ),
-
+      
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
@@ -155,7 +138,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
         ],
       ),
 
-      body: Padding(
+      body:isLoading
+    ? const Center(
+        child: CircularProgressIndicator(),
+      ) 
+      :Padding(
         padding: const EdgeInsets.all(12),
         child: SingleChildScrollView(
           child: Column(
@@ -166,90 +153,53 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   Expanded(
                     child: DashboardCard(
                       title: "Total Revenue",
-                      value: "₹3606",
+                      value:"₹${dashboard?.revenue ?? 0}" ,
                       icon: Icons.payments_outlined,
                       iconColor: AppColors.blueAccent,
                     onTap: () {
   showDashboardBottomSheet(
     title: "Total Revenue",
 
-    content: ListView(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(14),
+    content: Column(
+  crossAxisAlignment:
+      CrossAxisAlignment.start,
 
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.grey.shade300,
-            ),
+  children: [
 
-            borderRadius: BorderRadius.circular(12),
+    Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+
+      decoration: BoxDecoration(
+        borderRadius:
+            BorderRadius.circular(14),
+
+        color: AppColors.background1,
+      ),
+
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+        children: [
+
+          Text(
+            "Current Revenue",
+            style:
+                AppTextStyles.bodyText14dark,
           ),
 
-          child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+          const SizedBox(height: 10),
 
-            children: [
-              Text(
-                "Branch: Chennai",
-                style: AppTextStyles.bodyText14dark,
-              ),
-
-              const SizedBox(height: 6),
-
-              Text(
-                "Revenue: ₹12,500",
-                style: AppTextStyles.bodyText14,
-              ),
-
-              Text(
-                "Date: 09 May 2026",
-                style: AppTextStyles.bodyText14,
-              ),
-            ],
+          Text(
+            "₹${dashboard?.revenue ?? 0}",
+            style:AppTextStyles.bodyText16
           ),
-        ),
-
-        const SizedBox(height: 12),
-
-        Container(
-          padding: const EdgeInsets.all(14),
-
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.grey.shade300,
-            ),
-
-            borderRadius: BorderRadius.circular(12),
-          ),
-
-          child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
-
-            children: [
-              Text(
-                "Branch: Coimbatore",
-                style: AppTextStyles.bodyText14dark,
-              ),
-
-              const SizedBox(height: 6),
-
-              Text(
-                "Revenue: ₹18,200",
-                style: AppTextStyles.bodyText14,
-              ),
-
-              Text(
-                "Date: 09 May 2026",
-                style: AppTextStyles.bodyText14,
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     ),
+  ],
+),
   );
 },   
                     ),
@@ -258,90 +208,53 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   Expanded(
                     child: DashboardCard(
                       title: "Total Stock Value",
-                      value: "₹154494",
+                      value: "${dashboard?.totalStockValue ?? 0}",
                       icon: Icons.stacked_bar_chart,
                       iconColor: AppColors.green,
                       onTap: () {
   showDashboardBottomSheet(
     title: "Total Stock Value",
 
-    content: ListView(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(14),
+    content: Column(
+  crossAxisAlignment:
+      CrossAxisAlignment.start,
 
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.grey.shade300,
-            ),
+  children: [
 
-            borderRadius: BorderRadius.circular(12),
+    Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+
+      decoration: BoxDecoration(
+        borderRadius:
+            BorderRadius.circular(14),
+
+        color: AppColors.background1,
+      ),
+
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+        children: [
+
+          Text(
+            "Total Stock Value",
+            style:
+                AppTextStyles.bodyText14dark,
           ),
 
-          child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+          const SizedBox(height: 10),
 
-            children: [
-              Text(
-                "Branch: Chennai",
-                style: AppTextStyles.bodyText14dark,
-              ),
-
-              const SizedBox(height: 6),
-
-              Text(
-                "Revenue: ₹12,500",
-                style: AppTextStyles.bodyText14,
-              ),
-
-              Text(
-                "Date: 09 May 2026",
-                style: AppTextStyles.bodyText14,
-              ),
-            ],
+          Text(
+            "₹${dashboard?.totalStockValue ?? 0}",
+            style: AppTextStyles.bodyText16
           ),
-        ),
-
-        const SizedBox(height: 12),
-
-        Container(
-          padding: const EdgeInsets.all(14),
-
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.grey.shade300,
-            ),
-
-            borderRadius: BorderRadius.circular(12),
-          ),
-
-          child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
-
-            children: [
-              Text(
-                "Branch: Coimbatore",
-                style: AppTextStyles.bodyText14dark,
-              ),
-
-              const SizedBox(height: 6),
-
-              Text(
-                "Revenue: ₹18,200",
-                style: AppTextStyles.bodyText14,
-              ),
-
-              Text(
-                "Date: 09 May 2026",
-                style: AppTextStyles.bodyText14,
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     ),
+  ],
+),
   );
 },
                     ),
@@ -354,7 +267,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   Expanded(
   child: DashboardCard(
     title: "Incoming Stock",
-    value: "1,88,640 Eggs",
+    value: "${dashboard?.incomingStockEggs ?? 0}",
     icon: Icons.local_shipping_outlined,
     iconColor: AppColors.deepOrange,
 
@@ -362,154 +275,46 @@ class _AdminDashboardState extends State<AdminDashboard> {
       showDashboardBottomSheet(
         title: "Incoming Stock",
 
-        content: ListView(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(14),
+        content: Column(
+  crossAxisAlignment:
+      CrossAxisAlignment.start,
 
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey.shade300,
-                ),
+  children: [
 
-                borderRadius: BorderRadius.circular(12),
-              ),
+    Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
 
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+      decoration: BoxDecoration(
+        borderRadius:
+            BorderRadius.circular(14),
 
-                children: [
-                  Text(
-                    "Supplier: Fresh Farm Eggs",
-                    style:
-                        AppTextStyles.bodyText14dark,
-                  ),
+        color: AppColors.background1,
+      ),
 
-                  const SizedBox(height: 6),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
 
-                  Text(
-                    "Quantity: 45,000 Eggs",
-                    style: AppTextStyles.bodyText14,
-                  ),
+        children: [
 
-                  Text(
-                    "Grade: A Grade",
-                    style: AppTextStyles.bodyText14,
-                  ),
+          Text(
+            "Incoming Stock",
+            style:
+                AppTextStyles.bodyText14dark,
+          ),
 
-                  Text(
-                    "Arrival Time: 08:30 AM",
-                    style: AppTextStyles.bodyText14,
-                  ),
+          const SizedBox(height: 10),
 
-                  Text(
-                    "Warehouse: Chennai Central",
-                    style: AppTextStyles.bodyText14,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            Container(
-              padding: const EdgeInsets.all(14),
-
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey.shade300,
-                ),
-
-                borderRadius: BorderRadius.circular(12),
-              ),
-
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-
-                children: [
-                  Text(
-                    "Supplier: Golden Poultry",
-                    style:
-                        AppTextStyles.bodyText14dark,
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  Text(
-                    "Quantity: 72,000 Eggs",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "Grade: Premium White",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "Arrival Time: 11:15 AM",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "Warehouse: Coimbatore Hub",
-                    style: AppTextStyles.bodyText14,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            Container(
-              padding: const EdgeInsets.all(14),
-
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey.shade300,
-                ),
-
-                borderRadius: BorderRadius.circular(12),
-              ),
-
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-
-                children: [
-                  Text(
-                    "Supplier: Farm Fresh Layers",
-                    style:
-                        AppTextStyles.bodyText14dark,
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  Text(
-                    "Quantity: 71,640 Eggs",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "Grade: Brown Eggs",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "Arrival Time: 02:00 PM",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "Warehouse: Madurai Storage",
-                    style: AppTextStyles.bodyText14,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          Text(
+            "₹${dashboard?.incomingStockEggs ?? 0}",
+            style:AppTextStyles.bodyText16
+          ),
+        ],
+      ),
+    ),
+  ],
+),
       );
     },
   ),
@@ -518,7 +323,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                  Expanded(
   child: DashboardCard(
     title: "Dispatched Stock",
-    value: "1,890 Eggs",
+    value:"${dashboard?.dispatchedStockEggs ?? 0} Eggs",
     icon: Icons.send_outlined,
     iconColor: AppColors.green,
 
@@ -526,154 +331,46 @@ class _AdminDashboardState extends State<AdminDashboard> {
       showDashboardBottomSheet(
         title: "Dispatched Stock",
 
-        content: ListView(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(14),
+        content: Column(
+  crossAxisAlignment:
+      CrossAxisAlignment.start,
 
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey.shade300,
-                ),
+  children: [
 
-                borderRadius: BorderRadius.circular(12),
-              ),
+    Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
 
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+      decoration: BoxDecoration(
+        borderRadius:
+            BorderRadius.circular(14),
 
-                children: [
-                  Text(
-                    "Branch: Chennai Retail Hub",
-                    style:
-                        AppTextStyles.bodyText14dark,
-                  ),
+        color: AppColors.background1,
+      ),
 
-                  const SizedBox(height: 6),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
 
-                  Text(
-                    "Dispatched: 650 Eggs",
-                    style: AppTextStyles.bodyText14,
-                  ),
+        children: [
 
-                  Text(
-                    "Vehicle No: TN09 AB 4589",
-                    style: AppTextStyles.bodyText14,
-                  ),
+          Text(
+            "Dispatched Stocks",
+            style:
+                AppTextStyles.bodyText14dark,
+          ),
 
-                  Text(
-                    "Dispatch Time: 09:15 AM",
-                    style: AppTextStyles.bodyText14,
-                  ),
+          const SizedBox(height: 10),
 
-                  Text(
-                    "Driver: Ramesh Kumar",
-                    style: AppTextStyles.bodyText14,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            Container(
-              padding: const EdgeInsets.all(14),
-
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey.shade300,
-                ),
-
-                borderRadius: BorderRadius.circular(12),
-              ),
-
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-
-                children: [
-                  Text(
-                    "Branch: Coimbatore Market",
-                    style:
-                        AppTextStyles.bodyText14dark,
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  Text(
-                    "Dispatched: 740 Eggs",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "Vehicle No: TN37 CD 9901",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "Dispatch Time: 11:40 AM",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "Driver: Suresh Babu",
-                    style: AppTextStyles.bodyText14,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            Container(
-              padding: const EdgeInsets.all(14),
-
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey.shade300,
-                ),
-
-                borderRadius: BorderRadius.circular(12),
-              ),
-
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-
-                children: [
-                  Text(
-                    "Branch: Madurai Wholesale",
-                    style:
-                        AppTextStyles.bodyText14dark,
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  Text(
-                    "Dispatched: 500 Eggs",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "Vehicle No: TN58 EF 2210",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "Dispatch Time: 03:20 PM",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "Driver: Arvind Raj",
-                    style: AppTextStyles.bodyText14,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          Text(
+            "${dashboard?.dispatchedStockEggs ?? 0} Eggs",
+            style:AppTextStyles.bodyText16
+          ),
+        ],
+      ),
+    ),
+  ],
+),
       );
     },
   ),
@@ -686,90 +383,53 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   Expanded(
                     child: DashboardCard(
                       title: "Branch Sales Revenue",
-                      value: "₹3606",
+                      value: "₹${dashboard?.revenue ?? 0}",
                       icon: Icons.store_outlined,
                       iconColor: AppColors.deepOrange,
                       onTap: () {
   showDashboardBottomSheet(
     title: "Branch Sales Revenue",
 
-    content: ListView(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(14),
+    content: Column(
+  crossAxisAlignment:
+      CrossAxisAlignment.start,
 
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.grey.shade300,
-            ),
+  children: [
 
-            borderRadius: BorderRadius.circular(12),
+    Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+
+      decoration: BoxDecoration(
+        borderRadius:
+            BorderRadius.circular(14),
+
+        color: AppColors.background1,
+      ),
+
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+        children: [
+
+          Text(
+            "Branch Sales Revenue",
+            style:
+                AppTextStyles.bodyText14dark,
           ),
 
-          child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+          const SizedBox(height: 10),
 
-            children: [
-              Text(
-                "Branch: Chennai",
-                style: AppTextStyles.bodyText14dark,
-              ),
-
-              const SizedBox(height: 6),
-
-              Text(
-                "Revenue: ₹12,500",
-                style: AppTextStyles.bodyText14,
-              ),
-
-              Text(
-                "Date: 09 May 2026",
-                style: AppTextStyles.bodyText14,
-              ),
-            ],
+          Text(
+            "₹${dashboard?.revenue ?? 0}",
+            style:AppTextStyles.bodyText16
           ),
-        ),
-
-        const SizedBox(height: 12),
-
-        Container(
-          padding: const EdgeInsets.all(14),
-
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.grey.shade300,
-            ),
-
-            borderRadius: BorderRadius.circular(12),
-          ),
-
-          child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
-
-            children: [
-              Text(
-                "Branch: Coimbatore",
-                style: AppTextStyles.bodyText14dark,
-              ),
-
-              const SizedBox(height: 6),
-
-              Text(
-                "Revenue: ₹18,200",
-                style: AppTextStyles.bodyText14,
-              ),
-
-              Text(
-                "Date: 09 May 2026",
-                style: AppTextStyles.bodyText14,
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     ),
+  ],
+),
   );
 },
                     ),
@@ -778,7 +438,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   Expanded(
   child: DashboardCard(
     title: "Total Stock Eggs",
-    value: "26,190 Eggs",
+    value:  "${dashboard?.totalStockEggs ?? 0} Eggs",
     icon: Icons.egg_outlined,
     iconColor: AppColors.blueAccent,
 
@@ -786,154 +446,46 @@ class _AdminDashboardState extends State<AdminDashboard> {
       showDashboardBottomSheet(
         title: "Total Stock Eggs",
 
-        content: ListView(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(14),
+        content: Column(
+  crossAxisAlignment:
+      CrossAxisAlignment.start,
 
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey.shade300,
-                ),
+  children: [
 
-                borderRadius: BorderRadius.circular(12),
-              ),
+    Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
 
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+      decoration: BoxDecoration(
+        borderRadius:
+            BorderRadius.circular(14),
 
-                children: [
-                  Text(
-                    "Branch: Chennai Central",
-                    style:
-                        AppTextStyles.bodyText14dark,
-                  ),
+        color: AppColors.background1,
+      ),
 
-                  const SizedBox(height: 6),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
 
-                  Text(
-                    "Available Stock: 8,540 Eggs",
-                    style: AppTextStyles.bodyText14,
-                  ),
+        children: [
 
-                  Text(
-                    "Brown Eggs: 4,200",
-                    style: AppTextStyles.bodyText14,
-                  ),
+          Text(
+            "Total Stock Eggs",
+            style:
+                AppTextStyles.bodyText14dark,
+          ),
 
-                  Text(
-                    "White Eggs: 4,340",
-                    style: AppTextStyles.bodyText14,
-                  ),
+          const SizedBox(height: 10),
 
-                  Text(
-                    "Last Updated: 09 May 2026",
-                    style: AppTextStyles.bodyText14,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            Container(
-              padding: const EdgeInsets.all(14),
-
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey.shade300,
-                ),
-
-                borderRadius: BorderRadius.circular(12),
-              ),
-
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-
-                children: [
-                  Text(
-                    "Branch: Coimbatore Hub",
-                    style:
-                        AppTextStyles.bodyText14dark,
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  Text(
-                    "Available Stock: 9,120 Eggs",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "Brown Eggs: 5,000",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "White Eggs: 4,120",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "Last Updated: 09 May 2026",
-                    style: AppTextStyles.bodyText14,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            Container(
-              padding: const EdgeInsets.all(14),
-
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey.shade300,
-                ),
-
-                borderRadius: BorderRadius.circular(12),
-              ),
-
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-
-                children: [
-                  Text(
-                    "Branch: Madurai Warehouse",
-                    style:
-                        AppTextStyles.bodyText14dark,
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  Text(
-                    "Available Stock: 8,530 Eggs",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "Brown Eggs: 3,900",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "White Eggs: 4,630",
-                    style: AppTextStyles.bodyText14,
-                  ),
-
-                  Text(
-                    "Last Updated: 09 May 2026",
-                    style: AppTextStyles.bodyText14,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          Text(
+            "${dashboard?.totalStockEggs ?? 0} Eggs",
+            style: AppTextStyles.bodyText16
+          ),
+        ],
+      ),
+    ),
+  ],
+),
       );
     },
   ),
@@ -943,166 +495,59 @@ class _AdminDashboardState extends State<AdminDashboard> {
               const SizedBox(height: 10),
               DashboardCard(
                 title: "Branch Eggs Sold",
-                value: "26,190 Eggs",
+                value:  "${dashboard?.totalStockEggs ?? 0} Eggs",
                 icon: Icons.egg_outlined,
                 iconColor: AppColors.green,
                onTap: () {
     showDashboardBottomSheet(
       title: "Branch Eggs Sold",
 
-      content: ListView(
+      content: Column(
+  crossAxisAlignment:
+      CrossAxisAlignment.start,
+
+  children: [
+
+    Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+
+      decoration: BoxDecoration(
+        borderRadius:
+            BorderRadius.circular(14),
+
+        color:AppColors.background1,
+      ),
+
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+
         children: [
-          Container(
-            padding: const EdgeInsets.all(14),
 
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.grey.shade300,
-              ),
-
-              borderRadius: BorderRadius.circular(12),
-            ),
-
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
-              children: [
-                Text(
-                  "Branch: Chennai Central",
-                  style:
-                      AppTextStyles.bodyText14dark,
-                ),
-
-                const SizedBox(height: 6),
-
-                Text(
-                  "Eggs Sold: 8,540",
-                  style: AppTextStyles.bodyText14,
-                ),
-
-                Text(
-                  "Revenue: ₹18,500",
-                  style: AppTextStyles.bodyText14,
-                ),
-
-                Text(
-                  "Top Category: Brown Eggs",
-                  style: AppTextStyles.bodyText14,
-                ),
-
-                Text(
-                  "Updated: 09 May 2026",
-                  style: AppTextStyles.bodyText14,
-                ),
-              ],
-            ),
+          Text(
+            "Branch Eggs Sold",
+            style:
+                AppTextStyles.bodyText14dark,
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
 
-          Container(
-            padding: const EdgeInsets.all(14),
-
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.grey.shade300,
-              ),
-
-              borderRadius: BorderRadius.circular(12),
-            ),
-
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
-              children: [
-                Text(
-                  "Branch: Coimbatore Hub",
-                  style:
-                      AppTextStyles.bodyText14dark,
-                ),
-
-                const SizedBox(height: 6),
-
-                Text(
-                  "Eggs Sold: 9,120",
-                  style: AppTextStyles.bodyText14,
-                ),
-
-                Text(
-                  "Revenue: ₹21,300",
-                  style: AppTextStyles.bodyText14,
-                ),
-
-                Text(
-                  "Top Category: White Eggs",
-                  style: AppTextStyles.bodyText14,
-                ),
-
-                Text(
-                  "Updated: 09 May 2026",
-                  style: AppTextStyles.bodyText14,
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          Container(
-            padding: const EdgeInsets.all(14),
-
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.grey.shade300,
-              ),
-
-              borderRadius: BorderRadius.circular(12),
-            ),
-
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
-              children: [
-                Text(
-                  "Branch: Madurai Warehouse",
-                  style:
-                      AppTextStyles.bodyText14dark,
-                ),
-
-                const SizedBox(height: 6),
-
-                Text(
-                  "Eggs Sold: 8,530",
-                  style: AppTextStyles.bodyText14,
-                ),
-
-                Text(
-                  "Revenue: ₹16,900",
-                  style: AppTextStyles.bodyText14,
-                ),
-
-                Text(
-                  "Top Category: Country Eggs",
-                  style: AppTextStyles.bodyText14,
-                ),
-
-                Text(
-                  "Updated: 09 May 2026",
-                  style: AppTextStyles.bodyText14,
-                ),
-              ],
-            ),
+          Text(
+            "${dashboard?.totalStockEggs ?? 0} Eggs" ,
+            style: AppTextStyles.bodyText16
           ),
         ],
       ),
+    ),
+  ],
+),
     );
   },
               ),
               const SizedBox(height: 10),
-              RecentActivityCard(),
+              RecentActivityCard(
+                activities:dashboard?.recentActivity ?? [],),
               const SizedBox(height: 10),
               ActionsRequiredCard(),
             ],

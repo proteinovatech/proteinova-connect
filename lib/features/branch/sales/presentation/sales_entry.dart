@@ -614,7 +614,7 @@ if (mounted) {
                     Row(
                       children: [
                         Text(
-                          header["title"]?.toString() ?? "Daily Sales Entry",
+                          "Daily Sales Entry",
                           style: AppTextStyles.headingText22,
                         ),
 
@@ -660,166 +660,13 @@ if (mounted) {
   notesController: notesController,
 
   onCollectPayment: () async {
-    await saveSale(totalAmount);   // ✅ now exists
-    showPaymentOptions();          // ✅ works
+    await saveSale(totalAmount);  
+    showPaymentOptions();          
   },
 ),
 
                     SizedBox(height: size.height * 0.02),
 
-               
-                    // /// OFFERS
-                    // if (offers.isNotEmpty)
-                    //   ListView.builder(
-                    //     itemCount: offers.length,
-                    //     shrinkWrap: true,
-                    //     physics: const NeverScrollableScrollPhysics(),
-                    //     itemBuilder: (context, index) {
-                    //       final offer = offers[index];
-
-                    //       return Container(
-                    //         margin: const EdgeInsets.only(bottom: 10),
-                    //         padding: const EdgeInsets.all(12),
-                    //         decoration: BoxDecoration(
-                    //           color: Colors.white,
-                    //           borderRadius: BorderRadius.circular(12),
-                    //           border: Border.all(color: Colors.grey.shade300),
-                    //         ),
-                    //         child: Row(
-                    //           children: [
-                    //             CircleAvatar(
-                    //               backgroundColor: Colors.green.shade50,
-                    //               child: const Icon(
-                    //                 Icons.local_offer,
-                    //                 color: Colors.green,
-                    //               ),
-                    //             ),
-
-                    //             const SizedBox(width: 10),
-
-                    //             Expanded(
-                    //               child: Text(
-                    //                 offer["offer_text"].toString(),
-                    //                 style: const TextStyle(
-                    //                   fontWeight: FontWeight.w600,
-                    //                   fontSize: 14,
-                    //                 ),
-                    //               ),
-                    //             ),
-                    //           ],
-                    //         ),
-                    //       );
-                    //     },
-                    //   ),
-
-                    // SizedBox(height: size.height * 0.02),
-
-                    /// PAYMENT METHODS
-                    // if (paymentMethods.isNotEmpty)
-                    //   Wrap(
-                    //     spacing: 10,
-                    //     runSpacing: 10,
-                    //     children: paymentMethods.map((e) {
-                    //       return Container(
-                    //         padding: const EdgeInsets.symmetric(
-                    //           horizontal: 14,
-                    //           vertical: 10,
-                    //         ),
-                    //         decoration: BoxDecoration(
-                    //           color: Colors.white,
-                    //           borderRadius: BorderRadius.circular(10),
-                    //           border: Border.all(color: Colors.grey.shade300),
-                    //         ),
-                    //         child: Text(e.toString()),
-                    //       );
-                    //     }).toList(),
-                    //   ),
-
-                    // SizedBox(height: size.height * 0.02),
-
-                    /// BILL SUMMARY
-                    // Container(
-                    //   padding: const EdgeInsets.all(14),
-                    //   decoration: BoxDecoration(
-                    //     color: Colors.white,
-                    //     borderRadius: BorderRadius.circular(12),
-                    //     border: Border.all(color: Colors.grey.shade300),
-                    //   ),
-                    //   child: Column(
-                    //     children: [
-                    //       summaryRow("Items", "${billSummary["items"] ?? 0}"),
-
-                    //       summaryRow("Trays", "${billSummary["trays"] ?? 0}"),
-
-                    //       summaryRow(
-                    //         "Subtotal",
-                    //         "₹ ${billSummary["subtotal"] ?? 0}",
-                    //       ),
-
-                    //       summaryRow("Tax", "₹ ${billSummary["tax"] ?? 0}"),
-
-                    //       const Divider(),
-
-                    //       summaryRow(
-                    //         "Total Amount",
-                    //         "₹ ${billSummary["total_amount"] ?? 0}",
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
-
-                    // SizedBox(height: size.height * 0.02),
-
-                    // Visibility(
-                    //   visible: false,
-                    //   child: Column(
-                    //     children: [
-                    //       StockPreviewCard(
-                    //         available: productDetails.isNotEmpty
-                    //             ? productDetails[0]["stock_trays"].toString()
-                    //             : "0",
-
-                    //         selling: quantityController.text.isEmpty
-                    //             ? "- 0"
-                    //             : "- ${quantityController.text}",
-
-                    //         remaining: productDetails.isNotEmpty
-                    //             ? (productDetails[0]["stock_trays"] -
-                    //                       (int.tryParse(
-                    //                             quantityController.text,
-                    //                           ) ??
-                    //                           0))
-                    //                   .toString()
-                    //             : "0",
-
-                    //         onReceiveTap: () {},
-                    //       ),
-
-                    //       SizedBox(height: size.height * 0.02),
-
-                    //       RecentSalesCard(
-                    //         sales: [
-                    //           SaleItem(
-                    //             time: "Today",
-                    //             quantity: header["today_sales"]?["count"] ?? 0,
-                    //             customer: "Today's Sales",
-                    //           ),
-
-                    //           SaleItem(
-                    //             time: "Stock",
-                    //             quantity: productDetails.isNotEmpty
-                    //                 ? productDetails[0]["stock_trays"]
-                    //                 : 0,
-                    //             customer: productDetails.isNotEmpty
-                    //                 ? productDetails[0]["product_name"]
-                    //                       .toString()
-                    //                 : "Product",
-                    //           ),
-                    //         ],
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
 
                   ],
                 ),
