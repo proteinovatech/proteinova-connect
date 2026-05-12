@@ -59,8 +59,12 @@ Future<void> main() async {
   if (isLoggedIn) {
     if (role == 'purchase') {
       startScreen = const PurchaseBottomNavigator();
-    } else {
+    } else if (role == 'branch') {
       startScreen = const BranchBottomNavigator();
+    } else if (role == 'admin') {
+      startScreen = const AdminBottomNavigator();
+    } else {
+      startScreen = const SignupScreen();
     }
   } else {
     startScreen = const SignupScreen();
@@ -82,10 +86,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
 
       routes: {"/signup": (context) => const SignupScreen()},
-      // routes: {"/signup": (context) => const SignupScreen()},
 
-      // home: startScreen ?? const SignupScreen(),
-      home: AdminBottomNavigator(),
+      // routes: {"/signup": (context) => const SignupScreen()},
+      home: startScreen ?? const SignupScreen(),
+      // home: AdminBottomNavigator(),
     );
   }
 }

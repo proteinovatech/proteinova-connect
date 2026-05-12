@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../data/expense_dummy_data.dart';
+import '../data/expense_repository.dart';
+import '../models/branch_expense_dashboard_model.dart';
+import '../models/expense_model.dart';
 import '../widgets/expense_category_item.dart';
 import '../widgets/expense_summary_card.dart';
 import '../widgets/expense_table_header.dart';
@@ -15,15 +17,88 @@ class AdminExpenseScreen extends StatefulWidget {
 }
 
 class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
+  final ExpenseRepository _repository = ExpenseRepository();
   final TextEditingController amountController = TextEditingController();
-
   final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController dateController = TextEditingController();
 
   String selectedCategory = "Transport";
-
   String selectedPayment = "Cash";
-
   String selectedStatus = "Paid";
+  int selectedBranchId = 1; // Default branch ID
+  String selectedMonth = "2025-05"; // Default month
+
+  bool isLoading = true;
+  bool isSaving = false;
+  BranchExpenseDashboardModel? dashboardData;
+
+  @override
+  void initState() {
+    super.initState();
+    dateController.text = DateTime.now().toString().split(' ')[0];
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    setState(() => isLoading = true);
+    try {
+      final data = await _repository.fetchBranchExpenses(
+        branchId: selectedBranchId,
+        month: selectedMonth,
+      );
+      setState(() {
+        dashboardData = data;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() => isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
+  }
+
+  Future<void> _saveExpense() async {
+    if (amountController.text.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please enter amount")));
+      return;
+    }
+
+    setState(() => isSaving = true);
+    try {
+      await _repository.createBranchExpense(
+        branchId: selectedBranchId,
+        expenseDate: dateController.text,
+        category: selectedCategory.toUpperCase(),
+        amount: double.parse(amountController.text),
+        paymentMethod: selectedPayment.toUpperCase(),
+        description: descriptionController.text,
+        status: selectedStatus.toUpperCase(),
+      );
+
+      amountController.clear();
+      descriptionController.clear();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Expense saved successfully")),
+        );
+      }
+      _fetchData();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    } finally {
+      setState(() => isSaving = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,23 +171,34 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
 
                   const SizedBox(width: 16),
 
-                  Container(
-                    height: 58,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xffE5E7EB)),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.refresh),
-                        SizedBox(width: 8),
-                        Text(
-                          "Refresh",
-                          style: TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                      ],
+                  InkWell(
+                    onTap: _fetchData,
+                    child: Container(
+                      height: 58,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xffE5E7EB)),
+                      ),
+                      child: Row(
+                        children: [
+                          isLoading
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.refresh),
+                          const SizedBox(width: 8),
+                          const Text(
+                            "Refresh",
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -125,7 +211,8 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                 children: [
                   ExpenseSummaryCard(
                     title: "Total Expenses (MTD)",
-                    amount: "₹0.00",
+                    amount:
+                        "₹${dashboardData?.cards.totalExpensesMtd.toStringAsFixed(2) ?? "0.00"}",
                     icon: Icons.currency_rupee,
                     iconBg: const Color(0xffDBEAFE),
 
@@ -138,11 +225,12 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
 
                   ExpenseSummaryCard(
                     title: "Salary / Payroll",
-                    amount: "₹0.00",
+                    amount:
+                        "₹${dashboardData?.cards.salaryPayroll.toStringAsFixed(2) ?? "0.00"}",
                     icon: Icons.person_outline,
                     iconBg: const Color(0xffDBEAFE),
                     onTap: () {
-                      showExpenseDetailsBottomSheet("Rent & Facilities");
+                      showExpenseDetailsBottomSheet("Salary / Payroll");
                     },
                   ),
                 ],
@@ -154,7 +242,8 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                 children: [
                   ExpenseSummaryCard(
                     title: "Rent & Facilities",
-                    amount: "₹0.00",
+                    amount:
+                        "₹${dashboardData?.cards.rentFacilities.toStringAsFixed(2) ?? "0.00"}",
                     icon: Icons.apartment,
                     iconBg: const Color(0xffEDE9FE),
                     onTap: () {
@@ -166,7 +255,8 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
 
                   ExpenseSummaryCard(
                     title: "Transport & Fuel",
-                    amount: "₹0.00",
+                    amount:
+                        "₹${dashboardData?.cards.transportFuel.toStringAsFixed(2) ?? "0.00"}",
                     icon: Icons.local_shipping_outlined,
                     iconBg: const Color(0xffDCFCE7),
                     onTap: () {
@@ -213,8 +303,8 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                     const SizedBox(height: 10),
 
                     ExpenseTextField(
-                      hint: "08 May, 2025",
-                      controller: TextEditingController(),
+                      hint: "YYYY-MM-DD",
+                      controller: dateController,
                       prefixIcon: const Icon(Icons.calendar_month),
                     ),
 
@@ -301,7 +391,10 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                               ),
-                              onPressed: () {},
+                              onPressed: () {
+                                amountController.clear();
+                                descriptionController.clear();
+                              },
                               child: const Text("Reset"),
                             ),
                           ),
@@ -321,8 +414,17 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                               ),
-                              onPressed: () {},
-                              child: const Text("Save Expense"),
+                              onPressed: isSaving ? null : _saveExpense,
+                              child: isSaving
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.black,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text("Save Expense"),
                             ),
                           ),
                         ),
@@ -449,7 +551,10 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
 
                     const SizedBox(height: 30),
 
-                    if (expenseDummyData.isEmpty)
+                    if (isLoading)
+                      const Center(child: CircularProgressIndicator())
+                    else if (dashboardData == null ||
+                        dashboardData!.recentExpenses.isEmpty)
                       Center(
                         child: Column(
                           children: [
@@ -467,16 +572,15 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             ),
                           ],
                         ),
-                      ),
-
-                    if (expenseDummyData.isNotEmpty)
+                      )
+                    else
                       ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: expenseDummyData.length,
+                        itemCount: dashboardData!.recentExpenses.length,
                         itemBuilder: (context, index) {
                           return ExpenseTableRow(
-                            expense: expenseDummyData[index],
+                            expense: dashboardData!.recentExpenses[index],
                           );
                         },
                       ),
