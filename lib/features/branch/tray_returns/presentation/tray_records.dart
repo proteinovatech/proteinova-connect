@@ -1,9 +1,13 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/branch/tray_returns/bloc/tray_return_bloc.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/widget/buildfield1.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/widget/conditionbox.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TrayRecords extends StatefulWidget {
   const TrayRecords({super.key});
@@ -13,8 +17,13 @@ class TrayRecords extends StatefulWidget {
 }
 
 class _TrayRecordsState extends State<TrayRecords> {
-   String? selectedTransport;
-  String selectedPayment = "";
+  final TextEditingController _returnFromController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _returnToController = TextEditingController();
+  final TextEditingController _trayTypeController = TextEditingController();
+  final TextEditingController _qtyController = TextEditingController();
+
   int selectedIndex = -1;
   String fileName = "Choose File";
   int? branchId;
