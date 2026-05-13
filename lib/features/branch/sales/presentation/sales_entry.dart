@@ -409,6 +409,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 });
                 await _recalculateRowFromApi(salesItemCount - 1);
               },
+              selectedEggsMap: {},
             ),
             const SizedBox(height: 18),
 
@@ -428,6 +429,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
               salesItemRow: (index) => salesItemRow(index),
               salesItems: salesItems,
+              onOffersApplied: (List<int> p1) {},
             ),
 
             const SizedBox(height: 18),
@@ -437,32 +439,31 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               selectedPaymentMethod: selectedPaymentMethod,
               paymentTab: paymentTab,
               buildLabel: buildLabel,
-              buildTextField: ({required String hint}) {
-                return buildTextField(hint: hint);
-              },
+
+              selectedEggsMap: {},
+
+              amountController: amountController,
+
+              debtController: debtController,
+
+              buildTextField: buildTextField,
+
               summaryRow: summaryRow,
               itemTrayCount: _itemTrayCount(),
               itemTotal: _itemTotal(),
               offerDiscount: _offerDiscountValue(),
               grandTotal: _grandTotalValue(),
+
               onSubmit: () async {
                 final body = {
-                  /// REQUIRED
                   "login_user_id": loginUserId,
-
                   "customer_number": customerNumberController.text.trim(),
-
                   "customer_name": customerNameController.text.trim(),
-
                   "sales_date": dateController.text.trim(),
-
                   "payment_method": selectedPaymentMethod,
-
                   "offer_discount": _offerDiscountValue(),
-
                   "grand_total": _grandTotalValue(),
 
-                  /// REMOVE EMPTY ROW
                   "items": salesItems
                       .where(
                         (e) =>
@@ -476,7 +477,6 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 print(body);
 
                 try {
-                  /// API SAVE
                   final response = await datasource.createSale(body: body);
 
                   print("CREATE SALE RESPONSE =>");

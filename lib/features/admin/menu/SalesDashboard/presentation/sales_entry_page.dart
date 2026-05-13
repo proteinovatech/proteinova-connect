@@ -44,6 +44,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
   bool isLoading = true;
   bool isProductLoading = false;
+  bool _isSaving = false;
   TextEditingController amountController = TextEditingController();
   TextEditingController debtController = TextEditingController();
   TextEditingController customerNumberController = TextEditingController();
@@ -705,7 +706,11 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               itemTotal: _itemTotal(),
               offerDiscount: _offerDiscountValue(),
               grandTotal: _grandTotalValue(),
+
               onSubmit: () async {
+                if (_isSaving) return;
+
+                _isSaving = true;
                 final body = {
                   "login_user_id": loginUserId,
 
@@ -754,10 +759,11 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                             (grouped[key]!["eggs"] ?? 0) +
                             (int.tryParse(item["eggs"].toString()) ?? 0);
 
-                        grouped[key]!["trays"] =
-                            (grouped[key]!["trays"] ?? 0) +
-                            (((int.tryParse(item["eggs"].toString()) ?? 0) / 30)
-                                .ceil());
+                        // grouped[key]!["trays"] =
+                        //     (grouped[key]!["trays"] ?? 0) +
+                        //     (((int.tryParse(item["eggs"].toString()) ?? 0) / 30)
+                        //         .ceil());
+                        grouped[key]!["trays"] = 1;
 
                         grouped[key]!["total"] =
                             (grouped[key]!["total"] ?? 0) +
@@ -768,10 +774,11 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                           "dozen":
                               double.tryParse(item["dozen"].toString()) ?? 0,
                           "eggs": int.tryParse(item["eggs"].toString()) ?? 0,
-                          "trays":
-                              ((int.tryParse(item["eggs"].toString()) ?? 0) /
-                                      30)
-                                  .ceil(),
+                          // "trays":
+                          //     ((int.tryParse(item["eggs"].toString()) ?? 0) /
+                          //             30)
+                          //         .ceil(),
+                          "trays": 1,
                           "total":
                               double.tryParse(item["total"].toString()) ?? 0,
                         };
@@ -785,141 +792,80 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 print("CREATE SALE BODY =>");
                 print(body);
                 try {
-                  // for (final item in (body["items"] as List)) {
-                  //   final singleProductBody = {
-                  //     ...body,
-                  //     "items": [item],
-                  //   };
+                  final response = await datasource.createSale(body: body);
 
-                  //   print("SINGLE PRODUCT BODY =>");
-                  //   print(singleProductBody);
+                  print("CREATE SALE RESPONSE =>");
+                  print(response);
 
-                  //   final response = await datasource.createSale(
-                  //     body: singleProductBody,
+                  // if (context.mounted) {
+                  //   showDialog(
+                  //     context: context,
+                  //     barrierDismissible: false,
+                  //     builder: (context) {
+                  //       return AlertDialog(
+                  //         shape: RoundedRectangleBorder(
+                  //           borderRadius: BorderRadius.circular(20),
+                  //         ),
+                  //         content: Column(
+                  //           mainAxisSize: MainAxisSize.min,
+                  //           children: [
+                  //             Container(
+                  //               height: 80,
+                  //               width: 80,
+                  //               decoration: BoxDecoration(
+                  //                 color: Colors.green.shade100,
+                  //                 shape: BoxShape.circle,
+                  //               ),
+                  //               child: const Icon(
+                  //                 Icons.check_circle,
+                  //                 color: Colors.green,
+                  //                 size: 60,
+                  //               ),
+                  //             ),
+
+                  //             const SizedBox(height: 20),
+
+                  //             const Text(
+                  //               "Payment Successful!",
+                  //               style: TextStyle(
+                  //                 fontSize: 22,
+                  //                 fontWeight: FontWeight.bold,
+                  //               ),
+                  //             ),
+
+                  //             const SizedBox(height: 10),
+
+                  //             Text(
+                  //               "Grand Total : ₹ ${_grandTotalValue()}",
+                  //               style: const TextStyle(
+                  //                 fontSize: 18,
+                  //                 fontWeight: FontWeight.w600,
+                  //               ),
+                  //             ),
+
+                  //             const SizedBox(height: 20),
+
+                  //             SizedBox(
+                  //               width: double.infinity,
+                  //               child: ElevatedButton(
+                  //                 onPressed: () {
+                  //                   Navigator.pop(context);
+                  //                 },
+                  //                 child: const Text("Close"),
+                  //               ),
+                  //             ),
+                  //           ],
+                  //         ),
+                  //       );
+                  //     },
                   //   );
-
-                  //   print("CREATE SALE RESPONSE =>");
-                  //   print(response);
                   // }
-                  bool allSuccess = true;
-
-                  for (final item in (body["items"] as List)) {
-                    final int trays =
-                        int.tryParse(item["trays"].toString()) ?? 1;
-
-                    for (int i = 0; i < trays; i++) {
-                      final singleTrayBody = {
-                        ...body,
-
-                        "items": [
-                          {
-                            ...item,
-
-                            "dozen": 1,
-                            "eggs": 12,
-                            "trays": 1,
-
-                            "total":
-                                (double.tryParse(item["total"].toString()) ??
-                                    0) /
-                                trays,
-                          },
-                        ],
-                      };
-
-                      print("SINGLE TRAY BODY =>");
-                      print(singleTrayBody);
-
-                      try {
-                        final response = await datasource.createSale(
-                          body: singleTrayBody,
-                        );
-
-                        print("CREATE SALE RESPONSE =>");
-                        print(response);
-                      } catch (e) {
-                        allSuccess = false;
-
-                        print("API FAILED => $e");
-
-                        break;
-                      }
-                    }
-                  }
-
-                  if (!allSuccess) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          backgroundColor: Colors.red,
-                          content: Text("Order failed from backend"),
-                        ),
-                      );
-                    }
-
-                    return;
-                  }
-                  if (allSuccess && context.mounted) {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (context) {
-                        return AlertDialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                height: 80,
-                                width: 80,
-                                decoration: BoxDecoration(
-                                  color: Colors.green.shade100,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                  size: 60,
-                                ),
-                              ),
-
-                              const SizedBox(height: 20),
-
-                              const Text(
-                                "Payment Successful!",
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-
-                              const SizedBox(height: 10),
-
-                              Text(
-                                "Grand Total : ₹ ${_grandTotalValue()}",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-
-                              const SizedBox(height: 20),
-
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  child: const Text("Close"),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        backgroundColor: Colors.green,
+                        content: Text("Sale Created Successfully"),
+                      ),
                     );
                   }
                 } catch (e) {
@@ -927,14 +873,21 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                   print(e);
 
                   if (context.mounted) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text("Failed : $e")));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor: Colors.red,
+                        content: Text("Failed : $e"),
+                      ),
+                    );
                   }
+                } finally {
+                  _isSaving = false;
                 }
               },
+
               amountController: amountController,
               debtController: debtController,
+              selectedEggsMap: {},
             ),
 
             const SizedBox(height: 30),

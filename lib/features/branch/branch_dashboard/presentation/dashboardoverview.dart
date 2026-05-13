@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
-=======
 import 'package:proteinova_connect/core/network/dio_client.dart';
->>>>>>> 3932f4493cb2846aa06ff0d936b8a08c9b6c1a6f
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/data/model/dashboard_model.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/data/repository/dashboard_repository.dart';
@@ -32,38 +27,12 @@ class _DashboardoverviewState extends State<Dashboardoverview> {
 
   Future<void> fetchDashboardData() async {
     try {
-<<<<<<< HEAD
-      final response = await http.get(
-        Uri.parse("${dotenv.env['BASE_URL']}/api/branch/dashboard"),
-
-        headers: {"Accept": "application/json"},
-      );
-
-      print(response.body);
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        setState(() {
-          cards = data["cards"] ?? {};
-
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          isLoading = false;
-        });
-
-        print("STATUS CODE : ${response.statusCode}");
-      }
-=======
       final result = await repository.fetchDashboardData();
 
       setState(() {
         dashboardModel = result;
         isLoading = false;
       });
->>>>>>> 3932f4493cb2846aa06ff0d936b8a08c9b6c1a6f
     } catch (e) {
       setState(() {
         isLoading = false;
@@ -96,14 +65,9 @@ class _DashboardoverviewState extends State<Dashboardoverview> {
                   Stock(
                     title: "Closing Stock",
 
-                    value: "${cards["closing_stock"] ?? 0} trays",
+                    value: "${dashboardModel!.cards.closingStock} trays",
 
-<<<<<<< HEAD
                     percent: "13.5%",
-=======
-                    value:
-                        "${dashboardModel!.cards.closingStock} trays",
->>>>>>> 3932f4493cb2846aa06ff0d936b8a08c9b6c1a6f
 
                     subtitle: "Yesterday",
 
@@ -122,14 +86,9 @@ class _DashboardoverviewState extends State<Dashboardoverview> {
                   Stockdetails(
                     title: "Opening Stock",
 
-                    value: "${cards["opening_stocks"] ?? 0} trays",
+                    value: "${dashboardModel!.cards.openingStocks} trays",
 
-<<<<<<< HEAD
                     icon: Icons.inventory,
-=======
-                    value:
-                        "${dashboardModel!.cards.openingStocks} trays",
->>>>>>> 3932f4493cb2846aa06ff0d936b8a08c9b6c1a6f
 
                     iconBg: const Color(0xFFE6EBF0),
 
@@ -144,14 +103,9 @@ class _DashboardoverviewState extends State<Dashboardoverview> {
                   Stock(
                     title: "Sales Today",
 
-                    value: "₹ ${cards["sales_today"] ?? 0}",
+                    value: "₹ ${dashboardModel!.cards.salesToday}",
 
-<<<<<<< HEAD
                     percent: "-2%",
-=======
-                    value:
-                        "₹ ${dashboardModel!.cards.salesToday}",
->>>>>>> 3932f4493cb2846aa06ff0d936b8a08c9b6c1a6f
 
                     subtitle: "vs yesterday",
 
@@ -170,14 +124,10 @@ class _DashboardoverviewState extends State<Dashboardoverview> {
                   Stockdetails(
                     title: "Incoming Stocks",
 
-                    value: "${cards["incoming_stock_in_transit"] ?? 0} trays",
-
-<<<<<<< HEAD
-                    icon: Icons.local_shipping,
-=======
                     value:
                         "${dashboardModel!.cards.incomingStockInTransit} trays",
->>>>>>> 3932f4493cb2846aa06ff0d936b8a08c9b6c1a6f
+
+                    icon: Icons.local_shipping,
 
                     iconBg: const Color(0xFFE6EBF0),
 
@@ -192,14 +142,9 @@ class _DashboardoverviewState extends State<Dashboardoverview> {
                   Stockdetails(
                     title: "Damage stock",
 
-                    value: "${cards["damaged_stock"] ?? 0} trays",
+                    value: "${dashboardModel!.cards.damagedStock} trays",
 
-<<<<<<< HEAD
                     icon: Icons.send_outlined,
-=======
-                    value:
-                        "${dashboardModel!.cards.damagedStock} trays",
->>>>>>> 3932f4493cb2846aa06ff0d936b8a08c9b6c1a6f
 
                     iconBg: const Color(0xFFE6EBF0),
 
@@ -214,14 +159,9 @@ class _DashboardoverviewState extends State<Dashboardoverview> {
                   Stockdetails(
                     title: "Today Expense",
 
-                    value: "₹ ${cards["today_expense"] ?? 0}",
+                    value: "₹ ${dashboardModel!.cards.todayExpense}",
 
-<<<<<<< HEAD
                     icon: Icons.trending_up,
-=======
-                    value:
-                        "₹ ${dashboardModel!.cards.todayExpense}",
->>>>>>> 3932f4493cb2846aa06ff0d936b8a08c9b6c1a6f
 
                     iconBg: const Color(0xFFE6EBF0),
 

@@ -81,14 +81,8 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
   int selectedIndex = 0;
 
   final List<Widget> pages = [
-<<<<<<< HEAD
-    BranchDashboard(),
-    Sales(),
-    Inventory(),
-=======
         BranchDashboard(),
          Sales(),
->>>>>>> 3932f4493cb2846aa06ff0d936b8a08c9b6c1a6f
     DailyClosing(),
   ];
   @override
@@ -161,11 +155,6 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
         return "Sales";
        
       case 2:
-<<<<<<< HEAD
-        return "Inventory";
-      case 3:
-=======
->>>>>>> 3932f4493cb2846aa06ff0d936b8a08c9b6c1a6f
         return "Daily closing";
       case 3:
         return "Menu";
@@ -199,11 +188,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                   _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
 
                   _menuTile(Icons.money, "Expenses", ExpenseManagement()),
-<<<<<<< HEAD
-                  _menuTile(Icons.money, "Admin in", AdminInventory()),
-=======
                   //  _menuTile(Icons.money, "Admin in", AdminInventory()),
->>>>>>> 3932f4493cb2846aa06ff0d936b8a08c9b6c1a6f
 
                   const SizedBox(height: 20),
                   Divider(),

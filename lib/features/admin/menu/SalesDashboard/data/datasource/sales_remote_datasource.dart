@@ -9,28 +9,51 @@ class SalesRemoteDatasource {
   // ──────────────────────────────────────────────
   // POST /api/sales  →  createSale
   // ──────────────────────────────────────────────
-  Future<Map<String, dynamic>> createSale({
-    required Map<String, dynamic> body,
-  }) async {
-    print("CREATE SALE BODY =>");
-    print(body);
+  // Future<Map<String, dynamic>> createSale({
+  //   required Map<String, dynamic> body,
+  // }) async {
+  //   print("CREATE SALE BODY =>");
+  //   print(body);
 
-    final response = await http.post(
-      Uri.parse("$baseUrl/api/sales"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode(body),
-    );
+  //   final response = await http.post(
+  //     Uri.parse("$baseUrl/api/sales"),
+  //     headers: {"Content-Type": "application/json"},
+  //     body: jsonEncode(body),
+  //   );
 
-    print("CREATE SALE RESPONSE => ${response.body}");
-    final data = jsonDecode(response.body);
+  //   print("CREATE SALE RESPONSE => ${response.body}");
+  //   final data = jsonDecode(response.body);
 
-    if ((response.statusCode == 200 || response.statusCode == 201) &&
-        data["error"] == null) {
-      return data;
-    } else {
-      throw Exception(
-        data["error"] ?? "Failed to create sale : ${response.statusCode}",
+  //   if ((response.statusCode == 200 || response.statusCode == 201) &&
+  //       data["error"] == null) {
+  //     return data;
+  //   } else {
+  //     throw Exception(
+  //       data["error"] ?? "Failed to create sale : ${response.statusCode}",
+  //     );
+  //   }
+  // }
+  Future<dynamic> createSale({required Map<String, dynamic> body}) async {
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/api/sales"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
       );
+
+      final data = jsonDecode(response.body);
+
+      print("CREATE SALE RESPONSE => $data");
+
+      /// IMPORTANT
+      if (data["error"] != null) {
+        throw Exception(data["error"]);
+      }
+
+      return data;
+    } catch (e) {
+      print("CREATE SALE API ERROR => $e");
+      rethrow;
     }
   }
 
