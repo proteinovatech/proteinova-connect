@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/network/dio_client.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/data/repository/dashboard_repository.dart';
@@ -24,7 +25,7 @@ class BranchDashboard extends StatefulWidget {
 class _BranchDashboardState extends State<BranchDashboard> {
   Size get size => MediaQuery.of(context).size;
 
-  final DashboardRepository repository = DashboardRepository();
+  final DashboardRepository repository = DashboardRepository(DioClient().dio);
 
   bool isLoading = true;
 
@@ -52,7 +53,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
       final result = await repository.fetchDashboardData();
 
       setState(() {
-        DashboardModel != DashboardModel;
+
         cards = {
           "opening_stocks": result.cards.openingStocks,
 
