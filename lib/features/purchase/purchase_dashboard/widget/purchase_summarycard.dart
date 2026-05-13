@@ -63,7 +63,7 @@ double totalTrays = 0;
   totalTrays += qty;
 }
 final costPerTray =
-    totalTrays == 0 ? 0 : productTotal / totalTrays;
+    totalTrays == 0 ? 0 : totalCost / totalTrays;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -182,11 +182,11 @@ const SizedBox(height: 8),
             children: [
               Text(
                 "Total Estimated Cost",
-                style: AppTextStyles.headingText22,
+                style: AppTextStyles.headingText20,
               ),
               Text(
                 "₹ $totalCost", // placeholder
-                style: AppTextStyles.blueText,
+                style: AppTextStyles.blueText2,
               ),
             ],
           ),
