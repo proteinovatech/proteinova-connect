@@ -1,5 +1,3 @@
-
-
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiConfig {
@@ -13,4 +11,4 @@ class ApiConfig {
   static const String getSupplier = "/api/getSupplier";
   static String arrival(String purchaseId) => "/api/admin/arrival/$purchaseId";
   static const String adminDashboard = "/api/admin/dashboard";
-} 
+}

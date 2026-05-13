@@ -5,65 +5,63 @@ class ApprovalEmptyWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
 
-            Icon(
-              Icons.assignment_outlined,
-              size: 120,
-              color: Colors.grey.shade300,
+          Icon(
+            Icons.assignment_outlined,
+            size: 120,
+            color: Colors.grey.shade300,
+          ),
+
+          const SizedBox(height: 24),
+
+          const Text(
+            "No approvals found",
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.w700,
             ),
+          ),
 
-            const SizedBox(height: 24),
+          const SizedBox(height: 12),
 
-            const Text(
-              "No approvals found",
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.w700,
+          const Text(
+            "No approvals found in this status.",
+            style: TextStyle(
+              fontSize: 18,
+              color: Color(0xff6B7280),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 18,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              side: const BorderSide(
+                color: Color(0xffE5E7EB),
               ),
             ),
-
-            const SizedBox(height: 12),
-
-            const Text(
-              "No approvals found in this status.",
+            onPressed: () {},
+            icon: const Icon(Icons.filter_alt_outlined),
+            label: const Text(
+              "Change Status",
               style: TextStyle(
                 fontSize: 18,
-                color: Color(0xff6B7280),
+                color: Colors.black,
               ),
             ),
-
-            const SizedBox(height: 28),
-
-            OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 18,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                side: const BorderSide(
-                  color: Color(0xffE5E7EB),
-                ),
-              ),
-              onPressed: () {},
-              icon: const Icon(Icons.filter_alt_outlined),
-              label: const Text(
-                "Change Status",
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

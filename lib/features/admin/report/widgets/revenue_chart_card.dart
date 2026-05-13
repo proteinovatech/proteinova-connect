@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
 class RevenueChartCard extends StatelessWidget {
-  const RevenueChartCard({super.key});
+  final List<dynamic> chartData;
+
+  const RevenueChartCard({
+    super.key,
+    required this.chartData,
+  });
 
   Widget bar(double revenue, double purchase, String month) {
     return Column(
@@ -10,12 +15,15 @@ class RevenueChartCard extends StatelessWidget {
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
+
           children: [
             Container(
               width: 10,
               height: revenue,
+
               decoration: BoxDecoration(
                 color: Colors.green,
+
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -25,8 +33,10 @@ class RevenueChartCard extends StatelessWidget {
             Container(
               width: 10,
               height: purchase,
+
               decoration: BoxDecoration(
                 color: Colors.orange,
+
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -47,8 +57,12 @@ class RevenueChartCard extends StatelessWidget {
 
       decoration: BoxDecoration(
         color: Colors.white,
+
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xffE5E7EB)),
+
+        border: Border.all(
+          color: const Color(0xffE5E7EB),
+        ),
       ),
 
       child: Column(
@@ -57,7 +71,11 @@ class RevenueChartCard extends StatelessWidget {
         children: [
           const Text(
             "Revenue vs Purchases",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
           ),
 
           const SizedBox(height: 20),
@@ -69,8 +87,13 @@ class RevenueChartCard extends StatelessWidget {
             children: [
               Row(
                 mainAxisSize: MainAxisSize.min,
+
                 children: [
-                  Container(width: 14, height: 14, color: Colors.green),
+                  Container(
+                    width: 14,
+                    height: 14,
+                    color: Colors.green,
+                  ),
 
                   const SizedBox(width: 6),
 
@@ -80,8 +103,13 @@ class RevenueChartCard extends StatelessWidget {
 
               Row(
                 mainAxisSize: MainAxisSize.min,
+
                 children: [
-                  Container(width: 14, height: 14, color: Colors.orange),
+                  Container(
+                    width: 14,
+                    height: 14,
+                    color: Colors.orange,
+                  ),
 
                   const SizedBox(width: 6),
 
@@ -98,16 +126,24 @@ class RevenueChartCard extends StatelessWidget {
 
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+
               crossAxisAlignment: CrossAxisAlignment.end,
 
-              children: [
-                bar(90, 60, "Jan"),
-                bar(120, 80, "Feb"),
-                bar(75, 60, "Mar"),
-                bar(150, 95, "Apr"),
-                bar(110, 80, "May"),
-                bar(160, 100, "Jun"),
-              ],
+              children: chartData.map((e) {
+                return bar(
+                  double.tryParse(
+                        e["revenue"].toString(),
+                      ) ??
+                      0,
+
+                  double.tryParse(
+                        e["purchase"].toString(),
+                      ) ??
+                      0,
+
+                  e["month"].toString(),
+                );
+              }).toList(),
             ),
           ),
         ],

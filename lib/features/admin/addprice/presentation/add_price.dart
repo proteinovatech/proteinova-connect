@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/admin_addprice_skeleton_loader.dart';
+import 'package:proteinova_connect/services/offer_service.dart';
 
 class AddPriceScreen extends StatefulWidget {
   const AddPriceScreen({super.key});
@@ -8,50 +11,110 @@ class AddPriceScreen extends StatefulWidget {
 }
 
 class _AddPriceScreenState extends State<AddPriceScreen> {
-  final List<Map<String, dynamic>> products = [
-    {
-      "name": "White Medium",
-      "ncc": TextEditingController(text: "5.20"),
-      "market": TextEditingController(text: "5.50"),
-      "egg": TextEditingController(text: "5.35"),
-    },
-    {
-      "name": "White Bullet",
-      "ncc": TextEditingController(text: "6.00"),
-      "market": TextEditingController(text: "6.30"),
-      "egg": TextEditingController(text: "6.15"),
-    },
-    {
-      "name": "White Small Eggs",
-      "ncc": TextEditingController(text: "4.80"),
-      "market": TextEditingController(text: "5.00"),
-      "egg": TextEditingController(text: "4.90"),
-    },
-    {
-      "name": "Brown Eggs",
-      "ncc": TextEditingController(text: "7.20"),
-      "market": TextEditingController(text: "7.50"),
-      "egg": TextEditingController(text: "7.35"),
-    },
-    {
-      "name": "Country Eggs",
-      "ncc": TextEditingController(text: "9.00"),
-      "market": TextEditingController(text: "9.50"),
-      "egg": TextEditingController(text: "9.25"),
-    },
-    {
-      "name": "Quail Eggs",
-      "ncc": TextEditingController(text: "3.20"),
-      "market": TextEditingController(text: "3.50"),
-      "egg": TextEditingController(text: "3.35"),
-    },
-    {
-      "name": "Duck Eggs",
-      "ncc": TextEditingController(text: "8.00"),
-      "market": TextEditingController(text: "8.40"),
-      "egg": TextEditingController(text: "8.20"),
-    },
-  ];
+  final List<Map<String, dynamic>> products = [];
+  bool isLoading = false;
+  bool isUpdating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCurrentPrices();
+  }
+
+  @override
+  void dispose() {
+    for (final item in products) {
+      (item["egg"] as TextEditingController).dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _fetchCurrentPrices() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final rows = await OfferService.getCurrentPrices();
+      final fetchedProducts = <Map<String, dynamic>>[];
+      for (final row in rows) {
+        if (row is! Map) continue;
+        final map = Map<String, dynamic>.from(row);
+        final productName = (map["product_name"] ?? "").toString().trim();
+        final price = map["price_per_egg"];
+        final parsed = price == null ? null : double.tryParse(price.toString());
+        if (productName.isEmpty || parsed == null) continue;
+        final formatted = parsed.toStringAsFixed(2);
+        fetchedProducts.add({
+          "name": productName,
+
+          "egg": TextEditingController(text: formatted),
+        });
+      }
+      if (!mounted) return;
+
+      // Fully source product categories from DB response.
+      for (final item in products) {
+        (item["ncc"] as TextEditingController).dispose();
+        (item["market"] as TextEditingController).dispose();
+        (item["egg"] as TextEditingController).dispose();
+      }
+      products
+        ..clear()
+        ..addAll(fetchedProducts);
+      setState(() {});
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Failed to fetch prices: $e")));
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _bulkUpdatePrices() async {
+    setState(() {
+      isUpdating = true;
+    });
+    try {
+      final payload = products.map((item) {
+        return {
+          "product_name": item["name"],
+          "price_per_egg": (item["egg"] as TextEditingController).text.trim(),
+        };
+      }).toList();
+
+      final ok = await OfferService.bulkUpdatePrices(payload);
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            ok ? "Prices updated successfully" : "Failed to update prices",
+          ),
+        ),
+      );
+
+      if (ok) {
+        await _fetchCurrentPrices();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Update failed: $e")));
+    } finally {
+      if (mounted) {
+        setState(() {
+          isUpdating = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,14 +127,11 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
         backgroundColor: const Color(0xffF5F5F7),
         elevation: 0,
 
-       
         title: Text(
           "Pricing Matrix",
-
-          style: TextStyle(
-            color: Colors.black,
+          style: AppTextStyles.headingText25.copyWith(
             fontSize: isSmall ? 22 : 26,
-            fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
         ),
 
@@ -96,7 +156,9 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
         ],
       ),
 
-      body: SingleChildScrollView(
+  body: isLoading
+    ? const AdminAddpriceSkeletonLoader()
+    : SingleChildScrollView(
         padding: const EdgeInsets.all(16),
 
         child: Column(
@@ -138,20 +200,17 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                                 children: [
                                   Text(
                                     "Add Price",
-
-                                    style: TextStyle(
+                                    style: AppTextStyles.headingText22.copyWith(
                                       fontSize: isSmall ? 18 : 22,
-                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
 
                                   const SizedBox(height: 6),
 
                                   Text(
-                                    "7 Active Products",
-
-                                    style: TextStyle(
-                                      color: Colors.grey,
+                                    "${products.length} Active Products",
+                                    style: AppTextStyles.bodyText14.copyWith(
+                                      color: Colors.grey.shade600,
                                       fontSize: isSmall ? 13 : 15,
                                     ),
                                   ),
@@ -165,78 +224,100 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                             Column(
                               children: [
                                 /// DISCARD
-                                Container(
-                                  width: isSmall ? 150 : 190,
-                                  height: 52,
+                                GestureDetector(
+                                  onTap: isLoading || isUpdating
+                                      ? null
+                                      : _fetchCurrentPrices,
+                                  child: Container(
+                                    width: isSmall ? 150 : 190,
+                                    height: 52,
 
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
 
-                                    borderRadius: BorderRadius.circular(16),
+                                      borderRadius: BorderRadius.circular(16),
 
-                                    border: Border.all(
-                                      color: Colors.grey.shade300,
+                                      border: Border.all(
+                                        color: Colors.grey.shade300,
+                                      ),
                                     ),
-                                  ),
 
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
 
-                                    children: [
-                                      Icon(
-                                        Icons.history,
-                                        size: isSmall ? 18 : 20,
-                                      ),
-
-                                      const SizedBox(width: 8),
-
-                                      Text(
-                                        "Discard",
-
-                                        style: TextStyle(
-                                          fontSize: isSmall ? 13 : 15,
-                                          fontWeight: FontWeight.bold,
+                                      children: [
+                                        Icon(
+                                          Icons.history,
+                                          size: isSmall ? 18 : 20,
                                         ),
-                                      ),
-                                    ],
+
+                                        const SizedBox(width: 8),
+
+                                        Text(
+                                          "Discard",
+                                          style: AppTextStyles.buttonText16
+                                              .copyWith(
+                                                fontSize: isSmall ? 13 : 15,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
 
                                 const SizedBox(height: 12),
 
                                 /// UPDATE BUTTON
-                                Container(
-                                  width: isSmall ? 150 : 190,
-                                  height: 52,
+                                GestureDetector(
+                                  onTap: isLoading || isUpdating
+                                      ? null
+                                      : _bulkUpdatePrices,
+                                  child: Container(
+                                    width: isSmall ? 150 : 190,
+                                    height: 52,
 
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xff071A52),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xff071A52),
 
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
 
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
 
-                                    children: [
-                                      Icon(
-                                        Icons.edit,
-                                        color: Colors.white,
-                                        size: isSmall ? 18 : 20,
-                                      ),
+                                      children: [
+                                        if (isUpdating)
+                                          const SizedBox(
+                                            height: 16,
+                                            width: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        else
+                                          Icon(
+                                            Icons.edit,
+                                            color: Colors.white,
+                                            size: isSmall ? 18 : 20,
+                                          ),
 
-                                      const SizedBox(width: 8),
+                                        const SizedBox(width: 8),
 
-                                      Text(
-                                        "Update Rates",
-
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: isSmall ? 13 : 15,
-                                          fontWeight: FontWeight.bold,
+                                        Text(
+                                          isUpdating
+                                              ? "Updating..."
+                                              : "Update Rates",
+                                          style: AppTextStyles.buttonText16
+                                              .copyWith(
+                                                color: Colors.white,
+                                                fontSize: isSmall ? 13 : 15,
+                                              ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ],
@@ -261,52 +342,18 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                     child: Row(
                       children: [
                         /// PRODUCT
-                        const Expanded(
+                        Expanded(
                           flex: 3,
                           child: Text(
                             "PRODUCT CATEGORY",
-                            style: TextStyle(
+                            style: AppTextStyles.bodyText12semibold.copyWith(
                               fontSize: 11,
                               color: Colors.grey,
-                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
 
                         /// NCC RATE
-                        Expanded(
-                          flex: 2,
-                          child: Center(
-                            child: Text(
-                              "NCC RATE",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: isSmall ? 9 : 11,
-                                color: Colors.grey,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(width: 8),
-
-                        /// MARKET RATE
-                        Expanded(
-                          flex: 2,
-                          child: Center(
-                            child: Text(
-                              "MARKET RATE",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: isSmall ? 9 : 11,
-                                color: Colors.grey,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-
                         const SizedBox(width: 8),
 
                         /// RATE PER EGG
@@ -316,10 +363,9 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                             child: Text(
                               "RATE PER EGG (₹)",
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: AppTextStyles.bodyText12semibold.copyWith(
                                 fontSize: isSmall ? 8 : 10,
                                 color: Colors.grey,
-                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
@@ -329,86 +375,80 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                   ),
 
                   /// PRODUCT LIST
-                  ListView.builder(
-                    shrinkWrap: true,
-
-                    physics: const NeverScrollableScrollPhysics(),
-
-                    itemCount: products.length,
-
-                    itemBuilder: (context, index) {
-                      final item = products[index];
-
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 22,
-                        ),
-
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(color: Colors.grey.shade200),
+                  if (isLoading)
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (products.isEmpty)
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Center(
+                        child: Text(
+                          "No product categories found in DB",
+                          style: AppTextStyles.bodyText14.copyWith(
+                            color: Colors.grey,
                           ),
                         ),
+                      ),
+                    )
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
 
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                      physics: const NeverScrollableScrollPhysics(),
 
-                          children: [
-                            /// PRODUCT NAME
-                            Expanded(
-                              flex: 3,
+                      itemCount: products.length,
 
-                              child: Text(
-                                item["name"],
+                      itemBuilder: (context, index) {
+                        final item = products[index];
 
-                                style: TextStyle(
-                                  fontSize: isSmall ? 14 : 16,
-                                  fontWeight: FontWeight.bold,
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 22,
+                          ),
+
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: Colors.grey.shade200),
+                            ),
+                          ),
+
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+
+                            children: [
+                              /// PRODUCT NAME
+                              Expanded(
+                                flex: 3,
+
+                                child: Text(
+                                  item["name"],
+                                  style: AppTextStyles.bodyText14dark.copyWith(
+                                    fontSize: isSmall ? 14 : 16,
+                                  ),
                                 ),
                               ),
-                            ),
 
-                            const SizedBox(width: 8),
+                              const SizedBox(width: 8),
 
-                            /// NCC RATE
-                            Expanded(
-                              flex: 2,
+                              const SizedBox(width: 8),
 
-                              child: priceField(
-                                controller: item["ncc"],
-                                isSmall: isSmall,
+                              /// RATE PER EGG
+                              Expanded(
+                                flex: 2,
+
+                                child: priceField(
+                                  controller: item["egg"],
+                                  isSmall: isSmall,
+                                ),
                               ),
-                            ),
-
-                            const SizedBox(width: 8),
-
-                            /// MARKET RATE
-                            Expanded(
-                              flex: 2,
-
-                              child: priceField(
-                                controller: item["market"],
-                                isSmall: isSmall,
-                              ),
-                            ),
-
-                            const SizedBox(width: 8),
-
-                            /// RATE PER EGG
-                            Expanded(
-                              flex: 2,
-
-                              child: priceField(
-                                controller: item["egg"],
-                                isSmall: isSmall,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                 ],
               ),
             ),
@@ -437,8 +477,7 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                   Expanded(
                     child: Text(
                       "All rates are in INR (₹) per egg.",
-
-                      style: TextStyle(
+                      style: AppTextStyles.bodyText16.copyWith(
                         fontSize: isSmall ? 14 : 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -477,10 +516,8 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
         children: [
           Text(
             "₹",
-
-            style: TextStyle(
+            style: AppTextStyles.buttonText16.copyWith(
               fontSize: isSmall ? 14 : 16,
-              fontWeight: FontWeight.bold,
             ),
           ),
 
@@ -500,8 +537,9 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
               ),
 
               style: TextStyle(
+                color: AppTextStyles.buttonText16.color,
                 fontSize: isSmall ? 14 : 16,
-                fontWeight: FontWeight.bold,
+                fontWeight: AppTextStyles.buttonText16.fontWeight,
               ),
             ),
           ),

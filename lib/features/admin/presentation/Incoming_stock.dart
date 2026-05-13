@@ -1,11 +1,362 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/features/admin/widget/incoming_widget.dart';
+import '../inventory/data/inventory_repository.dart';
+import '../inventory/models/inventory_model.dart';
 
-class IncomingStock extends StatelessWidget {
+class IncomingStock extends StatefulWidget {
   const IncomingStock({super.key});
 
   @override
+  State<IncomingStock> createState() => _IncomingStockState();
+}
+
+class _IncomingStockState extends State<IncomingStock> {
+  final InventoryRepository _repository = InventoryRepository();
+  List<PurchaseModel> purchases = [];
+  String searchQuery = "";
+  String selectedStatus = "All Status";
+  String selectedSupplier = "All Suppliers";
+  AdminInventoryModel? inventoryModel;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    setState(() => isLoading = true);
+    try {
+      // Fetch admin metrics and purchases
+      final data = await _repository.fetchInventoryData();
+      final purchasesList = await _repository.fetchPurchases();
+
+      setState(() {
+        inventoryModel = data;
+        purchases = purchasesList;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() => isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Connection Error: $e")));
+      }
+    }
+  }
+
+  Future<void> _receiveStock(int dispatchId) async {
+    try {
+      // Using branchId 1 as default
+      await _repository.receiveStock(1, dispatchId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Stock received successfully")),
+        );
+      }
+      _fetchData();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      }
+    }
+  }
+
+  Future<void> _markArrival(int dispatchId) async {
+    try {
+      // Using branchId 1 as default
+      await _repository.markArrival(1, dispatchId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Arrival marked successfully")),
+        );
+      }
+      _fetchData();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      }
+    }
+  }
+
+  List<PurchaseModel> get _filteredPurchases {
+    List<PurchaseModel> list = purchases;
+
+    // Filter by Search Query
+    if (searchQuery.isNotEmpty) {
+      final query = searchQuery.toLowerCase();
+      list = list.where((p) {
+        return p.poNumber.toLowerCase().contains(query) ||
+            p.supplierName.toLowerCase().contains(query) ||
+            p.productName.toLowerCase().contains(query);
+      }).toList();
+    }
+
+    // Filter by Status
+    if (selectedStatus != "All Status") {
+      final todayStr = DateTime.now().toLocal().toIso8601String().split('T').first;
+      
+      if (selectedStatus == "Expected Today") {
+        list = list.where((p) => p.arrivalDate.split('T').first == todayStr).toList();
+      } else if (selectedStatus == "Ready for Unloading") {
+        list = list.where((p) => p.status.toUpperCase() == "ARRIVAL" || p.status.toUpperCase() == "READY_FOR_UNLOADING").toList();
+      } else if (selectedStatus == "In Transit") {
+        list = list.where((p) {
+          if (p.arrivalDate.isEmpty) return false;
+          return p.arrivalDate.split('T').first.compareTo(todayStr) > 0 && p.status.toUpperCase() != "RECEIVED";
+        }).toList();
+      } else if (selectedStatus == "Delayed") {
+        list = list.where((p) {
+          if (p.arrivalDate.isEmpty) return false;
+          return p.arrivalDate.split('T').first.compareTo(todayStr) < 0 && p.status.toUpperCase() != "RECEIVED";
+        }).toList();
+      } else {
+        final filterStatus = selectedStatus.toUpperCase().replaceAll(' ', '_');
+        list = list.where((p) => p.status.toUpperCase() == filterStatus).toList();
+      }
+    }
+
+    // Filter by Supplier
+    if (selectedSupplier != "All Suppliers") {
+      list = list
+          .where(
+            (p) =>
+                p.supplierName.toUpperCase() == selectedSupplier.toUpperCase(),
+          )
+          .toList();
+    }
+
+    return list;
+  }
+
+  int get _expectedTodayShipments {
+    final today = DateTime.now().toLocal();
+    final todayStr =
+        "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+    return purchases
+        .where((p) => p.arrivalDate.split('T').first == todayStr)
+        .length;
+  }
+
+  int get _expectedTodayEggs {
+    final today = DateTime.now().toLocal();
+    final todayStr =
+        "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+    return purchases
+        .where((p) => p.arrivalDate.split('T').first == todayStr)
+        .fold(0, (sum, p) => sum + p.totalQuantity);
+  }
+
+  int get _readyForUnloadingShipments {
+    return purchases
+        .where(
+          (p) =>
+              p.status.toUpperCase() == "ARRIVAL" ||
+              p.status.toUpperCase() == "READY_FOR_UNLOADING",
+        )
+        .length;
+  }
+
+  int get _upcomingShipments {
+    final today = DateTime.now().toLocal();
+    final todayStr =
+        "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+    return purchases.where((p) {
+      if (p.arrivalDate.isEmpty) return false;
+      final arrivalStr = p.arrivalDate.split('T').first;
+      return arrivalStr.compareTo(todayStr) > 0;
+    }).length;
+  }
+
+  void _showShipmentModal(String title, List<PurchaseModel> filteredPurchases) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.75,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 60,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "$title Details",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+                const Divider(),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: filteredPurchases.isEmpty
+                      ? const Center(child: Text("No shipments found"))
+                      : SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: SizedBox(
+                            width: 650,
+                            child: ListView.builder(
+                              itemCount: filteredPurchases.length,
+                              itemBuilder: (context, index) {
+                                final p = filteredPurchases[index];
+                                return buildTableRow(
+                                  po: p.poNumber,
+                                  date: _formatDate(p.createdAt),
+                                  supplier: p.supplierName,
+                                  location: p.location,
+                                  quantity: "${p.totalQuantity} Eggs",
+                                  type: p.productName,
+                                  status: p.status,
+                                  isReceive:
+                                      p.status.toUpperCase() ==
+                                          "READY FOR UNLOADING" ||
+                                      p.status.toUpperCase() == "ARRIVAL",
+                                  onReceive: () {
+                                    Navigator.pop(context);
+                                    _receiveStock(p.id);
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showFilterMenu(
+    BuildContext context,
+    List<String> options,
+    String selected,
+    Function(String) onSelect,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Select Filter",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const Divider(),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: options.length,
+                  itemBuilder: (context, index) {
+                    final opt = options[index];
+                    return ListTile(
+                      title: Text(
+                        opt,
+                        style: TextStyle(
+                          color: opt == selected ? Colors.blue : Colors.black,
+                          fontWeight: opt == selected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                      trailing: opt == selected
+                          ? const Icon(Icons.check, color: Colors.blue)
+                          : null,
+                      onTap: () {
+                        onSelect(opt);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  String _formatDate(String isoDate) {
+    if (isoDate.isEmpty) return "N/A";
+    try {
+      final date = DateTime.parse(isoDate).toLocal();
+      final months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
+      final day = date.day;
+      final month = months[date.month - 1];
+      final year = date.year;
+      int hour = date.hour;
+      final minute = date.minute.toString().padLeft(2, '0');
+      final ampm = hour >= 12 ? 'pm' : 'am';
+      if (hour > 12) hour -= 12;
+      if (hour == 0) hour = 12;
+      final hourStr = hour.toString().padLeft(2, '0');
+      return "$day $month $year - $hourStr:$minute $ampm";
+    } catch (e) {
+      return isoDate.split('T').first;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7F7),
       body: SafeArea(
@@ -49,227 +400,22 @@ class IncomingStock extends StatelessWidget {
               /// CARDS
               GestureDetector(
                 onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) {
-                      return Container(
-                        height: MediaQuery.of(context).size.height * 0.68,
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(24),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(14),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              /// TOP INDICATOR
-                              Center(
-                                child: Container(
-                                  width: 60,
-                                  height: 5,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade300,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                ),
-                              ),
-
-                              const SizedBox(height: 20),
-
-                              /// HEADER
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: const [
-                                        Text(
-                                          "Expected Today Details",
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-
-                                        SizedBox(height: 6),
-
-                                        Text(
-                                          "View comprehensive shipment data for this category",
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: Colors.grey,
-                                            height: 1.5,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  /// CLOSE BUTTON
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: Color(0xFFE5E7EB),
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: IconButton(
-                                      constraints: const BoxConstraints(
-                                        minWidth: 40,
-                                        minHeight: 40,
-                                      ),
-                                      padding: EdgeInsets.zero,
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      icon: const Icon(Icons.close, size: 18),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              Divider(color: Colors.grey.shade300),
-
-                              const SizedBox(height: 16),
-
-                              /// TABLE HEADER
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Container(
-                                  width: 650,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 14,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF7F7F7),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 1,
-                                        child: Text(
-                                          "PO ID",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 10,
-                                            color: Color(0xFF6B7280),
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(width: 10),
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text(
-                                          "SUPPLIER / VENDOR",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 10,
-                                            color: Color(0xFF6B7280),
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text(
-                                          "PRODUCT DETAILS",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 10,
-                                            color: Color(0xFF6B7280),
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text(
-                                          "TOTAL QUANTITY",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 10,
-                                            color: Color(0xFF6B7280),
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text(
-                                          "ARRIVAL DATE",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 10,
-                                            color: Color(0xFF6B7280),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-
-                              const SizedBox(height: 30),
-
-                              /// EMPTY STATE
-                              Expanded(
-                                child: Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.inventory_2_outlined,
-                                        size: 70,
-                                        color: Colors.grey.shade300,
-                                      ),
-
-                                      const SizedBox(height: 18),
-
-                                      const Text(
-                                        "No shipments found",
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-
-                                      const SizedBox(height: 10),
-
-                                      Text(
-                                        "There are currently no records for this specific category.",
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey.shade600,
-                                          height: 1.5,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                  final today = DateTime.now().toLocal();
+                  final todayStr =
+                      "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+                  _showShipmentModal(
+                    "Expected Today",
+                    purchases
+                        .where(
+                          (p) => p.arrivalDate.split('T').first == todayStr,
+                        )
+                        .toList(),
                   );
                 },
-
                 child: buildOverviewCard(
                   title: "Expected Today",
-                  value: "0 Shipments",
-                  subtitle: "Totaling 0 eggs",
+                  value: "$_expectedTodayShipments Shipments",
+                  subtitle: "Totaling $_expectedTodayEggs eggs",
                   icon: Icons.event_available_outlined,
                   iconBg: const Color(0xFFF2F2F2),
                 ),
@@ -279,512 +425,18 @@ class IncomingStock extends StatelessWidget {
 
               GestureDetector(
                 onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) {
-                      return Container(
-                        height: MediaQuery.of(context).size.height * 0.75,
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(24),
-                          ),
-                        ),
-
-                        child: Padding(
-                          padding: const EdgeInsets.all(14),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              /// TOP INDICATOR
-                              Center(
-                                child: Container(
-                                  width: 60,
-                                  height: 5,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade300,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                ),
-                              ),
-
-                              const SizedBox(height: 20),
-
-                              /// HEADER
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: const [
-                                        Text(
-                                          "Ready for Unloading Details",
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-
-                                        SizedBox(height: 6),
-
-                                        Text(
-                                          "View comprehensive shipment data for this category",
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: Colors.grey,
-                                            height: 1.5,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  /// CLOSE BUTTON
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: Color(0xFFE5E7EB),
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: IconButton(
-                                      constraints: const BoxConstraints(
-                                        minWidth: 40,
-                                        minHeight: 40,
-                                      ),
-                                      padding: EdgeInsets.zero,
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      icon: const Icon(Icons.close, size: 18),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              Divider(color: Colors.grey.shade300),
-
-                              const SizedBox(height: 16),
-
-                              /// TABLE
-                              Expanded(
-                                child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: SizedBox(
-                                    width: 650,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        /// TABLE HEADER
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 12,
-                                          ),
-
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFF7F7F7),
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ),
-                                          ),
-
-                                          child: const Row(
-                                            children: [
-                                              Expanded(
-                                                flex: 1,
-                                                child: Text(
-                                                  "PO ID",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 10,
-                                                    color: Color(0xFF6B7280),
-                                                  ),
-                                                ),
-                                              ),
-                                              SizedBox(width: 10),
-                                              Expanded(
-                                                flex: 2,
-                                                child: Text(
-                                                  "SUPPLIER / VENDOR",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 10,
-                                                    color: Color(0xFF6B7280),
-                                                  ),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                flex: 2,
-                                                child: Text(
-                                                  "PRODUCT DETAILS",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 10,
-                                                    color: Color(0xFF6B7280),
-                                                  ),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                flex: 2,
-                                                child: Text(
-                                                  "TOTAL QUANTITY",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 10,
-                                                    color: Color(0xFF6B7280),
-                                                  ),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                flex: 2,
-                                                child: Text(
-                                                  "ARRIVAL DATE",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 10,
-                                                    color: Color(0xFF6B7280),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-
-                                        const SizedBox(height: 8),
-
-                                        /// ROW 1
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 14,
-                                          ),
-
-                                          decoration: BoxDecoration(
-                                            border: Border(
-                                              bottom: BorderSide(
-                                                color: Colors.grey.shade200,
-                                              ),
-                                            ),
-                                          ),
-
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              /// PO ID
-                                              Expanded(
-                                                flex: 1,
-                                                child: Align(
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: Container(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 8,
-                                                          vertical: 6,
-                                                        ),
-                                                    decoration: BoxDecoration(
-                                                      color: const Color(
-                                                        0xFFE8F0FF,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            8,
-                                                          ),
-                                                    ),
-                                                    child: const Text(
-                                                      "PO-22",
-                                                      style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 10,
-                                                        color: Colors.blue,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-
-                                              const SizedBox(width: 10),
-
-                                              /// SUPPLIER
-                                              Expanded(
-                                                flex: 2,
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: const [
-                                                    Text(
-                                                      "X Eggs Farm",
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-
-                                                    SizedBox(height: 3),
-
-                                                    Text(
-                                                      "Kattuva",
-                                                      style: TextStyle(
-                                                        fontSize: 10,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              /// PRODUCT
-                                              Expanded(
-                                                flex: 2,
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: const [
-                                                    Text(
-                                                      "Premium",
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-
-                                                    SizedBox(height: 3),
-
-                                                    Text(
-                                                      "Standard quality eggs",
-                                                      style: TextStyle(
-                                                        fontSize: 10,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              /// QUANTITY
-                                              Expanded(
-                                                flex: 2,
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: const [
-                                                    Text(
-                                                      "1,500",
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-
-                                                    SizedBox(height: 3),
-
-                                                    Text(
-                                                      "Total Eggs",
-                                                      style: TextStyle(
-                                                        fontSize: 10,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              /// DATE
-                                              Expanded(
-                                                flex: 2,
-                                                child: Text(
-                                                  "2026-04-26",
-                                                  style: TextStyle(
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-
-                                        /// ROW 2
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 14,
-                                          ),
-
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              /// PO ID
-                                              Expanded(
-                                                flex: 1,
-                                                child: Align(
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: Container(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 8,
-                                                          vertical: 6,
-                                                        ),
-                                                    decoration: BoxDecoration(
-                                                      color: const Color(
-                                                        0xFFE8F0FF,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            8,
-                                                          ),
-                                                    ),
-                                                    child: const Text(
-                                                      "PO-19",
-                                                      style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 10,
-                                                        color: Colors.blue,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-
-                                              const SizedBox(width: 10),
-
-                                              /// SUPPLIER
-                                              Expanded(
-                                                flex: 2,
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: const [
-                                                    Text(
-                                                      "X Eggs Farm",
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-
-                                                    SizedBox(height: 3),
-
-                                                    Text(
-                                                      "Kattuva",
-                                                      style: TextStyle(
-                                                        fontSize: 10,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              /// PRODUCT
-                                              Expanded(
-                                                flex: 2,
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: const [
-                                                    Text(
-                                                      "Medium",
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-
-                                                    SizedBox(height: 3),
-
-                                                    Text(
-                                                      "Medium, Brown",
-                                                      style: TextStyle(
-                                                        fontSize: 10,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              /// QUANTITY
-                                              Expanded(
-                                                flex: 2,
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: const [
-                                                    Text(
-                                                      "1,02,000",
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-
-                                                    SizedBox(height: 3),
-
-                                                    Text(
-                                                      "Total Eggs",
-                                                      style: TextStyle(
-                                                        fontSize: 10,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              /// DATE
-                                              Expanded(
-                                                flex: 2,
-                                                child: Text(
-                                                  "2026-04-30",
-                                                  style: TextStyle(
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                  _showShipmentModal(
+                    "Ready for Unloading",
+                    purchases.where((p) {
+                      final status = p.status.toUpperCase();
+                      return status == "ARRIVAL" ||
+                          status == "READY_FOR_UNLOADING";
+                    }).toList(),
                   );
                 },
-
                 child: buildOverviewCard(
                   title: "Ready for Unloading",
-                  value: "2 Shipments",
+                  value: "$_readyForUnloadingShipments Shipments",
                   subtitle: "Requires immediate actions",
                   icon: Icons.local_shipping_outlined,
                   iconBg: Colors.green,
@@ -796,399 +448,21 @@ class IncomingStock extends StatelessWidget {
 
               GestureDetector(
                 onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) {
-                      return Container(
-                        height: MediaQuery.of(context).size.height * 0.72,
-
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(24),
-                          ),
-                        ),
-
-                        child: Padding(
-                          padding: const EdgeInsets.all(14),
-
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-
-                            children: [
-                              /// TOP INDICATOR
-                              Center(
-                                child: Container(
-                                  width: 60,
-                                  height: 5,
-
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade300,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                ),
-                              ),
-
-                              const SizedBox(height: 18),
-
-                              /// HEADER
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-
-                                crossAxisAlignment: CrossAxisAlignment.start,
-
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-
-                                      children: const [
-                                        Text(
-                                          "Upcoming Shipments Details",
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-
-                                        SizedBox(height: 6),
-
-                                        Text(
-                                          "View comprehensive shipment data for this category",
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: Colors.grey,
-                                            height: 1.5,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  /// CLOSE BUTTON
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: Color(0xFFE5E7EB),
-                                      ),
-
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-
-                                    child: IconButton(
-                                      constraints: const BoxConstraints(
-                                        minWidth: 40,
-                                        minHeight: 40,
-                                      ),
-
-                                      padding: EdgeInsets.zero,
-
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-
-                                      icon: const Icon(Icons.close, size: 18),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              Divider(color: Colors.grey.shade300),
-
-                              const SizedBox(height: 16),
-
-                              /// TABLE AREA
-                              Expanded(
-                                child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-
-                                  child: SizedBox(
-                                    width: 650,
-
-                                    child: Column(
-                                      children: [
-                                        /// TABLE HEADER
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 12,
-                                          ),
-
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFF7F7F7),
-
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ),
-                                          ),
-
-                                          child: const Row(
-                                            children: [
-                                              /// PO ID
-                                              Expanded(
-                                                flex: 1,
-                                                child: Text(
-                                                  "PO ID",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 10,
-                                                    color: Color(0xFF6B7280),
-                                                  ),
-                                                ),
-                                              ),
-
-                                              SizedBox(width: 10),
-
-                                              /// SUPPLIER
-                                              Expanded(
-                                                flex: 2,
-                                                child: Text(
-                                                  "SUPPLIER / VENDOR",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 10,
-                                                    color: Color(0xFF6B7280),
-                                                  ),
-                                                ),
-                                              ),
-
-                                              /// PRODUCT
-                                              Expanded(
-                                                flex: 2,
-                                                child: Text(
-                                                  "PRODUCT DETAILS",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 10,
-                                                    color: Color(0xFF6B7280),
-                                                  ),
-                                                ),
-                                              ),
-
-                                              /// QUANTITY
-                                              Expanded(
-                                                flex: 2,
-                                                child: Text(
-                                                  "TOTAL QUANTITY",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 10,
-                                                    color: Color(0xFF6B7280),
-                                                  ),
-                                                ),
-                                              ),
-
-                                              /// DATE
-                                              Expanded(
-                                                flex: 2,
-                                                child: Text(
-                                                  "ARRIVAL DATE",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 10,
-                                                    color: Color(0xFF6B7280),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-
-                                        const SizedBox(height: 10),
-
-                                        /// DATA ROW
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 14,
-                                          ),
-
-                                          decoration: BoxDecoration(
-                                            border: Border(
-                                              bottom: BorderSide(
-                                                color: Colors.grey.shade200,
-                                              ),
-                                            ),
-                                          ),
-
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-
-                                            children: [
-                                              /// PO ID
-                                              Expanded(
-                                                flex: 1,
-                                                child: Align(
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: Container(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 5,
-                                                          vertical: 5,
-                                                        ),
-                                                    decoration: BoxDecoration(
-                                                      color: const Color(
-                                                        0xFFE8F0FF,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            5,
-                                                          ),
-                                                    ),
-                                                    child: const Text(
-                                                      "PO-1",
-                                                      style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 10,
-                                                        color: Colors.blue,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-
-                                              const SizedBox(width: 10),
-
-                                              /// SUPPLIER
-                                              Expanded(
-                                                flex: 2,
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-
-                                                  children: const [
-                                                    Text(
-                                                      "X Eggs Farm",
-
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-
-                                                    SizedBox(height: 3),
-
-                                                    Text(
-                                                      "Kattuva",
-
-                                                      style: TextStyle(
-                                                        fontSize: 10,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              /// PRODUCT
-                                              Expanded(
-                                                flex: 2,
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-
-                                                  children: const [
-                                                    Text(
-                                                      "AA",
-
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-
-                                                    SizedBox(height: 3),
-
-                                                    Text(
-                                                      "AA, Brown, Medium",
-
-                                                      style: TextStyle(
-                                                        fontSize: 10,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              /// QUANTITY
-                                              Expanded(
-                                                flex: 2,
-
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-
-                                                  children: const [
-                                                    Text(
-                                                      "7,200",
-
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-
-                                                    SizedBox(height: 3),
-
-                                                    Text(
-                                                      "Total Eggs",
-
-                                                      style: TextStyle(
-                                                        fontSize: 10,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              /// DATE
-                                              Expanded(
-                                                flex: 2,
-                                                child: Text(
-                                                  "2026-05-30",
-
-                                                  style: TextStyle(
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                  final today = DateTime.now().toLocal();
+                  final todayStr =
+                      "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+                  _showShipmentModal(
+                    "Upcoming Shipments",
+                    purchases.where((p) {
+                      if (p.arrivalDate.isEmpty) return false;
+                      final arrivalStr = p.arrivalDate.split('T').first;
+                      return arrivalStr.compareTo(todayStr) > 0;
+                    }).toList(),
                   );
                 },
-
                 child: buildOverviewCard(
                   title: "Upcoming Shipments",
-                  value: "1 Shipments",
+                  value: "$_upcomingShipments Shipments",
                   subtitle: "Next scheduled deliveries",
                   icon: Icons.send_outlined,
                   iconBg: Colors.blue,
@@ -1206,18 +480,21 @@ class IncomingStock extends StatelessWidget {
               //     borderRadius: BorderRadius.circular(12),
               //     border: Border.all(color: Colors.grey.shade300),
               //   ),
-              //   child: const TextField(
-              //     style: TextStyle(fontSize: 13),
-              //     decoration: InputDecoration(
+              //   child: TextField(
+              //     style: const TextStyle(fontSize: 13),
+              //     onChanged: (value) {
+              //       setState(() {
+              //         searchQuery = value;
+              //       });
+              //     },
+              //     decoration: const InputDecoration(
               //       border: InputBorder.none,
               //       icon: Icon(Icons.search, size: 18),
-              //       hintText: "Search PO, Supplier, or Driver...",
+              //       hintText: "Search PO, Supplier, or Product...",
               //       hintStyle: TextStyle(fontSize: 12),
               //     ),
               //   ),
               // ),
-
-              // const SizedBox(height: 16),
 
               /// FILTERS
               Row(
@@ -1225,7 +502,25 @@ class IncomingStock extends StatelessWidget {
                   Expanded(
                     child: buildFilterBox(
                       icon: Icons.calendar_month_outlined,
-                      text: "Expected: Today",
+                      text: selectedStatus == "All Status"
+                          ? "Status: All"
+                          : "Status: $selectedStatus",
+                      onTap: () {
+                        final statuses = [
+                          "All Status",
+                          "Expected Today",
+                          "Ready for Unloading",
+                          "Purchased",
+                          "In Transit",
+                          "Received",
+                          "Delayed",
+                        ];
+                        _showFilterMenu(context, statuses, selectedStatus, (
+                          val,
+                        ) {
+                          setState(() => selectedStatus = val);
+                        });
+                      },
                     ),
                   ),
 
@@ -1234,20 +529,43 @@ class IncomingStock extends StatelessWidget {
                   Expanded(
                     child: buildFilterBox(
                       icon: Icons.home_outlined,
-                      text: "All Suppliers",
+                      text: selectedSupplier,
+                      onTap: () {
+                        final suppliers = [
+                          "All Suppliers",
+                          ...purchases
+                              .map((p) => p.supplierName)
+                              .toSet()
+                              .toList(),
+                        ];
+                        _showFilterMenu(context, suppliers, selectedSupplier, (
+                          val,
+                        ) {
+                          setState(() => selectedSupplier = val);
+                        });
+                      },
                     ),
                   ),
 
                   const SizedBox(width: 6),
 
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey.shade300),
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        selectedStatus = "All Status";
+                        selectedSupplier = "All Suppliers";
+                        searchQuery = "";
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: const Icon(Icons.tune, size: 18),
                     ),
-                    child: const Icon(Icons.tune, size: 18),
                   ),
                 ],
               ),
@@ -1333,44 +651,28 @@ class IncomingStock extends StatelessWidget {
                       const SizedBox(height: 10),
 
                       /// ROWS
-                      buildTableRow(
-                        po: "PO-22",
-                        date: "07 May 2026\n02:52 pm",
-                        supplier: "X Eggs Farm",
-                        location: "Kattuva",
-                        quantity: "1,500 Eggs",
-                        type: "Premium",
-                        status: "Receive Stock",
-                        isReceive: true,
+                      ..._filteredPurchases.map(
+                        (purchase) => buildTableRow(
+                          po: purchase.poNumber,
+                          date: _formatDate(purchase.createdAt),
+                          supplier: purchase.supplierName,
+                          location: purchase.location,
+                          quantity: "${purchase.totalQuantity} Eggs",
+                          type: purchase.productName,
+                          status: purchase.status,
+                          isReceive:
+                              purchase.status.toUpperCase() ==
+                                  "READY FOR UNLOADING" ||
+                              purchase.status.toUpperCase() == "ARRIVAL",
+                          onReceive: () => _receiveStock(purchase.id),
+                        ),
                       ),
 
-                      buildTableRow(
-                        po: "PO-21",
-                        date: "02 May 2026\n07:59 am",
-                        supplier: "X Eggs Farm",
-                        location: "Kattuva",
-                        quantity: "2,400 Eggs",
-                        type: "Brown, AA",
-                        status: "PENDING",
-                      ),
-                      buildTableRow(
-                        po: "PO-21",
-                        date: "02 May 2026\n07:59 am",
-                        supplier: "X Eggs Farm",
-                        location: "Kattuva",
-                        quantity: "2,400 Eggs",
-                        type: "Brown, AA",
-                        status: "PENDING",
-                      ),
-                      buildTableRow(
-                        po: "PO-21",
-                        date: "02 May 2026\n07:59 am",
-                        supplier: "X Eggs Farm",
-                        location: "Kattuva",
-                        quantity: "2,400 Eggs",
-                        type: "Brown, AA",
-                        status: "PENDING",
-                      ),
+                      if (_filteredPurchases.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Text("No records found matching your search"),
+                        ),
                     ],
                   ),
                 ),

@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:proteinova_connect/core/config/api_config.dart';
 
 class AuthService {
+  static String baseUrl = dotenv.env['BASE_URL'] ?? "";
   static Future<Map<String, dynamic>?> login({
     required String email,
     required String password,

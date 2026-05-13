@@ -3,6 +3,7 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/dispatchcard2.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/dispatchcard3.dart';
+import 'package:proteinova_connect/services/sales_service.dart';
 
 class Dispatchscreen extends StatefulWidget {
   const Dispatchscreen({super.key});
@@ -13,46 +14,132 @@ class Dispatchscreen extends StatefulWidget {
 
 class _DispatchscreenState extends State<Dispatchscreen> {
   Size get size => MediaQuery.of(context).size;
+  List<dynamic> dispatches = [];
+  bool isLoading = true;
+  String? error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDispatches();
+  }
+
+  Future<void> _fetchDispatches() async {
+    setState(() {
+      isLoading = true;
+      error = null;
+    });
+    try {
+      final data = await SalesService.fetchDispatches();
+      setState(() {
+        dispatches = data;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        error = e.toString();
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background1,
-    appBar: AppBar(
-    backgroundColor: AppColors.background,
-            scrolledUnderElevation: 0,
-    title: Image.asset(
-    "assets/erplogo.png",
-    height: 40,
-  ),
-
-   actions: [
-    Icon(Icons.search_outlined, color: Colors.black),
-    SizedBox(width: 10),
-
-    Icon(Icons.notifications_outlined, color: Colors.black),
-    SizedBox(width: 10),
-
-    CircleAvatar(
-              radius: 18,
-              backgroundColor: Colors.grey.shade300,
-              child: Icon(
-    Icons.person,
-    size: 20,
-    color:AppColors.background,
-  ),
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
+        title: Image.asset(
+          "assets/erplogo.png",
+          height: 40,
         ),
-    SizedBox(width: 10),
-  ],
-),
-     body: SingleChildScrollView(
-  child: Padding(
-    padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+        actions: const [
+          Icon(Icons.search_outlined, color: Colors.black),
+          SizedBox(width: 10),
+          Icon(Icons.notifications_outlined, color: Colors.black),
+          SizedBox(width: 10),
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: Color(0xffe0e0e0),
+            child: Icon(
+              Icons.person,
+              size: 20,
+              color: Color(0xffffffff),
+            ),
+          ),
+          SizedBox(width: 10),
+        ],
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : error != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("Error: $error"),
+                      ElevatedButton(
+                        onPressed: _fetchDispatches,
+                        child: const Text("Retry"),
+                      ),
+                    ],
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _fetchDispatches,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: size.height * 0.02),
+                          _buildStatsRows(),
+                          SizedBox(height: size.height * 0.05),
+                          _buildDispatchListHeader(),
+                          SizedBox(height: size.height * 0.02),
+                          dispatches.isEmpty
+                              ? const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(40),
+                                    child: Text("No Active Dispatches Found"),
+                                  ),
+                                )
+                              : ListView.builder(
+                                  itemCount: dispatches.length,
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemBuilder: (context, index) {
+                                    final item = dispatches[index];
+                                    return Padding(
+                                      padding: const EdgeInsets.only(bottom: 15),
+                                      child: DispatchCard3(
+                                        id: "DS-${item["dispatch_id"] ?? item["id"]}",
+                                        status: item["status"]?.toString() ?? "Pending",
+                                        branch: item["destination"]?.toString() ?? "N/A",
+                                        date: item["dispatch_date"]?.toString() ?? "N/A",
+                                        totalQty: "${item["total_trays"] ?? 0} Trays",
+                                        vehicleDriver: item["vehicle_driver"]?.toString() ?? "N/A",
+                                        showFullActions: true,
+                                      ),
+                                    );
+                                  },
+                                ),
+                          const SizedBox(height: 30),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+    );
+  }
+
+  Widget _buildStatsRows() {
+    return Column(
       children: [
-        SizedBox(height: size.height * 0.02),
-                Row(
+        Row(
           children: [
             Expanded(
               child: Dispatchcard2(
@@ -68,7 +155,7 @@ class _DispatchscreenState extends State<Dispatchscreen> {
             Expanded(
               child: Dispatchcard2(
                 title: "Today's",
-                value: "8",
+                value: dispatches.length.toString(),
                 subtitle: "Dispatches",
                 icon: Icons.inventory_outlined,
                 iconBg: const Color.fromARGB(255, 230, 235, 240),
@@ -77,7 +164,7 @@ class _DispatchscreenState extends State<Dispatchscreen> {
             ),
           ],
         ),
-       SizedBox(height: size.height*0.01),
+        SizedBox(height: size.height * 0.01),
         Row(
           children: [
             Expanded(
@@ -103,90 +190,42 @@ class _DispatchscreenState extends State<Dispatchscreen> {
             ),
           ],
         ),
-        SizedBox(height: size.height * 0.05),
-              Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      ],
+    );
+  }
+
+  Widget _buildDispatchListHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          "Active dispatches",
+          style: AppTextStyles.headingText22,
+        ),
+        Row(
           children: [
-            const Text(
-              "Recent dispatches",
-              style: AppTextStyles.headingText22,
-            ),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.search,
-                    color: Colors.grey,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.filter_alt_outlined,
-                    color: Colors.grey,
-                    size: 20,
-                  ),
-                ),
-              ],
-            ),
+            _buildActionIcon(Icons.search),
+            const SizedBox(width: 8),
+            _buildActionIcon(Icons.filter_alt_outlined),
           ],
         ),
-         SizedBox(height: size.height*0.02),
-DispatchCard3(
-  id: "ASP-1045",
-  status: "Pending",
-  branch: "Northtown Branch (BR-001)",
-  date: "Oct 24, 2023",
-  totalQty: "12,500",
-  vehicleDriver: "TRK-992 • Michael T.",
-  showFullActions: true,
-),
-DispatchCard3(
-  id: "ASP-1046",
-  status: "Transit",
-  branch: "City Branch",
-  date: "Oct 25, 2023",
-  totalQty: "8,200",
-  vehicleDriver: "TRK-111 • John D.",  
-),
- DispatchCard3(
-  id: "ASP-1047",
-  status: "Delivered",
-  branch: "Down market (BR-001)",
-  date: "Oct 26, 2023",
-  totalQty: "8,200",
-  vehicleDriver: "TRK-111 • John D.",  
-),
-DispatchCard3(
-  id: "ASP-1048",
-  status: "Delivered",
-  branch: "Down market (BR-001)",
-  date: "Oct 26, 2023",
-  totalQty: "8,200",
-  vehicleDriver: "TRK-111 • John D.",  
-),  
-DispatchCard3(
-  id: "ASP-1049",
-  status: "Delivered",
-  branch: "South District (BR-005)",
-  date: "Oct 27, 2023",
-  totalQty: "8,200",
-  vehicleDriver: "TRK-111 • John D.",  
-),                            ],
-    ),
-  ),
-),
+      ],
+    );
+  }
+
+  Widget _buildActionIcon(IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Icon(
+        icon,
+        color: Colors.grey,
+        size: 20,
+      ),
     );
   }
 }

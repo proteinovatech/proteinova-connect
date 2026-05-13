@@ -17,13 +17,13 @@ class ExpenseRepository {
         'limit': limit.toString(),
       };
 
-      final uri = Uri.parse(ApiConstants.branchExpenses).replace(queryParameters: queryParameters);
+      final uri = Uri.parse(
+        ApiConstants.branchExpenses,
+      ).replace(queryParameters: queryParameters);
 
       final response = await http.get(
         uri,
-        headers: {
-          "Accept": "application/json",
-        },
+        headers: {"Accept": "application/json"},
       );
 
       if (response.statusCode == 200) {
@@ -76,10 +76,35 @@ class ExpenseRepository {
         return ExpenseModel.fromJson(data['expense']);
       } else {
         final errorData = jsonDecode(response.body);
-        throw Exception(errorData['error'] ?? "Failed to create branch expense");
+        throw Exception(
+          errorData['error'] ?? "Failed to create branch expense",
+        );
       }
     } catch (e) {
       throw Exception("Error creating branch expense: $e");
+    }
+  }
+
+  Future<Map<int, String>> fetchBranches() async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConstants.branches),
+        headers: {"Accept": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> branchesList = data['data'];
+        final Map<int, String> branchesMap = {};
+        for (var branch in branchesList) {
+          branchesMap[branch['id']] = branch['branch_name'] ?? branch['id'].toString();
+        }
+        return branchesMap;
+      } else {
+        throw Exception("Failed to load branches");
+      }
+    } catch (e) {
+      throw Exception("Error fetching branches: $e");
     }
   }
 }

@@ -11,9 +11,9 @@ class AddBranchDetails extends StatefulWidget {
 }
 
 class _AddBranchDetailsState extends State<AddBranchDetails> {
-   String? selectedStatus;
-   String? selectedRegion;
-    String? selectedManager;
+  String? selectedStatus;
+  String? selectedRegion;
+  String? selectedManager;
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
@@ -32,26 +32,19 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
             crossAxisAlignment: CrossAxisAlignment.start,
 
             children: [
-              
-
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back),
                     onPressed: () {
                       Navigator.pop(context);
                     },
+                    icon: const Icon(Icons.arrow_back, color: Colors.black),
                   ),
-
-                  Text(
-                    "Branch Details",
-                    style: AppTextStyles.headingText22,
-                  ),
+                  Text("Branch Details", style: AppTextStyles.headingText22),
                 ],
               ),
 
               SizedBox(height: size.height * 0.02),
-
 
               Container(
                 width: double.infinity,
@@ -108,16 +101,14 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                 ),
 
                                 child: TextField(
-    decoration: InputDecoration(
-      hintText: "e.g. Branch Central",
+                                  decoration: InputDecoration(
+                                    hintText: "e.g. Branch Central",
 
-      hintStyle: AppTextStyles.bodyText14,
+                                    hintStyle: AppTextStyles.bodyText14,
 
-      border: InputBorder.none,
-
-     
-    ),
-  ),
+                                    border: InputBorder.none,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -148,16 +139,14 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                 ),
 
                                 child: TextField(
-    decoration: InputDecoration(
-      hintText: "e.g.BR-006",
+                                  decoration: InputDecoration(
+                                    hintText: "e.g.BR-006",
 
-      hintStyle: AppTextStyles.bodyText14,
+                                    hintStyle: AppTextStyles.bodyText14,
 
-      border: InputBorder.none,
-
-     
-    ),
-  ),
+                                    border: InputBorder.none,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -169,117 +158,117 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
 
                     Row(
                       children: [
-                       Expanded(
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      buildField("Region*"),
-      const SizedBox(height: 6),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              buildField("Region*"),
+                              const SizedBox(height: 6),
 
-      Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 12,
-        ),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
 
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.grey.shade300,
-          ),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
 
-          borderRadius: BorderRadius.circular(10),
-        ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
 
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            isExpanded: true,
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    isExpanded: true,
 
-            value: selectedRegion,
+                                    value: selectedRegion,
 
-            hint: Text(
-              "Select Region",
-              style: AppTextStyles.bodyText14,
-            ),
+                                    hint: Text(
+                                      "Select Region",
+                                      style: AppTextStyles.bodyText14,
+                                    ),
 
-            items: const [
-              DropdownMenuItem(
-                value: "North",
-                child: Text("North"),
-              ),
+                                    items: const [
+                                      DropdownMenuItem(
+                                        value: "North",
+                                        child: Text("North"),
+                                      ),
 
-              DropdownMenuItem(
-                value: "South",
-                child: Text("South"),
-              ),
-            ],
+                                      DropdownMenuItem(
+                                        value: "South",
+                                        child: Text("South"),
+                                      ),
+                                    ],
 
-            onChanged: (value) {
-              setState(() {
-                selectedRegion = value;
-              });
-            },
-          ),
-        ),
-      ),
-    ],
-  ),
-),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        selectedRegion = value;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         const SizedBox(width: 16),
-                      Expanded(
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      buildField("Status*"),
-      const SizedBox(height: 6),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              buildField("Status*"),
+                              const SizedBox(height: 6),
 
-      Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 12,
-        ),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
 
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.grey.shade300,
-          ),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
 
-          borderRadius: BorderRadius.circular(10),
-        ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
 
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            isExpanded: true,
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    isExpanded: true,
 
-            value: selectedStatus,
+                                    value: selectedStatus,
 
-            hint: Text(
-              "Select Status",
-              style: AppTextStyles.bodyText14,
-            ),
+                                    hint: Text(
+                                      "Select Status",
+                                      style: AppTextStyles.bodyText14,
+                                    ),
 
-            items: const [
-              DropdownMenuItem(
-                value: "Active",
-                child: Text("Active"),
-              ),
+                                    items: const [
+                                      DropdownMenuItem(
+                                        value: "Active",
+                                        child: Text("Active"),
+                                      ),
 
-              DropdownMenuItem(
-                value: "Inactive",
-                child: Text("Inactive"),
-              ),
-            ],
+                                      DropdownMenuItem(
+                                        value: "Inactive",
+                                        child: Text("Inactive"),
+                                      ),
+                                    ],
 
-            onChanged: (value) {
-              setState(() {
-                selectedStatus = value;
-              });
-            },
-          ),
-        ),
-      ),
-    ],
-  ),
-)             
+                                    onChanged: (value) {
+                                      setState(() {
+                                        selectedStatus = value;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -287,7 +276,6 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
               ),
 
               SizedBox(height: size.height * 0.02),
-
 
               Container(
                 width: double.infinity,
@@ -319,10 +307,7 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
 
                     SizedBox(height: size.height * 0.01),
 
-                    Text(
-                      "Address line1",
-                      style: AppTextStyles.bodyText14dark,
-                    ),
+                    Text("Address line1", style: AppTextStyles.bodyText14dark),
 
                     SizedBox(height: size.height * 0.01),
 
@@ -339,16 +324,14 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                       ),
 
                       child: TextField(
-    decoration: InputDecoration(
-      hintText: "Street address,P.O.box,company name,c/o",
+                        decoration: InputDecoration(
+                          hintText: "Street address,P.O.box,company name,c/o",
 
-      hintStyle: AppTextStyles.bodyText14,
+                          hintStyle: AppTextStyles.bodyText14,
 
-      border: InputBorder.none,
-
-     
-    ),
-  ),
+                          border: InputBorder.none,
+                        ),
+                      ),
                     ),
 
                     SizedBox(height: size.height * 0.02),
@@ -378,16 +361,14 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                 ),
 
                                 child: TextField(
-    decoration: InputDecoration(
-      hintText: "City",
+                                  decoration: InputDecoration(
+                                    hintText: "City",
 
-      hintStyle: AppTextStyles.bodyText14,
+                                    hintStyle: AppTextStyles.bodyText14,
 
-      border: InputBorder.none,
-
-     
-    ),
-  ),
+                                    border: InputBorder.none,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -418,19 +399,19 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                 ),
 
                                 child: TextField(
-    decoration: InputDecoration(
-      hintText: "Zip Code",
+                                  decoration: InputDecoration(
+                                    hintText: "Zip Code",
 
-      hintStyle: AppTextStyles.bodyText14,
+                                    hintStyle: AppTextStyles.bodyText14,
 
-      border: InputBorder.none,
+                                    border: InputBorder.none,
 
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 14,
-      ),
-    ),
-  ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 14,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -465,16 +446,14 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                 ),
 
                                 child: TextField(
-    decoration: InputDecoration(
-      hintText: "+980657321",
+                                  decoration: InputDecoration(
+                                    hintText: "+980657321",
 
-      hintStyle: AppTextStyles.bodyText14,
+                                    hintStyle: AppTextStyles.bodyText14,
 
-      border: InputBorder.none,
-
-      
-    ),
-  ),
+                                    border: InputBorder.none,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -504,17 +483,15 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
 
-                                child:TextField(
-    decoration: InputDecoration(
-      hintText: "branch@gmail.com",
+                                child: TextField(
+                                  decoration: InputDecoration(
+                                    hintText: "branch@gmail.com",
 
-      hintStyle: AppTextStyles.bodyText14,
+                                    hintStyle: AppTextStyles.bodyText14,
 
-      border: InputBorder.none,
-
-      
-    ),
-  ),
+                                    border: InputBorder.none,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -526,7 +503,6 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
               ),
 
               SizedBox(height: size.height * 0.02),
-
 
               Container(
                 width: double.infinity,
@@ -560,61 +536,61 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
 
                     Row(
                       children: [
-                       Expanded(
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      buildField("Branch Manager*"),
-      const SizedBox(height: 6),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              buildField("Branch Manager*"),
+                              const SizedBox(height: 6),
 
-      Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 12,
-        ),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
 
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.grey.shade300,
-          ),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
 
-          borderRadius: BorderRadius.circular(10),
-        ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
 
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            isExpanded: true,
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    isExpanded: true,
 
-            value: selectedManager,
+                                    value: selectedManager,
 
-            hint: Text(
-              "Select Manager",
-              style: AppTextStyles.bodyText14,
-            ),
+                                    hint: Text(
+                                      "Select Manager",
+                                      style: AppTextStyles.bodyText14,
+                                    ),
 
-            items: const [
-              DropdownMenuItem(
-                value: "Manager 1",
-                child: Text("Manager 1"),
-              ),
+                                    items: const [
+                                      DropdownMenuItem(
+                                        value: "Manager 1",
+                                        child: Text("Manager 1"),
+                                      ),
 
-              DropdownMenuItem(
-                value: "Manager 2",
-                child: Text("Manager 2"),
-              ),
-            ],
+                                      DropdownMenuItem(
+                                        value: "Manager 2",
+                                        child: Text("Manager 2"),
+                                      ),
+                                    ],
 
-            onChanged: (value) {
-              setState(() {
-                selectedManager = value;
-              });
-            },
-          ),
-        ),
-      ),
-    ],
-  ),
-),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        selectedManager = value;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
                         const SizedBox(width: 16),
 
@@ -640,56 +616,55 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
 
-                                child:TextField(
-    decoration: InputDecoration(
-      hintText: "e.g.5000",
+                                child: TextField(
+                                  decoration: InputDecoration(
+                                    hintText: "e.g.5000",
 
-      hintStyle: AppTextStyles.bodyText14,
+                                    hintStyle: AppTextStyles.bodyText14,
 
-      border: InputBorder.none,
-
-    ),
-  ),
+                                    border: InputBorder.none,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                         ),
                       ],
                     ),
-                     SizedBox(height: size.height * 0.02),
-                   Text("Additional Notes",
-                   style: AppTextStyles.bodyText14dark,) ,
-                   const SizedBox(height: 6),
-                   Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 14,
-                                ),
+                    SizedBox(height: size.height * 0.02),
+                    Text(
+                      "Additional Notes",
+                      style: AppTextStyles.bodyText14dark,
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 14,
+                      ),
 
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.grey.shade300,
-                                  ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
 
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
 
-                                child: TextField(
-    maxLines: 4,
+                      child: TextField(
+                        maxLines: 4,
 
-    decoration: InputDecoration(
-      hintText:
-          "Any specific operational details for this branch..",
+                        decoration: InputDecoration(
+                          hintText:
+                              "Any specific operational details for this branch..",
 
-      hintStyle: AppTextStyles.bodyText14,
+                          hintStyle: AppTextStyles.bodyText14,
 
-      border: InputBorder.none,
+                          border: InputBorder.none,
 
-      contentPadding: const EdgeInsets.all(12),
-    ),
-  ),
-                              ),
+                          contentPadding: const EdgeInsets.all(12),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -697,63 +672,60 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
               SizedBox(height: size.height * 0.03),
               Row(
                 children: [
-                   Expanded(
-                     child: Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 14,
-                                ),
-                                   
-                                decoration: BoxDecoration(
-                                  color: AppColors.background,
-                                  border: Border.all(
-                                    color: AppColors.background,
-                                  ),
-                                   
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                   
-                                child: Text(
-                                  "Clear Form",
-                                   textAlign: TextAlign.center,
-                                  style: AppTextStyles.bodyText14dark,
-                                ),
-                              ),
-                   ),
-                            const SizedBox(width: 12,),
-                             Expanded(
-                               child: Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 14,
-                                ),
-                                             
-                                decoration: BoxDecoration(
-                                  color: AppColors.amber600,
-                                  border: Border.all(
-                                    color: AppColors.amber600,
-                                  ),
-                                             
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                             
-                                child: Row(
-                                  children: [
-                                    const SizedBox(width: 10,),
-                                    Icon(Icons.check),
-                                    const SizedBox(width: 5,),
-                                    Text(
-                                      "Save Branch",
-                                       textAlign: TextAlign.center,
-                                      style: AppTextStyles.bodyText14dark,
-                                    ),
-                                  ],
-                                ),
-                                                           ),
-                             ),
-                ],)
+                  Expanded(
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 14,
+                      ),
+
+                      decoration: BoxDecoration(
+                        color: AppColors.background,
+                        border: Border.all(color: AppColors.background),
+
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+
+                      child: Text(
+                        "Clear Form",
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.bodyText14dark,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 14,
+                      ),
+
+                      decoration: BoxDecoration(
+                        color: AppColors.amber600,
+                        border: Border.all(color: AppColors.amber600),
+
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 10),
+                          Icon(Icons.check),
+                          const SizedBox(width: 5),
+                          Text(
+                            "Save Branch",
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.bodyText14dark,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

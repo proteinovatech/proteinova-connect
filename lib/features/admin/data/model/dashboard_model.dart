@@ -1,14 +1,16 @@
 class DashboardModel {
-  final int totalStockValue;
-  final int totalStockEggs;
-  final int inTransit;
-  final int incomingStockEggs;
-  final int dispatched;
-  final int dispatchedStockEggs;
-  final int branchSalesEggs;
+  final num totalStockValue;
+  final num totalStockEggs;
+  final num inTransit;
+  final num incomingStockEggs;
+  final num dispatched;
+  final num dispatchedStockEggs;
+  final num branchSalesEggs;
   final String revenue;
+  final String branchRevenue;
   final String profit;
   final List<dynamic> recentActivity;
+
   DashboardModel({
     required this.totalStockValue,
     required this.totalStockEggs,
@@ -18,6 +20,7 @@ class DashboardModel {
     required this.dispatchedStockEggs,
     required this.branchSalesEggs,
     required this.revenue,
+    required this.branchRevenue,
     required this.profit,
     required this.recentActivity,
   });
@@ -31,8 +34,9 @@ class DashboardModel {
       dispatched: json["dispatched"] ?? 0,
       dispatchedStockEggs: json["dispatched_stock_eggs"] ?? 0,
       branchSalesEggs: json["branch_sales_eggs"] ?? 0,
-      revenue: json["revenue"].toString(),
-      profit: json["profit"].toString(),
+      revenue: json["revenue"]?.toString() ?? "0",
+      branchRevenue: json["branch_revenue"]?.toString() ?? "0",
+      profit: json["profit"]?.toString() ?? "0",
       recentActivity: json["recent_activity"] ?? [],
     );
   }

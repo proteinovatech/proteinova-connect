@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/features/admin/supplier/widgets/add_supplier_bottom_sheet.dart';
 
-import '../data/supplier_dummy_data.dart';
 import '../models/supplier_model.dart';
+import '../services/supplier_service.dart';
 
 import '../widgets/supplier_card_admin.dart';
 
@@ -17,15 +17,37 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
   int selectedBottomIndex = 0;
 
   final TextEditingController searchController = TextEditingController();
+  final SupplierService _supplierService = SupplierService();
 
-  List<Supplier> suppliers = supplierDummyData;
-
+  List<Supplier> suppliers = [];
   List<Supplier> filteredSuppliers = [];
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    filteredSuppliers = suppliers;
+    fetchSuppliers();
+  }
+
+  Future<void> fetchSuppliers() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final fetchedSuppliers = await _supplierService.getSuppliers();
+      setState(() {
+        suppliers = fetchedSuppliers;
+        filteredSuppliers = fetchedSuppliers;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to load suppliers: $e")),
+      );
+    }
   }
 
   void searchSupplier(String value) {
@@ -46,24 +68,42 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
       builder: (context) {
         return const AddSupplierBottomSheet();
       },
-    );
+    ).then((_) {
+      fetchSuppliers(); // Refresh after adding
+    });
   }
 
   void editSupplier(Supplier supplier) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("Edit ${supplier.name}")));
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return AddSupplierBottomSheet(supplierToEdit: supplier);
+      },
+    ).then((_) {
+      fetchSuppliers(); // Refresh after editing
+    });
   }
 
-  void deleteSupplier(Supplier supplier) {
-    setState(() {
-      suppliers.remove(supplier);
-      filteredSuppliers.remove(supplier);
-    });
+  void deleteSupplier(Supplier supplier) async {
+    try {
+      if (supplier.id.isNotEmpty) {
+        await _supplierService.deleteSupplier(supplier.id);
+      }
+      setState(() {
+        suppliers.remove(supplier);
+        filteredSuppliers.remove(supplier);
+      });
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("${supplier.name} Deleted")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("${supplier.name} Deleted")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to delete supplier: $e")),
+      );
+    }
   }
 
   void showMoreOptions(Supplier supplier) {
@@ -126,12 +166,12 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
 
               Row(
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(Icons.arrow_back_ios_new),
-                  ),
+IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+        ),
                   const Expanded(
                     child: Text(
                       "Suppliers",
@@ -225,18 +265,20 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
               const SizedBox(height: 20),
 
               Expanded(
-                child: ListView.builder(
-                  itemCount: filteredSuppliers.length,
-                  itemBuilder: (context, index) {
-                    final supplier = filteredSuppliers[index];
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        itemCount: filteredSuppliers.length,
+                        itemBuilder: (context, index) {
+                          final supplier = filteredSuppliers[index];
 
-                    return SupplierCardAdmin(
-                      supplier: supplier,
-                      onEdit: () => editSupplier(supplier),
-                      onMore: () => showMoreOptions(supplier),
-                    );
-                  },
-                ),
+                          return SupplierCardAdmin(
+                            supplier: supplier,
+                            onEdit: () => editSupplier(supplier),
+                            onMore: () => showMoreOptions(supplier),
+                          );
+                        },
+                      ),
               ),
 
               Row(
