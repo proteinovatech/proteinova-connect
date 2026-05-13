@@ -66,10 +66,10 @@ class Filters {
 }
 
 class Cards {
-  final int refundCredit;
-  final int damagedTrays;
-  final int totalReturnedThisMonth;
-  final int goodTrays;
+  final num refundCredit;
+  final num damagedTrays;
+  final num totalReturnedThisMonth;
+  final num goodTrays;
 
   Cards({
     required this.refundCredit,
@@ -96,10 +96,10 @@ class Cards {
 }
 
 class RefundCreditSummary {
-  final int totalRefund;
-  final int pendingRefund;
-  final int totalCredit;
-  final int pendingCredit;
+  final num totalRefund;
+  final num pendingRefund;
+  final num totalCredit;
+  final num pendingCredit;
 
   RefundCreditSummary({
     required this.totalRefund,
@@ -147,15 +147,15 @@ class TrayData {
     Map<String, dynamic> json,
   ) {
     return TrayData(
-      date: json["date"] ?? "",
-      from: json["from"] ?? "",
+      date: json["return_date"] ?? json["date"] ?? "",
+      from: json["return_from_name"] ?? json["from"] ?? "",
       trayType:
           json["tray_type"] ?? "",
-      qty: json["qty"].toString(),
+      qty: (json["quantity"] ?? json["qty"] ?? 0).toString(),
       condition:
           json["condition"] ?? "",
       reason: json["reason"] ?? "",
-      price: json["price"] ?? 0,
+      price: json["amount"] ?? json["price"] ?? 0,
     );
   }
 }

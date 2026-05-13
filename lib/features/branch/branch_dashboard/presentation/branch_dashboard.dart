@@ -270,7 +270,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                           const SizedBox(height: 15),
 
                           Text(
-                            "${dashboardModel!.cards.openingStocks} Trays",
+                            "${dashboardModel!.cards.openingStocks} Eggs",
 
                             style: AppTextStyles.headingText20,
                           ),
@@ -284,10 +284,10 @@ class _BranchDashboardState extends State<BranchDashboard> {
                       children: [
                         Expanded(
                           child: Stockdetails(
-                            title: "Today Tray Sold",
+                            title: "Eggs Sold",
 
                             value:
-                                "${dashboardModel!.cards.todayTraySold} trays",
+                                "${dashboardModel!.cards.todayTraySold} Eggs",
 
                             icon: Icons.check_circle_outline,
 
@@ -306,7 +306,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                             title: "Closing Stock",
 
                             value:
-                                "${dashboardModel!.cards.closingStock} trays",
+                                "${dashboardModel!.cards.closingStock} Eggs",
 
                             percent: "0%",
 
@@ -455,8 +455,8 @@ class _BranchDashboardState extends State<BranchDashboard> {
                           ),
 
                           const SizedBox(height: 15),
-
-                          dashboardModel!.lowStockAlerts.isEmpty
+dashboardModel == null ||
+dashboardModel!.lowStockAlerts.isEmpty
                               ? const Center(
                                   child: Padding(
                                     padding: EdgeInsets.all(20),

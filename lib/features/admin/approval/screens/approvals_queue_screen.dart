@@ -121,10 +121,7 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
 
       final response = await DioClient().dio.get(
         '/api/admin/approvals',
-        queryParameters: {
-          'status': apiStatus,
-          if (q.isNotEmpty) 'q': q,
-        },
+        queryParameters: {'status': apiStatus, if (q.isNotEmpty) 'q': q},
       );
 
       final data = response.data;
@@ -133,9 +130,13 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
           : <dynamic>[];
 
       final mapped = approvalsList.map((row) {
-        final map = (row is Map) ? Map<String, dynamic>.from(row) : <String, dynamic>{};
+        final map = (row is Map)
+            ? Map<String, dynamic>.from(row)
+            : <String, dynamic>{};
         final detailsRaw = map['details'];
-        final details = (detailsRaw is Map) ? Map<String, dynamic>.from(detailsRaw) : <String, dynamic>{};
+        final details = (detailsRaw is Map)
+            ? Map<String, dynamic>.from(detailsRaw)
+            : <String, dynamic>{};
 
         return ApprovalModel(
           requestId: (map['request_id'] ?? '').toString(),
@@ -168,22 +169,19 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
   Future<void> approveRequest(ApprovalModel approval) async {
     final id = _extractApprovalId(approval.requestId);
     if (id == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid approval id")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Invalid approval id")));
       return;
     }
 
     try {
-      await DioClient().dio.post(
-        '/api/admin/approvals/$id/approve',
-        data: {},
-      );
+      await DioClient().dio.post('/api/admin/approvals/$id/approve', data: {});
       await _fetchApprovals();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("${approval.requestId} Approved")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("${approval.requestId} Approved")));
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -195,27 +193,24 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
   Future<void> rejectRequest(ApprovalModel approval) async {
     final id = _extractApprovalId(approval.requestId);
     if (id == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid approval id")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Invalid approval id")));
       return;
     }
 
     try {
-      await DioClient().dio.post(
-        '/api/admin/approvals/$id/reject',
-        data: {},
-      );
+      await DioClient().dio.post('/api/admin/approvals/$id/reject', data: {});
       await _fetchApprovals();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("${approval.requestId} Rejected")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("${approval.requestId} Rejected")));
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to reject request")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Failed to reject request")));
     }
   }
 
@@ -335,89 +330,67 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
               const SizedBox(height: 24),
 
               /// TABLE
-              /// TABLE
               Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 10),
 
-                  child: Container(
-                    width: 1050,
-                    margin: const EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: const Color(0xffE5E7EB)),
+                  ),
 
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: const Color(0xffE5E7EB)),
-                    ),
-
-                    child: Column(
-                      children: [
-                        /// HEADER
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 18,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(color: Colors.grey.shade200),
-                            ),
-                          ),
-                          child: const ApprovalTableHeader(),
+                  child: Column(
+                    children: [
+                      /// LOADING
+                      if (isLoading)
+                        const Expanded(
+                          child: Center(child: CircularProgressIndicator()),
                         ),
 
-                        /// EMPTY
-                        if (isLoading)
-                          const Expanded(
-                            child: Center(child: CircularProgressIndicator()),
-                          ),
-
-                        if (!isLoading && errorText != null)
-                          Expanded(
-                            child: Center(
-                              child: Text(
-                                errorText!,
-                                style: const TextStyle(color: Colors.red),
-                              ),
-                            ),
-                          ),
-
-                        if (!isLoading &&
-                            errorText == null &&
-                            filteredApprovals.isEmpty)
+                      /// ERROR
+                      if (!isLoading && errorText != null)
                         Expanded(
-  child: Center(
-    child: SingleChildScrollView(
-      child: ApprovalEmptyWidget(),
-    ),
-  ),
-),
-
-                        /// TABLE DATA
-                        if (!isLoading &&
-                            errorText == null &&
-                            filteredApprovals.isNotEmpty)
-                          Expanded(
-                            child: ListView.builder(
-                              itemCount: filteredApprovals.length,
-
-                              itemBuilder: (context, index) {
-                                final approval = filteredApprovals[index];
-
-                                return ApprovalTableRow(
-                                  approval: approval,
-
-                                  onApprove: () => approveRequest(approval),
-
-                                  onReject: () => rejectRequest(approval),
-
-                                  onView: () => viewRequest(approval),
-                                );
-                              },
+                          child: Center(
+                            child: Text(
+                              errorText!,
+                              style: const TextStyle(color: Colors.red),
                             ),
                           ),
-                      ],
-                    ),
+                        ),
+
+                      /// EMPTY
+                      if (!isLoading &&
+                          errorText == null &&
+                          filteredApprovals.isEmpty)
+                        const Expanded(child: ApprovalEmptyWidget()),
+
+                      /// DATA
+                      if (!isLoading &&
+                          errorText == null &&
+                          filteredApprovals.isNotEmpty)
+                        Expanded(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.all(14),
+
+                            itemCount: filteredApprovals.length,
+
+                            itemBuilder: (context, index) {
+                              final approval = filteredApprovals[index];
+
+                              return ApprovalTableRow(
+                                approval: approval,
+
+                                onApprove: () => approveRequest(approval),
+
+                                onReject: () => rejectRequest(approval),
+
+                                onView: () => viewRequest(approval),
+                              );
+                            },
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),

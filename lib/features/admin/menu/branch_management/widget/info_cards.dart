@@ -33,7 +33,7 @@ class _InfoCardsState extends State<InfoCards> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: AppColors.background,
         border: Border.all(color: Colors.grey.shade300),

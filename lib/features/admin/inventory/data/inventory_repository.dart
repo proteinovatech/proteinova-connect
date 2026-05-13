@@ -26,24 +26,67 @@ class InventoryRepository {
     }
   }
 
-  Future<void> receiveStock(int branchId, int dispatchId) async {
+  //
+  Future<Map<String, dynamic>> fetchPurchaseById(int id) async {
     try {
-      final response = await http.post(
-        Uri.parse(
-          "${ApiConstants.branchIncomingStock}/$branchId/dispatch/$dispatchId/receive",
-        ),
+      final response = await http.get(
+        Uri.parse("${ApiConstants.purchaseList}/$id"),
+        headers: {"Accept": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        return data['data'] ?? {};
+      } else {
+        throw Exception("Failed to load purchase");
+      }
+    } catch (e) {
+      throw Exception("Error fetching purchase: $e");
+    }
+  }
+
+  // Future<void> receiveStock(int branchId, int dispatchId) async {
+  //   try {
+  //     final response = await http.post(
+  //       Uri.parse(
+  //         "${ApiConstants.branchIncomingStock}/$branchId/dispatch/$dispatchId/receive",
+  //       ),
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "Accept": "application/json",
+  //       },
+  //       body: jsonEncode({
+  //         "items": [],
+  //       }), // Placeholder, usually needs itemdetails
+  //     );
+
+  //     if (response.statusCode != 200) {
+  //       final data = jsonDecode(response.body);
+  //       throw Exception(data['message'] ?? "Failed to receive stock");
+  //     }
+  //   } catch (e) {
+  //     throw Exception("Error receiving stock: $e");
+  //   }
+  // }
+  Future<void> receiveStock(
+    int dispatchId,
+    List<Map<String, dynamic>> items,
+  ) async {
+    try {
+      final response = await http.put(
+        Uri.parse("${ApiConstants.baseUrl}/api/admin/receive/$dispatchId"),
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
-        body: jsonEncode({
-          "items": [],
-        }), // Placeholder, usually needs itemdetails
+        body: jsonEncode({"items": items}),
       );
 
       if (response.statusCode != 200) {
         final data = jsonDecode(response.body);
-        throw Exception(data['message'] ?? "Failed to receive stock");
+
+        throw Exception(data['error'] ?? "Failed to receive stock");
       }
     } catch (e) {
       throw Exception("Error receiving stock: $e");
