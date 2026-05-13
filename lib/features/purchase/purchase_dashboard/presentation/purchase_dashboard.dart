@@ -54,8 +54,8 @@ String? loadingPurchaseId;
                     children: [
                       Image.asset("assets/erplogo.png",
                           height: 37, width: 130),
-                      Icon(Icons.notifications_outlined,
-                          color: AppColors.textSecondary),
+                      // Icon(Icons.notifications_outlined,
+                      //     color: AppColors.textSecondary),
                     ],
                   ),
 
@@ -64,7 +64,6 @@ String? loadingPurchaseId;
               ),
             ),
 
-            /// BODY (ONLY THIS SCROLLS)
             Expanded(
               child: BlocListener<PurchaseBloc, PurchaseState>(
                 listener: (context, state) {
@@ -81,7 +80,7 @@ String? loadingPurchaseId;
                 child: BlocBuilder<PurchaseBloc, PurchaseState>(
                   builder: (context, state) {
 
-                    /// SHIMMER ONLY FIRST TIME
+                   
                     if (state is PurchaseLoading )  {
                       return const PurchaseDashboardShimmer();
                     }

@@ -98,6 +98,16 @@ void initState() {
     "Plastic Tray",
     "Paper Tray",
   ];
+  final Map<String, double> eggRates = {
+  "Brown Eggs": 210 / 30,
+  "Country Eggs": 270 / 30,
+  "Duck Eggs": 246 / 30,
+  "Quail Eggs": 100.5 / 30,
+  "White Bullet": 184.5 / 30,
+  "White Medium": 160.5 / 30,
+  "White Small Eggs": 147 / 30,
+};
+
   void updateProduct(int index) {
   final product = ProductSummary(
     category: selectedCategory ?? "",
@@ -260,11 +270,21 @@ const Text("Egg Category & Grade", style: AppTextStyles.buttonText16),
               );
             }).toList(),
             onChanged: (value) {
-              setState(() {
-                product.category = value ?? "";
-              });
-              widget.onProductsChanged(products);
-            },
+  setState(() {
+    product.category = value ?? "";
+
+    final rate = eggRates[value] ?? 0;
+
+    product.necc = rate.toStringAsFixed(2);
+
+    neccControllers[index].text =
+        rate.toStringAsFixed(2);
+  });
+
+  calculateFinalRate(index);
+
+  widget.onProductsChanged(products);
+},  
           ),
         ),
 
