@@ -21,7 +21,13 @@ class TrayReturn extends StatefulWidget {
 class _TrayReturnState extends State<TrayReturn> {
   int? branchId;
   String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+String selectedReturnFrom = "Customer";
 
+List<String> returnFromList = [
+  "Customer",
+  "Branch",
+  "Supplier",
+];
   @override
   void initState() {
     super.initState();
@@ -48,23 +54,42 @@ class _TrayReturnState extends State<TrayReturn> {
         listener: (context, state) {
           if (state is TrayReturnError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Error: ${state.message}"), backgroundColor: Colors.red),
+              SnackBar(
+                content: Text("Error: ${state.message}"),
+                backgroundColor: Colors.red,
+              ),
             );
           }
         },
         builder: (context, state) {
-          
-          if (state is TrayReturnLoading && branchId == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
+          // If we are loading for the first time, show a centered loader
+         if (state is TrayReturnLoading) {
+  return const Center(
+    child: CircularProgressIndicator(),
+  );
+}
           TrayReturnModel? model;
           if (state is TrayReturnLoaded) {
             model = state.model;
           }
 
-          final cards = model?.cards ?? Cards(refundCredit: 0, damagedTrays: 0, totalReturnedThisMonth: 0, goodTrays: 0);
-          final refundSummary = model?.refundCreditSummary ?? RefundCreditSummary(totalRefund: 0, pendingRefund: 0, totalCredit: 0, pendingCredit: 0);
+          // Define empty/default data if model is null (e.g. on error or initial load)
+          final cards =
+              model?.cards ??
+              Cards(
+                refundCredit: 0,
+                damagedTrays: 0,
+                totalReturnedThisMonth: 0,
+                goodTrays: 0,
+              );
+          final refundSummary =
+              model?.refundCreditSummary ??
+              RefundCreditSummary(
+                totalRefund: 0,
+                pendingRefund: 0,
+                totalCredit: 0,
+                pendingCredit: 0,
+              );
           final dataList = model?.data ?? [];
 
           return Padding(
@@ -88,19 +113,6 @@ class _TrayReturnState extends State<TrayReturn> {
                   SizedBox(height: size.height * 0.02),
                   Row(
                     children: [
-                      Expanded(
-                        child: Stock(
-                          title: "Refund/Credit",
-                          value: "₹${refundSummary.totalRefund}",
-                          percent: "0%",
-                          subtitle: "Today",
-                          icon: Icons.attach_money,
-                          iconBg: const Color(0xFFE6EBF0),
-                          iconColor: Colors.grey,
-                          highlightUnit: true,
-                        ),
-                      ),
-                      SizedBox(width:getWidth(context, 12)),
                       Expanded(
                         child: Stockdetails(
                           title: "Damaged",
@@ -131,7 +143,7 @@ class _TrayReturnState extends State<TrayReturn> {
                       SizedBox(width:getWidth(context, 12)),
                       Expanded(
                         child: Stockdetails(
-                          title: "Good Trays",
+                          title: "Good Condition",
                           value: "${cards.goodTrays} trays",
                           icon: Icons.inventory_2_outlined,
                           iconBg: const Color(0xFFE6EBF0),
@@ -142,6 +154,79 @@ class _TrayReturnState extends State<TrayReturn> {
                     ],
                   ),
                   SizedBox(height: size.height * 0.02),
+                  Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(16),
+
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(12),
+    border: Border.all(
+      color: Colors.grey.shade300,
+    ),
+  ),
+
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+
+      Center(
+        child: Text(
+          "Record Tray Return",
+          style: AppTextStyles.headingText20,
+        ),
+      ),
+
+      const SizedBox(height: 20),
+
+      Row(
+        children: [
+
+          SizedBox(
+            width: 100,
+            child: Text(
+              "Return From :",
+              style: AppTextStyles.bodyText14dark,
+            ),
+          ),
+
+          Expanded(
+            child: DropdownButtonFormField<String>(
+              value: selectedReturnFrom,
+
+              decoration: InputDecoration(
+                contentPadding:
+                    const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+
+                border: OutlineInputBorder(
+                  borderRadius:
+                      BorderRadius.circular(6),
+                ),
+              ),
+
+              items: returnFromList.map((item) {
+                return DropdownMenuItem(
+                  value: item,
+                  child: Text(item),
+                );
+              }).toList(),
+
+              onChanged: (value) {
+                setState(() {
+                  selectedReturnFrom = value!;
+                });
+              },
+            ),
+          ),
+        ],
+      ),
+    ],
+  ),
+),
+SizedBox(height: size.height * 0.02),
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -160,20 +245,28 @@ class _TrayReturnState extends State<TrayReturn> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.add, color: AppColors.dark),
-                           SizedBox(width:getWidth(context, 8)),
-                          Text("Tray Records", style: AppTextStyles.headingText20),
+                          const SizedBox(width: 8),
+                          Text(
+                            "Tray Records",
+                            style: AppTextStyles.headingText20,
+                          ),
                         ],
                       ),
                     ),
                   ),
                   SizedBox(height: size.height * 0.02),
-                  Text("Recent Tray Returns", style: AppTextStyles.headingText20),
-                   SizedBox(height:getHeight(context, 10)),
+                  Text(
+                    "Recent Tray Returns",
+                    style: AppTextStyles.headingText20,
+                  ),
+                  const SizedBox(height: 10),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: DataTable(
                       columnSpacing: 20,
-                      headingRowColor: MaterialStateProperty.all(Colors.grey.shade300),
+                      headingRowColor: MaterialStateProperty.all(
+                        Colors.grey.shade300,
+                      ),
                       columns: const [
                         DataColumn(label: Text("Date")),
                         DataColumn(label: Text("From")),
@@ -185,15 +278,17 @@ class _TrayReturnState extends State<TrayReturn> {
                       ],
                       rows: dataList.isEmpty
                           ? [
-                              const DataRow(cells: [
-                                DataCell(Text("No Data")),
-                                DataCell(Text("")),
-                                DataCell(Text("")),
-                                DataCell(Text("")),
-                                DataCell(Text("")),
-                                DataCell(Text("")),
-                                DataCell(Text("")),
-                              ]),
+                              const DataRow(
+                                cells: [
+                                  DataCell(Text("No Data")),
+                                  DataCell(Text("")),
+                                  DataCell(Text("")),
+                                  DataCell(Text("")),
+                                  DataCell(Text("")),
+                                  DataCell(Text("")),
+                                  DataCell(Text("")),
+                                ],
+                              ),
                             ]
                           : dataList.map((item) {
                               return buildSummaryRow(
@@ -220,7 +315,10 @@ class _TrayReturnState extends State<TrayReturn> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Refund/Credit Summary", style: AppTextStyles.headingText20),
+                        Text(
+                          "Refund/Credit Summary",
+                          style: AppTextStyles.headingText20,
+                        ),
                         SizedBox(height: size.height * 0.02),
                         summaryBox(
                           title: "Total Refund",
@@ -258,7 +356,11 @@ class _TrayReturnState extends State<TrayReturn> {
     );
   }
 
-  Widget summaryBox({required String title, required String value, required Color bgColor}) {
+  Widget summaryBox({
+    required String title,
+    required String value,
+    required Color bgColor,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
@@ -276,7 +378,15 @@ class _TrayReturnState extends State<TrayReturn> {
     );
   }
 
-  DataRow buildSummaryRow(String date, String from, String tray, String qty, String condition, String reason, String price) {
+  DataRow buildSummaryRow(
+    String date,
+    String from,
+    String tray,
+    String qty,
+    String condition,
+    String reason,
+    String price,
+  ) {
     return DataRow(
       cells: [
         DataCell(Text(date)),

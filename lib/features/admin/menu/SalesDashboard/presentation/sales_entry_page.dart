@@ -791,98 +791,20 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
                 print("CREATE SALE BODY =>");
                 print(body);
-                try {
-                  final response = await datasource.createSale(body: body);
+                // Let errors bubble up to PaymentSummaryWidget which handles
+                // both the success dialog and the failure snackbar correctly.
+                final response = await datasource.createSale(body: body);
 
-                  print("CREATE SALE RESPONSE =>");
-                  print(response);
+                print("CREATE SALE RESPONSE =>");
+                print(response);
+                await reloadProductsForBranch(
+                  int.tryParse(selectedWarehouseId) ?? 1,
+                );
 
-                  // if (context.mounted) {
-                  //   showDialog(
-                  //     context: context,
-                  //     barrierDismissible: false,
-                  //     builder: (context) {
-                  //       return AlertDialog(
-                  //         shape: RoundedRectangleBorder(
-                  //           borderRadius: BorderRadius.circular(20),
-                  //         ),
-                  //         content: Column(
-                  //           mainAxisSize: MainAxisSize.min,
-                  //           children: [
-                  //             Container(
-                  //               height: 80,
-                  //               width: 80,
-                  //               decoration: BoxDecoration(
-                  //                 color: Colors.green.shade100,
-                  //                 shape: BoxShape.circle,
-                  //               ),
-                  //               child: const Icon(
-                  //                 Icons.check_circle,
-                  //                 color: Colors.green,
-                  //                 size: 60,
-                  //               ),
-                  //             ),
+                selectedEggsMap.clear();
 
-                  //             const SizedBox(height: 20),
-
-                  //             const Text(
-                  //               "Payment Successful!",
-                  //               style: TextStyle(
-                  //                 fontSize: 22,
-                  //                 fontWeight: FontWeight.bold,
-                  //               ),
-                  //             ),
-
-                  //             const SizedBox(height: 10),
-
-                  //             Text(
-                  //               "Grand Total : ₹ ${_grandTotalValue()}",
-                  //               style: const TextStyle(
-                  //                 fontSize: 18,
-                  //                 fontWeight: FontWeight.w600,
-                  //               ),
-                  //             ),
-
-                  //             const SizedBox(height: 20),
-
-                  //             SizedBox(
-                  //               width: double.infinity,
-                  //               child: ElevatedButton(
-                  //                 onPressed: () {
-                  //                   Navigator.pop(context);
-                  //                 },
-                  //                 child: const Text("Close"),
-                  //               ),
-                  //             ),
-                  //           ],
-                  //         ),
-                  //       );
-                  //     },
-                  //   );
-                  // }
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        backgroundColor: Colors.green,
-                        content: Text("Sale Created Successfully"),
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  print("CREATE SALE ERROR =>");
-                  print(e);
-
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        backgroundColor: Colors.red,
-                        content: Text("Failed : $e"),
-                      ),
-                    );
-                  }
-                } finally {
-                  _isSaving = false;
-                }
+                setState(() {});
+                _isSaving = false;
               },
 
               amountController: amountController,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/features/admin/presentation/receive_stockscreen.dart';
 import 'package:proteinova_connect/features/admin/widget/incoming_widget.dart';
 import '../inventory/data/inventory_repository.dart';
 import '../inventory/models/inventory_model.dart';
@@ -25,6 +26,23 @@ class _IncomingStockState extends State<IncomingStock> {
     _fetchData();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _startAutoRefresh();
+  }
+
+  void _startAutoRefresh() {
+    Future.delayed(const Duration(seconds: 3), () async {
+      if (!mounted) return;
+
+      await _fetchData();
+
+      _startAutoRefresh();
+    });
+  }
+
   Future<void> _fetchData() async {
     setState(() => isLoading = true);
     try {
@@ -49,14 +67,10 @@ class _IncomingStockState extends State<IncomingStock> {
 
   Future<void> _receiveStock(int dispatchId) async {
     try {
-      // Using branchId 1 as default
-      await _repository.receiveStock(1, dispatchId);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Stock received successfully")),
-        );
-      }
-      _fetchData();
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => ReceiveStockScreen(id: dispatchId)),
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -100,25 +114,41 @@ class _IncomingStockState extends State<IncomingStock> {
 
     // Filter by Status
     if (selectedStatus != "All Status") {
-      final todayStr = DateTime.now().toLocal().toIso8601String().split('T').first;
-      
+      final todayStr = DateTime.now()
+          .toLocal()
+          .toIso8601String()
+          .split('T')
+          .first;
+
       if (selectedStatus == "Expected Today") {
-        list = list.where((p) => p.arrivalDate.split('T').first == todayStr).toList();
+        list = list
+            .where((p) => p.arrivalDate.split('T').first == todayStr)
+            .toList();
       } else if (selectedStatus == "Ready for Unloading") {
-        list = list.where((p) => p.status.toUpperCase() == "ARRIVAL" || p.status.toUpperCase() == "READY_FOR_UNLOADING").toList();
+        list = list
+            .where(
+              (p) =>
+                  p.status.toUpperCase() == "ARRIVAL" ||
+                  p.status.toUpperCase() == "READY_FOR_UNLOADING",
+            )
+            .toList();
       } else if (selectedStatus == "In Transit") {
         list = list.where((p) {
           if (p.arrivalDate.isEmpty) return false;
-          return p.arrivalDate.split('T').first.compareTo(todayStr) > 0 && p.status.toUpperCase() != "RECEIVED";
+          return p.arrivalDate.split('T').first.compareTo(todayStr) > 0 &&
+              p.status.toUpperCase() != "RECEIVED";
         }).toList();
       } else if (selectedStatus == "Delayed") {
         list = list.where((p) {
           if (p.arrivalDate.isEmpty) return false;
-          return p.arrivalDate.split('T').first.compareTo(todayStr) < 0 && p.status.toUpperCase() != "RECEIVED";
+          return p.arrivalDate.split('T').first.compareTo(todayStr) < 0 &&
+              p.status.toUpperCase() != "RECEIVED";
         }).toList();
       } else {
         final filterStatus = selectedStatus.toUpperCase().replaceAll(' ', '_');
-        list = list.where((p) => p.status.toUpperCase() == filterStatus).toList();
+        list = list
+            .where((p) => p.status.toUpperCase() == filterStatus)
+            .toList();
       }
     }
 
@@ -240,9 +270,7 @@ class _IncomingStockState extends State<IncomingStock> {
                                   type: p.productName,
                                   status: p.status,
                                   isReceive:
-                                      p.status.toUpperCase() ==
-                                          "READY FOR UNLOADING" ||
-                                      p.status.toUpperCase() == "ARRIVAL",
+                                      p.status.toUpperCase() != "RECEIVED",
                                   onReceive: () {
                                     Navigator.pop(context);
                                     _receiveStock(p.id);
@@ -661,10 +689,16 @@ class _IncomingStockState extends State<IncomingStock> {
                           type: purchase.productName,
                           status: purchase.status,
                           isReceive:
-                              purchase.status.toUpperCase() ==
-                                  "READY FOR UNLOADING" ||
-                              purchase.status.toUpperCase() == "ARRIVAL",
-                          onReceive: () => _receiveStock(purchase.id),
+                              purchase.status.toUpperCase() != "RECEIVED",
+                          onReceive: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    ReceiveStockScreen(id: purchase.id),
+                              ),
+                            );
+                          },
                         ),
                       ),
 

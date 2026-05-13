@@ -60,12 +60,33 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
             }
           }
         },
-        builder: (context, state) {
-          final isLoading = state is ExpenseLoading || state is ExpenseInitial || state is ExpenseSubmitting;
-          final expenses = state is ExpenseLoaded ? state.expenses : [];
-          final total = _getTotal(expenses);
+builder: (context, state) {
+  final isLoading =
+      state is ExpenseLoading ||
+      state is ExpenseInitial ||
+      state is ExpenseSubmitting;
 
-          return Padding(
+  final expenses =
+      state is ExpenseLoaded ? state.expenses : [];
+
+  final total = _getTotal(expenses);
+
+  double categoryTotal(String category) {
+    double sum = 0;
+    for (var item in expenses) {
+      if (item.category.toString().toLowerCase() == category.toLowerCase()) {
+        sum += double.tryParse(item.amount.toString()) ?? 0;
+      }
+    }
+    return sum;
+  }
+
+  final totalExpensesMtd = total;
+  final salaryPayroll = categoryTotal("Salary");
+  final transportFuel = categoryTotal("Transport");
+  final rentFacilities = categoryTotal("Rent");
+
+  return Padding(
             padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
             child: SingleChildScrollView(
               child: Column(
@@ -87,26 +108,64 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
                   const SizedBox(height: 10),
 
                   // Summary Cards
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _expenseCard(
-                          title: "Total Expense (MTD)",
-                          value: "₹${total.toStringAsFixed(2)}",
-                          icon: Icons.currency_rupee,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _expenseCard(
-                          title: "Total Records",
-                          value: "${expenses.length} entries",
-                          icon: Icons.receipt_long,
-                        ),
-                      ),
-                    ],
-                  ),
+              Column(
+  children: [
 
+    /// First Row
+    Row(
+      children: [
+        Expanded(
+          child: _expenseCard(
+            title: "Total Expenses",
+            value:
+                "₹${totalExpensesMtd.toStringAsFixed(2)}",
+            icon: Icons.currency_rupee, subtitle: '',
+          ),
+        ),
+
+        const SizedBox(width: 10),
+
+        Expanded(
+          child: _expenseCard(
+            title: "Salary Payroll",
+            value:
+                "₹${salaryPayroll.toStringAsFixed(2)}",
+            subtitle: "Unchanged",
+            icon: Icons.people,
+          ),
+        ),
+      ],
+    ),
+
+    const SizedBox(height: 10),
+
+    /// Second Row
+    Row(
+      children: [
+        Expanded(
+          child: _expenseCard(
+            title: "Transport & Fuel",
+            value:
+                "₹${transportFuel.toStringAsFixed(2)}",
+            subtitle: "Unchanged",
+            icon: Icons.local_shipping,
+          ),
+        ),
+
+        const SizedBox(width: 10),
+
+        Expanded(
+          child: _expenseCard(
+            title: "Rent & Facilities",
+            value:
+                "₹${rentFacilities.toStringAsFixed(2)}",
+            icon: Icons.home, subtitle: '',
+          ),
+        ),
+      ],
+    ),
+  ],
+),
                   const SizedBox(height: 15),
 
                   // Add Expense Button
@@ -246,37 +305,78 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
     );
   }
 
-  Widget _expenseCard({required String title, required String value, required IconData icon}) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: const Color(0xFFE6EBF0), borderRadius: BorderRadius.circular(8)),
-            child: Icon(icon, size: 20, color: Colors.grey.shade700),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                const SizedBox(height: 4),
-                Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+Widget _expenseCard({
+  required String title,
+  required String value,
+  required IconData icon,
+  String? subtitle,
+}) {
+  return Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: Colors.grey.shade200),
+    ),
+    child: Row(
+      children: [
 
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE6EBF0),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            size: 20,
+            color: Colors.grey.shade700,
+          ),
+        ),
+
+        const SizedBox(width: 10),
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+              ),
+
+              const SizedBox(height: 4),
+
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              if (subtitle != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
   Widget _buildCategoryGrid() {
     final categories = [
       {"icon": Icons.person, "title": "Salary"},
