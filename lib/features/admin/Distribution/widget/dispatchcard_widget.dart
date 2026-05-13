@@ -114,7 +114,7 @@ Widget dispatchCard({
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
+                        horizontal: 12,
                         vertical: 7,
                       ),
                       decoration: BoxDecoration(

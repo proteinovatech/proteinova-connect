@@ -385,7 +385,13 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
                         if (!isLoading &&
                             errorText == null &&
                             filteredApprovals.isEmpty)
-                          const Expanded(child: ApprovalEmptyWidget()),
+                        Expanded(
+  child: Center(
+    child: SingleChildScrollView(
+      child: ApprovalEmptyWidget(),
+    ),
+  ),
+),
 
                         /// TABLE DATA
                         if (!isLoading &&
