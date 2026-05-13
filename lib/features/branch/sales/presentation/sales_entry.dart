@@ -4,6 +4,10 @@ import 'package:proteinova_connect/features/admin/menu/SalesDashboard/data/datas
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/payment_summary_widget.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/product_selection_widget.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/sales_items_widget.dart';
+import 'package:proteinova_connect/features/branch/sales/data/datasource/branch_sales_remote_datasource.dart';
+import 'package:proteinova_connect/features/branch/sales/widget/branch__sales_items_widget.dart';
+import 'package:proteinova_connect/features/branch/sales/widget/branch_payment_summary_widget.dart';
+import 'package:proteinova_connect/features/branch/sales/widget/branch_product_selection_widget.dart';
 
 class SalesEntryPage extends StatefulWidget {
   const SalesEntryPage({super.key});
@@ -36,8 +40,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
   List<String> selectedProducts = ["Select Product"];
   final List<TextEditingController> dozenControllers = [];
-  final SalesRemoteDatasource datasource = SalesRemoteDatasource();
-
+  final BranchSalesRemoteDatasource datasource = BranchSalesRemoteDatasource();
   Map<String, dynamic> salesEntryData = {};
 
   bool isLoading = true;
@@ -279,9 +282,15 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         salesItems = List.generate(salesItemCount, (i) {
           return {
             "product_name": selectedProducts[i],
+
             "dozen": dozenList[i],
+
             "eggs": eggsList[i],
+
+            "trays": ((int.tryParse(eggsList[i].toString()) ?? 0) / 30).ceil(),
+
             "rate": rateList[i],
+
             "total": totalList[i],
           };
         });
@@ -390,7 +399,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             const SizedBox(height: 18),
 
             /// PRODUCT SELECTION
-            ProductSelectionWidget(
+            BranchProductSelectionWidget(
               searchController: searchController,
               filteredProducts: filteredProducts,
               buildDropdown: buildDropdown(),
@@ -414,7 +423,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             const SizedBox(height: 18),
 
             /// SALES ITEMS
-            SalesItemsWidget(
+            BranchSalesItemsWidget(
               salesItemCount: salesItemCount,
 
               offers: salesEntryData["offers"] ?? [],
@@ -435,7 +444,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             const SizedBox(height: 18),
 
             /// PAYMENT METHOD
-            PaymentSummaryWidget(
+            BranchPaymentSummaryWidget(
               selectedPaymentMethod: selectedPaymentMethod,
               paymentTab: paymentTab,
               buildLabel: buildLabel,
@@ -469,6 +478,15 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                         (e) =>
                             e["product_name"] != "Select Product" &&
                             e["eggs"] != 0,
+                      )
+                      .map(
+                        (e) => {
+                          "egg_category_grade": e["product_name"],
+                          "dozen": e["dozen"],
+                          "eggs": e["eggs"],
+                          "trays": e["trays"],
+                          "total": e["total"],
+                        },
                       )
                       .toList(),
                 };
