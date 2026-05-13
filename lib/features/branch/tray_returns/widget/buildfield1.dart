@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 
-Widget buildRowField(String label, String hint) {
+Widget buildRowField(String label, String hint, {TextEditingController? controller, bool readOnly = false, VoidCallback? onTap}) {
   return Row(
     children: [
       SizedBox(
@@ -23,6 +23,9 @@ Widget buildRowField(String label, String hint) {
             border: Border.all(color: Colors.grey.shade300),
           ),
           child: TextField(
+            controller: controller,
+            readOnly: readOnly,
+            onTap: onTap,
             decoration: InputDecoration(
               hintText: hint,
               border: InputBorder.none,

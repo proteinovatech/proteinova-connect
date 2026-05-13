@@ -163,11 +163,11 @@ _buildRow("Broker Fee", "₹ ${widget.purchase.brokerFee}"),
             children: [
               Text(
                 "Total Estimated Cost",
-                style: AppTextStyles.headingText22,
+                style: AppTextStyles.headingText20,
               ),
               Text(
                 "₹ ${totalCost.toStringAsFixed(2)}", // placeholder
-                style: AppTextStyles.blueText,
+                style: AppTextStyles.blueText2,
               ),
             ],
           ),

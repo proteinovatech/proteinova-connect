@@ -238,26 +238,27 @@ List<ProductInput> products = [ProductInput(),];
       totalEggs: p.totalEggs,
     ))
     .toList();
-    return Scaffold(backgroundColor: AppColors.background1,
+    return Scaffold(backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
         title:  Text("New Purchase",style: AppTextStyles.headingText25,),
 
-      actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: Colors.grey.shade300,
-               child: const Icon(
-    Icons.person,
-    color: Colors.white,
-    size: 20,
-  ),
-            ),
-          ),
-        ],),
+  //     actions: [
+  //         Padding(
+  //           padding: const EdgeInsets.only(right: 12),
+  //           child: CircleAvatar(
+  //             radius: 18,
+  //             backgroundColor: Colors.grey.shade300,
+  //              child: const Icon(
+  //   Icons.person,
+  //   color: Colors.white,
+  //   size: 20,
+  // ),
+  //           ),
+  //         ),
+  //       ],
+   ),
 
         body: BlocBuilder<PurchaseBloc, PurchaseState>(
   builder: (context, state) {
