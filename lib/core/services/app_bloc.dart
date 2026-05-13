@@ -10,6 +10,12 @@ import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/rep
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/purchase_repository.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/purchase/purchase_bloc.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/purchase/purchase_event.dart';
+import 'package:proteinova_connect/features/branch/daily_closing/bloc/daily_closing_bloc.dart';
+import 'package:proteinova_connect/features/branch/daily_closing/data/repository/dailyclosing_repository.dart';
+import 'package:proteinova_connect/features/branch/tray_returns/bloc/tray_return_bloc.dart';
+import 'package:proteinova_connect/features/branch/tray_returns/data/repository/tray_return_repository.dart';
+import 'package:proteinova_connect/features/branch/addexpense/bloc/expense_bloc.dart';
+import 'package:proteinova_connect/features/branch/addexpense/data/repository/expense_repository.dart';
 
 class AppBlocProvider extends StatelessWidget {
   final Widget child;
@@ -42,6 +48,15 @@ class AppBlocProvider extends StatelessWidget {
             SupplierRepository(dio),
             PurchaseRepository(dio, purchaseCache,),purchaseCache, 
           )..add(GetPurchasesEvent()),
+        ),
+        BlocProvider<DailyClosingBloc>(
+          create: (_) => DailyClosingBloc(repository: DailyClosingRepository()),
+        ),
+        BlocProvider<TrayReturnBloc>(
+          create: (_) => TrayReturnBloc(repository: TrayReturnRepository()),
+        ),
+        BlocProvider<ExpenseBloc>(
+          create: (_) => ExpenseBloc(repository: ExpenseRepository()),
         ),
       ],
       child: child,
