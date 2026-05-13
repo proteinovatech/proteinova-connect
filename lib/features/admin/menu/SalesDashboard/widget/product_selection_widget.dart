@@ -12,7 +12,7 @@ class ProductSelectionWidget extends StatelessWidget {
   final Future<void> Function(String productName) onProductTap;
 
   final num Function(dynamic value) toNum;
-
+final Map<String, int> selectedEggsMap;
   const ProductSelectionWidget({
     super.key,
     required this.searchController,
@@ -21,6 +21,7 @@ class ProductSelectionWidget extends StatelessWidget {
     required this.onSearch,
     required this.onProductTap,
     required this.toNum,
+    required this.selectedEggsMap,
   });
 
   Widget buildCard({required Widget child}) {
@@ -146,6 +147,51 @@ class ProductSelectionWidget extends StatelessWidget {
                 crossAxisCount = 5;
               }
 
+              // ── Empty state ──────────────────────────────────
+              if (filteredProducts.isEmpty) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(vertical: 36),
+                  width: double.infinity,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        height: 64,
+                        width: 64,
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.inventory_2_outlined,
+                          size: 32,
+                          color: Colors.red.shade400,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        "No Stock Available",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        "This branch currently has no products in stock.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // ── Product Grid ─────────────────────────────────
               return GridView.builder(
                 shrinkWrap: true,
 
@@ -174,11 +220,16 @@ class ProductSelectionWidget extends StatelessWidget {
                   ).toDouble();
 
                   /// STOCK
-                  final int stockEggs =
-                      int.tryParse(product['stock_eggs'].toString()) ?? 0;
+                  final int actualStock =
+                      int.tryParse((product['stock_eggs'] ?? 0).toString()) ??
+                      0;
+
+                  final int usedStock = selectedEggsMap[productName] ?? 0;
+
+                  final int stockEggs = actualStock - usedStock;
 
                   /// 1 EGG RATE
-                  final double eggRate = trayPrice / 30;
+                  final double eggRate = trayPrice > 0 ? trayPrice / 30 : 0;
 
                   return Material(
                     color: Colors.transparent,
@@ -186,6 +237,7 @@ class ProductSelectionWidget extends StatelessWidget {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(14),
 
+                      /// Not clickable when stock is 0
                       onTap: stockEggs <= 0
                           ? null
                           : () async {
@@ -207,7 +259,11 @@ class ProductSelectionWidget extends StatelessWidget {
 
                             borderRadius: BorderRadius.circular(16),
 
-                            border: Border.all(color: Colors.grey.shade200),
+                            border: Border.all(
+                              color: stockEggs <= 0
+                                  ? Colors.red.shade100
+                                  : Colors.grey.shade200,
+                            ),
 
                             boxShadow: [
                               BoxShadow(
@@ -272,22 +328,53 @@ class ProductSelectionWidget extends StatelessWidget {
 
                               const Spacer(),
 
-                              /// STOCK
-                              Text(
-                                "Stock: $stockEggs eggs",
-
-                                maxLines: 2,
-
-                                overflow: TextOverflow.ellipsis,
-
-                                style: TextStyle(
+                              /// STOCK BADGE
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
                                   color: stockEggs > 0
-                                      ? Colors.green
-                                      : Colors.red,
-
-                                  fontWeight: FontWeight.w600,
-
-                                  fontSize: 12,
+                                      ? Colors.green.shade50
+                                      : Colors.red.shade50,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: stockEggs > 0
+                                        ? Colors.green.shade200
+                                        : Colors.red.shade200,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      stockEggs > 0
+                                          ? Icons.check_circle_outline
+                                          : Icons.cancel_outlined,
+                                      size: 11,
+                                      color: stockEggs > 0
+                                          ? Colors.green
+                                          : Colors.red,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        stockEggs > 0
+                                            ? "$stockEggs eggs"
+                                            : "No Stock",
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: stockEggs > 0
+                                              ? Colors.green
+                                              : Colors.red,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],

@@ -10,13 +10,10 @@ class Dashboardoverview extends StatefulWidget {
   const Dashboardoverview({super.key});
 
   @override
-  State<Dashboardoverview> createState() =>
-      _DashboardoverviewState();
+  State<Dashboardoverview> createState() => _DashboardoverviewState();
 }
 
-class _DashboardoverviewState
-    extends State<Dashboardoverview> {
-
+class _DashboardoverviewState extends State<Dashboardoverview> {
   bool isLoading = true;
   DashboardModel? dashboardModel;
   late final DashboardRepository repository;
@@ -46,222 +43,131 @@ class _DashboardoverviewState
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-
-      backgroundColor:
-          AppColors.background1,
+      backgroundColor: AppColors.background1,
 
       appBar: AppBar(
-
-        backgroundColor:
-            AppColors.background,
+        backgroundColor: AppColors.background,
 
         scrolledUnderElevation: 0,
 
-        title: const Text(
-          "All Stocks",
-        ),
+        title: const Text("All Stocks"),
       ),
 
       body: isLoading
-
-          ? const Center(
-              child:
-                  CircularProgressIndicator(),
-            )
-
+          ? const Center(child: CircularProgressIndicator())
           : Padding(
-
-              padding:
-                  const EdgeInsets.all(
-                12,
-              ),
+              padding: const EdgeInsets.all(12),
 
               child: ListView(
-
                 children: [
-
                   /// Closing Stock
-
                   Stock(
+                    title: "Closing Stock",
 
-                    title:
-                        "Closing Stock",
+                    value: "${dashboardModel!.cards.closingStock} trays",
 
-                    value:
-                        "${dashboardModel!.cards.closingStock} trays",
+                    percent: "13.5%",
 
-                    percent:
-                        "13.5%",
+                    subtitle: "Yesterday",
 
-                    subtitle:
-                        "Yesterday",
+                    icon: Icons.timer_outlined,
 
-                    icon:
-                        Icons.timer_outlined,
+                    iconBg: const Color(0xFFE6EBF0),
 
-                    iconBg:
-                        const Color(
-                      0xFFE6EBF0,
-                    ),
+                    iconColor: Colors.brown,
 
-                    iconColor:
-                        Colors.brown,
-
-                    highlightUnit:
-                        true,
+                    highlightUnit: true,
                   ),
 
-                  const SizedBox(
-                    height: 12,
-                  ),
+                  const SizedBox(height: 12),
 
                   /// Opening Stock
-
                   Stockdetails(
+                    title: "Opening Stock",
 
-                    title:
-                        "Opening Stock",
+                    value: "${dashboardModel!.cards.openingStocks} trays",
 
-                    value:
-                        "${dashboardModel!.cards.openingStocks} trays",
+                    icon: Icons.inventory,
 
-                    icon:
-                        Icons.inventory,
+                    iconBg: const Color(0xFFE6EBF0),
 
-                    iconBg:
-                        const Color(
-                      0xFFE6EBF0,
-                    ),
+                    iconColor: Colors.grey,
 
-                    iconColor:
-                        Colors.grey,
-
-                    highlightUnit:
-                        true,
+                    highlightUnit: true,
                   ),
 
-                  const SizedBox(
-                    height: 12,
-                  ),
+                  const SizedBox(height: 12),
 
                   /// Sales Today
-
                   Stock(
+                    title: "Sales Today",
 
-                    title:
-                        "Sales Today",
+                    value: "₹ ${dashboardModel!.cards.salesToday}",
 
-                    value:
-                        "₹ ${dashboardModel!.cards.salesToday}",
+                    percent: "-2%",
 
-                    percent:
-                        "-2%",
+                    subtitle: "vs yesterday",
 
-                    subtitle:
-                        "vs yesterday",
+                    icon: Icons.attach_money_outlined,
 
-                    icon:
-                        Icons.attach_money_outlined,
+                    iconBg: const Color(0xFFE6EBF0),
 
-                    iconBg:
-                        const Color(
-                      0xFFE6EBF0,
-                    ),
+                    iconColor: Colors.grey,
 
-                    iconColor:
-                        Colors.grey,
-
-                    highlightUnit:
-                        false,
+                    highlightUnit: false,
                   ),
 
-                  const SizedBox(
-                    height: 12,
-                  ),
+                  const SizedBox(height: 12),
 
                   /// Incoming Stock
-
                   Stockdetails(
-
-                    title:
-                        "Incoming Stocks",
+                    title: "Incoming Stocks",
 
                     value:
                         "${dashboardModel!.cards.incomingStockInTransit} trays",
 
-                    icon:
-                        Icons.local_shipping,
+                    icon: Icons.local_shipping,
 
-                    iconBg:
-                        const Color(
-                      0xFFE6EBF0,
-                    ),
+                    iconBg: const Color(0xFFE6EBF0),
 
-                    iconColor:
-                        Colors.grey,
+                    iconColor: Colors.grey,
 
-                    highlightUnit:
-                        true,
+                    highlightUnit: true,
                   ),
 
-                  const SizedBox(
-                    height: 12,
-                  ),
+                  const SizedBox(height: 12),
 
                   /// Damaged Stock
-
                   Stockdetails(
+                    title: "Damage stock",
 
-                    title:
-                        "Damage stock",
+                    value: "${dashboardModel!.cards.damagedStock} trays",
 
-                    value:
-                        "${dashboardModel!.cards.damagedStock} trays",
+                    icon: Icons.send_outlined,
 
-                    icon:
-                        Icons.send_outlined,
+                    iconBg: const Color(0xFFE6EBF0),
 
-                    iconBg:
-                        const Color(
-                      0xFFE6EBF0,
-                    ),
+                    iconColor: Colors.grey,
 
-                    iconColor:
-                        Colors.grey,
-
-                    highlightUnit:
-                        true,
+                    highlightUnit: true,
                   ),
 
-                  const SizedBox(
-                    height: 12,
-                  ),
+                  const SizedBox(height: 12),
 
                   /// Today Expense
-
                   Stockdetails(
+                    title: "Today Expense",
 
-                    title:
-                        "Today Expense",
+                    value: "₹ ${dashboardModel!.cards.todayExpense}",
 
-                    value:
-                        "₹ ${dashboardModel!.cards.todayExpense}",
+                    icon: Icons.trending_up,
 
-                    icon:
-                        Icons.trending_up,
+                    iconBg: const Color(0xFFE6EBF0),
 
-                    iconBg:
-                        const Color(
-                      0xFFE6EBF0,
-                    ),
+                    iconColor: Colors.grey,
 
-                    iconColor:
-                        Colors.grey,
-
-                    highlightUnit:
-                        false,
+                    highlightUnit: false,
                   ),
                 ],
               ),

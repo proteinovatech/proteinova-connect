@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/print_%20bill_widget.dart';
 
-class PaymentSummaryWidget extends StatelessWidget {
+class PaymentSummaryWidget extends StatefulWidget {
   final String selectedPaymentMethod;
+  final TextEditingController amountController;
+  final TextEditingController debtController;
 
   final Widget Function(String) paymentTab;
-
   final Widget Function(String) buildLabel;
 
-  final Widget Function({required String hint}) buildTextField;
+  final Widget Function({
+    required String hint,
+    TextEditingController? controller,
+  })
+  buildTextField;
 
   final Widget Function(String, String, {bool red, bool bold}) summaryRow;
 
@@ -18,6 +23,7 @@ class PaymentSummaryWidget extends StatelessWidget {
   final String grandTotal;
 
   final Future<void> Function() onSubmit;
+
   const PaymentSummaryWidget({
     super.key,
     required this.selectedPaymentMethod,
@@ -30,17 +36,25 @@ class PaymentSummaryWidget extends StatelessWidget {
     required this.offerDiscount,
     required this.grandTotal,
     required this.onSubmit,
+    required this.amountController,
+    required this.debtController,
+    required Map<dynamic, dynamic> selectedEggsMap,
   });
+
+  @override
+  State<PaymentSummaryWidget> createState() => _PaymentSummaryWidgetState();
+}
+
+class _PaymentSummaryWidgetState extends State<PaymentSummaryWidget> {
+  bool isSubmitting = false;
 
   Widget buildCard({required Widget child}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
-
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-
         boxShadow: [
           BoxShadow(
             blurRadius: 10,
@@ -49,20 +63,20 @@ class PaymentSummaryWidget extends StatelessWidget {
           ),
         ],
       ),
-
       child: child,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final double discountValue = double.tryParse(widget.offerDiscount) ?? 0;
+
     return Column(
       children: [
         /// PAYMENT METHOD
         buildCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-
             children: [
               const Text(
                 "Payment Method",
@@ -73,39 +87,45 @@ class PaymentSummaryWidget extends StatelessWidget {
 
               Row(
                 children: [
-                  Expanded(child: paymentTab("Cash")),
+                  Expanded(child: widget.paymentTab("Cash")),
 
                   const SizedBox(width: 16),
 
-                  Expanded(child: paymentTab("UPI")),
+                  Expanded(child: widget.paymentTab("UPI")),
 
                   const SizedBox(width: 16),
 
-                  Expanded(child: paymentTab("Card")),
+                  Expanded(child: widget.paymentTab("Card")),
                 ],
               ),
 
               const SizedBox(height: 24),
 
-              buildLabel(
-                selectedPaymentMethod == "Cash"
+              widget.buildLabel(
+                widget.selectedPaymentMethod == "Cash"
                     ? "Cash Received"
-                    : selectedPaymentMethod == "UPI"
+                    : widget.selectedPaymentMethod == "UPI"
                     ? "UPI Amount"
                     : "Card Amount",
               ),
 
               const SizedBox(height: 8),
 
-              buildTextField(hint: "0"),
+              widget.buildTextField(
+                hint: "0",
+                controller: widget.amountController,
+              ),
 
               const SizedBox(height: 24),
 
-              buildLabel("Debt (Optional)"),
+              widget.buildLabel("Debt (Optional)"),
 
               const SizedBox(height: 8),
 
-              buildTextField(hint: "0"),
+              widget.buildTextField(
+                hint: "0",
+                controller: widget.debtController,
+              ),
             ],
           ),
         ),
@@ -116,7 +136,6 @@ class PaymentSummaryWidget extends StatelessWidget {
         buildCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-
             children: [
               const Text(
                 "Bill Summary",
@@ -125,15 +144,27 @@ class PaymentSummaryWidget extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              summaryRow("Items ($itemTrayCount - Trays)", "₹ $itemTotal"),
+              widget.summaryRow(
+                "Items (${widget.itemTrayCount} - Trays)",
+                "₹ ${widget.itemTotal}",
+              ),
 
               const SizedBox(height: 16),
 
-              summaryRow("Offers Discount", "- ₹ $offerDiscount", red: true),
+              if (discountValue > 0)
+                widget.summaryRow(
+                  "Offers Discount",
+                  "- ₹ ${widget.offerDiscount}",
+                  red: true,
+                ),
 
-              const Divider(height: 30),
+              if (discountValue > 0) const Divider(height: 30),
 
-              summaryRow("Total Total", "₹ $grandTotal", bold: true),
+              widget.summaryRow(
+                "Total Total",
+                "₹ ${widget.grandTotal}",
+                bold: true,
+              ),
             ],
           ),
         ),
@@ -146,163 +177,189 @@ class PaymentSummaryWidget extends StatelessWidget {
           height: 52,
 
           child: ElevatedButton(
-            onPressed: () async {
-              /// SAVE TO DB
-              await onSubmit();
+            onPressed: isSubmitting
+                ? null
+                : () async {
+                    if (widget.amountController.text.trim().isEmpty ||
+                        widget.amountController.text.trim() == "0") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          backgroundColor: Colors.red,
+                          content: Text("Please enter payment amount"),
+                        ),
+                      );
 
-              /// SUCCESS + PRINT
-              showDialog(
-                context: context,
+                      return;
+                    }
 
-                barrierDismissible: false,
+                    setState(() {
+                      isSubmitting = true;
+                    });
 
-                builder: (context) {
-                  return Dialog(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
+                    try {
+                      /// ONLY ONE API CALL
+                      await widget.onSubmit();
 
-                    child: Container(
-                      width: 350,
+                      if (!mounted) return;
 
-                      padding: const EdgeInsets.all(20),
-
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-
-                        children: [
-                          /// ICON
-                          Container(
-                            height: 80,
-                            width: 80,
-
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade100,
-                              shape: BoxShape.circle,
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) {
+                          return Dialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
                             ),
+                            child: Container(
+                              width: 350,
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    height: 80,
+                                    width: 80,
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.shade100,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.check_circle,
+                                      color: Colors.green,
+                                      size: 60,
+                                    ),
+                                  ),
 
-                            child: const Icon(
-                              Icons.check_circle,
-                              color: Colors.green,
-                              size: 60,
-                            ),
-                          ),
+                                  const SizedBox(height: 20),
 
-                          const SizedBox(height: 20),
+                                  const Text(
+                                    "Order Saved Successfully!",
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
 
-                          /// TITLE
-                          const Text(
-                            "Order Saved Successfully!",
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                                  const SizedBox(height: 10),
 
-                          const SizedBox(height: 10),
+                                  Text(
+                                    "Grand Total : ₹ ${widget.grandTotal}",
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
 
-                          Text(
-                            "Grand Total : ₹ $grandTotal",
+                                  const SizedBox(height: 24),
 
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text("Close"),
+                                        ),
+                                      ),
 
-                          const SizedBox(height: 24),
+                                      const SizedBox(width: 12),
 
-                          /// BUTTONS
-                          Row(
-                            children: [
-                              /// CLOSE
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-
-                                  child: const Text("Close"),
-                                ),
+                                      Expanded(
+                                        child: ElevatedButton.icon(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.amber,
+                                          ),
+                                          onPressed: () async {
+                                            await generateThermalPdf();
+                                          },
+                                          icon: const Icon(
+                                            Icons.print,
+                                            color: Colors.black,
+                                          ),
+                                          label: const Text(
+                                            "Print",
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
+                            ),
+                          );
+                        },
+                      );
+                    } catch (e) {
+                      if (!mounted) return;
 
-                              const SizedBox(width: 12),
-
-                              /// PRINT
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.amber,
-                                  ),
-
-                                  onPressed: () async {
-                                    /// OPEN PRINT PAGE
-                                    await generateThermalPdf();
-                                  },
-
-                                  icon: const Icon(
-                                    Icons.print,
-                                    color: Colors.black,
-                                  ),
-
-                                  label: const Text(
-                                    "Print",
-
-                                    style: TextStyle(color: Colors.black),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: Colors.red,
+                          content: Text("Failed : $e"),
+                        ),
+                      );
+                    } finally {
+                      if (mounted) {
+                        setState(() {
+                          isSubmitting = false;
+                        });
+                      }
+                    }
+                  },
 
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xff12B321),
-
               elevation: 0,
-
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
 
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: isSubmitting
+                ? const SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Complete Transaction",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
 
-              children: [
-                const Text(
-                  "Complete Transaction",
+                      const SizedBox(width: 12),
 
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                      const Icon(
+                        Icons.currency_rupee,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+
+                      const SizedBox(width: 2),
+
+                      Text(
+                        widget.grandTotal,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-
-                const SizedBox(width: 12),
-
-                const Icon(Icons.currency_rupee, color: Colors.white, size: 14),
-
-                const SizedBox(width: 2),
-
-                Text(
-                  grandTotal,
-
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ],

@@ -19,6 +19,23 @@ class _AdminDashboardState extends State<AdminDashboard> {
   DashboardModel? dashboard;
   bool isLoading = true;
 
+  final ScrollController _scrollController = ScrollController();
+
+  bool isRefreshing = false;
+  Future<void> refreshDashboard() async {
+    setState(() {
+      isRefreshing = true;
+    });
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    await loadDashboard();
+
+    setState(() {
+      isRefreshing = false;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -130,11 +147,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
         ],
       ),
 
-      body: isLoading
+      body: isLoading || isRefreshing
           ? const Center(child: AdminDashboardSkeletonLoader())
-          : Padding(
-              padding: const EdgeInsets.all(12),
+          : RefreshIndicator(
+              onRefresh: refreshDashboard,
+              color: AppColors.dark,
               child: SingleChildScrollView(
+                controller: _scrollController,
+
+                physics: const AlwaysScrollableScrollPhysics(),
+
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   children: [
                     const SizedBox(height: 10),
@@ -226,30 +249,30 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
                                           const SizedBox(height: 10),
 
-          Text(
-            "₹${dashboard?.totalStockValue ?? 0}",
-            style: AppTextStyles.bodyText16
-          ),
-        ],
-      ),
-    ),
-  ],
-),
-  );
-},
+                                          Text(
+                                            "₹${dashboard?.totalStockValue ?? 0}",
+                                            style: AppTextStyles.bodyText16,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-  child: DashboardCard(
-    title: "Incoming Stock",
-    value: "${dashboard?.incomingStockEggs ?? 0} Eggs",
-    icon: Icons.local_shipping_outlined,
-    iconColor: AppColors.deepOrange,
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DashboardCard(
+                            title: "Incoming Stock",
+                            value: "${dashboard?.incomingStockEggs ?? 0} Eggs",
+                            icon: Icons.local_shipping_outlined,
+                            iconColor: AppColors.deepOrange,
 
                             onTap: () {
                               showDashboardBottomSheet(
@@ -281,26 +304,27 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
                                           const SizedBox(height: 10),
 
-          Text(
-            "${dashboard?.incomingStockEggs ?? 0} Eggs",
-            style:AppTextStyles.bodyText16
-          ),
-        ],
-      ),
-    ),
-  ],
-),
-      );
-    },
-  ),
-),
-                  const SizedBox(width: 10),
-                 Expanded(
-  child: DashboardCard(
-    title: "Dispatched Stock",
-    value:"${dashboard?.dispatchedStockEggs ?? 0} Eggs",
-    icon: Icons.send_outlined,
-    iconColor: AppColors.green,
+                                          Text(
+                                            "${dashboard?.incomingStockEggs ?? 0} Eggs",
+                                            style: AppTextStyles.bodyText16,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: DashboardCard(
+                            title: "Dispatched Stock",
+                            value:
+                                "${dashboard?.dispatchedStockEggs ?? 0} Eggs",
+                            icon: Icons.send_outlined,
+                            iconColor: AppColors.green,
 
                             onTap: () {
                               showDashboardBottomSheet(
@@ -332,33 +356,33 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
                                           const SizedBox(height: 10),
 
-          Text(
-            "${dashboard?.dispatchedStockEggs ?? 0} Eggs",
-            style:AppTextStyles.bodyText16
-          ),
-        ],
-      ),
-    ),
-  ],
-),
-      );
-    },
-  ),
-)
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: DashboardCard(
-                      title: "Branch Sales Revenue",
-                      value: "₹${dashboard?.branchRevenue ?? 0}",
-                      icon: Icons.store_outlined,
-                      iconColor: AppColors.deepOrange,
-                      onTap: () {
-  showDashboardBottomSheet(
-    title: "Branch Sales Revenue",
+                                          Text(
+                                            "${dashboard?.dispatchedStockEggs ?? 0} Eggs",
+                                            style: AppTextStyles.bodyText16,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DashboardCard(
+                            title: "Branch Sales Revenue",
+                            value: "₹${dashboard?.branchRevenue ?? 0}",
+                            icon: Icons.store_outlined,
+                            iconColor: AppColors.deepOrange,
+                            onTap: () {
+                              showDashboardBottomSheet(
+                                title: "Branch Sales Revenue",
 
                                 content: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -386,26 +410,26 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
                                           const SizedBox(height: 10),
 
-          Text(
-            "₹${dashboard?.branchRevenue ?? 0}",
-            style:AppTextStyles.bodyText16
-          ),
-        ],
-      ),
-    ),
-  ],
-),
-  );
-},
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-  child: DashboardCard(
-    title: "Total Stock Eggs",
-    value:  "${dashboard?.totalStockEggs ?? 0} Eggs",
-    icon: Icons.egg_outlined,
-    iconColor: AppColors.blueAccent,
+                                          Text(
+                                            "₹${dashboard?.branchRevenue ?? 0}",
+                                            style: AppTextStyles.bodyText16,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: DashboardCard(
+                            title: "Total Stock Eggs",
+                            value: "${dashboard?.totalStockEggs ?? 0} Eggs",
+                            icon: Icons.egg_outlined,
+                            iconColor: AppColors.blueAccent,
 
                             onTap: () {
                               showDashboardBottomSheet(
@@ -437,30 +461,30 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
                                           const SizedBox(height: 10),
 
-          Text(
-            "${dashboard?.totalStockEggs ?? 0} Eggs",
-            style: AppTextStyles.bodyText16
-          ),
-        ],
-      ),
-    ),
-  ],
-),
-      );
-    },
-  ),
-)
-                ],
-              ),
-              const SizedBox(height: 10),
-              DashboardCard(
-                title: "Branch Eggs Sold",
-                value:  "${dashboard?.branchSalesEggs ?? 0} Eggs",
-                icon: Icons.egg_outlined,
-                iconColor: AppColors.green,
-               onTap: () {
-    showDashboardBottomSheet(
-      title: "Branch Eggs Sold",
+                                          Text(
+                                            "${dashboard?.totalStockEggs ?? 0} Eggs",
+                                            style: AppTextStyles.bodyText16,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    DashboardCard(
+                      title: "Branch Eggs Sold",
+                      value: "${dashboard?.branchSalesEggs ?? 0} Eggs",
+                      icon: Icons.egg_outlined,
+                      iconColor: AppColors.green,
+                      onTap: () {
+                        showDashboardBottomSheet(
+                          title: "Branch Eggs Sold",
 
                           content: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -487,27 +511,28 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
                                     const SizedBox(height: 10),
 
-          Text(
-            "${dashboard?.branchSalesEggs ?? 0} Eggs" ,
-            style: AppTextStyles.bodyText16
-          ),
-        ],
-      ),
-    ),
-  ],
-),
-    );
-  },
+                                    Text(
+                                      "${dashboard?.branchSalesEggs ?? 0} Eggs",
+                                      style: AppTextStyles.bodyText16,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    RecentActivityCard(
+                      activities: dashboard?.recentActivity ?? [],
+                    ),
+                    const SizedBox(height: 10),
+                    ActionsRequiredCard(),
+                  ],
+                ),
               ),
-              const SizedBox(height: 10),
-              RecentActivityCard(
-                activities:dashboard?.recentActivity ?? [],),
-              const SizedBox(height: 10),
-              ActionsRequiredCard(),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }
