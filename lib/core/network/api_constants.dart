@@ -15,8 +15,12 @@ class ApiConstants {
   static final String assets = "$baseUrl/api/assets";
   static String dailyClosingDashboard(int branchId, String date) => "$baseUrl/api/branch/daily-closing/dashboard/$branchId?date=$date";
   static final String dailyClosingSubmit = "$baseUrl/api/branch/daily-closing";
-  static String trayReturnDashboard(int branchId, String date) => "$baseUrl/api/branch/tray-returns/dashboard/$branchId?date=$date";
-  static final String trayReturnSubmit = "$baseUrl/api/branch/tray-returns";
-  static String expenseList(int branchId) => "$baseUrl/api/branch/expenses/$branchId";
+  static String trayReturnDashboard(int branchId, String date) => "$baseUrl/api/admin/tray-returns?branch_id=$branchId&date=$date";
+  static final String trayReturnSubmit = "$baseUrl/api/admin/tray-returns";
+  // static String expenseList(int branchId) => "$baseUrl/api/branch/expenses/$branchId";
+  static String expenseList(
+  int branchId,
+) =>
+    "$baseUrl/api/branch/expenses?branch_id=$branchId";
   static final String expenseSubmit = "$baseUrl/api/branch/expenses";
 }

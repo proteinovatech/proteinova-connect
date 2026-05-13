@@ -7,7 +7,10 @@ class ExpenseInitial extends ExpenseState {}
 class ExpenseLoading extends ExpenseState {}
 
 class ExpenseLoaded extends ExpenseState {
+  
   final List<ExpenseModel> expenses;
+  
+
   ExpenseLoaded(this.expenses);
 }
 

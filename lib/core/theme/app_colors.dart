@@ -28,7 +28,7 @@ class AppColors {
   static const Color green = Colors.green;
 
   static const Color background = Color(0xFFFFFFFF);
-  static const Color background1 = Color.fromARGB(255, 239, 242, 252);
+  static const Color background1 = Colors.white;
   static const Color cardBackground = Color(0xFFFFFFFF);
 
   static const Color white = Colors.white;

@@ -78,18 +78,18 @@ class _TrayRecordsState extends State<TrayRecords> {
     final String condition = selectedIndex == 0
         ? "Good"
         : selectedIndex == 1
-            ? "Damaged"
-            : "Scrap";
+        ? "Damaged"
+        : "Scrap";
 
     final data = {
       "branch_id": branchId,
-      "return_from": _returnFromController.text,
-      "name": _nameController.text,
+      "return_from_type": _returnFromController.text,
+      "return_from_name": _nameController.text,
       "return_date": _dateController.text,
       "return_to": _returnToController.text,
       "tray_type": _trayTypeController.text,
-      "qty": int.tryParse(_qtyController.text) ?? 0,
-      "condition": condition,
+      "quantity": int.tryParse(_qtyController.text) ?? 0,
+      "condition": condition.toUpperCase(),
     };
 
     context.read<TrayReturnBloc>().add(SubmitTrayReturn(data: data));
@@ -103,14 +103,20 @@ class _TrayRecordsState extends State<TrayRecords> {
       listener: (context, state) {
         if (state is TrayReturnSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.green),
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.green,
+            ),
           );
           Navigator.pop(context);
           // Refresh list on previous screen
           if (branchId != null) {
-             context.read<TrayReturnBloc>().add(
-               FetchTrayReturnData(branchId: branchId!, date: _dateController.text),
-             );
+            context.read<TrayReturnBloc>().add(
+              FetchTrayReturnData(
+                branchId: branchId!,
+                date: _dateController.text,
+              ),
+            );
           }
         } else if (state is TrayReturnError) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -135,29 +141,72 @@ class _TrayRecordsState extends State<TrayRecords> {
             child: Column(
               children: [
                 SizedBox(height: size.height * 0.03),
-                buildRowField("Return from :", "Customer", controller: _returnFromController),
+                buildDropdownField(
+                  "Return from :",
+                  "Select Type",
+                  ["Customer", "Branch", "Vendor"],
+                  value: _returnFromController.text,
+                  onChanged: (val) {
+                    if (val != null)
+                      setState(() => _returnFromController.text = val);
+                  },
+                ),
                 SizedBox(height: size.height * 0.02),
-                buildRowField("Name :", "Valley farm", controller: _nameController),
+                buildRowField(
+                  "Name :",
+                  "Valley farm",
+                  controller: _nameController,
+                ),
                 SizedBox(height: size.height * 0.02),
-                buildRowField("Return Date :", "Select date", controller: _dateController, readOnly: true, onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2101),
-                  );
-                  if (pickedDate != null) {
-                    setState(() {
-                      _dateController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
-                    });
-                  }
-                }),
+                buildRowField(
+                  "Return Date :",
+                  "Select date",
+                  controller: _dateController,
+                  readOnly: true,
+                  onTap: () async {
+                    DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2101),
+                    );
+                    if (pickedDate != null) {
+                      setState(() {
+                        _dateController.text = DateFormat(
+                          'yyyy-MM-dd',
+                        ).format(pickedDate);
+                      });
+                    }
+                  },
+                ),
                 SizedBox(height: size.height * 0.02),
-                buildRowField("Return to :", "Warehouse", controller: _returnToController),
+                buildDropdownField(
+                  "Return to :",
+                  "Select Destination",
+                  ["Warehouse", "Branch", "Factory"],
+                  value: _returnToController.text,
+                  onChanged: (val) {
+                    if (val != null)
+                      setState(() => _returnToController.text = val);
+                  },
+                ),
                 SizedBox(height: size.height * 0.02),
-                buildRowField("Tray type :", "Trays", controller: _trayTypeController),
+                buildDropdownField(
+                  "Tray type :",
+                  "Select Tray",
+                  ["Egg Tray", "Meat Tray", "Plastic Tray", "Paper Tray"],
+                  value: _trayTypeController.text,
+                  onChanged: (val) {
+                    if (val != null)
+                      setState(() => _trayTypeController.text = val);
+                  },
+                ),
                 SizedBox(height: size.height * 0.02),
-                buildRowField("Quantity :", "50 trays", controller: _qtyController),
+                buildRowField(
+                  "Quantity :",
+                  "50 trays",
+                  controller: _qtyController,
+                ),
                 SizedBox(height: size.height * 0.03),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,34 +215,40 @@ class _TrayRecordsState extends State<TrayRecords> {
                     SizedBox(height: size.height * 0.02),
                     Row(
                       children: [
-                        Expanded(child: conditionBox(
-                          index: 0,
-                          selectedIndex: selectedIndex,
-                          onTap: () => setState(() => selectedIndex = 0),
-                          icon: Icons.check_circle,
-                          text: "Good",
-                          color: Colors.green,
-                        )),
+                        Expanded(
+                          child: conditionBox(
+                            index: 0,
+                            selectedIndex: selectedIndex,
+                            onTap: () => setState(() => selectedIndex = 0),
+                            icon: Icons.check_circle,
+                            text: "Good",
+                            color: Colors.green,
+                          ),
+                        ),
                         const SizedBox(width: 10),
-                        Expanded(child: conditionBox(
-                          index: 1,
-                          selectedIndex: selectedIndex,
-                          onTap: () => setState(() => selectedIndex = 1),
-                          icon: Icons.cancel,
-                          text: "Damaged",
-                          color: Colors.red,
-                        )),
+                        Expanded(
+                          child: conditionBox(
+                            index: 1,
+                            selectedIndex: selectedIndex,
+                            onTap: () => setState(() => selectedIndex = 1),
+                            icon: Icons.cancel,
+                            text: "Damaged",
+                            color: Colors.red,
+                          ),
+                        ),
                         const SizedBox(width: 10),
-                        Expanded(child: conditionBox(
-                          index: 2,
-                          selectedIndex: selectedIndex,
-                          onTap: () => setState(() => selectedIndex = 2),
-                          icon: Icons.delete,
-                          text: "Scrap",
-                          color: Colors.orange,
-                        )),
+                        Expanded(
+                          child: conditionBox(
+                            index: 2,
+                            selectedIndex: selectedIndex,
+                            onTap: () => setState(() => selectedIndex = 2),
+                            icon: Icons.delete,
+                            text: "Scrap",
+                            color: Colors.orange,
+                          ),
+                        ),
                       ],
-                    )
+                    ),
                   ],
                 ),
                 SizedBox(height: size.height * 0.02),
@@ -209,7 +264,10 @@ class _TrayRecordsState extends State<TrayRecords> {
                   child: Container(
                     height: 100,
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey),
                       borderRadius: BorderRadius.circular(8),
@@ -222,10 +280,20 @@ class _TrayRecordsState extends State<TrayRecords> {
                           children: [
                             const Icon(Icons.upload_file),
                             const SizedBox(width: 8),
-                            Flexible(child: Text(fileName, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis)),
+                            Flexible(
+                              child: Text(
+                                fileName,
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           ],
                         ),
-                        const Text("PDF, JPG, PNG (Max 5MB)", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 12)),
+                        const Text(
+                          "PDF, JPG, PNG (Max 5MB)",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                        ),
                       ],
                     ),
                   ),
@@ -248,7 +316,10 @@ class _TrayRecordsState extends State<TrayRecords> {
                       },
                       child: Container(
                         height: 45,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
@@ -270,20 +341,31 @@ class _TrayRecordsState extends State<TrayRecords> {
                           context: context,
                           builder: (context) => AlertDialog(
                             title: const Text("Confirm"),
-                            content: const Text("Are you sure you want to save this details?"),
+                            content: const Text(
+                              "Are you sure you want to save this details?",
+                            ),
                             actions: [
-                              TextButton(onPressed: () => Navigator.pop(context), child: const Text("No")),
-                              TextButton(onPressed: () {
-                                Navigator.pop(context);
-                                _submit();
-                              }, child: const Text("Yes")),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text("No"),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  _submit();
+                                },
+                                child: const Text("Yes"),
+                              ),
                             ],
                           ),
                         );
                       },
                       child: Container(
                         height: 45,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.yellow,
                           borderRadius: BorderRadius.circular(12),
@@ -296,9 +378,18 @@ class _TrayRecordsState extends State<TrayRecords> {
                             BlocBuilder<TrayReturnBloc, TrayReturnState>(
                               builder: (context, state) {
                                 if (state is TrayReturnSubmitting) {
-                                  return const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2));
+                                  return const SizedBox(
+                                    height: 18,
+                                    width: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  );
                                 }
-                                return Text("Save Returns", style: AppTextStyles.containerText);
+                                return Text(
+                                  "Save Returns",
+                                  style: AppTextStyles.containerText,
+                                );
                               },
                             ),
                           ],
