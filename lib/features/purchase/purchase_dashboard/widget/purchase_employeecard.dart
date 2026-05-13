@@ -98,7 +98,7 @@ class _PurchaseEmployeecardState extends State<PurchaseEmployeecard> {
 
           Text("Reaching Warehouse",style: AppTextStyles.buttonText16,),
              
-           const SizedBox(height: 6),
+           SizedBox(height:size.height*0.01),
            _buildField(
             controller:widget.branchController , 
             hint: "Enter branch",
@@ -119,7 +119,7 @@ class _PurchaseEmployeecardState extends State<PurchaseEmployeecard> {
 
             Text("Vehicle Type",style: AppTextStyles.buttonText16,),
              
-           const SizedBox(height: 6),
+           SizedBox(height:size.height*0.01),
            _buildField(
             controller:widget.typeController , 
             hint: "Enter type",
@@ -129,7 +129,7 @@ class _PurchaseEmployeecardState extends State<PurchaseEmployeecard> {
 
             Text("Driver Contact Number",style: AppTextStyles.buttonText16,),
              
-           const SizedBox(height: 6),
+           SizedBox(height:size.height*0.01),
            _buildField(
             controller:widget.contactController , 
             hint: "Enter contact no",
@@ -139,7 +139,7 @@ class _PurchaseEmployeecardState extends State<PurchaseEmployeecard> {
              SizedBox(height: size.height*0.02),
               Text("Description",style: AppTextStyles.buttonText16,),
              
-           const SizedBox(height: 6),
+           SizedBox(height:size.height*0.01),
            _buildField(
             controller:widget.descriptionController , 
             hint: "Add description",

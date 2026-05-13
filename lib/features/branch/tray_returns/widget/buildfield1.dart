@@ -9,7 +9,7 @@ Widget buildRowField(String label, String hint, {TextEditingController? controll
         width: 130,
         child: Text(
           label,
-          style: AppTextStyles.headingText20,
+          style: AppTextStyles.buttonText16,
         ),
       ),
 

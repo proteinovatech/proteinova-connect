@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:proteinova_connect/core/theme/app_colors.dart';
+import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/data/datasource/sales_remote_datasource.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/payment_summary_widget.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/product_selection_widget.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/sales_items_widget.dart';
+import 'package:proteinova_connect/features/branch/sales/widget/sales_entry_skeleton.dart';
 
 class SalesEntryPage extends StatefulWidget {
   const SalesEntryPage({super.key});
@@ -300,13 +304,14 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     if (isLoading) {
       return const Scaffold(
         backgroundColor: Color(0xffF5F6FA),
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(child: SalesEntrySkeleton()),
       );
     }
     return Scaffold(
       backgroundColor: const Color(0xffF5F6FA),
       appBar: AppBar(
         backgroundColor: Colors.white,
+        scrolledUnderElevation: 0,
         elevation: 0,
         centerTitle: false,
         leading: IconButton(
@@ -318,11 +323,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         titleSpacing: 0,
         title: const Text(
           "Sales Entry",
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTextStyles.headingText22
         ),
       ),
       body: SingleChildScrollView(
@@ -333,12 +334,12 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             /// TITLE
             Text(
               "Log new sales transactions to automatically update branch inventory.",
-              style: TextStyle(color: Colors.grey.shade700, fontSize: 11),
+              style: AppTextStyles.bodyText14,
             ),
-            const SizedBox(height: 20),
+            SizedBox(height:getHeight(context, 20)),
             buildWarehouseDropdown(),
 
-            const SizedBox(height: 20),
+           SizedBox(height:getHeight(context, 20)),
 
             /// TRANSACTION DETAILS
             buildCard(
@@ -347,14 +348,14 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 children: [
                   const Text(
                     "Transaction Details",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    style: AppTextStyles.headingText22
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height:getHeight(context, 20)),
 
                   /// CUSTOMER NUMBER
                   buildLabel("Customer Number"),
 
-                  const SizedBox(height: 8),
+                  SizedBox(height:getHeight(context, 8)),
 
                   buildTextField(
                     hint: "Enter customer number",
@@ -365,29 +366,29 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
                     maxLength: 10,
                   ),
-                  const SizedBox(height: 18),
+                  SizedBox(height:getHeight(context, 18)),
 
                   /// CUSTOMER NAME
                   buildLabel("Customer Name"),
-                  const SizedBox(height: 8),
+                  SizedBox(height:getHeight(context, 8)),
                   buildTextField(
                     hint: "Enter customer name",
                     controller: customerNameController,
                     textOnly: true,
                   ),
-                  const SizedBox(height: 18),
+                 SizedBox(height:getHeight(context, 18)),
 
                   /// SALES DATE
                   buildLabel("Sales Date"),
 
-                  const SizedBox(height: 8),
+                  SizedBox(height:getHeight(context, 8)),
 
                   buildDateField(),
                 ],
               ),
             ),
 
-            const SizedBox(height: 18),
+            SizedBox(height:getHeight(context, 18)),
 
             /// PRODUCT SELECTION
             ProductSelectionWidget(
@@ -411,7 +412,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               },
               selectedEggsMap: {},
             ),
-            const SizedBox(height: 18),
+            SizedBox(height:getHeight(context, 18)),
 
             /// SALES ITEMS
             SalesItemsWidget(
@@ -432,7 +433,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               onOffersApplied: (List<int> p1) {},
             ),
 
-            const SizedBox(height: 18),
+          SizedBox(height:getHeight(context, 18)),
 
             /// PAYMENT METHOD
             PaymentSummaryWidget(
@@ -500,7 +501,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               },
             ),
 
-            const SizedBox(height: 30),
+            SizedBox(height:getHeight(context, 30)),
           ],
         ),
       ),
@@ -513,17 +514,17 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   Widget buildWarehouseDropdown() {
     return Center(
       child: Container(
-        width: 220,
-        height: 48,
+        width: getWidth(context, 150),
+        height: getHeight(context, 40),
 
         padding: const EdgeInsets.symmetric(horizontal: 10),
 
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.background,
 
           borderRadius: BorderRadius.circular(12),
 
-          border: Border.all(color: Colors.grey.shade300),
+          border: Border.all(color: AppColors.border),
         ),
 
         child: DropdownButtonHideUnderline(
@@ -538,21 +539,14 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             isExpanded: true,
 
             icon: const Icon(
-              Icons.keyboard_arrow_down,
+              Icons.arrow_drop_down,
 
-              color: Colors.black,
+              color:AppColors.dark,
 
               size: 20,
             ),
 
-            style: const TextStyle(
-              color: Colors.black,
-
-              fontSize: 14,
-
-              fontWeight: FontWeight.w500,
-            ),
-
+            style: AppTextStyles.bodyText14dark,
             dropdownColor: Colors.white,
 
             items: warehouseList.map((String warehouse) {
@@ -582,13 +576,13 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
   Widget buildDateField() {
     return Container(
-      height: 55,
+      height: getHeight(context, 55),
       padding: const EdgeInsets.symmetric(horizontal: 14),
 
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
 
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color:AppColors.border),
       ),
 
       child: Row(
@@ -645,7 +639,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       padding: const EdgeInsets.all(18),
 
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
 
         boxShadow: [
@@ -665,7 +659,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   Widget buildLabel(String text) {
     return Text(
       text,
-      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+      style: AppTextStyles.buttonText16
     );
   }
 
@@ -767,11 +761,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
           icon: const Icon(Icons.keyboard_arrow_down),
 
-          style: const TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+          style: AppTextStyles.bodyText16,
 
           items: dropdownItems.map((String item) {
             return DropdownMenuItem<String>(
@@ -827,25 +817,25 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         children: [
           /// NUMBER
           SizedBox(
-            width: 16,
+            width: getWidth(context, 10),
 
             child: Text(
               "$no",
 
               textAlign: TextAlign.center,
 
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              style: AppTextStyles.bodyText12dark,
             ),
           ),
 
-          const SizedBox(width: 6),
+          SizedBox(width:getWidth(context, 6)),
 
           /// PRODUCT
           Expanded(
             flex: 4,
 
             child: Container(
-              height: 38,
+              height: getHeight(context, 38),
 
               padding: const EdgeInsets.symmetric(horizontal: 8),
 
@@ -863,7 +853,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
                   icon: const Icon(Icons.keyboard_arrow_down, size: 16),
 
-                  style: const TextStyle(color: Colors.black, fontSize: 10),
+                  style: AppTextStyles.bodyText10dark,
 
                   items: dropdownItems.map((String item) {
                     return DropdownMenuItem<String>(
@@ -885,19 +875,19 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ),
 
-          const SizedBox(width: 6),
+          SizedBox(width:getWidth(context, 6)),
 
           /// DOZEN
           Container(
-            width: 40,
-            height: 38,
+            width: getWidth(context, 40),
+            height: getHeight(context, 38),
 
             alignment: Alignment.center,
 
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
 
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: AppColors.border),
             ),
 
             child: TextField(
@@ -921,26 +911,26 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ),
 
-          const SizedBox(width: 8),
+          SizedBox(width:getWidth(context, 8)),
 
           /// EGGS
           SizedBox(
-            width: 24,
+            width: getWidth(context, 24),
 
             child: Text(
               eggsList.length >= no ? eggsList[no - 1].toString() : "0",
 
               textAlign: TextAlign.center,
 
-              style: const TextStyle(fontSize: 12),
+              style: AppTextStyles.bodyText12,
             ),
           ),
 
-          const SizedBox(width: 8),
+          SizedBox(width:getWidth(context, 8)),
 
           /// RATE
           SizedBox(
-            width: 42,
+            width: getWidth(context, 42),
 
             child: Text(
               "₹${rateList.length >= no ? rateList[no - 1] : 0}",
@@ -951,15 +941,15 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
               overflow: TextOverflow.ellipsis,
 
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+              style: AppTextStyles.bodyText12dark,
             ),
           ),
 
-          const SizedBox(width: 8),
+          SizedBox(width: getWidth(context, 8)),
 
           /// TOTAL
           SizedBox(
-            width: 48,
+            width: getWidth(context, 48),
 
             child: Text(
               "₹${totalList.length >= no ? totalList[no - 1] : 0}",
@@ -978,7 +968,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ),
 
-          const SizedBox(width: 6),
+          SizedBox(width: getWidth(context,6)),
 
           /// DELETE
           GestureDetector(
@@ -1052,13 +1042,13 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ),
 
-          const SizedBox(height: 8),
+          SizedBox(height:getHeight(context, 8)),
 
           AnimatedContainer(
             duration: const Duration(milliseconds: 250),
 
-            height: 3,
-            width: 40,
+            height: getHeight(context, 3),
+            width: getWidth(context, 30),
 
             decoration: BoxDecoration(
               color: isSelected ? Colors.blue : Colors.transparent,

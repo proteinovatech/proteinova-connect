@@ -87,115 +87,121 @@ class SuppliersScreen extends StatelessWidget {
         ],
       ),
       backgroundColor: const Color(0xfff5f6fa),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 10),
-
-                /// SEARCH
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      height: 45,
-                      width: 175,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: const [
-                          Icon(Icons.search, color: Colors.grey),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: TextField(
-                              decoration: InputDecoration(
-                                hintText: "Filter Supplier...",
-                                border: InputBorder.none,
+      body: RefreshIndicator(
+         onRefresh: () async {
+    // your refresh API/bloc call here
+    await Future.delayed(const Duration(seconds: 2));
+  },
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 10),
+        
+                  /// SEARCH
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        height: 45,
+                        width: 175,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: const [
+                            Icon(Icons.search, color: Colors.grey),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: TextField(
+                                decoration: InputDecoration(
+                                  hintText: "Filter Supplier...",
+                                  border: InputBorder.none,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    SizedBox(width: size.width * 0.09),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      height: 45,
-                      width: 95,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(8),
+                      SizedBox(width: size.width * 0.09),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        height: 45,
+                        width: 95,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: const [
+                            Icon(Icons.filter_alt_outlined),
+                            SizedBox(width: 1),
+                            Expanded(child: Text("Filter")),
+                          ],
+                        ),
                       ),
-                      child: Row(
-                        children: const [
-                          Icon(Icons.filter_alt_outlined),
-                          SizedBox(width: 1),
-                          Expanded(child: Text("Filter")),
-                        ],
+                      SizedBox(width: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        height: 45,
+                        width: 55,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: const [Icon(Icons.file_download_outlined)],
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      height: 45,
-                      width: 55,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: const [Icon(Icons.file_download_outlined)],
-                      ),
-                    ),
-                  ],
-                ),
-                PurchaseCards(
-                  status: "Active",
-                  statusColor: Colors.green,
-                  textColor: Colors.white,
-                  supplier: "Apex Farms",
-                  orderId: 'PO-1024',
-                  dateTime: 'Today, 10.45 PM',
-                  bottomId: '\$7,500.00',
-                  items: 'Jumbo White(Grade AA)',
-                  itemboxes: '500 Boxes',
-                  contactperson: 'Robert',
-                  contactnumber: '+91 1234567890',
-                ),
-                SizedBox(height: 10),
-                PurchaseCards(
-                  status: "Active",
-                  statusColor: Colors.green,
-                  textColor: Colors.white,
-                  supplier: "Golden",
-                  orderId: 'PO-1025',
-                  dateTime: 'Today, 10.45 PM',
-                  bottomId: '\$8,500.00',
-                  items: 'Jumbo White(Grade AA)',
-                  itemboxes: '500 Boxes',
-                  contactperson: 'James',
-                  contactnumber: '+91 1234567890',
-                ),
-                SizedBox(height: 10),
-                PurchaseCards(
-                  status: "Active",
-                  statusColor: Colors.green,
-                  textColor: Colors.white,
-                  supplier: "MR.D ",
-                  orderId: 'PO-1026',
-                  dateTime: 'Today, 10.45 PM',
-                  bottomId: '\$6,500.00',
-                  items: 'Jumbo White(Grade AA)',
-                  itemboxes: '500 Boxes',
-                  contactperson: 'David kim',
-                  contactnumber: '+91 1234567890',
-                ),
-              ],
+                    ],
+                  ),
+                  PurchaseCards(
+                    status: "Active",
+                    statusColor: Colors.green,
+                    textColor: Colors.white,
+                    supplier: "Apex Farms",
+                    orderId: 'PO-1024',
+                    dateTime: 'Today, 10.45 PM',
+                    bottomId: '\$7,500.00',
+                    items: 'Jumbo White(Grade AA)',
+                    itemboxes: '500 Boxes',
+                    contactperson: 'Robert',
+                    contactnumber: '+91 1234567890',
+                  ),
+                  SizedBox(height: 10),
+                  PurchaseCards(
+                    status: "Active",
+                    statusColor: Colors.green,
+                    textColor: Colors.white,
+                    supplier: "Golden",
+                    orderId: 'PO-1025',
+                    dateTime: 'Today, 10.45 PM',
+                    bottomId: '\$8,500.00',
+                    items: 'Jumbo White(Grade AA)',
+                    itemboxes: '500 Boxes',
+                    contactperson: 'James',
+                    contactnumber: '+91 1234567890',
+                  ),
+                  SizedBox(height: 10),
+                  PurchaseCards(
+                    status: "Active",
+                    statusColor: Colors.green,
+                    textColor: Colors.white,
+                    supplier: "MR.D ",
+                    orderId: 'PO-1026',
+                    dateTime: 'Today, 10.45 PM',
+                    bottomId: '\$6,500.00',
+                    items: 'Jumbo White(Grade AA)',
+                    itemboxes: '500 Boxes',
+                    contactperson: 'David kim',
+                    contactnumber: '+91 1234567890',
+                  ),
+                ],
+              ),
             ),
           ),
         ),

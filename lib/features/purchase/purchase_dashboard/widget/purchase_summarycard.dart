@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/purchase/orders/presentation/checkout.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/product_summary_model.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/purchase_model.dart';
@@ -97,7 +98,7 @@ final costPerTray =
   style: AppTextStyles.formInputs15dark,
 ),
 
-const SizedBox(height: 8),
+SizedBox(height: getHeight(context, 8)),
 
 ...products.map((p) {
   return Container(
@@ -193,7 +194,7 @@ const SizedBox(height: 8),
           
         Container(
           width: double.infinity,
-          height: 50,
+          height: getHeight(context, 50),
           margin: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stock.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stockdetails.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/bloc/tray_return_bloc.dart';
@@ -52,7 +53,7 @@ class _TrayReturnState extends State<TrayReturn> {
           }
         },
         builder: (context, state) {
-          // If we are loading for the first time, show a centered loader
+          
           if (state is TrayReturnLoading && branchId == null) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -62,7 +63,6 @@ class _TrayReturnState extends State<TrayReturn> {
             model = state.model;
           }
 
-          // Define empty/default data if model is null (e.g. on error or initial load)
           final cards = model?.cards ?? Cards(refundCredit: 0, damagedTrays: 0, totalReturnedThisMonth: 0, goodTrays: 0);
           final refundSummary = model?.refundCreditSummary ?? RefundCreditSummary(totalRefund: 0, pendingRefund: 0, totalCredit: 0, pendingCredit: 0);
           final dataList = model?.data ?? [];
@@ -100,7 +100,7 @@ class _TrayReturnState extends State<TrayReturn> {
                           highlightUnit: true,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width:getWidth(context, 12)),
                       Expanded(
                         child: Stockdetails(
                           title: "Damaged",
@@ -128,7 +128,7 @@ class _TrayReturnState extends State<TrayReturn> {
                           highlightUnit: true,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width:getWidth(context, 12)),
                       Expanded(
                         child: Stockdetails(
                           title: "Good Trays",
@@ -160,7 +160,7 @@ class _TrayReturnState extends State<TrayReturn> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.add, color: AppColors.dark),
-                          const SizedBox(width: 8),
+                           SizedBox(width:getWidth(context, 8)),
                           Text("Tray Records", style: AppTextStyles.headingText20),
                         ],
                       ),
@@ -168,7 +168,7 @@ class _TrayReturnState extends State<TrayReturn> {
                   ),
                   SizedBox(height: size.height * 0.02),
                   Text("Recent Tray Returns", style: AppTextStyles.headingText20),
-                  const SizedBox(height: 10),
+                   SizedBox(height:getHeight(context, 10)),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: DataTable(

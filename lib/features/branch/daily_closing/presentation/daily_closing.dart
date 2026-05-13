@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/bloc/daily_closing_bloc.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/data/model/daily_closing_model.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/widget/checkitem.dart';
+import 'package:proteinova_connect/features/branch/daily_closing/widget/daily_closing_skeleton.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/widget/infobox.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/widget/summary_block.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/widget/summary_item.dart';
@@ -49,20 +51,20 @@ class _DailyClosingState extends State<DailyClosing> {
       listener: (context, state) {
         if (state is DailyClosingSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.green),
+            SnackBar(content: Text(state.message), backgroundColor: AppColors.green),
           );
         } else if (state is DailyClosingError) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+            SnackBar(content: Text(state.message), backgroundColor:AppColors.redAccent),
           );
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.background1,
+        backgroundColor: AppColors.background,
         body: BlocBuilder<DailyClosingBloc, DailyClosingState>(
           builder: (context, state) {
             if (state is DailyClosingLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: DailyClosingSkeleton());
             }
 
             if (state is DailyClosingError && branchId == null) {
@@ -392,7 +394,7 @@ class _DailyClosingState extends State<DailyClosing> {
           Row(
             children: [
               Expanded(child: stockItem("$opening", "Opening Stock")),
-              const SizedBox(width: 10),
+              SizedBox(width:getWidth(context, 10)),
               Expanded(child: stockItem("$received", "Received")),
             ],
           ),
@@ -400,7 +402,7 @@ class _DailyClosingState extends State<DailyClosing> {
           Row(
             children: [
               Expanded(child: stockItem("$sold", "Sold")),
-              const SizedBox(width: 10),
+              SizedBox(width: getWidth(context, 10)),
               Expanded(child: stockItem("$closing", "Closing")),
             ],
           ),
@@ -443,7 +445,7 @@ class _DailyClosingState extends State<DailyClosing> {
       children: [
         Text(label, style: const TextStyle(fontSize: 12)),
         Container(
-          height: 50,
+          height: getHeight(context, 50),
           width: double.infinity,
           alignment: Alignment.center,
           decoration: BoxDecoration(
