@@ -43,9 +43,7 @@ Future<void> main() async {
 
   await dotenv.load(fileName: ".env");
   await Hive.initFlutter();
-  await Hive.initFlutter();
 
-  await Hive.openBox('purchaseBox');
   await Hive.openBox('purchaseBox');
 
   final prefs = await SharedPreferences.getInstance();

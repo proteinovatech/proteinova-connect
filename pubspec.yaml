@@ -48,6 +48,7 @@ dependencies:
   dio: ^5.9.2
   shimmer: ^3.0.0
   open_filex: ^4.5.0
+  intl: ^0.20.2
   
 dev_dependencies:
   flutter_test:
@@ -61,10 +62,10 @@ flutter_launcher_icons:
   android: true
   ios: true
 
-  image_path: "assets/ERlogo.png"
+  image_path: "assets/Logo@3x.png"
 
   adaptive_icon_background: "#FFD400"
-  adaptive_icon_foreground: "assets/ERlogo.png"
+  adaptive_icon_foreground: "assets/Logo@3x.png"
 
   remove_alpha_ios: true
 

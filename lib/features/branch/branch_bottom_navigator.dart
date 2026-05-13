@@ -99,7 +99,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-             _buildNavItem(Icons.grid_view, 0),
+            _buildNavItem(Icons.grid_view, 0),
             _buildNavItem(Icons.shopping_cart_outlined, 1),
             // _buildNavItem(Icons.inventory_2_outlined, 2),
             _buildNavItem(Icons.receipt_long, 2),
@@ -150,8 +150,8 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
   String _getLabel(int index) {
     switch (index) {
       case 0:
-       return "Dashboard";
-             case 1:
+        return "Dashboard";
+      case 1:
         return "Sales";
        
       case 2:
