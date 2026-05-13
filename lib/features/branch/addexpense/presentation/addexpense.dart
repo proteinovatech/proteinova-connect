@@ -23,16 +23,16 @@ class _AddexpenseState extends State<Addexpense> {
   final TextEditingController dateController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
-
-  final List<String> categoryList = [
-    "SALARY",
-    "PURCHASE",
-    "TRANSPORT",
-    "MAINTANANCE",
-    "RENT",
-    "PACKING",
-    "GENERAL",
-  ];
+final List<String> categoryList = [
+  "SALARY",
+  "RENT",
+  "ELECTRICITY",
+  "TRANSPORT",
+  "PACKING",
+  "MAINTENANCE",
+  "MISCELLANEOUS",
+  "OTHER_EXPENSES",
+];
 
   @override
   void initState() {
@@ -258,7 +258,7 @@ class _AddexpenseState extends State<Addexpense> {
                           decoration: BoxDecoration(
                             border: Border.all(color: selectedPayment == "BANK" ? Colors.blue : Colors.grey),
                             borderRadius: BorderRadius.circular(8),
-                            color: selectedPayment == "BANK" ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+                            color: selectedPayment == "CARD" ? Colors.blue.withOpacity(0.1) : Colors.transparent,
                           ),
                           child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,

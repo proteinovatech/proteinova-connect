@@ -19,25 +19,32 @@ class DashboardModel {
   });
 
   factory DashboardModel.fromJson(Map<String, dynamic> json) {
+    print(json["low_stock_alerts"]);
+
     return DashboardModel(
       branchId: json["branch_id"],
       branchName: json["branch_name"],
-      cards: Cards.fromJson(json["cards"]),
+
+      cards: Cards.fromJson(json["cards"] ?? {}),
+
       activeOffers: json["active_offers"] != null
           ? (json["active_offers"] as List)
               .map((e) => ActiveOffer.fromJson(e))
               .toList()
           : [],
+
       dailySalesVolume: json["daily_sales_volume"] != null
           ? (json["daily_sales_volume"] as List)
               .map((e) => DailySalesVolume.fromJson(e))
               .toList()
           : [],
+
       recentActivity: json["recent_activity"] != null
           ? (json["recent_activity"] as List)
               .map((e) => RecentActivity.fromJson(e))
               .toList()
           : [],
+
       lowStockAlerts: json["low_stock_alerts"] != null
           ? (json["low_stock_alerts"] as List)
               .map((e) => LowStockAlert.fromJson(e))
@@ -60,9 +67,13 @@ class LowStockAlert {
 
   factory LowStockAlert.fromJson(Map<String, dynamic> json) {
     return LowStockAlert(
-      title: json["title"] ?? json["product_name"] ?? "",
-      subtitle: json["subtitle"] ?? json["category"] ?? "",
-      stock: (json["stock"] ?? json["current_stock"] ?? 0).toString(),
+      title: json["egg_category_grade"]?.toString() ?? "",
+
+      subtitle:
+          "Threshold: ${json["threshold"]?.toString() ?? "0"}",
+
+      stock:
+          "${json["trays"]?.toString() ?? "0"} Trays",
     );
   }
 }
@@ -88,14 +99,28 @@ class Cards {
 
   factory Cards.fromJson(Map<String, dynamic> json) {
     return Cards(
-      openingStocks: (json["opening_stocks"] as num?)?.toInt() ?? 0,
+      openingStocks:
+          (json["opening_stocks"] as num?)?.toInt() ?? 0,
+
       incomingStockInTransit:
-          (json["incoming_stock_in_transit"] as num?)?.toInt() ?? 0,
-      damagedStock: (json["damaged_stock"] as num?)?.toInt() ?? 0,
-      salesToday: (json["sales_today"] as num?)?.toDouble() ?? 0.0,
-      todayExpense: (json["today_expense"] as num?)?.toDouble() ?? 0.0,
-      todayTraySold: (json["today_tray_sold"] as num?)?.toInt() ?? 0,
-      closingStock: (json["closing_stock"] as num?)?.toInt() ?? 0,
+          (json["incoming_stock_in_transit"] as num?)
+                  ?.toInt() ??
+              0,
+
+      damagedStock:
+          (json["damaged_stock"] as num?)?.toInt() ?? 0,
+
+      salesToday:
+          (json["sales_today"] as num?)?.toDouble() ?? 0.0,
+
+      todayExpense:
+          (json["today_expense"] as num?)?.toDouble() ?? 0.0,
+
+      todayTraySold:
+          (json["today_tray_sold"] as num?)?.toInt() ?? 0,
+
+      closingStock:
+          (json["closing_stock"] as num?)?.toInt() ?? 0,
     );
   }
 }
@@ -131,9 +156,16 @@ class DailySalesVolume {
   factory DailySalesVolume.fromJson(Map<String, dynamic> json) {
     return DailySalesVolume(
       saleDate: json["sale_date"] ?? "",
-      retailSalesUnits: (json["retail_sales_units"] as num?)?.toDouble() ?? 0.0,
+
+      retailSalesUnits:
+          (json["retail_sales_units"] as num?)
+                  ?.toDouble() ??
+              0.0,
+
       wholesaleSalesUnits:
-          (json["wholesale_sales_units"] as num?)?.toDouble() ?? 0.0,
+          (json["wholesale_sales_units"] as num?)
+                  ?.toDouble() ??
+              0.0,
     );
   }
 }
@@ -154,9 +186,14 @@ class RecentActivity {
   factory RecentActivity.fromJson(Map<String, dynamic> json) {
     return RecentActivity(
       title: json["title"] ?? json["actor_name"] ?? "",
-      description: json["description"] ?? json["activity"] ?? "",
+
+      description:
+          json["description"] ?? json["activity"] ?? "",
+
       time: json["time"] ?? json["created_at"] ?? "",
-      tag: json["tag"] ?? json["activity_type"] ?? "",
+
+      tag:
+          json["tag"] ?? json["activity_type"] ?? "",
     );
   }
 }

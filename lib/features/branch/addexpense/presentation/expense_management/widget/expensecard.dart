@@ -3,11 +3,15 @@ import 'package:proteinova_connect/features/branch/addexpense/presentation/expen
 
 class ExpenseCard extends StatelessWidget {
   final ExpenseModel item;
-
-  const ExpenseCard({super.key, required this.item});
+  final String? subtitle;
+  const ExpenseCard({ required String title,
+  required String value,
+  required IconData icon,
+   required this.item, this.subtitle,});
 
   @override
   Widget build(BuildContext context) {
+    
     return Column(
       children: [
         /// Top Row
@@ -57,6 +61,7 @@ class ExpenseCard extends StatelessWidget {
                     item.category,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
+                   
                   Text(
                     item.description,
                     style: const TextStyle(color: Colors.grey),
@@ -71,6 +76,18 @@ class ExpenseCard extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
+             if (subtitle != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              subtitle!,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+               
           ],
         ),
         Divider()

@@ -26,7 +26,10 @@ class _BranchDashboardState extends State<BranchDashboard> {
   Size get size => MediaQuery.of(context).size;
 
   final DashboardRepository repository = DashboardRepository(DioClient().dio);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 428286dca87bf3b38f4f4867b5a4da98baad47e7
   bool isLoading = true;
 
   bool isShopOpen = false;

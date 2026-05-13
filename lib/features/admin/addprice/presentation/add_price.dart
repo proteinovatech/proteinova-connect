@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/admin/data/services/dashboard_service.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_addprice_skeleton_loader.dart';
 import 'package:proteinova_connect/services/offer_service.dart';
 
@@ -14,6 +16,22 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
   final List<Map<String, dynamic>> products = [];
   bool isLoading = false;
   bool isUpdating = false;
+  final ScrollController _scrollController = ScrollController();
+
+  bool isRefreshing = false;
+  Future<void> refreshDashboard() async {
+    setState(() {
+      isRefreshing = true;
+    });
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    await _fetchCurrentPrices();
+
+    setState(() {
+      isRefreshing = false;
+    });
+  }
 
   @override
   void initState() {
@@ -54,8 +72,8 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
 
       // Fully source product categories from DB response.
       for (final item in products) {
-        (item["ncc"] as TextEditingController).dispose();
-        (item["market"] as TextEditingController).dispose();
+        // (item["ncc"] as TextEditingController).dispose();
+        // (item["market"] as TextEditingController).dispose();
         (item["egg"] as TextEditingController).dispose();
       }
       products
@@ -121,11 +139,11 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
     final isSmall = MediaQuery.of(context).size.width < 380;
 
     return Scaffold(
-      backgroundColor: const Color(0xffF5F5F7),
+      backgroundColor: AppColors.white,
 
       appBar: AppBar(
-        backgroundColor: const Color(0xffF5F5F7),
-        elevation: 0,
+        backgroundColor: AppColors.white,
+        scrolledUnderElevation: 0,
 
         title: Text(
           "Pricing Matrix",
@@ -135,362 +153,374 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
           ),
         ),
 
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 18),
-
-            child: Container(
-              width: 46,
-              height: 46,
-
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-
-              child: const Icon(Icons.info_outline, color: Colors.black),
-            ),
-          ),
-        ],
+       
       ),
 
-  body: isLoading
-    ? const AdminAddpriceSkeletonLoader()
-    : SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      body: isLoading || isRefreshing
+          ? const AdminAddpriceSkeletonLoader()
+          : RefreshIndicator(
+              onRefresh: refreshDashboard,
+              color: AppColors.dark,
+              child: SingleChildScrollView(
+                controller: _scrollController,
 
-        child: Column(
-          children: [
-            /// MAIN CARD
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
+                physics: const AlwaysScrollableScrollPhysics(),
 
-                borderRadius: BorderRadius.circular(24),
+                child: Column(
+                  children: [
+                    /// MAIN CARD
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
 
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 10,
-                    color: Colors.black.withValues(alpha: 0.03),
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
+                        borderRadius: BorderRadius.circular(24),
 
-              child: Column(
-                children: [
-                  /// HEADER
-                  Padding(
-                    padding: const EdgeInsets.all(18),
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 10,
+                            color: Colors.black.withValues(alpha: 0.03),
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
 
-                    child: Column(
-                      children: [
-                        /// TOP
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Column(
+                        children: [
+                          /// HEADER
+                          Padding(
+                            padding: const EdgeInsets.all(18),
 
-                          children: [
-                            /// LEFT
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-
-                                children: [
-                                  Text(
-                                    "Add Price",
-                                    style: AppTextStyles.headingText22.copyWith(
-                                      fontSize: isSmall ? 18 : 22,
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 6),
-
-                                  Text(
-                                    "${products.length} Active Products",
-                                    style: AppTextStyles.bodyText14.copyWith(
-                                      color: Colors.grey.shade600,
-                                      fontSize: isSmall ? 13 : 15,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            const SizedBox(width: 12),
-
-                            /// RIGHT BUTTONS
-                            Column(
+                            child: Column(
                               children: [
-                                /// DISCARD
-                                GestureDetector(
-                                  onTap: isLoading || isUpdating
-                                      ? null
-                                      : _fetchCurrentPrices,
-                                  child: Container(
-                                    width: isSmall ? 150 : 190,
-                                    height: 52,
+                                /// TOP
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
 
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
+                                  children: [
+                                    /// LEFT
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
 
-                                      borderRadius: BorderRadius.circular(16),
+                                        children: [
+                                          Text(
+                                            "Add Price",
+                                            style: AppTextStyles.headingText22
+                                                .copyWith(
+                                                  fontSize: isSmall ? 18 : 22,
+                                                ),
+                                          ),
 
-                                      border: Border.all(
-                                        color: Colors.grey.shade300,
+                                          const SizedBox(height: 6),
+
+                                          Text(
+                                            "${products.length} Active Products",
+                                            style: AppTextStyles.bodyText14
+                                                .copyWith(
+                                                  color: Colors.grey.shade600,
+                                                  fontSize: isSmall ? 13 : 15,
+                                                ),
+                                          ),
+                                        ],
                                       ),
                                     ),
 
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                    const SizedBox(width: 12),
 
+                                    /// RIGHT BUTTONS
+                                    Column(
                                       children: [
-                                        Icon(
-                                          Icons.history,
-                                          size: isSmall ? 18 : 20,
+                                        /// DISCARD
+                                        GestureDetector(
+                                          onTap: isLoading || isUpdating
+                                              ? null
+                                              : _fetchCurrentPrices,
+                                          child: Container(
+                                            width: isSmall ? 150 : 190,
+                                            height: 52,
+
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+
+                                              border: Border.all(
+                                                color: Colors.grey.shade300,
+                                              ),
+                                            ),
+
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+
+                                              children: [
+                                                Icon(
+                                                  Icons.history,
+                                                  size: isSmall ? 18 : 20,
+                                                ),
+
+                                                const SizedBox(width: 8),
+
+                                                Text(
+                                                  "Discard",
+                                                  style: AppTextStyles
+                                                      .buttonText16
+                                                      .copyWith(
+                                                        fontSize: isSmall
+                                                            ? 13
+                                                            : 15,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         ),
 
-                                        const SizedBox(width: 8),
+                                        const SizedBox(height: 12),
 
-                                        Text(
-                                          "Discard",
-                                          style: AppTextStyles.buttonText16
-                                              .copyWith(
-                                                fontSize: isSmall ? 13 : 15,
-                                              ),
+                                        /// UPDATE BUTTON
+                                        GestureDetector(
+                                          onTap: isLoading || isUpdating
+                                              ? null
+                                              : _bulkUpdatePrices,
+                                          child: Container(
+                                            width: isSmall ? 150 : 190,
+                                            height: 52,
+
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xff071A52),
+
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                            ),
+
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+
+                                              children: [
+                                                if (isUpdating)
+                                                  const SizedBox(
+                                                    height: 16,
+                                                    width: 16,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                          strokeWidth: 2,
+                                                          color: Colors.white,
+                                                        ),
+                                                  )
+                                                else
+                                                  Icon(
+                                                    Icons.edit,
+                                                    color: Colors.white,
+                                                    size: isSmall ? 18 : 20,
+                                                  ),
+
+                                                const SizedBox(width: 8),
+
+                                                Text(
+                                                  isUpdating
+                                                      ? "Updating..."
+                                                      : "Update Rates",
+                                                  style: AppTextStyles
+                                                      .buttonText16
+                                                      .copyWith(
+                                                        color: Colors.white,
+                                                        fontSize: isSmall
+                                                            ? 13
+                                                            : 15,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         ),
                                       ],
                                     ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Divider(color: Colors.grey.shade200, height: 1),
+
+                          /// TABLE HEADER
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 16,
+                            ),
+
+                            color: const Color(0xffFAFAFA),
+
+                            child: Row(
+                              children: [
+                                /// PRODUCT
+                                Expanded(
+                                  flex: 3,
+                                  child: Text(
+                                    "PRODUCT CATEGORY",
+                                    style: AppTextStyles.bodyText12semibold
+                                        .copyWith(
+                                          fontSize: 11,
+                                          color: Colors.grey,
+                                        ),
                                   ),
                                 ),
 
-                                const SizedBox(height: 12),
+                                /// NCC RATE
+                                const SizedBox(width: 8),
 
-                                /// UPDATE BUTTON
-                                GestureDetector(
-                                  onTap: isLoading || isUpdating
-                                      ? null
-                                      : _bulkUpdatePrices,
-                                  child: Container(
-                                    width: isSmall ? 150 : 190,
-                                    height: 52,
-
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xff071A52),
-
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-
-                                      children: [
-                                        if (isUpdating)
-                                          const SizedBox(
-                                            height: 16,
-                                            width: 16,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Colors.white,
-                                            ),
-                                          )
-                                        else
-                                          Icon(
-                                            Icons.edit,
-                                            color: Colors.white,
-                                            size: isSmall ? 18 : 20,
+                                /// RATE PER EGG
+                                Expanded(
+                                  flex: 2,
+                                  child: Center(
+                                    child: Text(
+                                      "RATE PER EGG (₹)",
+                                      textAlign: TextAlign.center,
+                                      style: AppTextStyles.bodyText12semibold
+                                          .copyWith(
+                                            fontSize: isSmall ? 8 : 10,
+                                            color: Colors.grey,
                                           ),
-
-                                        const SizedBox(width: 8),
-
-                                        Text(
-                                          isUpdating
-                                              ? "Updating..."
-                                              : "Update Rates",
-                                          style: AppTextStyles.buttonText16
-                                              .copyWith(
-                                                color: Colors.white,
-                                                fontSize: isSmall ? 13 : 15,
-                                              ),
-                                        ),
-                                      ],
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  Divider(color: Colors.grey.shade200, height: 1),
-
-                  /// TABLE HEADER
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 16,
-                    ),
-
-                    color: const Color(0xffFAFAFA),
-
-                    child: Row(
-                      children: [
-                        /// PRODUCT
-                        Expanded(
-                          flex: 3,
-                          child: Text(
-                            "PRODUCT CATEGORY",
-                            style: AppTextStyles.bodyText12semibold.copyWith(
-                              fontSize: 11,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ),
-
-                        /// NCC RATE
-                        const SizedBox(width: 8),
-
-                        /// RATE PER EGG
-                        Expanded(
-                          flex: 2,
-                          child: Center(
-                            child: Text(
-                              "RATE PER EGG (₹)",
-                              textAlign: TextAlign.center,
-                              style: AppTextStyles.bodyText12semibold.copyWith(
-                                fontSize: isSmall ? 8 : 10,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  /// PRODUCT LIST
-                  if (isLoading)
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24),
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                  else if (products.isEmpty)
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24),
-                      child: Center(
-                        child: Text(
-                          "No product categories found in DB",
-                          style: AppTextStyles.bodyText14.copyWith(
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                    )
-                  else
-                    ListView.builder(
-                      shrinkWrap: true,
-
-                      physics: const NeverScrollableScrollPhysics(),
-
-                      itemCount: products.length,
-
-                      itemBuilder: (context, index) {
-                        final item = products[index];
-
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 22,
                           ),
 
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(color: Colors.grey.shade200),
-                            ),
-                          ),
-
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-
-                            children: [
-                              /// PRODUCT NAME
-                              Expanded(
-                                flex: 3,
-
+                          /// PRODUCT LIST
+                          if (isLoading)
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 24),
+                              child: Center(child: CircularProgressIndicator()),
+                            )
+                          else if (products.isEmpty)
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 24),
+                              child: Center(
                                 child: Text(
-                                  item["name"],
-                                  style: AppTextStyles.bodyText14dark.copyWith(
-                                    fontSize: isSmall ? 14 : 16,
+                                  "No product categories found in DB",
+                                  style: AppTextStyles.bodyText14.copyWith(
+                                    color: Colors.grey,
                                   ),
                                 ),
                               ),
+                            )
+                          else
+                            ListView.builder(
+                              shrinkWrap: true,
 
-                              const SizedBox(width: 8),
+                              physics: const NeverScrollableScrollPhysics(),
 
-                              const SizedBox(width: 8),
+                              itemCount: products.length,
 
-                              /// RATE PER EGG
-                              Expanded(
-                                flex: 2,
+                              itemBuilder: (context, index) {
+                                final item = products[index];
 
-                                child: priceField(
-                                  controller: item["egg"],
-                                  isSmall: isSmall,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                ],
-              ),
-            ),
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 22,
+                                  ),
 
-            const SizedBox(height: 24),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: Colors.grey.shade200,
+                                      ),
+                                    ),
+                                  ),
 
-            /// INFO BOX
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
 
-              decoration: BoxDecoration(
-                color: const Color(0xffEEF4FF),
+                                    children: [
+                                      /// PRODUCT NAME
+                                      Expanded(
+                                        flex: 3,
 
-                borderRadius: BorderRadius.circular(18),
+                                        child: Text(
+                                          item["name"],
+                                          style: AppTextStyles.bodyText14dark
+                                              .copyWith(
+                                                fontSize: isSmall ? 14 : 16,
+                                              ),
+                                        ),
+                                      ),
 
-                border: Border.all(color: Colors.blue.withValues(alpha: 0.10)),
-              ),
+                                      const SizedBox(width: 8),
 
-              child: Row(
-                children: [
-                  Icon(Icons.info, color: Colors.blue, size: isSmall ? 24 : 30),
+                                      const SizedBox(width: 8),
 
-                  const SizedBox(width: 14),
+                                      /// RATE PER EGG
+                                      Expanded(
+                                        flex: 2,
 
-                  Expanded(
-                    child: Text(
-                      "All rates are in INR (₹) per egg.",
-                      style: AppTextStyles.bodyText16.copyWith(
-                        fontSize: isSmall ? 14 : 16,
-                        fontWeight: FontWeight.w500,
+                                        child: priceField(
+                                          controller: item["egg"],
+                                          isSmall: isSmall,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
+
+                    const SizedBox(height: 24),
+
+                    /// INFO BOX
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(18),
+
+                      decoration: BoxDecoration(
+                        color: const Color(0xffEEF4FF),
+
+                        borderRadius: BorderRadius.circular(18),
+
+                        border: Border.all(
+                          color: Colors.blue.withValues(alpha: 0.10),
+                        ),
+                      ),
+
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info,
+                            color: Colors.blue,
+                            size: isSmall ? 24 : 30,
+                          ),
+
+                          const SizedBox(width: 14),
+
+                          Expanded(
+                            child: Text(
+                              "All rates are in INR (₹) per egg.",
+                              style: AppTextStyles.bodyText16.copyWith(
+                                fontSize: isSmall ? 14 : 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 30),
+                  ],
+                ),
               ),
             ),
-
-            const SizedBox(height: 30),
-          ],
-        ),
-      ),
     );
   }
 
