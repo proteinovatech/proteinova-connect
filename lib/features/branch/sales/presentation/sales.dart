@@ -18,11 +18,49 @@ class Sales extends StatefulWidget {
 
 class _SalesState extends State<Sales> {
   Size get size => MediaQuery.of(context).size;
+  int branchId = 0;
+  @override
+  void initState() {
+    super.initState();
+
+    loadBranchData();
+  }
+
+  Future<void> loadBranchData() async {
+    /// TEMP STATIC ID
+    /// replace later with login user branch id
+
+    branchId = 1;
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Color getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case "approved":
+      case "completed":
+      case "paid":
+        return Colors.green;
+
+      case "pending_review":
+      case "pending approval":
+        return Colors.orange;
+
+      case "rejected":
+        return Colors.red;
+
+      default:
+        return Colors.grey;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => SalesBloc()..add(FetchSalesDashboard()),
+      create: (context) =>
+          SalesBloc()..add(FetchSalesDashboard(branchId: branchId)),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: BlocBuilder<SalesBloc, SalesState>(
@@ -39,7 +77,10 @@ class _SalesState extends State<Sales> {
                     Text("Error: ${state.error}"),
                     ElevatedButton(
                       onPressed: () {
-                        context.read<SalesBloc>().add(FetchSalesDashboard());
+                        create:
+                        (context) =>
+                            SalesBloc()
+                              ..add(FetchSalesDashboard(branchId: branchId));
                       },
                       child: const Text("Retry"),
                     ),
@@ -158,7 +199,7 @@ class _SalesState extends State<Sales> {
                 subtitle: "Vs yesterday",
                 icon: Icons.currency_pound,
                 iconBg: AppColors.containerColor,
-                iconColor:AppColors.blueAccent,
+                iconColor: AppColors.blueAccent,
               ),
             ),
             const SizedBox(width: 10),
@@ -169,7 +210,7 @@ class _SalesState extends State<Sales> {
                 subtitle: "Requires Assignment",
                 icon: Icons.timer_outlined,
                 iconBg: AppColors.containerColor,
-                iconColor:AppColors.blueAccent,
+                iconColor: AppColors.blueAccent,
               ),
             ),
           ],
@@ -184,7 +225,7 @@ class _SalesState extends State<Sales> {
                 subtitle: "Currently on route",
                 icon: Icons.local_shipping_outlined,
                 iconBg: AppColors.containerColor,
-                iconColor:AppColors.blueAccent,
+                iconColor: AppColors.blueAccent,
               ),
             ),
             const SizedBox(width: 10),
@@ -197,7 +238,7 @@ class _SalesState extends State<Sales> {
                 subtitle: "From Daily Target",
                 icon: Icons.check_circle_outline,
                 iconBg: AppColors.containerColor,
-                iconColor:AppColors.blueAccent,
+                iconColor: AppColors.blueAccent,
               ),
             ),
           ],
@@ -258,17 +299,14 @@ class _SalesState extends State<Sales> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        border: Border.all(color:AppColors.border2),
+        border: Border.all(color: AppColors.border2),
         borderRadius: BorderRadius.circular(8),
       ),
-      child:  Row(
+      child: Row(
         children: [
-          Icon(Icons.open_in_new, color:AppColors.blueAccent, size: 18),
+          Icon(Icons.open_in_new, color: AppColors.blueAccent, size: 18),
           SizedBox(width: 5),
-          Text(
-            "Export",
-            style:AppTextStyles.blueText2
-          ),
+          Text("Export", style: AppTextStyles.blueText2),
         ],
       ),
     );
@@ -285,45 +323,27 @@ class _SalesState extends State<Sales> {
         children: const [
           Expanded(
             flex: 2,
-            child: Text(
-              "ORDER ID",
-              style: AppTextStyles.bodyText12dark
-            ),
+            child: Text("ORDER ID", style: AppTextStyles.bodyText12dark),
           ),
           Expanded(
             flex: 1,
-            child: Text(
-              "DATE",
-              style: AppTextStyles.bodyText12dark
-            ),
+            child: Text("DATE", style: AppTextStyles.bodyText12dark),
           ),
           Expanded(
             flex: 2,
-            child: Text(
-              "CUSTOMER",
-              style: AppTextStyles.bodyText12dark
-            ),
+            child: Text("CUSTOMER", style: AppTextStyles.bodyText12dark),
           ),
           Expanded(
             flex: 1,
-            child: Text(
-              "QTY",
-              style: AppTextStyles.bodyText12dark
-            ),
+            child: Text("QTY", style: AppTextStyles.bodyText12dark),
           ),
           Expanded(
             flex: 2,
-            child: Text(
-              "AMOUNT",
-              style: AppTextStyles.bodyText12dark
-            ),
+            child: Text("AMOUNT", style: AppTextStyles.bodyText12dark),
           ),
           Expanded(
             flex: 2,
-            child: Text(
-              "STATUS",
-              style: AppTextStyles.bodyText12dark
-            ),
+            child: Text("STATUS", style: AppTextStyles.bodyText12dark),
           ),
         ],
       ),
@@ -339,14 +359,14 @@ class _SalesState extends State<Sales> {
             flex: 2,
             child: Text(
               order["order_id"]?.toString() ?? "-",
-              style: AppTextStyles.bodyText12
+              style: AppTextStyles.bodyText12,
             ),
           ),
           Expanded(
             flex: 2,
             child: Text(
               order["date"]?.toString().split('T').first ?? "-",
-              style: AppTextStyles.bodyText12
+              style: AppTextStyles.bodyText12,
             ),
           ),
           Expanded(
@@ -356,11 +376,11 @@ class _SalesState extends State<Sales> {
               children: [
                 Text(
                   order["customer"]?.toString() ?? "-",
-                  style:AppTextStyles.bodyText12
+                  style: AppTextStyles.bodyText12,
                 ),
                 Text(
                   order["payment_method"]?.toString() ?? "CASH",
-                  style: AppTextStyles.bodyText12
+                  style: AppTextStyles.bodyText12,
                 ),
               ],
             ),
@@ -369,32 +389,30 @@ class _SalesState extends State<Sales> {
             flex: 2,
             child: Text(
               "${order["items_qty"] ?? 0} Tr",
-              style:AppTextStyles.bodyText12,
+              style: AppTextStyles.bodyText12,
             ),
           ),
           Expanded(
             flex: 2,
-            child: Text(
-              "₹${order["amount"]}",
-              style: AppTextStyles.bodyText12
-            ),
+            child: Text("₹${order["amount"]}", style: AppTextStyles.bodyText12),
           ),
           Expanded(
             flex: 2,
             child: Container(
               alignment: Alignment.center,
+
               padding: const EdgeInsets.symmetric(vertical: 6),
+
               decoration: BoxDecoration(
-                color:
-                    (order["payment_status"]?.toString().toLowerCase() ==
-                        "paid")
-                    ? AppColors.green
-                    : AppColors.deepOrange,
+                color: getStatusColor(order["status"]?.toString() ?? ""),
+
                 borderRadius: BorderRadius.circular(30),
               ),
+
               child: Text(
-                order["payment_status"]?.toString() ?? "-",
-                style: AppTextStyles.whiteText
+                order["status"]?.toString() ?? "-",
+
+                style: AppTextStyles.whiteText,
               ),
             ),
           ),

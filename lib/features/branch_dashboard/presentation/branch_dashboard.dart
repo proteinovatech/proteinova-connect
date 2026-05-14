@@ -1,772 +1,758 @@
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
-import 'package:proteinova_connect/core/network/dio_client.dart';
-import 'package:proteinova_connect/core/theme/app_colors.dart';
-import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/features/branch/branch_dashboard/data/repository/dashboard_repository.dart';
-import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/dashboardoverview.dart';
-import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/resentactivity.dart';
-import 'package:proteinova_connect/features/branch/branch_dashboard/widget/activityitem.dart';
-import 'package:proteinova_connect/features/branch/branch_dashboard/widget/legenditem.dart';
-import 'package:proteinova_connect/features/branch/branch_dashboard/widget/lowstock.dart';
-import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stock.dart';
-import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stockdetails.dart';
-import 'package:proteinova_connect/features/branch/branch_dashboard/widget/zigzagclipper.dart';
+// import 'package:fl_chart/fl_chart.dart';
+// import 'package:flutter/material.dart';
+// import 'package:proteinova_connect/core/network/dio_client.dart';
+// import 'package:proteinova_connect/core/theme/app_colors.dart';
+// import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+// import 'package:proteinova_connect/features/branch/branch_dashboard/data/repository/dashboard_repository.dart';
+// import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/dashboardoverview.dart';
+// import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/resentactivity.dart';
+// import 'package:proteinova_connect/features/branch/branch_dashboard/widget/activityitem.dart';
+// import 'package:proteinova_connect/features/branch/branch_dashboard/widget/legenditem.dart';
+// import 'package:proteinova_connect/features/branch/branch_dashboard/widget/lowstock.dart';
+// import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stock.dart';
+// import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stockdetails.dart';
+// import 'package:proteinova_connect/features/branch/branch_dashboard/widget/zigzagclipper.dart';
+
+// import 'package:proteinova_connect/model/dashboardmodel.dart';
+
+// class BranchDashboard extends StatefulWidget {
+//   const BranchDashboard({super.key});
+
+//   @override
+//   State<BranchDashboard> createState() => _BranchDashboardState();
+// }
+
+// class _BranchDashboardState extends State<BranchDashboard> {
+//   Size get size => MediaQuery.of(context).size;
+
+//   late final DashboardRepository repository;
+
+//   bool isLoading = true;
+
+//   bool isShopOpen = false;
+
+//   DashboardModel? dashboardModel;
+
+//   Map<String, dynamic> cards = {};
+//   List activeOffers = [];
+//   List dailySalesVolume = [];
+//   List recentActivity = [];
+//   List lowStockAlerts = [];
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     repository = DashboardRepository(DioClient().dio);
+//     fetchDashboard();
+//   }
+
+//   Future<void> fetchDashboard() async {
+//     try {
+//       final result = await repository.fetchDashboardData();
+
+//       setState(() {
+//         dashboardModel = result;
+//         cards = {
+//           "opening_stocks": result.cards.openingStocks,
+//           "incoming_stock_in_transit": result.cards.incomingStockInTransit,
+//           "damaged_stock": result.cards.damagedStock,
+//           "sales_today": result.cards.salesToday,
+//           "today_expense": result.cards.todayExpense,
+//           "today_tray_sold": result.cards.todayTraySold,
+//           "closing_stock": result.cards.closingStock,
+//         };
+
+//         activeOffers = result.activeOffers
+//             .map((e) => {"title": e.title, "condition": e.condition})
+//             .toList();
+
+//         dailySalesVolume = result.dailySalesVolume
+//             .map(
+//               (e) => {
+//                 "sale_date": e.saleDate,
+//                 "retail_sales_units": e.retailSalesUnits,
+//                 "wholesale_sales_units": e.wholesaleSalesUnits,
+//               },
+//             )
+//             .toList();
+
+//         recentActivity = result.recentActivity
+//             .map(
+//               (e) => {
+//                 "title": e.title,
+//                 "description": e.description,
+//                 "time": e.time,
+//                 "tag": e.tag,
+//               },
+//             )
+//             .toList();
+
+//         lowStockAlerts = result.lowStockAlerts
+//             .map(
+//               (e) => {
+//                 "title": e.title,
+//                 "subtitle": e.subtitle,
+//                 "stock": e.stock,
+//               },
+//             )
+//             .toList();
+
+//         isLoading = false;
+//       });
+//     } catch (e) {
+//       setState(() {
+//         isLoading = false;
+//       });
 
-import 'package:proteinova_connect/model/dashboardmodel.dart';
+//       print("ERROR : $e");
+//     }
+//   }
 
-class BranchDashboard extends StatefulWidget {
-  const BranchDashboard({super.key});
-
-  @override
-  State<BranchDashboard> createState() => _BranchDashboardState();
-}
-
-class _BranchDashboardState extends State<BranchDashboard> {
-  Size get size => MediaQuery.of(context).size;
-
-  final DashboardRepository repository = DashboardRepository(DioClient().dio);
-<<<<<<< HEAD
-
-=======
->>>>>>> 428286dca87bf3b38f4f4867b5a4da98baad47e7
-  bool isLoading = true;
-
-  bool isShopOpen = false;
+//   List<BarChartGroupData> _barData() {
+//     List<BarChartGroupData> groups = [];
 
-  DashboardModel? dashboardModel;
-
-  Map<String, dynamic> cards = {};
+//     for (int i = 0; i < dailySalesVolume.length; i++) {
+//       final item = dailySalesVolume[i];
 
-  List<Map<String, dynamic>> activeOffers = [];
+//       groups.add(
+//         BarChartGroupData(
+//           x: i,
 
-  List<Map<String, dynamic>> dailySalesVolume = [];
+//           barRods: [
+//             BarChartRodData(
+//               toY: double.parse(item["retail_sales_units"].toString()),
 
-  List<Map<String, dynamic>> recentActivity = [];
-  List lowStockAlerts = [];
+//               color: Colors.orange,
 
-  @override
-  void initState() {
-    super.initState();
-    fetchDashboard();
-  }
+//               width: 8,
 
-  Future<void> fetchDashboard() async {
-    try {
-      final result = await repository.fetchDashboardData();
+//               borderRadius: BorderRadius.circular(4),
+//             ),
 
-      setState(() {
+//             BarChartRodData(
+//               toY: double.parse(item["wholesale_sales_units"].toString()),
 
-        cards = {
-          "opening_stocks": result.cards.openingStocks,
+//               color: Colors.blue,
 
-          "incoming_stock_in_transit": result.cards.incomingStockInTransit,
+//               width: 8,
 
-          "damaged_stock": result.cards.damagedStock,
+//               borderRadius: BorderRadius.circular(4),
+//             ),
+//           ],
+//         ),
+//       );
+//     }
 
-          "sales_today": result.cards.salesToday,
+//     return groups;
+//   }
 
-          "today_expense": result.cards.todayExpense,
+//   @override
+//   Widget build(BuildContext context) {
+//     if (isLoading) {
+//       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+//     }
 
-          "today_tray_sold": result.cards.todayTraySold,
+//     return Scaffold(
+//       backgroundColor: AppColors.background,
 
-          "closing_stock": result.cards.closingStock,
-        };
+//       body: Padding(
+//         padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
 
-        activeOffers = result.activeOffers
-            .map((e) => {"title": e.title, "condition": e.condition})
-            .toList();
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
 
-        dailySalesVolume = result.dailySalesVolume
-            .map(
-              (e) => {
-                "sale_date": e.saleDate,
-                "retail_sales_units": e.retailSalesUnits,
-                "wholesale_sales_units": e.wholesaleSalesUnits,
-              },
-            )
-            .toList();
+//           children: [
+//             SizedBox(height: size.height * 0.07),
 
-        recentActivity = result.recentActivity
-            .map(
-              (e) => {
-                "title": e.title,
+//             Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
-                "description": e.description,
+//               children: [
+//                 Image.asset("assets/erplogo.png", height: 40, width: 130),
 
-                "time": e.time,
+//                 Row(
+//                   children: [
+//                     Text(
+//                       isShopOpen ? "OPEN" : "CLOSED",
 
-                "tag": e.tag,
-              },
-            )
-            .toList();
-        // recentActivity = result.recentActivity
-        //     .map(
-        //       (e) => {
-        //         "title": e.actorName,
-        //         "description": e.activity,
-        //         "time": e.createdAt,
-        //         "tag": e.activityType,
-        //       },
-        //     )
-        //     .toList();
+//                       style: TextStyle(
+//                         color: isShopOpen ? Colors.green : Colors.red,
 
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
+//                         fontWeight: FontWeight.bold,
+//                       ),
+//                     ),
 
-      print("ERROR : $e");
-    }
-  }
+//                     const SizedBox(width: 10),
 
-  List<BarChartGroupData> _barData() {
-    List<BarChartGroupData> groups = [];
+//                     GestureDetector(
+//                       onTap: () {
+//                         setState(() {
+//                           isShopOpen = !isShopOpen;
+//                         });
+//                       },
 
-    for (int i = 0; i < dailySalesVolume.length; i++) {
-      final item = dailySalesVolume[i];
+//                       child: AnimatedContainer(
+//                         duration: const Duration(milliseconds: 300),
 
-      groups.add(
-        BarChartGroupData(
-          x: i,
+//                         width: 50,
 
-          barRods: [
-            BarChartRodData(
-              toY: double.parse(item["retail_sales_units"].toString()),
+//                         height: 30,
 
-              color: Colors.orange,
+//                         decoration: BoxDecoration(
+//                           borderRadius: BorderRadius.circular(20),
 
-              width: 8,
+//                           color: isShopOpen
+//                               ? Colors.green.shade100
+//                               : Colors.red.shade100,
+//                         ),
 
-              borderRadius: BorderRadius.circular(4),
-            ),
+//                         child: AnimatedAlign(
+//                           duration: const Duration(milliseconds: 300),
 
-            BarChartRodData(
-              toY: double.parse(item["wholesale_sales_units"].toString()),
+//                           alignment: isShopOpen
+//                               ? Alignment.centerRight
+//                               : Alignment.centerLeft,
 
-              color: Colors.blue,
+//                           child: Container(
+//                             width: 22,
 
-              width: 8,
+//                             height: 22,
 
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ],
-        ),
-      );
-    }
+//                             margin: const EdgeInsets.all(4),
 
-    return groups;
-  }
+//                             decoration: BoxDecoration(
+//                               shape: BoxShape.circle,
 
-  @override
-  Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
+//                               color: isShopOpen ? Colors.green : Colors.red,
+//                             ),
+//                           ),
+//                         ),
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ],
+//             ),
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
+//             const Divider(),
 
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
+//             Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Text("Dashboard Overview", style: AppTextStyles.headingText22),
 
-          children: [
-            SizedBox(height: size.height * 0.07),
+//                 GestureDetector(
+//                   onTap: () {
+//                     Navigator.push(
+//                       context,
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                       MaterialPageRoute(builder: (_) => Dashboardoverview()),
+//                     );
+//                   },
 
-              children: [
-                Image.asset("assets/erplogo.png", height: 40, width: 130),
+//                   child: const Text(
+//                     "View All",
 
-                Row(
-                  children: [
-                    Text(
-                      isShopOpen ? "OPEN" : "CLOSED",
+//                     style: TextStyle(
+//                       color: Colors.blue,
 
-                      style: TextStyle(
-                        color: isShopOpen ? Colors.green : Colors.red,
+//                       fontWeight: FontWeight.w500,
+//                     ),
+//                   ),
+//                 ),
+//               ],
+//             ),
 
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+//             const SizedBox(height: 15),
 
-                    const SizedBox(width: 10),
+//             Expanded(
+//               child: SingleChildScrollView(
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
 
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          isShopOpen = !isShopOpen;
-                        });
-                      },
+//                   children: [
+//                     Container(
+//                       padding: const EdgeInsets.all(12),
 
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
+//                       decoration: BoxDecoration(
+//                         border: Border.all(color: Colors.grey.shade300),
 
-                        width: 50,
+//                         borderRadius: BorderRadius.circular(12),
+//                       ),
 
-                        height: 30,
+//                       child: Column(
+//                         crossAxisAlignment: CrossAxisAlignment.start,
 
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
+//                         children: [
+//                           Row(
+//                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
-                          color: isShopOpen
-                              ? Colors.green.shade100
-                              : Colors.red.shade100,
-                        ),
+//                             children: [
+//                               const Text("Opening Stocks"),
 
-                        child: AnimatedAlign(
-                          duration: const Duration(milliseconds: 300),
+//                               Container(
+//                                 padding: const EdgeInsets.all(6),
 
-                          alignment: isShopOpen
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
+//                                 decoration: BoxDecoration(
+//                                   color: Colors.blue.shade50,
 
-                          child: Container(
-                            width: 22,
+//                                   borderRadius: BorderRadius.circular(8),
+//                                 ),
 
-                            height: 22,
+//                                 child: const Icon(
+//                                   Icons.inventory_2,
 
-                            margin: const EdgeInsets.all(4),
+//                                   color: Colors.blue,
+//                                 ),
+//                               ),
+//                             ],
+//                           ),
 
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
+//                           const SizedBox(height: 15),
 
-                              color: isShopOpen ? Colors.green : Colors.red,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+//                           Text(
+//                             "${cards["opening_stocks"] ?? 0} Trays",
 
-            const Divider(),
+//                             style: AppTextStyles.headingText20,
+//                           ),
+//                         ],
+//                       ),
+//                     ),
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                     const SizedBox(height: 15),
 
-              children: [
-                Text("Dashboard Overview", style: AppTextStyles.headingText22),
+//                     Row(
+//                       children: [
+//                         Expanded(
+//                           child: Stockdetails(
+//                             title: "Today Tray Sold",
 
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
+//                             value: "${cards["today_tray_sold"] ?? 0} trays",
 
-                      MaterialPageRoute(builder: (_) => Dashboardoverview()),
-                    );
-                  },
+//                             icon: Icons.check_circle_outline,
 
-                  child: const Text(
-                    "View All",
+//                             iconBg: Colors.blue.shade50,
 
-                    style: TextStyle(
-                      color: Colors.blue,
+//                             iconColor: Colors.blue,
 
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+//                             highlightUnit: true,
+//                           ),
+//                         ),
 
-            const SizedBox(height: 15),
+//                         const SizedBox(width: 10),
 
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+//                         Expanded(
+//                           child: Stock(
+//                             title: "Closing Stock",
 
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
+//                             value: "${cards["closing_stock"] ?? 0} trays",
 
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
+//                             percent: "0%",
 
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+//                             subtitle: "Yesterday",
 
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+//                             icon: Icons.timer_outlined,
 
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                             iconBg: Colors.brown.shade50,
 
-                            children: [
-                              const Text("Opening Stocks"),
+//                             iconColor: Colors.brown,
 
-                              Container(
-                                padding: const EdgeInsets.all(6),
+//                             highlightUnit: true,
+//                           ),
+//                         ),
+//                       ],
+//                     ),
 
-                                decoration: BoxDecoration(
-                                  color: Colors.blue.shade50,
+//                     const SizedBox(height: 20),
 
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
+//                     Text("Active Offers", style: AppTextStyles.headingText22),
+//                     GridView.builder(
+//                       itemCount: activeOffers.length,
 
-                                child: const Icon(
-                                  Icons.inventory_2,
+//                       shrinkWrap: true,
 
-                                  color: Colors.blue,
-                                ),
-                              ),
-                            ],
-                          ),
+//                       physics: const NeverScrollableScrollPhysics(),
 
-                          const SizedBox(height: 15),
+//                       gridDelegate:
+//                           const SliverGridDelegateWithFixedCrossAxisCount(
+//                             crossAxisCount: 2,
+//                             crossAxisSpacing: 10,
+//                             mainAxisSpacing: 10,
+//                             childAspectRatio: 1.3,
+//                           ),
+//                       itemBuilder: (context, index) {
+//                         final offer = activeOffers[index];
+//                         return Container(
+//                           padding: const EdgeInsets.all(12),
+//                           decoration: BoxDecoration(
+//                             borderRadius: BorderRadius.circular(10),
 
-                          Text(
-                            "${cards["opening_stocks"] ?? 0} Trays",
+//                             border: Border.all(color: Colors.grey.shade300),
+//                           ),
 
-                            style: AppTextStyles.headingText20,
-                          ),
-                        ],
-                      ),
-                    ),
+//                           child: Column(
+//                             crossAxisAlignment: CrossAxisAlignment.start,
 
-                    const SizedBox(height: 15),
+//                             children: [
+//                               Row(
+//                                 crossAxisAlignment: CrossAxisAlignment.start,
 
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Stockdetails(
-                            title: "Today Tray Sold",
+//                                 children: [
+//                                   ClipPath(
+//                                     clipper: ZigZagClipper(),
 
-                            value: "${cards["today_tray_sold"] ?? 0} trays",
+//                                     child: Container(
+//                                       padding: const EdgeInsets.all(14),
 
-                            icon: Icons.check_circle_outline,
+//                                       color: Colors.green.shade50,
 
-                            iconBg: Colors.blue.shade50,
+//                                       child: const Icon(
+//                                         Icons.percent,
 
-                            iconColor: Colors.blue,
+//                                         color: Colors.green,
 
-                            highlightUnit: true,
-                          ),
-                        ),
+//                                         size: 18,
+//                                       ),
+//                                     ),
+//                                   ),
 
-                        const SizedBox(width: 10),
+//                                   const SizedBox(width: 10),
 
-                        Expanded(
-                          child: Stock(
-                            title: "Closing Stock",
+//                                   Expanded(
+//                                     child: Text(
+//                                       offer["title"],
 
-                            value: "${cards["closing_stock"] ?? 0} trays",
+//                                       maxLines: 2,
 
-                            percent: "0%",
+//                                       overflow: TextOverflow.ellipsis,
 
-                            subtitle: "Yesterday",
+//                                       style: const TextStyle(
+//                                         fontWeight: FontWeight.bold,
 
-                            icon: Icons.timer_outlined,
+//                                         fontSize: 13,
+//                                       ),
+//                                     ),
+//                                   ),
+//                                 ],
+//                               ),
 
-                            iconBg: Colors.brown.shade50,
+//                               const SizedBox(height: 8),
 
-                            iconColor: Colors.brown,
+//                               Text(
+//                                 offer["condition"],
 
-                            highlightUnit: true,
-                          ),
-                        ),
-                      ],
-                    ),
+//                                 maxLines: 2,
 
-                    const SizedBox(height: 20),
+//                                 overflow: TextOverflow.ellipsis,
 
-                    Text("Active Offers", style: AppTextStyles.headingText22),
-                    GridView.builder(
-                      itemCount: activeOffers.length,
+//                                 style: const TextStyle(
+//                                   fontSize: 11,
 
-                      shrinkWrap: true,
+//                                   color: Colors.grey,
+//                                 ),
+//                               ),
+//                             ],
+//                           ),
+//                         );
+//                       },
+//                     ),
 
-                      physics: const NeverScrollableScrollPhysics(),
+//                     const SizedBox(height: 20),
+//                     Container(
+//                       width: double.infinity,
 
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 10,
-                            childAspectRatio: 1.3,
-                          ),
-                      itemBuilder: (context, index) {
-                        final offer = activeOffers[index];
-                        return Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
+//                       padding: const EdgeInsets.all(16),
 
-                            border: Border.all(color: Colors.grey.shade300),
-                          ),
+//                       decoration: BoxDecoration(
+//                         color: Colors.white,
+//                         borderRadius: BorderRadius.circular(12),
+//                         border: Border.all(color: Colors.grey.shade300),
+//                       ),
 
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+//                       child: Column(
+//                         crossAxisAlignment: CrossAxisAlignment.start,
 
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+//                         children: [
+//                           Row(
+//                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
-                                children: [
-                                  ClipPath(
-                                    clipper: ZigZagClipper(),
+//                             children: [
+//                               const Text(
+//                                 "Low Stock Alerts",
+//                                 style: TextStyle(
+//                                   fontSize: 22,
+//                                   fontWeight: FontWeight.bold,
+//                                 ),
+//                               ),
 
-                                    child: Container(
-                                      padding: const EdgeInsets.all(14),
+//                               Icon(
+//                                 Icons.warning_amber_rounded,
+//                                 color: Colors.red.shade400,
+//                                 size: 24,
+//                               ),
+//                             ],
+//                           ),
 
-                                      color: Colors.green.shade50,
+//                           const SizedBox(height: 15),
 
-                                      child: const Icon(
-                                        Icons.percent,
+//                           lowStockAlerts.isEmpty
+//                               ? const Center(
+//                                   child: Padding(
+//                                     padding: EdgeInsets.all(20),
+//                                     child: Text("No Low Stock Alerts"),
+//                                   ),
+//                                 )
+//                               : GridView.builder(
+//                                   itemCount: lowStockAlerts.length,
 
-                                        color: Colors.green,
+//                                   shrinkWrap: true,
 
-                                        size: 18,
-                                      ),
-                                    ),
-                                  ),
+//                                   physics: const NeverScrollableScrollPhysics(),
 
-                                  const SizedBox(width: 10),
+//                                   gridDelegate:
+//                                       const SliverGridDelegateWithFixedCrossAxisCount(
+//                                         crossAxisCount: 2,
 
-                                  Expanded(
-                                    child: Text(
-                                      offer["title"],
+//                                         crossAxisSpacing: 15,
 
-                                      maxLines: 2,
+//                                         mainAxisSpacing: 15,
 
-                                      overflow: TextOverflow.ellipsis,
+//                                         childAspectRatio: 2.4,
+//                                       ),
 
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
+//                                   itemBuilder: (context, index) {
+//                                     final item = lowStockAlerts[index];
 
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+//                                     return lowStockBox(
+//                                       title: item["title"] ?? "",
 
-                              const SizedBox(height: 8),
+//                                       subtitle: item["subtitle"] ?? "",
 
-                              Text(
-                                offer["condition"],
+//                                       stock: item["stock"] ?? "",
+//                                     );
+//                                   },
+//                                 ),
+//                         ],
+//                       ),
+//                     ),
+//                     Container(
+//                       padding: const EdgeInsets.all(16),
 
-                                maxLines: 2,
+//                       decoration: BoxDecoration(
+//                         color: Colors.white,
 
-                                overflow: TextOverflow.ellipsis,
+//                         borderRadius: BorderRadius.circular(12),
+//                       ),
 
-                                style: const TextStyle(
-                                  fontSize: 11,
+//                       child: Column(
+//                         crossAxisAlignment: CrossAxisAlignment.start,
 
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
+//                         children: [
+//                           const Text(
+//                             "Daily Sales Volume",
 
-                    const SizedBox(height: 20),
-                    Container(
-                      width: double.infinity,
+//                             style: TextStyle(
+//                               fontSize: 18,
 
-                      padding: const EdgeInsets.all(16),
+//                               fontWeight: FontWeight.bold,
+//                             ),
+//                           ),
 
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
+//                           const Divider(),
 
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+//                           Row(
+//                             children: [
+//                               legendItem(Colors.orange, "Retail Sales"),
 
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                               const SizedBox(width: 16),
 
-                            children: [
-                              const Text(
-                                "Low Stock Alerts",
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+//                               legendItem(Colors.blue, "Wholesale Sales"),
+//                             ],
+//                           ),
 
-                              Icon(
-                                Icons.warning_amber_rounded,
-                                color: Colors.red.shade400,
-                                size: 24,
-                              ),
-                            ],
-                          ),
+//                           const SizedBox(height: 20),
 
-                          const SizedBox(height: 15),
+//                           SizedBox(
+//                             height: 250,
 
-                          lowStockAlerts.isEmpty
-                              ? const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(20),
-                                    child: Text("No Low Stock Alerts"),
-                                  ),
-                                )
-                              : GridView.builder(
-                                  itemCount: lowStockAlerts.length,
+//                             child: BarChart(
+//                               BarChartData(
+//                                 gridData: FlGridData(show: true),
 
-                                  shrinkWrap: true,
+//                                 borderData: FlBorderData(show: false),
 
-                                  physics: const NeverScrollableScrollPhysics(),
+//                                 titlesData: FlTitlesData(
+//                                   leftTitles: AxisTitles(
+//                                     sideTitles: SideTitles(showTitles: true),
+//                                   ),
 
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 2,
+//                                   bottomTitles: AxisTitles(
+//                                     sideTitles: SideTitles(
+//                                       showTitles: true,
 
-                                        crossAxisSpacing: 15,
+//                                       getTitlesWidget: (value, meta) {
+//                                         final index = value.toInt();
 
-                                        mainAxisSpacing: 15,
+//                                         if (index >= dailySalesVolume.length) {
+//                                           return const SizedBox();
+//                                         }
 
-                                        childAspectRatio: 2.4,
-                                      ),
+//                                         final date =
+//                                             dailySalesVolume[index]["sale_date"];
 
-                                  itemBuilder: (context, index) {
-                                    final item = lowStockAlerts[index];
+//                                         return Padding(
+//                                           padding: const EdgeInsets.only(
+//                                             top: 8,
+//                                           ),
 
-                                    return lowStockBox(
-                                      title: item["title"] ?? "",
+//                                           child: Text(
+//                                             date.toString().substring(5, 10),
 
-                                      subtitle: item["subtitle"] ?? "",
+//                                             style: const TextStyle(
+//                                               fontSize: 10,
+//                                             ),
+//                                           ),
+//                                         );
+//                                       },
+//                                     ),
+//                                   ),
+//                                 ),
 
-                                      stock: item["stock"] ?? "",
-                                    );
-                                  },
-                                ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(16),
+//                                 barGroups: List.generate(
+//                                   dailySalesVolume.length,
 
-                      decoration: BoxDecoration(
-                        color: Colors.white,
+//                                   (i) {
+//                                     final item = dailySalesVolume[i];
 
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+//                                     final retail =
+//                                         double.tryParse(
+//                                           item["retail_sales_units"].toString(),
+//                                         ) ??
+//                                         0;
 
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+//                                     final wholesale =
+//                                         double.tryParse(
+//                                           item["wholesale_sales_units"]
+//                                               .toString(),
+//                                         ) ??
+//                                         0;
 
-                        children: [
-                          const Text(
-                            "Daily Sales Volume",
+//                                     return BarChartGroupData(
+//                                       x: i,
 
-                            style: TextStyle(
-                              fontSize: 18,
+//                                       barRods: [
+//                                         BarChartRodData(
+//                                           toY: retail,
 
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+//                                           color: Colors.orange,
 
-                          const Divider(),
+//                                           width: 8,
 
-                          Row(
-                            children: [
-                              legendItem(Colors.orange, "Retail Sales"),
+//                                           borderRadius: BorderRadius.circular(
+//                                             4,
+//                                           ),
+//                                         ),
 
-                              const SizedBox(width: 16),
+//                                         BarChartRodData(
+//                                           toY: wholesale,
 
-                              legendItem(Colors.blue, "Wholesale Sales"),
-                            ],
-                          ),
+//                                           color: Colors.blue,
 
-                          const SizedBox(height: 20),
+//                                           width: 8,
 
-                          SizedBox(
-                            height: 250,
+//                                           borderRadius: BorderRadius.circular(
+//                                             4,
+//                                           ),
+//                                         ),
+//                                       ],
+//                                     );
+//                                   },
+//                                 ),
+//                               ),
+//                             ),
+//                           ),
+//                         ],
+//                       ),
+//                     ),
 
-                            child: BarChart(
-                              BarChartData(
-                                gridData: FlGridData(show: true),
+//                     const SizedBox(height: 20),
 
-                                borderData: FlBorderData(show: false),
+//                     Row(
+//                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
-                                titlesData: FlTitlesData(
-                                  leftTitles: AxisTitles(
-                                    sideTitles: SideTitles(showTitles: true),
-                                  ),
+//                       children: [
+//                         const Text(
+//                           "Recent activity",
 
-                                  bottomTitles: AxisTitles(
-                                    sideTitles: SideTitles(
-                                      showTitles: true,
+//                           style: AppTextStyles.headingText22,
+//                         ),
 
-                                      getTitlesWidget: (value, meta) {
-                                        final index = value.toInt();
+//                         GestureDetector(
+//                           onTap: () {
+//                             Navigator.push(
+//                               context,
 
-                                        if (index >= dailySalesVolume.length) {
-                                          return const SizedBox();
-                                        }
+//                               MaterialPageRoute(
+//                                 builder: (_) => Resentactivity(),
+//                               ),
+//                             );
+//                           },
 
-                                        final date =
-                                            dailySalesVolume[index]["sale_date"];
+//                           child: const Text(
+//                             "View All",
 
-                                        return Padding(
-                                          padding: const EdgeInsets.only(
-                                            top: 8,
-                                          ),
+//                             style: TextStyle(color: Colors.blue),
+//                           ),
+//                         ),
+//                       ],
+//                     ),
 
-                                          child: Text(
-                                            date.toString().substring(5, 10),
+//                     recentActivity.isEmpty
+//                         ? const Center(child: Text("No Recent Activity"))
+//                         : ListView.builder(
+//                             itemCount: recentActivity.length,
 
-                                            style: const TextStyle(
-                                              fontSize: 10,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
+//                             shrinkWrap: true,
 
-                                barGroups: List.generate(
-                                  dailySalesVolume.length,
+//                             physics: const NeverScrollableScrollPhysics(),
 
-                                  (i) {
-                                    final item = dailySalesVolume[i];
+//                             itemBuilder: (context, index) {
+//                               final item = recentActivity[index];
 
-                                    final retail =
-                                        double.tryParse(
-                                          item["retail_sales_units"].toString(),
-                                        ) ??
-                                        0;
+//                               return Column(
+//                                 children: [
+//                                   ActivityItem(
+//                                     leading: const CircleAvatar(
+//                                       backgroundColor: Colors.grey,
 
-                                    final wholesale =
-                                        double.tryParse(
-                                          item["wholesale_sales_units"]
-                                              .toString(),
-                                        ) ??
-                                        0;
+//                                       child: Icon(
+//                                         Icons.person,
+//                                         color: Colors.white,
+//                                       ),
+//                                     ),
 
-                                    return BarChartGroupData(
-                                      x: i,
+//                                     title: item["title"],
 
-                                      barRods: [
-                                        BarChartRodData(
-                                          toY: retail,
+//                                     subtitle: Text(item["description"]),
 
-                                          color: Colors.orange,
+//                                     time: item["time"] ?? "",
 
-                                          width: 8,
+//                                     tag: item["tag"] ?? "",
+//                                   ),
 
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                        ),
-
-                                        BarChartRodData(
-                                          toY: wholesale,
-
-                                          color: Colors.blue,
-
-                                          width: 8,
-
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                      children: [
-                        const Text(
-                          "Recent activity",
-
-                          style: AppTextStyles.headingText22,
-                        ),
-
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-
-                              MaterialPageRoute(
-                                builder: (_) => Resentactivity(),
-                              ),
-                            );
-                          },
-
-                          child: const Text(
-                            "View All",
-
-                            style: TextStyle(color: Colors.blue),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    recentActivity.isEmpty
-                        ? const Center(child: Text("No Recent Activity"))
-                        : ListView.builder(
-                            itemCount: recentActivity.length,
-
-                            shrinkWrap: true,
-
-                            physics: const NeverScrollableScrollPhysics(),
-
-                            itemBuilder: (context, index) {
-                              final item = recentActivity[index];
-
-                              return Column(
-                                children: [
-                                  ActivityItem(
-                                    leading: const CircleAvatar(
-                                      backgroundColor: Colors.grey,
-
-                                      child: Icon(
-                                        Icons.person,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-
-                                    title: item["title"],
-
-                                    subtitle: Text(item["description"]),
-
-                                    time: item["time"] ?? "",
-
-                                    tag: item["tag"] ?? "",
-                                  ),
-
-                                  const SizedBox(height: 10),
-                                ],
-                              );
-                            },
-                          ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+//                                   const SizedBox(height: 10),
+//                                 ],
+//                               );
+//                             },
+//                           ),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }

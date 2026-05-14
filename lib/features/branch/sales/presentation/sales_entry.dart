@@ -23,14 +23,14 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   int loginUserId = 1;
 
   double offerDiscount = 0;
-
+  bool customerFound = false;
   int salesItemCount = 0;
   List dozenList = [];
 
   List eggsList = [];
 
   List rateList = [];
-
+  List offersList = [];
   List totalList = [];
   List productList = [];
   List<Map<String, dynamic>> salesItems = [];
@@ -54,12 +54,14 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   TextEditingController searchController = TextEditingController();
 
   List filteredProducts = [];
-
   @override
   void initState() {
     super.initState();
+
     getSalesEntry();
     getWarehouseList();
+
+    fetchOffers();
   }
 
   Future<void> getSalesEntry({String? warehouse}) async {
@@ -159,6 +161,44 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     }
   }
 
+  //offer
+  Future<void> fetchOffers() async {
+    try {
+      final response = await datasource.getOffers();
+
+      setState(() {
+        offersList = response.where((e) => e["status"] == "active").toList();
+      });
+
+      print("OFFERS => $offersList");
+    } catch (e) {
+      print("OFFERS ERROR => $e");
+    }
+  }
+
+  //customer number search
+  Future<void> fetchCustomerByNumber(String number) async {
+    try {
+      final customer = await datasource.findCustomerByNumber(number: number);
+
+      if (customer != null) {
+        customerNameController.text = customer["name"]?.toString() ?? "";
+
+        customerFound = true;
+      } else {
+        customerNameController.clear();
+
+        customerFound = false;
+      }
+
+      setState(() {});
+    } catch (e) {
+      customerFound = false;
+
+      print("CUSTOMER FETCH ERROR => $e");
+    }
+  }
+
   void searchProducts(String value) {
     setState(() {
       if (value.isEmpty) {
@@ -177,7 +217,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   void calculateOfferDiscount() {
     double discount = 0;
 
-    final List offers = salesEntryData["offers"] ?? [];
+    final List offers = offersList;
 
     for (final offer in offers) {
       final String offerCategory =
@@ -247,8 +287,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     }
     try {
       /// API REFRESH
-      final response = await datasource.getSalesEntry(loginUserId: 1);
-      final List latestProducts = response['product_details'] ?? productList;
+      final List latestProducts = productList;
       final Map<String, dynamic>? product = _findProductByName(
         latestProducts,
         selectedProduct,
@@ -269,14 +308,61 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
       /// TOTAL
       final double total = computedEggs * productRate;
+      double finalTotal = total;
+
+      for (final offer in offersList) {
+        final String offerProduct = offer["product_name"]
+            .toString()
+            .toLowerCase();
+
+        final String currentProduct = selectedProduct.toLowerCase();
+
+        if (offerProduct == currentProduct) {
+          /// PERCENTAGE
+          if (offer["offer_type"] == "percentage") {
+            double discount =
+                double.tryParse(offer["discount_value"].toString()) ?? 0;
+
+            finalTotal = total - ((total * discount) / 100);
+          }
+          /// FLAT
+          else if (offer["offer_type"] == "flat") {
+            double discount =
+                double.tryParse(offer["discount_value"].toString()) ?? 0;
+
+            finalTotal = (total - discount).clamp(0, total);
+          }
+          /// BUY X GET Y
+          else if (offer["offer_type"] == "buy_x_get_y") {
+            int buyQty = int.tryParse(offer["buy_qty"].toString()) ?? 0;
+
+            int freeQty = int.tryParse(offer["free_qty"].toString()) ?? 0;
+
+            if (computedEggs >= buyQty) {
+              final freeAmount = freeQty * productRate;
+              finalTotal = (total - freeAmount).clamp(0, total);
+            }
+          }
+        }
+      }
       setState(() {
         productList = latestProducts;
+        if (searchController.text.isEmpty) {
+          filteredProducts = productList;
+        } else {
+          final String query = searchController.text.toLowerCase();
+          filteredProducts = productList.where((product) {
+            final String productName =
+                product['product_name']?.toString().toLowerCase() ?? '';
+            return productName.contains(query);
+          }).toList();
+        }
 
         eggsList[index] = computedEggs;
 
         rateList[index] = productRate.toStringAsFixed(2);
 
-        totalList[index] = total.toStringAsFixed(2);
+        totalList[index] = finalTotal.toStringAsFixed(2);
 
         /// SALES ITEMS UPDATE
         salesItems = List.generate(salesItemCount, (i) {
@@ -344,9 +430,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               "Log new sales transactions to automatically update branch inventory.",
               style: TextStyle(color: Colors.grey.shade700, fontSize: 11),
             ),
-            const SizedBox(height: 20),
-            buildWarehouseDropdown(),
 
+            // const SizedBox(height: 20),
+            // buildWarehouseDropdown(),
             const SizedBox(height: 20),
 
             /// TRANSACTION DETAILS
@@ -364,7 +450,6 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                   buildLabel("Customer Number"),
 
                   const SizedBox(height: 8),
-
                   buildTextField(
                     hint: "Enter customer number",
 
@@ -373,16 +458,45 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                     keyboardType: TextInputType.number,
 
                     maxLength: 10,
+
+                    onChanged: (value) async {
+                      print("NUMBER => $value");
+
+                      if (value.length == 10) {
+                        await fetchCustomerByNumber(value);
+                      }
+                    },
                   ),
                   const SizedBox(height: 18),
 
                   /// CUSTOMER NAME
                   buildLabel("Customer Name"),
                   const SizedBox(height: 8),
-                  buildTextField(
-                    hint: "Enter customer name",
+                  TextField(
                     controller: customerNameController,
-                    textOnly: true,
+
+                    readOnly: customerFound,
+
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                    ],
+
+                    decoration: InputDecoration(
+                      hintText: "Enter customer name",
+
+                      filled: true,
+
+                      fillColor: Colors.white,
+
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 14,
+                      ),
+
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 18),
 
@@ -408,15 +522,93 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               },
               toNum: _toNum,
               onProductTap: (productName) async {
-                setState(() {
-                  salesItemCount++;
-                  _ensureRowCapacity(salesItemCount);
-                  final int rowIndex = salesItemCount - 1;
-                  selectedProducts[rowIndex] = productName;
-                  dozenControllers[rowIndex].text = "1";
-                  dozenList[rowIndex] = 1;
-                });
-                await _recalculateRowFromApi(salesItemCount - 1);
+                /// CHECK EXISTING PRODUCT
+                int existingIndex = selectedProducts.indexWhere(
+                  (e) => e.toLowerCase() == productName.toLowerCase(),
+                );
+
+                /// PRODUCT ALREADY EXISTS
+                if (existingIndex != -1) {
+                  final productIndex = productList.indexWhere(
+                    (e) =>
+                        e["product_name"].toString().toLowerCase() ==
+                        productName.toLowerCase(),
+                  );
+
+                  if (productIndex != -1) {
+                    int currentStock =
+                        int.tryParse(
+                          productList[productIndex]["stock_eggs"].toString(),
+                        ) ??
+                        0;
+
+                    if (currentStock < 12) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Out of Stock")),
+                      );
+
+                      return;
+                    }
+
+                    /// REDUCE STOCK
+                    productList[productIndex]["stock_eggs"] = currentStock - 12;
+                  }
+
+                  int currentDozen =
+                      int.tryParse(dozenControllers[existingIndex].text) ?? 0;
+
+                  currentDozen += 1;
+
+                  dozenControllers[existingIndex].text = currentDozen
+                      .toString();
+
+                  dozenList[existingIndex] = currentDozen;
+
+                  await _recalculateRowFromApi(existingIndex);
+
+                  return;
+                }
+
+                /// NEW PRODUCT
+                final productIndex = productList.indexWhere(
+                  (e) =>
+                      e["product_name"].toString().toLowerCase() ==
+                      productName.toLowerCase(),
+                );
+
+                if (productIndex != -1) {
+                  int currentStock =
+                      int.tryParse(
+                        productList[productIndex]["stock_eggs"].toString(),
+                      ) ??
+                      0;
+
+                  if (currentStock < 12) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Out of Stock")),
+                    );
+                    return;
+                  }
+
+                  setState(() {
+                    /// REDUCE STOCK
+                    productList[productIndex]["stock_eggs"] = currentStock - 12;
+
+                    salesItemCount++;
+
+                    _ensureRowCapacity(salesItemCount);
+
+                    final int rowIndex = salesItemCount - 1;
+
+                    selectedProducts[rowIndex] = productName;
+
+                    dozenControllers[rowIndex].text = "1";
+
+                    dozenList[rowIndex] = 1;
+                  });
+
+                  await _recalculateRowFromApi(salesItemCount - 1);
+                }
               },
               selectedEggsMap: {},
             ),
@@ -499,11 +691,47 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
                   print("CREATE SALE RESPONSE =>");
                   print(response);
-
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Sale Saved Successfully")),
-                    );
+                    final String status =
+                        response["status"]?.toString().toUpperCase() ?? "";
+
+                    /// PENDING APPROVAL
+                    if (status == "PENDING_REVIEW") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Sale sent for approval"),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    }
+                    /// APPROVED DIRECTLY
+                    else if (status == "APPROVED" || status == "SUCCESS") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Sale Completed Successfully"),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                    /// REJECTED
+                    else if (status == "REJECTED") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Sale Rejected"),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                    /// DEFAULT
+                    else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            response["message"]?.toString() ?? "Sale Saved",
+                          ),
+                        ),
+                      );
+                    }
                   }
                 } catch (e) {
                   print("CREATE SALE ERROR =>");

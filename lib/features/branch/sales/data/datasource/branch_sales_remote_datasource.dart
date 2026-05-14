@@ -15,7 +15,7 @@ class BranchSalesRemoteDatasource {
       print(body);
 
       final response = await http.post(
-        Uri.parse("$baseUrl/api/branch/sales"),
+        Uri.parse("$baseUrl/api/sales"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(body),
       );
@@ -235,6 +235,80 @@ class BranchSalesRemoteDatasource {
       return jsonDecode(response.body);
     } else {
       throw Exception("Failed to load warehouse list : ${response.statusCode}");
+    }
+  }
+
+  //offer
+  Future<List<dynamic>> getOffers() async {
+    final response = await http.get(Uri.parse("$baseUrl/api/offers"));
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data["data"]["offers_list"] ?? [];
+    } else {
+      throw Exception("Failed to fetch offers");
+    }
+  }
+
+  //customer number
+  Future<Map<String, dynamic>?> findCustomerByNumber({
+    required String number,
+  }) async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/api/customers/find?number=$number"),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data["customer"];
+    } else {
+      return null;
+    }
+  }
+
+  //approve
+  Future<Map<String, dynamic>> approveSale({required int approvalId}) async {
+    final response = await http.post(
+      Uri.parse("$baseUrl/api/sales/$approvalId"),
+    );
+
+    print("APPROVE RESPONSE => ${response.body}");
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception("Failed to approve sale");
+    }
+  }
+
+  Future<Map<String, dynamic>> rejectSale({required int approvalId}) async {
+    final response = await http.post(
+      Uri.parse("$baseUrl/api/sales/$approvalId"),
+    );
+
+    print("REJECT RESPONSE => ${response.body}");
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception("Failed to reject sale");
+    }
+  }
+
+  //get pending
+  Future<List<dynamic>> getPendingSales() async {
+    final response = await http.get(Uri.parse("$baseUrl/api/sales"));
+
+    print("PENDING SALES => ${response.body}");
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data["data"] ?? [];
+    } else {
+      throw Exception("Failed to load pending sales");
     }
   }
 }
