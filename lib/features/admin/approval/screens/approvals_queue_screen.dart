@@ -373,7 +373,7 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
                               bottom: BorderSide(color: Colors.grey.shade200),
                             ),
                           ),
-                          child: const ApprovalTableHeader(),
+                        //  child: const ApprovalTableHeader(),
                         ),
 
                         /// EMPTY

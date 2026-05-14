@@ -34,21 +34,21 @@ import 'package:flutter/material.dart';
       child: Row(
         children: [
 
-//           item("REQUEST ID", 2),
+          // item("REQUEST ID", 2),
 
-//           item("TYPE", 2),
+          // item("TYPE", 2),
 
-//           item("CUSTOMER", 2),
+          // item("CUSTOMER", 2),
 
-//           item("DETAILS", 2),
+          // item("DETAILS", 2),
 
-//           item("DATE & REQUESTER", 3),
+          // item("DATE & REQUESTER", 3),
 
-//           item("STATUS", 2),
+          // item("STATUS", 2),
 
-//           item("ACTIONS", 2),
-//         ],
-//       ),
-//     );
-//   }
-// }
+          // item("ACTIONS", 2),
+        ],
+      ),
+    );
+  }
+

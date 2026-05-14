@@ -185,71 +185,83 @@ class ApprovalTableRow extends StatelessWidget {
 
                             const SizedBox(width: 8),
 
-          Expanded(
-            flex: 2,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: approval.status == "Approved"
-                      ? Colors.green.shade100
-                      : approval.status == "Rejected"
-                      ? Colors.red.shade100
-                      : Colors.orange.shade100,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Text(
-                  approval.status,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: approval.status == "Approved"
-                        ? Colors.green
-                        : approval.status == "Rejected"
-                        ? Colors.red
-                        : Colors.orange,
-                  ),
+                            Expanded(
+                              flex: 2,
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: approval.status == "Approved"
+                                        ? Colors.green.shade100
+                                        : approval.status == "Rejected"
+                                        ? Colors.red.shade100
+                                        : Colors.orange.shade100,
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: Text(
+                                    approval.status,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: approval.status == "Approved"
+                                          ? Colors.green
+                                          : approval.status == "Rejected"
+                                          ? Colors.red
+                                          : Colors.orange,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            Expanded(
+                              flex: 2,
+                              child: Row(
+                                children: [
+                                  InkWell(
+                                    onTap: onView,
+                                    child: const Icon(
+                                      Icons.remove_red_eye_outlined,
+                                      size: 20,
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: 14),
+
+                                  InkWell(
+                                    onTap: onApprove,
+                                    child: const Icon(
+                                      Icons.check_circle_outline,
+                                      color: Colors.green,
+                                      size: 20,
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: 14),
+
+                                  InkWell(
+                                    onTap: onReject,
+                                    child: const Icon(
+                                      Icons.cancel_outlined,
+                                      color: Colors.red,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ),
-
-          Expanded(
-            flex: 2,
-            child: Row(
-              children: [
-                InkWell(
-                  onTap: onView,
-                  child: const Icon(Icons.remove_red_eye_outlined, size: 20),
-                ),
-
-                const SizedBox(width: 14),
-
-                InkWell(
-                  onTap: onApprove,
-                  child: const Icon(
-                    Icons.check_circle_outline,
-                    color: Colors.green,
-                    size: 20,
-                  ),
-                ),
-
-                const SizedBox(width: 14),
-
-                InkWell(
-                  onTap: onReject,
-                  child: const Icon(
-                    Icons.cancel_outlined,
-                    color: Colors.red,
-                    size: 20,
-                  ),
-                ),
-              ],
-            ),
+            ],
           ),
         ],
       ),
