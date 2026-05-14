@@ -246,29 +246,6 @@ class _BranchDashboardState extends State<BranchDashboard> {
                 
                           borderRadius: BorderRadius.circular(12),
                         ),
-<<<<<<< HEAD
-
-                        const SizedBox(width: 10),
-
-                        Expanded(
-                          child: Stock(
-                            title: "Closing Stock",
-
-                            value: "${dashboardModel!.cards.closingStock} Eggs",
-
-                            percent: "0%",
-
-                            subtitle: "Yesterday",
-
-                            icon: Icons.timer_outlined,
-
-                            iconBg: Colors.brown.shade50,
-
-                            iconColor: Colors.brown,
-
-                            highlightUnit: true,
-                          ),
-=======
                 
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,7 +283,6 @@ class _BranchDashboardState extends State<BranchDashboard> {
                               style: AppTextStyles.headingText20,
                             ),
                           ],
->>>>>>> 985535f3db39fce19bb7ce2ac31180ddc2961dc9
                         ),
                       ),
                 
@@ -314,80 +290,6 @@ class _BranchDashboardState extends State<BranchDashboard> {
                 
                       Row(
                         children: [
-<<<<<<< HEAD
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                            children: [
-                              const Text(
-                                "Low Stock Alerts",
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-
-                              Icon(
-                                Icons.warning_amber_rounded,
-                                color: Colors.red.shade400,
-                                size: 24,
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 15),
-                          dashboardModel == null ||
-                                  dashboardModel!.lowStockAlerts.isEmpty
-                              ? const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(20),
-                                    child: Text("No Low Stock Alerts"),
-                                  ),
-                                )
-                              : ListView.builder(
-                                  itemCount:
-                                      dashboardModel!.lowStockAlerts.length,
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemBuilder: (context, index) {
-                                    final alert =
-                                        dashboardModel!.lowStockAlerts[index];
-                                    return Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 10,
-                                      ),
-                                      child: lowStockBox(
-                                        title: alert.title,
-                                        subtitle: alert.subtitle,
-                                        stock: alert.stock,
-                                      ),
-                                    );
-                                  },
-                                ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-
-                        children: [
-                          const Text(
-                            "Daily Sales Volume",
-
-                            style: TextStyle(
-                              fontSize: 18,
-
-                              fontWeight: FontWeight.bold,
-=======
                           Expanded(
                             child: Stockdetails(
                               title: "Today Tray Sold",
@@ -402,7 +304,6 @@ class _BranchDashboardState extends State<BranchDashboard> {
                               iconColor: Colors.blue,
                 
                               highlightUnit: true,
->>>>>>> 985535f3db39fce19bb7ce2ac31180ddc2961dc9
                             ),
                           ),
                 

@@ -116,7 +116,7 @@ class _SalesState extends State<Sales> {
 
     onRefresh: () async {
       context.read<SalesBloc>().add(
-        FetchSalesDashboard(),
+        FetchSalesDashboard(branchId: branchId),
       );
     },
 
@@ -307,7 +307,6 @@ class _SalesState extends State<Sales> {
     );
   }
 
-<<<<<<< HEAD
   Widget _buildExportButton() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -324,7 +323,6 @@ class _SalesState extends State<Sales> {
       ),
     );
   }
-=======
   // Widget _buildExportButton() {
   //   return Container(
   //     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -344,7 +342,6 @@ class _SalesState extends State<Sales> {
   //     ),
   //   );
   // }
->>>>>>> ec78a5184d180deb7f94f49ab2e969028965f4a5
 
   Widget _buildTableHeader() {
     return Container(

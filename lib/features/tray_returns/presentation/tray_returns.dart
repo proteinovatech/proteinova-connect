@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stock.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stockdetails.dart';
 
-import 'package:proteinova_connect/features/branch_dashboard/widget/stock.dart';
-import 'package:proteinova_connect/features/branch_dashboard/widget/stockdetails.dart';
+// import 'package:proteinova_connect/features/branch_dashboard/widget/stock.dart';
+// import 'package:proteinova_connect/features/branch_dashboard/widget/stockdetails.dart';
 import 'package:proteinova_connect/features/tray_returns/presentation/model/tray_return_model.dart';
 import 'package:proteinova_connect/features/tray_returns/presentation/repository/tray_return_repository.dart';
 

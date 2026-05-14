@@ -366,8 +366,4 @@ class _PaymentSummaryWidgetState extends State<BranchPaymentSummaryWidget> {
       ],
     );
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 985535f3db39fce19bb7ce2ac31180ddc2961dc9

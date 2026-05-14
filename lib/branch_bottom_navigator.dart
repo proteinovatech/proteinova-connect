@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-
-import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 import 'package:proteinova_connect/features/branch/addexpense/presentation/expense_management/presentation/expense_management.dart';
-import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/branch_dashboard.dart';
+import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 import 'package:proteinova_connect/features/branch/branch_details/presentation/branch_details.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/presentation/daily_closing.dart';
 import 'package:proteinova_connect/features/branch/inventory/presentation/inventory.dart';
 import 'package:proteinova_connect/features/branch/inventory/presentation/receivestock.dart';
 import 'package:proteinova_connect/features/branch/sales/presentation/sales.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
-
+import 'features/branch/branch_dashboard/presentation/branch_dashboard.dart';
 
 class BranchBottomNavigator extends StatefulWidget {
   const BranchBottomNavigator({super.key});
@@ -81,12 +80,8 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
 
   int selectedIndex = 0;
 
-  final List<Widget> pages = [
-    BranchDashboard(),
-    Inventory(),
-    Sales(),
-    DailyClosing(),
-  ];
+  final List<Widget> pages = [BranchDashboard(), Sales(), DailyClosing()];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,10 +97,10 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildNavItem(Icons.grid_view, 0),
-            _buildNavItem(Icons.inventory_2_outlined, 1),
-            _buildNavItem(Icons.shopping_cart_outlined, 2),
-            _buildNavItem(Icons.receipt_long, 3),
-            _buildNavItem(Icons.menu_outlined, 4),
+            _buildNavItem(Icons.shopping_cart_outlined, 1),
+            // _buildNavItem(Icons.inventory_2_outlined, 2),
+            _buildNavItem(Icons.receipt_long, 2),
+            _buildNavItem(Icons.menu_outlined, 3),
           ],
         ),
       ),
@@ -117,7 +112,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
 
     return GestureDetector(
       onTap: () {
-        if (index == 4) {
+        if (index == 3) {
           _openSideMenu();
         } else {
           setState(() {
@@ -154,12 +149,11 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
       case 0:
         return "Dashboard";
       case 1:
-        return "Inventory";
-      case 2:
         return "Sales";
-      case 3:
+
+      case 2:
         return "Daily closing";
-      case 4:
+      case 3:
         return "Menu";
       default:
         return "";
@@ -180,18 +174,18 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                 children: [
                   const SizedBox(height: 16),
 
-                  _menuTile(
-                    Icons.agriculture,
-                    "Incoming Stock from warehouse",
-                    Receivestock(),
-                  ),
+                  // _menuTile(
+                  //   Icons.agriculture,
+                  //   "Incoming Stock from warehouse",
+                  //   Receivestock(),
+                  // ),
 
-                  _menuTile(Icons.store, "Branches", BranchDetails()),
-
+                  // _menuTile(Icons.store, "Branches", BranchDetails()),
                   _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
 
                   _menuTile(Icons.money, "Expenses", ExpenseManagement()),
 
+                  //  _menuTile(Icons.money, "Admin in", AdminInventory()),
                   const SizedBox(height: 20),
                   Divider(),
                   ListTile(

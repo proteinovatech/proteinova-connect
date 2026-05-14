@@ -1285,22 +1285,20 @@ import 'package:proteinova_connect/features/admin/menu/SalesDashboard/data/datas
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/payment_summary_widget.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/product_selection_widget.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/sales_items_widget.dart';
-<<<<<<< HEAD
+
 import 'package:proteinova_connect/features/branch/sales/data/datasource/branch_sales_remote_datasource.dart';
 
 import 'package:proteinova_connect/features/branch/sales/widget/branch_payment_summary_widget.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/branch_product_selection_widget.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/branch_sales_items_widget.dart';
-=======
-<<<<<<< HEAD
+
 import 'package:proteinova_connect/features/branch/sales/data/datasource/branch_sales_remote_datasource.dart';
-import 'package:proteinova_connect/features/branch/sales/widget/branch__sales_items_widget.dart';
+import 'package:proteinova_connect/features/branch/sales/widget/branch__sales_items_widget.dart' hide BranchSalesItemsWidget;
 import 'package:proteinova_connect/features/branch/sales/widget/branch_payment_summary_widget.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/branch_product_selection_widget.dart';
-=======
+
 import 'package:proteinova_connect/features/branch/sales/widget/sales_entry_skeleton.dart';
->>>>>>> ec78a5184d180deb7f94f49ab2e969028965f4a5
->>>>>>> 985535f3db39fce19bb7ce2ac31180ddc2961dc9
+
 
 class SalesEntryPage extends StatefulWidget {
   const SalesEntryPage({super.key});
@@ -1720,17 +1718,10 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               "Log new sales transactions to automatically update branch inventory.",
               style: AppTextStyles.bodyText14,
             ),
-<<<<<<< HEAD
-
-            // const SizedBox(height: 20),
-            // buildWarehouseDropdown(),
-            const SizedBox(height: 20),
-=======
             SizedBox(height:getHeight(context, 20)),
             buildWarehouseDropdown(),
 
            SizedBox(height:getHeight(context, 20)),
->>>>>>> ec78a5184d180deb7f94f49ab2e969028965f4a5
 
             /// TRANSACTION DETAILS
             buildCard(
@@ -1746,12 +1737,8 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                   /// CUSTOMER NUMBER
                   buildLabel("Customer Number"),
 
-<<<<<<< HEAD
-                  const SizedBox(height: 8),
-=======
                   SizedBox(height:getHeight(context, 8)),
 
->>>>>>> ec78a5184d180deb7f94f49ab2e969028965f4a5
                   buildTextField(
                     hint: "Enter customer number",
 
@@ -1773,14 +1760,8 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
                   /// CUSTOMER NAME
                   buildLabel("Customer Name"),
-<<<<<<< HEAD
-                  const SizedBox(height: 8),
-                  TextField(
-=======
                   SizedBox(height:getHeight(context, 8)),
-                  buildTextField(
-                    hint: "Enter customer name",
->>>>>>> ec78a5184d180deb7f94f49ab2e969028965f4a5
+                  TextField(
                     controller: customerNameController,
 
                     readOnly: customerFound,
@@ -2005,23 +1986,10 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                       .map(
                         (e) => {
                           "egg_category_grade": e["product_name"],
-<<<<<<< HEAD
-
-                          "dozen": int.tryParse(e["dozen"].toString()) ?? 0,
-
-                          "eggs": int.tryParse(e["eggs"].toString()) ?? 0,
-
-                          "trays": int.tryParse(e["trays"].toString()) ?? 0,
-
-                          "rate": double.tryParse(e["rate"].toString()) ?? 0,
-
-                          "total": double.tryParse(e["total"].toString()) ?? 0,
-=======
                           "dozen": e["dozen"],
                           "eggs": e["eggs"],
                           "trays": e["trays"],
                           "total": e["total"],
->>>>>>> 985535f3db39fce19bb7ce2ac31180ddc2961dc9
                         },
                       )
                       .toList(),

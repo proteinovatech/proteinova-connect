@@ -15,11 +15,7 @@ class BranchSalesRemoteDatasource {
       print(body);
 
       final response = await http.post(
-<<<<<<< HEAD
-        Uri.parse("$baseUrl/api/branch/sales"),
-=======
         Uri.parse("$baseUrl/api/sales"),
->>>>>>> 985535f3db39fce19bb7ce2ac31180ddc2961dc9
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(body),
       );
@@ -241,9 +237,6 @@ class BranchSalesRemoteDatasource {
       throw Exception("Failed to load warehouse list : ${response.statusCode}");
     }
   }
-<<<<<<< HEAD
-}
-=======
 
   //offer
   Future<List<dynamic>> getOffers() async {
@@ -319,4 +312,3 @@ class BranchSalesRemoteDatasource {
     }
   }
 }
->>>>>>> 985535f3db39fce19bb7ce2ac31180ddc2961dc9
