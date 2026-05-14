@@ -13,7 +13,10 @@ Widget buildRowField(
     children: [
       SizedBox(
         width: 130,
-        child: Text(label, style: AppTextStyles.headingText20),
+        child: Text(
+          label,
+          style: AppTextStyles.buttonText16,
+        ),
       ),
 
       Expanded(

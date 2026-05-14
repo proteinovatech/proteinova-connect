@@ -1278,15 +1278,29 @@
 // }
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:proteinova_connect/core/theme/app_colors.dart';
+import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/data/datasource/sales_remote_datasource.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/payment_summary_widget.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/product_selection_widget.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/sales_items_widget.dart';
+<<<<<<< HEAD
 import 'package:proteinova_connect/features/branch/sales/data/datasource/branch_sales_remote_datasource.dart';
 
 import 'package:proteinova_connect/features/branch/sales/widget/branch_payment_summary_widget.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/branch_product_selection_widget.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/branch_sales_items_widget.dart';
+=======
+<<<<<<< HEAD
+import 'package:proteinova_connect/features/branch/sales/data/datasource/branch_sales_remote_datasource.dart';
+import 'package:proteinova_connect/features/branch/sales/widget/branch__sales_items_widget.dart';
+import 'package:proteinova_connect/features/branch/sales/widget/branch_payment_summary_widget.dart';
+import 'package:proteinova_connect/features/branch/sales/widget/branch_product_selection_widget.dart';
+=======
+import 'package:proteinova_connect/features/branch/sales/widget/sales_entry_skeleton.dart';
+>>>>>>> ec78a5184d180deb7f94f49ab2e969028965f4a5
+>>>>>>> 985535f3db39fce19bb7ce2ac31180ddc2961dc9
 
 class SalesEntryPage extends StatefulWidget {
   const SalesEntryPage({super.key});
@@ -1302,14 +1316,14 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   int loginUserId = 1;
 
   double offerDiscount = 0;
-
+  bool customerFound = false;
   int salesItemCount = 0;
   List dozenList = [];
 
   List eggsList = [];
 
   List rateList = [];
-
+  List offersList = [];
   List totalList = [];
   List productList = [];
   List<Map<String, dynamic>> salesItems = [];
@@ -1333,12 +1347,14 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   TextEditingController searchController = TextEditingController();
 
   List filteredProducts = [];
-
   @override
   void initState() {
     super.initState();
+
     getSalesEntry();
     getWarehouseList();
+
+    fetchOffers();
   }
 
   Future<void> getSalesEntry({String? warehouse}) async {
@@ -1438,6 +1454,44 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     }
   }
 
+  //offer
+  Future<void> fetchOffers() async {
+    try {
+      final response = await datasource.getOffers();
+
+      setState(() {
+        offersList = response.where((e) => e["status"] == "active").toList();
+      });
+
+      print("OFFERS => $offersList");
+    } catch (e) {
+      print("OFFERS ERROR => $e");
+    }
+  }
+
+  //customer number search
+  Future<void> fetchCustomerByNumber(String number) async {
+    try {
+      final customer = await datasource.findCustomerByNumber(number: number);
+
+      if (customer != null) {
+        customerNameController.text = customer["name"]?.toString() ?? "";
+
+        customerFound = true;
+      } else {
+        customerNameController.clear();
+
+        customerFound = false;
+      }
+
+      setState(() {});
+    } catch (e) {
+      customerFound = false;
+
+      print("CUSTOMER FETCH ERROR => $e");
+    }
+  }
+
   void searchProducts(String value) {
     setState(() {
       if (value.isEmpty) {
@@ -1456,7 +1510,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   void calculateOfferDiscount() {
     double discount = 0;
 
-    final List offers = salesEntryData["offers"] ?? [];
+    final List offers = offersList;
 
     for (final offer in offers) {
       final String offerCategory =
@@ -1526,8 +1580,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     }
     try {
       /// API REFRESH
-      final response = await datasource.getSalesEntry(loginUserId: 1);
-      final List latestProducts = response['product_details'] ?? productList;
+      final List latestProducts = productList;
       final Map<String, dynamic>? product = _findProductByName(
         latestProducts,
         selectedProduct,
@@ -1548,14 +1601,61 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
       /// TOTAL
       final double total = computedEggs * productRate;
+      double finalTotal = total;
+
+      for (final offer in offersList) {
+        final String offerProduct = offer["product_name"]
+            .toString()
+            .toLowerCase();
+
+        final String currentProduct = selectedProduct.toLowerCase();
+
+        if (offerProduct == currentProduct) {
+          /// PERCENTAGE
+          if (offer["offer_type"] == "percentage") {
+            double discount =
+                double.tryParse(offer["discount_value"].toString()) ?? 0;
+
+            finalTotal = total - ((total * discount) / 100);
+          }
+          /// FLAT
+          else if (offer["offer_type"] == "flat") {
+            double discount =
+                double.tryParse(offer["discount_value"].toString()) ?? 0;
+
+            finalTotal = (total - discount).clamp(0, total);
+          }
+          /// BUY X GET Y
+          else if (offer["offer_type"] == "buy_x_get_y") {
+            int buyQty = int.tryParse(offer["buy_qty"].toString()) ?? 0;
+
+            int freeQty = int.tryParse(offer["free_qty"].toString()) ?? 0;
+
+            if (computedEggs >= buyQty) {
+              final freeAmount = freeQty * productRate;
+              finalTotal = (total - freeAmount).clamp(0, total);
+            }
+          }
+        }
+      }
       setState(() {
         productList = latestProducts;
+        if (searchController.text.isEmpty) {
+          filteredProducts = productList;
+        } else {
+          final String query = searchController.text.toLowerCase();
+          filteredProducts = productList.where((product) {
+            final String productName =
+                product['product_name']?.toString().toLowerCase() ?? '';
+            return productName.contains(query);
+          }).toList();
+        }
 
         eggsList[index] = computedEggs;
 
         rateList[index] = productRate.toStringAsFixed(2);
 
-        totalList[index] = total.toStringAsFixed(2);
+        totalList[index] = finalTotal.toStringAsFixed(2);
 
         /// SALES ITEMS UPDATE
         salesItems = List.generate(salesItemCount, (i) {
@@ -1588,13 +1688,14 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     if (isLoading) {
       return const Scaffold(
         backgroundColor: Color(0xffF5F6FA),
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(child: SalesEntrySkeleton()),
       );
     }
     return Scaffold(
       backgroundColor: const Color(0xffF5F6FA),
       appBar: AppBar(
         backgroundColor: Colors.white,
+        scrolledUnderElevation: 0,
         elevation: 0,
         centerTitle: false,
         leading: IconButton(
@@ -1606,11 +1707,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         titleSpacing: 0,
         title: const Text(
           "Sales Entry",
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTextStyles.headingText22
         ),
       ),
       body: SingleChildScrollView(
@@ -1621,12 +1718,19 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             /// TITLE
             Text(
               "Log new sales transactions to automatically update branch inventory.",
-              style: TextStyle(color: Colors.grey.shade700, fontSize: 11),
+              style: AppTextStyles.bodyText14,
             ),
+<<<<<<< HEAD
+
+            // const SizedBox(height: 20),
+            // buildWarehouseDropdown(),
             const SizedBox(height: 20),
+=======
+            SizedBox(height:getHeight(context, 20)),
             buildWarehouseDropdown(),
 
-            const SizedBox(height: 20),
+           SizedBox(height:getHeight(context, 20)),
+>>>>>>> ec78a5184d180deb7f94f49ab2e969028965f4a5
 
             /// TRANSACTION DETAILS
             buildCard(
@@ -1635,15 +1739,19 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 children: [
                   const Text(
                     "Transaction Details",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    style: AppTextStyles.headingText22
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height:getHeight(context, 20)),
 
                   /// CUSTOMER NUMBER
                   buildLabel("Customer Number"),
 
+<<<<<<< HEAD
                   const SizedBox(height: 8),
+=======
+                  SizedBox(height:getHeight(context, 8)),
 
+>>>>>>> ec78a5184d180deb7f94f49ab2e969028965f4a5
                   buildTextField(
                     hint: "Enter customer number",
 
@@ -1652,30 +1760,65 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                     keyboardType: TextInputType.number,
 
                     maxLength: 10,
+
+                    onChanged: (value) async {
+                      print("NUMBER => $value");
+
+                      if (value.length == 10) {
+                        await fetchCustomerByNumber(value);
+                      }
+                    },
                   ),
-                  const SizedBox(height: 18),
+                  SizedBox(height:getHeight(context, 18)),
 
                   /// CUSTOMER NAME
                   buildLabel("Customer Name"),
+<<<<<<< HEAD
                   const SizedBox(height: 8),
+                  TextField(
+=======
+                  SizedBox(height:getHeight(context, 8)),
                   buildTextField(
                     hint: "Enter customer name",
+>>>>>>> ec78a5184d180deb7f94f49ab2e969028965f4a5
                     controller: customerNameController,
-                    textOnly: true,
+
+                    readOnly: customerFound,
+
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                    ],
+
+                    decoration: InputDecoration(
+                      hintText: "Enter customer name",
+
+                      filled: true,
+
+                      fillColor: Colors.white,
+
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 14,
+                      ),
+
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 18),
+                 SizedBox(height:getHeight(context, 18)),
 
                   /// SALES DATE
                   buildLabel("Sales Date"),
 
-                  const SizedBox(height: 8),
+                  SizedBox(height:getHeight(context, 8)),
 
                   buildDateField(),
                 ],
               ),
             ),
 
-            const SizedBox(height: 18),
+            SizedBox(height:getHeight(context, 18)),
 
             /// PRODUCT SELECTION
             BranchProductSelectionWidget(
@@ -1687,19 +1830,97 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               },
               toNum: _toNum,
               onProductTap: (productName) async {
-                setState(() {
-                  salesItemCount++;
-                  _ensureRowCapacity(salesItemCount);
-                  final int rowIndex = salesItemCount - 1;
-                  selectedProducts[rowIndex] = productName;
-                  dozenControllers[rowIndex].text = "1";
-                  dozenList[rowIndex] = 1;
-                });
-                await _recalculateRowFromApi(salesItemCount - 1);
+                /// CHECK EXISTING PRODUCT
+                int existingIndex = selectedProducts.indexWhere(
+                  (e) => e.toLowerCase() == productName.toLowerCase(),
+                );
+
+                /// PRODUCT ALREADY EXISTS
+                if (existingIndex != -1) {
+                  final productIndex = productList.indexWhere(
+                    (e) =>
+                        e["product_name"].toString().toLowerCase() ==
+                        productName.toLowerCase(),
+                  );
+
+                  if (productIndex != -1) {
+                    int currentStock =
+                        int.tryParse(
+                          productList[productIndex]["stock_eggs"].toString(),
+                        ) ??
+                        0;
+
+                    if (currentStock < 12) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Out of Stock")),
+                      );
+
+                      return;
+                    }
+
+                    /// REDUCE STOCK
+                    productList[productIndex]["stock_eggs"] = currentStock - 12;
+                  }
+
+                  int currentDozen =
+                      int.tryParse(dozenControllers[existingIndex].text) ?? 0;
+
+                  currentDozen += 1;
+
+                  dozenControllers[existingIndex].text = currentDozen
+                      .toString();
+
+                  dozenList[existingIndex] = currentDozen;
+
+                  await _recalculateRowFromApi(existingIndex);
+
+                  return;
+                }
+
+                /// NEW PRODUCT
+                final productIndex = productList.indexWhere(
+                  (e) =>
+                      e["product_name"].toString().toLowerCase() ==
+                      productName.toLowerCase(),
+                );
+
+                if (productIndex != -1) {
+                  int currentStock =
+                      int.tryParse(
+                        productList[productIndex]["stock_eggs"].toString(),
+                      ) ??
+                      0;
+
+                  if (currentStock < 12) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Out of Stock")),
+                    );
+                    return;
+                  }
+
+                  setState(() {
+                    /// REDUCE STOCK
+                    productList[productIndex]["stock_eggs"] = currentStock - 12;
+
+                    salesItemCount++;
+
+                    _ensureRowCapacity(salesItemCount);
+
+                    final int rowIndex = salesItemCount - 1;
+
+                    selectedProducts[rowIndex] = productName;
+
+                    dozenControllers[rowIndex].text = "1";
+
+                    dozenList[rowIndex] = 1;
+                  });
+
+                  await _recalculateRowFromApi(salesItemCount - 1);
+                }
               },
               selectedEggsMap: {},
             ),
-            const SizedBox(height: 18),
+            SizedBox(height:getHeight(context, 18)),
 
             /// SALES ITEMS
             BranchSalesItemsWidget(
@@ -1720,7 +1941,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               onOffersApplied: (List<int> p1) {},
             ),
 
-            const SizedBox(height: 18),
+          SizedBox(height:getHeight(context, 18)),
 
             /// PAYMENT METHOD
             BranchPaymentSummaryWidget(
@@ -1784,6 +2005,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                       .map(
                         (e) => {
                           "egg_category_grade": e["product_name"],
+<<<<<<< HEAD
 
                           "dozen": int.tryParse(e["dozen"].toString()) ?? 0,
 
@@ -1794,6 +2016,12 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                           "rate": double.tryParse(e["rate"].toString()) ?? 0,
 
                           "total": double.tryParse(e["total"].toString()) ?? 0,
+=======
+                          "dozen": e["dozen"],
+                          "eggs": e["eggs"],
+                          "trays": e["trays"],
+                          "total": e["total"],
+>>>>>>> 985535f3db39fce19bb7ce2ac31180ddc2961dc9
                         },
                       )
                       .toList(),
@@ -1807,11 +2035,47 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
                   print("CREATE SALE RESPONSE =>");
                   print(response);
-
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Sale Saved Successfully")),
-                    );
+                    final String status =
+                        response["status"]?.toString().toUpperCase() ?? "";
+
+                    /// PENDING APPROVAL
+                    if (status == "PENDING_REVIEW") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Sale sent for approval"),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    }
+                    /// APPROVED DIRECTLY
+                    else if (status == "APPROVED" || status == "SUCCESS") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Sale Completed Successfully"),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                    /// REJECTED
+                    else if (status == "REJECTED") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Sale Rejected"),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                    /// DEFAULT
+                    else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            response["message"]?.toString() ?? "Sale Saved",
+                          ),
+                        ),
+                      );
+                    }
                   }
                 } catch (e) {
                   print("CREATE SALE ERROR =>");
@@ -1826,7 +2090,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               },
             ),
 
-            const SizedBox(height: 30),
+            SizedBox(height:getHeight(context, 30)),
           ],
         ),
       ),
@@ -1839,17 +2103,17 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   Widget buildWarehouseDropdown() {
     return Center(
       child: Container(
-        width: 220,
-        height: 48,
+        width: getWidth(context, 150),
+        height: getHeight(context, 40),
 
         padding: const EdgeInsets.symmetric(horizontal: 10),
 
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.background,
 
           borderRadius: BorderRadius.circular(12),
 
-          border: Border.all(color: Colors.grey.shade300),
+          border: Border.all(color: AppColors.border),
         ),
 
         child: DropdownButtonHideUnderline(
@@ -1864,21 +2128,14 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             isExpanded: true,
 
             icon: const Icon(
-              Icons.keyboard_arrow_down,
+              Icons.arrow_drop_down,
 
-              color: Colors.black,
+              color:AppColors.dark,
 
               size: 20,
             ),
 
-            style: const TextStyle(
-              color: Colors.black,
-
-              fontSize: 14,
-
-              fontWeight: FontWeight.w500,
-            ),
-
+            style: AppTextStyles.bodyText14dark,
             dropdownColor: Colors.white,
 
             items: warehouseList.map((String warehouse) {
@@ -1908,13 +2165,13 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
   Widget buildDateField() {
     return Container(
-      height: 55,
+      height: getHeight(context, 55),
       padding: const EdgeInsets.symmetric(horizontal: 14),
 
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
 
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color:AppColors.border),
       ),
 
       child: Row(
@@ -1971,7 +2228,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       padding: const EdgeInsets.all(18),
 
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
 
         boxShadow: [
@@ -1991,7 +2248,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   Widget buildLabel(String text) {
     return Text(
       text,
-      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+      style: AppTextStyles.buttonText16
     );
   }
 
@@ -2093,11 +2350,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
           icon: const Icon(Icons.keyboard_arrow_down),
 
-          style: const TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+          style: AppTextStyles.bodyText16,
 
           items: dropdownItems.map((String item) {
             return DropdownMenuItem<String>(
@@ -2153,25 +2406,25 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         children: [
           /// NUMBER
           SizedBox(
-            width: 16,
+            width: getWidth(context, 10),
 
             child: Text(
               "$no",
 
               textAlign: TextAlign.center,
 
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              style: AppTextStyles.bodyText12dark,
             ),
           ),
 
-          const SizedBox(width: 6),
+          SizedBox(width:getWidth(context, 6)),
 
           /// PRODUCT
           Expanded(
             flex: 4,
 
             child: Container(
-              height: 38,
+              height: getHeight(context, 38),
 
               padding: const EdgeInsets.symmetric(horizontal: 8),
 
@@ -2189,7 +2442,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
                   icon: const Icon(Icons.keyboard_arrow_down, size: 16),
 
-                  style: const TextStyle(color: Colors.black, fontSize: 10),
+                  style: AppTextStyles.bodyText10dark,
 
                   items: dropdownItems.map((String item) {
                     return DropdownMenuItem<String>(
@@ -2211,19 +2464,19 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ),
 
-          const SizedBox(width: 6),
+          SizedBox(width:getWidth(context, 6)),
 
           /// DOZEN
           Container(
-            width: 40,
-            height: 38,
+            width: getWidth(context, 40),
+            height: getHeight(context, 38),
 
             alignment: Alignment.center,
 
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
 
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: AppColors.border),
             ),
 
             child: TextField(
@@ -2247,26 +2500,26 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ),
 
-          const SizedBox(width: 8),
+          SizedBox(width:getWidth(context, 8)),
 
           /// EGGS
           SizedBox(
-            width: 24,
+            width: getWidth(context, 24),
 
             child: Text(
               eggsList.length >= no ? eggsList[no - 1].toString() : "0",
 
               textAlign: TextAlign.center,
 
-              style: const TextStyle(fontSize: 12),
+              style: AppTextStyles.bodyText12,
             ),
           ),
 
-          const SizedBox(width: 8),
+          SizedBox(width:getWidth(context, 8)),
 
           /// RATE
           SizedBox(
-            width: 42,
+            width: getWidth(context, 42),
 
             child: Text(
               "₹${rateList.length >= no ? rateList[no - 1] : 0}",
@@ -2277,15 +2530,15 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
               overflow: TextOverflow.ellipsis,
 
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+              style: AppTextStyles.bodyText12dark,
             ),
           ),
 
-          const SizedBox(width: 8),
+          SizedBox(width: getWidth(context, 8)),
 
           /// TOTAL
           SizedBox(
-            width: 48,
+            width: getWidth(context, 48),
 
             child: Text(
               "₹${totalList.length >= no ? totalList[no - 1] : 0}",
@@ -2304,7 +2557,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ),
 
-          const SizedBox(width: 6),
+          SizedBox(width: getWidth(context,6)),
 
           /// DELETE
           GestureDetector(
@@ -2378,13 +2631,13 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ),
 
-          const SizedBox(height: 8),
+          SizedBox(height:getHeight(context, 8)),
 
           AnimatedContainer(
             duration: const Duration(milliseconds: 250),
 
-            height: 3,
-            width: 40,
+            height: getHeight(context, 3),
+            width: getWidth(context, 30),
 
             decoration: BoxDecoration(
               color: isSelected ? Colors.blue : Colors.transparent,

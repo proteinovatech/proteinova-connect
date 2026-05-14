@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/network/dio_client.dart';
+import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/admin_distribution_skeleton_loader.dart';
 
 import '../models/approval_model.dart';
 import '../widgets/approval_empty_widget.dart';
@@ -28,6 +31,22 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
   bool isLoading = false;
   String? errorText;
   Timer? _debounce;
+  
+
+  bool isRefreshing = false;
+  Future<void> refreshDashboard() async {
+    setState(() {
+      isRefreshing = true;
+    });
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    await _fetchApprovals();
+
+    setState(() {
+      isRefreshing = false;
+    });
+  }
 
   @override
   void initState() {
@@ -259,138 +278,156 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
 
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        toolbarHeight: 60,
+
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+
+          children: const [
+            Text("Approvals Queue", style: AppTextStyles.headingText21),
+          ],
+        ),
+      ),
+
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
+        child: isLoading
+            ? const Center(child: AdminDistributionSkeletonLoader())
+            : RefreshIndicator(
+                onRefresh: _fetchApprovals,
 
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
 
-            children: [
-              const SizedBox(height: 10),
+                  padding: const EdgeInsets.all(16),
 
-              /// HEADER
-              Row(
-                children: [
-                  // InkWell(
-                  //   // borderRadius: BorderRadius.circular(40),
-                  //   onTap: () {
-                  //     Navigator.pop(context);
-                  //   },
-                  //   child: const Icon(Icons.arrow_back),
-                  // ),
-                  const SizedBox(width: 18),
-
-                  const Text(
-                    "Approvals Queue",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              /// DESCRIPTION
-              const Text(
-                "Review and manage pending system requests,\nbulk sales, and purchase orders.",
-                style: TextStyle(
-                  fontSize: 12,
-                  height: 1.5,
-                  color: Color(0xff6B7280),
-                ),
-              ),
-
-              const SizedBox(height: 28),
-
-              /// SEARCH + FILTER
-              Row(
-                children: [
-                  ApprovalSearchField(
-                    controller: searchController,
-                    onChanged: (value) {
-                      _debounce?.cancel();
-                      _debounce = Timer(const Duration(milliseconds: 400), () {
-                        if (mounted) _fetchApprovals();
-                      });
-                    },
-                  ),
-
-                  const SizedBox(width: 18),
-
-                  ApprovalFilterDropdown(
-                    value: selectedStatus,
-                    onChanged: (value) {
-                      selectedStatus = value!;
-                      _fetchApprovals();
-                    },
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
-              /// TABLE
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: const Color(0xffE5E7EB)),
-                  ),
-
-                  child: Column(
-                    children: [
-                      /// LOADING
-                      if (isLoading)
-                        const Expanded(
-                          child: Center(child: CircularProgressIndicator()),
-                        ),
-
-                      /// ERROR
-                      if (!isLoading && errorText != null)
+                  children: [
+                    /// SEARCH + FILTER
+                    Row(
+                      children: [
                         Expanded(
-                          child: Center(
-                            child: Text(
-                              errorText!,
-                              style: const TextStyle(color: Colors.red),
-                            ),
-                          ),
-                        ),
+                          child: ApprovalSearchField(
+                            controller: searchController,
 
-                      /// EMPTY
-                      if (!isLoading &&
-                          errorText == null &&
-                          filteredApprovals.isEmpty)
-                        const Expanded(child: ApprovalEmptyWidget()),
+                            onChanged: (value) {
+                              _debounce?.cancel();
 
-                      /// DATA
-                      if (!isLoading &&
-                          errorText == null &&
-                          filteredApprovals.isNotEmpty)
-                        Expanded(
-                          child: ListView.builder(
-                            padding: const EdgeInsets.all(14),
-
-                            itemCount: filteredApprovals.length,
-
-                            itemBuilder: (context, index) {
-                              final approval = filteredApprovals[index];
-
-                              return ApprovalTableRow(
-                                approval: approval,
-
-                                onApprove: () => approveRequest(approval),
-
-                                onReject: () => rejectRequest(approval),
-
-                                onView: () => viewRequest(approval),
+                              _debounce = Timer(
+                                const Duration(milliseconds: 400),
+                                () {
+                                  if (mounted) {
+                                    _fetchApprovals();
+                                  }
+                                },
                               );
                             },
                           ),
                         ),
-                    ],
+
+                        SizedBox(width: getWidth(context, 18)),
+                        Expanded(
+                          child: ApprovalFilterDropdown(
+                            value: selectedStatus,
+
+                            onChanged: (value) {
+                              selectedStatus = value!;
+                              _fetchApprovals();
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: getHeight(context, 24)),
+
+              /// TABLE
+              /// TABLE
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+
+                  child: Container(
+                    width: 1050,
+                    margin: const EdgeInsets.only(bottom: 10),
+
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: const Color(0xffE5E7EB)),
+                    ),
+
+                    child: Column(
+                      children: [
+                        /// HEADER
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 18,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: Colors.grey.shade200),
+                            ),
+                          ),
+                        //  child: const ApprovalTableHeader(),
+                        ),
+
+                        /// EMPTY
+                        if (isLoading)
+                          const Expanded(
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
+
+                        if (!isLoading && errorText != null)
+                          Expanded(
+                            child: Center(
+                              child: Text(
+                                errorText!,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ),
+
+                        if (!isLoading &&
+                            errorText == null &&
+                            filteredApprovals.isEmpty)
+                        Expanded(
+  child: Center(
+    child: SingleChildScrollView(
+      child: ApprovalEmptyWidget(),
+    ),
+  ),
+),
+
+                        /// TABLE DATA
+                        if (!isLoading &&
+                            errorText == null &&
+                            filteredApprovals.isNotEmpty)
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: filteredApprovals.length,
+
+                              itemBuilder: (context, index) {
+                                final approval = filteredApprovals[index];
+
+                                return ApprovalTableRow(
+                                  approval: approval,
+
+                                  onApprove: () => approveRequest(approval),
+
+                                  onReject: () => rejectRequest(approval),
+
+                                  onView: () => viewRequest(approval),
+                                );
+                              },
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),

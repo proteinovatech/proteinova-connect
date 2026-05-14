@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 import '../data/asset_repository.dart';
 import '../models/asset_model.dart';
@@ -18,28 +19,29 @@ class AssetTableWidget extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Container(
-        width: 650,
+        width: getWidth(context, 600),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              blurRadius: 10,
-              color: Colors.black.withOpacity(0.03),
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.09),
+              blurRadius: 12,
+              spreadRadius: 1,
+              offset: const Offset(0, 5),
             ),
           ],
         ),
         child: Column(
           children: [
             /// TABLE HEADER
-            const Row(
+            Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 SizedBox(
-                  width: 150,
-                  child: Text(
+                  width: getWidth(context, 100),
+                  child: const Text(
                     'ASSET DETAILS',
                     style: TextStyle(
                       fontSize: 10,
@@ -49,8 +51,8 @@ class AssetTableWidget extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  width: 100,
-                  child: Text(
+                  width: getWidth(context, 80),
+                  child: const Text(
                     'CATEGORY',
                     style: TextStyle(
                       fontSize: 10,
@@ -60,8 +62,8 @@ class AssetTableWidget extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  width: 80,
-                  child: Text(
+                  width: getWidth(context, 80),
+                  child: const Text(
                     'QTY',
                     style: TextStyle(
                       fontSize: 10,
@@ -71,8 +73,8 @@ class AssetTableWidget extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  width: 100,
-                  child: Text(
+                  width: getWidth(context, 80),
+                  child: const Text(
                     'LOCATION',
                     style: TextStyle(
                       fontSize: 10,
@@ -82,8 +84,8 @@ class AssetTableWidget extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  width: 100,
-                  child: Text(
+                  width: getWidth(context, 80),
+                  child: const Text(
                     'STATUS',
                     style: TextStyle(
                       fontSize: 10,
@@ -93,8 +95,8 @@ class AssetTableWidget extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  width: 50,
-                  child: Text(
+                  width: getWidth(context, 50),
+                  child: const Text(
                     'ACTION',
                     textAlign: TextAlign.end,
                     style: TextStyle(
@@ -107,7 +109,10 @@ class AssetTableWidget extends StatelessWidget {
               ],
             ),
 
-            Divider(height: 30, color: Colors.grey.shade200),
+            Divider(
+              height: getHeight(context, 30),
+              color: Colors.grey.shade200,
+            ),
 
             if (assets.isEmpty)
               _buildEmptyState()
@@ -116,8 +121,10 @@ class AssetTableWidget extends StatelessWidget {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: assets.length,
-                separatorBuilder: (context, index) =>
-                    Divider(height: 20, color: Colors.grey.shade100),
+                separatorBuilder: (context, index) => Divider(
+                  height: getHeight(context, 20),
+                  color: Colors.grey.shade100,
+                ),
                 itemBuilder: (context, index) {
                   return _buildRow(context, assets[index]);
                 },
@@ -133,7 +140,7 @@ class AssetTableWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          width: 150,
+          width: getWidth(context, 100),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -153,18 +160,18 @@ class AssetTableWidget extends StatelessWidget {
           ),
         ),
         SizedBox(
-          width: 100,
+          width: getWidth(context, 80),
           child: Text(asset.category, style: const TextStyle(fontSize: 12)),
         ),
         SizedBox(
-          width: 80,
+          width: getWidth(context, 80),
           child: Text(
             asset.quantity.toString(),
             style: const TextStyle(fontSize: 12),
           ),
         ),
         SizedBox(
-          width: 100,
+          width: getWidth(context, 80),
           child: Text(
             asset.location,
             style: const TextStyle(fontSize: 12),
@@ -172,11 +179,11 @@ class AssetTableWidget extends StatelessWidget {
           ),
         ),
         SizedBox(
-          width: 100,
+          width: getWidth(context, 80),
           child: _buildStatus(asset.status),
         ),
         SizedBox(
-          width: 50,
+          width: getWidth(context, 50),
           child: GestureDetector(
             onTap: () => _showActionSheet(context, asset),
             child: const Icon(Icons.more_vert, size: 18, color: Colors.grey),
@@ -227,10 +234,8 @@ class AssetTableWidget extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (_) => _AssetActionSheet(
-        asset: asset,
-        onStatusChanged: onStatusChanged,
-      ),
+      builder: (_) =>
+          _AssetActionSheet(asset: asset, onStatusChanged: onStatusChanged),
     );
   }
 
@@ -238,27 +243,17 @@ class AssetTableWidget extends StatelessWidget {
     return Column(
       children: [
         const SizedBox(height: 40),
-        Icon(
-          Icons.assignment_outlined,
-          size: 110,
-          color: Colors.grey.shade300,
-        ),
+        Icon(Icons.assignment_outlined, size: 110, color: Colors.grey.shade300),
         const SizedBox(height: 24),
         const Text(
           'No assets found',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         Text(
           'Get started by adding your first asset.',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.grey.shade600,
-            fontSize: 14,
-          ),
+          style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
         ),
         const SizedBox(height: 40),
       ],
@@ -272,10 +267,7 @@ class _AssetActionSheet extends StatefulWidget {
   final AssetModel asset;
   final VoidCallback? onStatusChanged;
 
-  const _AssetActionSheet({
-    required this.asset,
-    this.onStatusChanged,
-  });
+  const _AssetActionSheet({required this.asset, this.onStatusChanged});
 
   @override
   State<_AssetActionSheet> createState() => _AssetActionSheetState();
@@ -304,9 +296,9 @@ class _AssetActionSheetState extends State<_AssetActionSheet> {
 
   Future<void> _updateStatus(String newStatus) async {
     if (widget.asset.id == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Asset ID not found')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Asset ID not found')));
       return;
     }
     setState(() => _isLoading = true);
@@ -315,16 +307,16 @@ class _AssetActionSheetState extends State<_AssetActionSheet> {
       if (mounted) {
         Navigator.pop(context);
         widget.onStatusChanged?.call();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Status updated to $newStatus')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Status updated to $newStatus')));
       }
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -344,8 +336,8 @@ class _AssetActionSheetState extends State<_AssetActionSheet> {
           // Handle bar
           Center(
             child: Container(
-              width: 40,
-              height: 4,
+              width: getWidth(context, 40),
+              height: getHeight(context, 4),
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
                 color: Colors.grey.shade300,
@@ -384,7 +376,9 @@ class _AssetActionSheetState extends State<_AssetActionSheet> {
                   onTap: isCurrent ? null : () => _updateStatus(status),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 10),
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: isCurrent ? color : color.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(14),

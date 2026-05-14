@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stock.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stockdetails.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/bloc/tray_return_bloc.dart';
@@ -139,7 +140,7 @@ List<String> returnFromList = [
                           highlightUnit: true,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width:getWidth(context, 12)),
                       Expanded(
                         child: Stockdetails(
                           title: "Good Condition",

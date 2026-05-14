@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/Distribution/widget/dispatch_planning_widget.dart';
 import 'package:proteinova_connect/services/dispatch_service.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
@@ -138,7 +139,8 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                "Insufficient stock for ${item['category']}. Available: ${item['available_eggs']}"),
+              "Insufficient stock for ${item['category']}. Available: ${item['available_eggs']}",
+            ),
           ),
         );
         return;
@@ -159,11 +161,13 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
         "empty_plastic_trays": _emptyPlasticTrays,
         "empty_paper_trays": _emptyPaperTrays,
         "dispatch_items": activeItems
-            .map((i) => {
-                  "product_category": i['category'],
-                  "quantity": i['eggs_to_dispatch'],
-                  "quantity_trays": i['trays_to_dispatch'],
-                })
+            .map(
+              (i) => {
+                "product_category": i['category'],
+                "quantity": i['eggs_to_dispatch'],
+                "quantity_trays": i['trays_to_dispatch'],
+              },
+            )
             .toList(),
       };
 
@@ -176,14 +180,18 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
         Navigator.pop(context, true);
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to create dispatch. Please check your connection.")),
+          const SnackBar(
+            content: Text(
+              "Failed to create dispatch. Please check your connection.",
+            ),
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -213,7 +221,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
 
         title: const Text(
           "Dispatch Planning",
-          style: AppTextStyles.headingText22,
+          style: AppTextStyles.headingText21,
         ),
       ),
 
@@ -226,16 +234,16 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
 
             children: [
               /// TITLE
-              const Text("New Dispatch", style: AppTextStyles.headingText25),
+              // const Text("New Dispatch", style: AppTextStyles.headingText25),
 
-              const SizedBox(height: 4),
+              // const SizedBox(height: 4),
 
-              Text(
-                "Manage dispatching to update inventory",
-                style: AppTextStyles.bodyText12,
-              ),
+              // Text(
+              //   "Manage dispatching to update inventory",
+              //   style: AppTextStyles.bodyText12,
+              // ),
 
-              const SizedBox(height: 22),
+              //const SizedBox(height: 22),
 
               /// SHOP & DISPATCH INFO
               buildCard(
@@ -243,7 +251,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     sectionTitle("1", "Shop & Dispatch Info"),
-                    const SizedBox(height: 20),
+                    SizedBox(height: getHeight(context, 18)),
                     Row(
                       children: [
                         Expanded(
@@ -254,11 +262,11 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                 "Select Shop *",
                                 style: TextStyle(fontWeight: FontWeight.w600),
                               ),
-                              const SizedBox(height: 8),
+                              SizedBox(height: getHeight(context, 8)),
                               Container(
-                                height: 54,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
+                                height: getHeight(context, 54),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getWidth(context, 14),
                                 ),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(14),
@@ -295,10 +303,11 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                             ],
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: getWidth(context, 12)),
                         Expanded(
                           child: buildField(
                             label: "Dispatch Date *",
+                            context,
                             hint: "YYYY-MM-DD",
                             controller: _dispatchDateController,
                             icon: Icons.calendar_today,
@@ -306,24 +315,33 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                               final picked = await showDatePicker(
                                 context: context,
                                 initialDate: DateTime.now(),
-                                firstDate: DateTime.now().subtract(const Duration(days: 7)),
-                                lastDate: DateTime.now().add(const Duration(days: 30)),
+                                firstDate: DateTime.now().subtract(
+                                  const Duration(days: 7),
+                                ),
+                                lastDate: DateTime.now().add(
+                                  const Duration(days: 30),
+                                ),
                               );
                               if (picked != null) {
-                                setState(() => _dispatchDateController.text =
-                                    picked.toString().split(' ').first);
+                                setState(
+                                  () => _dispatchDateController.text = picked
+                                      .toString()
+                                      .split(' ')
+                                      .first,
+                                );
                               }
                             },
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: getHeight(context, 16)),
                     Row(
                       children: [
                         Expanded(
                           child: buildField(
                             label: "Expected Arrival Date *",
+                            context,
                             hint: "YYYY-MM-DD",
                             controller: _arrivalDateController,
                             icon: Icons.calendar_today,
@@ -332,22 +350,31 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
 
                               final picked = await showDatePicker(
                                 context: context,
-                                initialDate: DateTime.now().add(const Duration(days: 1)),
+                                initialDate: DateTime.now().add(
+                                  const Duration(days: 1),
+                                ),
                                 firstDate: DateTime.now(),
-                                lastDate: DateTime.now().add(const Duration(days: 30)),
+                                lastDate: DateTime.now().add(
+                                  const Duration(days: 30),
+                                ),
                               );
 
                               if (picked != null) {
-                                setState(() => _arrivalDateController.text =
-                                    picked.toString().split(' ').first);
+                                setState(
+                                  () => _arrivalDateController.text = picked
+                                      .toString()
+                                      .split(' ')
+                                      .first,
+                                );
                               }
                             },
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: getWidth(context, 12)),
                         Expanded(
                           child: buildField(
                             label: "Vehicle No. *",
+                            context,
                             hint: "TN 32 B 2134",
                             controller: _vehicleNoController,
 
@@ -362,12 +389,13 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: getHeight(context, 16)),
                     Row(
                       children: [
                         Expanded(
                           child: buildField(
                             label: "Driver Name *",
+                            context,
                             hint: "John Doe",
                             controller: _driverNameController,
 
@@ -381,11 +409,12 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                           ),
                         ),
 
-                        const SizedBox(width: 12),
+                        SizedBox(width: getWidth(context, 12)),
 
                         Expanded(
                           child: buildField(
                             label: "Driver Number *",
+                            context,
                             hint: "9876543210",
                             controller: _driverNumberController,
                             keyboardType: TextInputType.phone,
@@ -404,7 +433,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                 ),
               ),
 
-              const SizedBox(height: 18),
+              SizedBox(height: getHeight(context, 18)),
 
               /// ITEMS TO DISPATCH
               buildCard(
@@ -418,9 +447,9 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                         GestureDetector(
                           onTap: _addItem,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: getWidth(context, 12),
+                              vertical: getHeight(context, 8),
                             ),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
@@ -428,11 +457,11 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                 color: const Color(0xffE8C400),
                               ),
                             ),
-                            child: const Row(
+                            child: Row(
                               children: [
-                                Icon(Icons.add, size: 16),
-                                SizedBox(width: 4),
-                                Text(
+                                const Icon(Icons.add, size: 16),
+                                SizedBox(width: getWidth(context, 4)),
+                                const Text(
                                   "Add Item",
                                   style: TextStyle(
                                     fontSize: 12,
@@ -445,7 +474,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: getHeight(context, 20)),
                     const Row(
                       children: [
                         Expanded(
@@ -493,14 +522,15 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: getHeight(context, 12)),
                     Divider(color: Colors.grey.shade300, thickness: 1),
-                    const SizedBox(height: 4),
+                    SizedBox(height: getHeight(context, 4)),
                     ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: _dispatchItems.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      separatorBuilder: (_, __) =>
+                          SizedBox(height: getHeight(context, 12)),
                       itemBuilder: (context, index) {
                         final item = _dispatchItems[index];
                         return Row(
@@ -508,9 +538,9 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                             Expanded(
                               flex: 4,
                               child: Container(
-                                height: 42,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
+                                height: getHeight(context, 42),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getWidth(context, 10),
                                 ),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
@@ -546,7 +576,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: getWidth(context, 8)),
                             Expanded(
                               flex: 2,
                               child: Center(
@@ -559,11 +589,11 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: getWidth(context, 8)),
                             Expanded(
                               flex: 2,
                               child: Container(
-                                height: 42,
+                                height: getHeight(context, 42),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
@@ -587,11 +617,11 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: getWidth(context, 8)),
                             Expanded(
                               flex: 2,
                               child: Container(
-                                height: 42,
+                                height: getHeight(context, 42),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
@@ -614,9 +644,9 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                         );
                       },
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: getHeight(context, 12)),
                     Divider(color: Colors.grey.shade300, thickness: 1),
-                    const SizedBox(height: 18),
+                    SizedBox(height: getHeight(context, 10)),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -647,7 +677,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                 ),
               ),
 
-              const SizedBox(height: 18),
+              SizedBox(height: getHeight(context, 18)),
 
               /// EMPTY TRAY DISPATCH
               buildCard(
@@ -663,7 +693,8 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                         fontSize: 13,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: getHeight(context, 20)),
+
                     IntrinsicHeight(
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -680,7 +711,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                               onChanged: () => setState(() {}),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: getWidth(context, 12)),
                           Expanded(
                             child: trayCard(
                               iconColor: Colors.orange,
@@ -699,7 +730,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                 ),
               ),
 
-              const SizedBox(height: 18),
+              SizedBox(height: getHeight(context, 18)),
 
               /// DISPATCH SUMMARY
               buildCard(
@@ -723,7 +754,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: getHeight(context, 20)),
                     summaryRow(
                       "Total Products",
                       "${_dispatchItems.where((i) => i['category'] != null).length} Types",
@@ -746,7 +777,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                 ),
               ),
 
-              const SizedBox(height: 18),
+              SizedBox(height: getHeight(context, 18)),
 
               /// OVERALL DISPATCH
               buildCard(
@@ -754,7 +785,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     sectionTitle("5", "Overall Dispatch"),
-                    const SizedBox(height: 18),
+                    SizedBox(height: getHeight(context, 18)),
                     IntrinsicHeight(
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -781,23 +812,23 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                       color: Colors.grey.shade600,
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
-                                  const Expanded(
+                                  SizedBox(width: getWidth(context, 10)),
+                                  Expanded(
                                     child: Column(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
+                                        const Text(
                                           "Plastic trays are returnable",
                                           style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
-                                        SizedBox(height: 8),
-                                        Text(
+                                        SizedBox(height: getHeight(context, 8)),
+                                        const Text(
                                           "Paper trays are non - returnable",
                                           style: TextStyle(
                                             fontSize: 11,
@@ -811,7 +842,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: getWidth(context, 12)),
                           Expanded(
                             child: Container(
                               padding: const EdgeInsets.all(14),
@@ -824,15 +855,15 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Row(
+                                  Row(
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.check_circle,
                                         color: Colors.green,
                                         size: 20,
                                       ),
-                                      SizedBox(width: 8),
-                                      Expanded(
+                                      SizedBox(width: getWidth(context, 8)),
+                                      const Expanded(
                                         child: Text(
                                           "Overall Dispatch",
                                           overflow: TextOverflow.ellipsis,
@@ -845,7 +876,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 12),
+                                  SizedBox(height: getHeight(context, 12)),
                                   Text(
                                     "$_grandTotalTrays Trays $_totalEggs Eggs",
                                     style: const TextStyle(
@@ -864,7 +895,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                 ),
               ),
 
-              const SizedBox(height: 18),
+              SizedBox(height: getHeight(context, 18)),
 
               /// NOTES
               buildCard(
@@ -878,7 +909,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    SizedBox(height: getHeight(context, 18)),
                     Container(
                       width: double.infinity,
                       height: 110,
@@ -904,7 +935,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                 ),
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: getHeight(context, 24)),
 
               /// BUTTONS
               Row(
@@ -913,7 +944,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                     child: InkWell(
                       onTap: () => Navigator.pop(context),
                       child: Container(
-                        height: 58,
+                        height: getHeight(context, 58),
                         decoration: BoxDecoration(
                           color: Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(14),
@@ -934,22 +965,23 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 14),
+                  SizedBox(width: getWidth(context, 14)),
                   Expanded(
                     child: InkWell(
                       onTap: _isSaving ? null : _submitDispatch,
                       child: Container(
-                        height: 58,
+                        height: getHeight(context, 58),
                         decoration: BoxDecoration(
                           color: const Color(0xffFFD600),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Center(
                           child: _isSaving
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
+                              ? SizedBox(
+                                  height: getHeight(context, 20),
+                                  width: getWidth(context, 20),
+
+                                  child: const CircularProgressIndicator(
                                     strokeWidth: 2,
                                     color: Colors.black,
                                   ),
@@ -968,7 +1000,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                 ],
               ),
 
-              const SizedBox(height: 30),
+              SizedBox(height: getHeight(context, 30)),
             ],
           ),
         ),
@@ -991,7 +1023,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
         boxShadow: [
           BoxShadow(
             blurRadius: 10,
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withOpacity(0.09),
             offset: const Offset(0, 4),
           ),
         ],
@@ -1033,7 +1065,8 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
   }
 
   /// FIELD
-  static Widget buildField({
+  static Widget buildField(
+    BuildContext context, {
     required String label,
     required String hint,
     bool dropdown = false,
@@ -1051,16 +1084,16 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
       children: [
         Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
 
-        const SizedBox(height: 8),
+        SizedBox(height: getHeight(context, 8)),
 
         InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(14),
 
           child: Container(
-            height: 54,
+            height: getHeight(context, 48),
 
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+            padding: EdgeInsets.symmetric(horizontal: getWidth(context, 14)),
 
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),

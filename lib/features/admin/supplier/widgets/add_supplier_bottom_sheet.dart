@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show TextInputFormatter, FilteringTextInputFormatter, LengthLimitingTextInputFormatter;
+import 'package:flutter/services.dart'
+    show
+        TextInputFormatter,
+        FilteringTextInputFormatter,
+        LengthLimitingTextInputFormatter;
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/supplier/models/supplier_model.dart';
 import 'package:proteinova_connect/features/admin/supplier/services/supplier_service.dart';
 
@@ -51,22 +56,24 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
           child: Column(
             children: [
               /// TOP HANDLE
-              const SizedBox(height: 12),
+              SizedBox(height: getHeight(context, 12)),
 
               Container(
-                width: 70,
-                height: 6,
+                width: getWidth(context, 70),
+                height: getHeight(context, 6),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(20),
                 ),
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: getHeight(context, 24)),
 
               /// HEADER
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: EdgeInsets.symmetric(
+                  horizontal: getWidth(context, 24),
+                ),
                 child: Row(
                   children: [
                     const Expanded(
@@ -89,14 +96,14 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                 ),
               ),
 
-              const SizedBox(height: 20),
+              SizedBox(height: getHeight(context, 10)),
 
               Divider(color: Colors.grey.shade200),
 
               Expanded(
                 child: SingleChildScrollView(
                   controller: scrollController,
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.all(getWidth(context, 20)),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -109,14 +116,14 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                         ),
                       ),
 
-                      const SizedBox(height: 14),
+                      SizedBox(height: getHeight(context, 10)),
 
                       customField(
                         controller: companyController,
                         hint: "e.g. Apex Farms",
                       ),
 
-                      const SizedBox(height: 28),
+                      SizedBox(height: getHeight(context, 20)),
 
                       /// LOCATION + STATUS
                       Row(
@@ -133,7 +140,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                                   ),
                                 ),
 
-                                const SizedBox(height: 14),
+                                SizedBox(height: getHeight(context, 10)),
 
                                 customField(
                                   controller: locationController,
@@ -143,7 +150,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                             ),
                           ),
 
-                          const SizedBox(width: 18),
+                          SizedBox(width: getWidth(context, 18)),
 
                           Expanded(
                             child: Column(
@@ -157,12 +164,12 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                                   ),
                                 ),
 
-                                const SizedBox(height: 14),
+                                SizedBox(height: getHeight(context, 10)),
 
                                 Container(
-                                  height: 60,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 18,
+                                  height: getHeight(context, 56),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: getWidth(context, 18),
                                   ),
                                   decoration: BoxDecoration(
                                     border: Border.all(
@@ -199,7 +206,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                         ],
                       ),
 
-                      const SizedBox(height: 28),
+                      SizedBox(height: getHeight(context, 20)),
 
                       /// CONTACT NAME
                       const Text(
@@ -210,7 +217,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                         ),
                       ),
 
-                      const SizedBox(height: 14),
+                      SizedBox(height: getHeight(context, 10)),
 
                       customField(
                         controller: contactController,
@@ -226,7 +233,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                         ],
                       ),
 
-                      const SizedBox(height: 28),
+                      SizedBox(height: getHeight(context, 20)),
 
                       /// EMAIL + PHONE
                       Row(
@@ -245,7 +252,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                                   ),
                                 ),
 
-                                const SizedBox(height: 14),
+                                SizedBox(height: getHeight(context, 10)),
 
                                 customField(
                                   controller: emailController,
@@ -262,7 +269,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                               ],
                             ),
                           ),
-                          const SizedBox(width: 18),
+                          SizedBox(width: getWidth(context, 18)),
 
                           Expanded(
                             child: Column(
@@ -276,7 +283,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                                   ),
                                 ),
 
-                                const SizedBox(height: 14),
+                                SizedBox(height: getHeight(context, 10)),
 
                                 customField(
                                   controller: phoneController,
@@ -295,7 +302,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                         ],
                       ),
 
-                      const SizedBox(height: 40),
+                      SizedBox(height: getHeight(context, 30)),
                     ],
                   ),
                 ),
@@ -311,7 +318,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                   children: [
                     Expanded(
                       child: SizedBox(
-                        height: 58,
+                        height: getHeight(context, 58),
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(color: Color(0xffE5E7EB)),
@@ -334,11 +341,11 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                       ),
                     ),
 
-                    const SizedBox(width: 18),
+                    SizedBox(width: getWidth(context, 18)),
 
                     Expanded(
                       child: SizedBox(
-                        height: 58,
+                        height: getHeight(context, 58),
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xffF4C400),
@@ -348,60 +355,79 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                               borderRadius: BorderRadius.circular(16),
                             ),
                           ),
-                          onPressed: isLoading ? null : () async {
-                            if (companyController.text.trim().isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Company name is required")),
-                              );
-                              return;
-                            }
+                          onPressed: isLoading
+                              ? null
+                              : () async {
+                                  if (companyController.text.trim().isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          "Company name is required",
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
 
-                            setState(() {
-                              isLoading = true;
-                            });
+                                  setState(() {
+                                    isLoading = true;
+                                  });
 
-                            try {
-                              final newSupplier = Supplier(
-                                id: widget.supplierToEdit?.id ?? '',
-                                name: companyController.text.trim(),
-                                location: locationController.text.trim(),
-                                owner: contactController.text.trim(),
-                                phone: phoneController.text.trim(),
-                                email: emailController.text.trim(),
-                                active: status == 'Active',
-                              );
+                                  try {
+                                    final newSupplier = Supplier(
+                                      id: widget.supplierToEdit?.id ?? '',
+                                      name: companyController.text.trim(),
+                                      location: locationController.text.trim(),
+                                      owner: contactController.text.trim(),
+                                      phone: phoneController.text.trim(),
+                                      email: emailController.text.trim(),
+                                      active: status == 'Active',
+                                    );
 
-                              if (widget.supplierToEdit != null) {
-                                await _supplierService.updateSupplier(widget.supplierToEdit!.id, newSupplier);
-                              } else {
-                                await _supplierService.addSupplier(newSupplier);
-                              }
+                                    if (widget.supplierToEdit != null) {
+                                      await _supplierService.updateSupplier(
+                                        widget.supplierToEdit!.id,
+                                        newSupplier,
+                                      );
+                                    } else {
+                                      await _supplierService.addSupplier(
+                                        newSupplier,
+                                      );
+                                    }
 
-                              Navigator.pop(context);
+                                    Navigator.pop(context);
 
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(widget.supplierToEdit != null ? "Supplier Updated" : "Supplier Added"),
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          widget.supplierToEdit != null
+                                              ? "Supplier Updated"
+                                              : "Supplier Added",
+                                        ),
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text("Error: $e")),
+                                    );
+                                  }
+                                },
+                          child: isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.black,
+                                )
+                              : Text(
+                                  widget.supplierToEdit != null
+                                      ? "Update Supplier"
+                                      : "Save Supplier",
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
-                              );
-                            } catch (e) {
-                              setState(() {
-                                isLoading = false;
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Error: $e")),
-                              );
-                            }
-                          },
-                          child: isLoading 
-                            ? const CircularProgressIndicator(color: Colors.black)
-                            : Text(
-                                widget.supplierToEdit != null ? "Update Supplier" : "Save Supplier",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
                         ),
                       ),
                     ),

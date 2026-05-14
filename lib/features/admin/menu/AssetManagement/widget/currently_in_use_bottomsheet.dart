@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 import '../models/asset_model.dart';
 
@@ -16,18 +17,18 @@ class CurrentlyInUseBottomSheet extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const SizedBox(height: 12),
+          SizedBox(height: getHeight(context, 12)),
           Container(
-            width: 70,
-            height: 5,
+            width: getWidth(context, 70),
+            height: getHeight(context, 5),
             decoration: BoxDecoration(
               color: Colors.grey.shade300,
               borderRadius: BorderRadius.circular(20),
             ),
           ),
-          const SizedBox(height: 26),
+          SizedBox(height: getHeight(context, 26)),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: EdgeInsets.symmetric(horizontal: getWidth(context, 24)),
             child: Row(
               children: [
                 Container(
@@ -42,7 +43,7 @@ class CurrentlyInUseBottomSheet extends StatelessWidget {
                     size: 28,
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: getWidth(context, 16)),
                 const Expanded(
                   child: Text(
                     "Currently In Use",
@@ -56,7 +57,7 @@ class CurrentlyInUseBottomSheet extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: getHeight(context, 24)),
           Divider(color: Colors.grey.shade300, height: 1),
           _buildTableHeader(),
           if (assets.isEmpty) ...[
@@ -66,18 +67,18 @@ class CurrentlyInUseBottomSheet extends StatelessWidget {
               size: 120,
               color: Colors.grey.shade300,
             ),
-            const SizedBox(height: 28),
+            SizedBox(height: getHeight(context, 28)),
             const Text(
               "No assets in use.",
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 80),
+            SizedBox(height: getHeight(context, 80)),
           ] else
             Expanded(
               child: ListView.separated(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
+                padding: EdgeInsets.symmetric(
+                  horizontal: getWidth(context, 20),
                   vertical: 10,
                 ),
                 itemCount: assets.length,

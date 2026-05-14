@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 class ExpenseTableHeader extends StatelessWidget {
   const ExpenseTableHeader({super.key});
@@ -28,7 +29,10 @@ class ExpenseTableHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+      padding: EdgeInsets.symmetric(
+        horizontal: getWidth(context, 14),
+        vertical: getHeight(context, 16),
+      ),
 
       decoration: BoxDecoration(
         color: const Color(0xffF9FAFB),

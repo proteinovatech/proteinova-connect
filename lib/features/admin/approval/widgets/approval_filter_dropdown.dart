@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 class ApprovalFilterDropdown extends StatelessWidget {
   final String value;
@@ -13,8 +14,8 @@ class ApprovalFilterDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 58,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+       height: getHeight(context, 52),
+      padding: EdgeInsets.symmetric(horizontal: getWidth(context, 16), ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),

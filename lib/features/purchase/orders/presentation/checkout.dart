@@ -1,6 +1,7 @@
                                                                                                                                   import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/purchase/orders/widget/checkout_summary.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/purchase_model.dart';
 
@@ -189,7 +190,7 @@ void _refresh() {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: tabs.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 20),
+        separatorBuilder: (_, _) =>  SizedBox(width: getWidth(context, 20)),
         itemBuilder: (context, index) {
           return GestureDetector(
             onTap: () {
@@ -209,7 +210,7 @@ void _refresh() {
           ? AppColors.dark
           : Colors.grey,
     ),
-SizedBox(width: 5,),
+SizedBox(width:getWidth(context, 5)),
                 Text(
                   tabs[index],
                   style: AppTextStyles.bodyText16.copyWith(
@@ -232,7 +233,7 @@ SizedBox(width: 5,),
 
         /// Grey full line
         Container(
-          height: 3,
+          height: getHeight(context, 3),
           width: double.infinity,
           color: const Color.fromARGB(255, 250, 246, 246),
         ),
@@ -245,8 +246,8 @@ SizedBox(width: 5,),
             0,
           ),
           child: Container(
-            height: 3,
-            width: 100,
+            height: getHeight(context, 3),
+            width: getWidth(context, 100),
             decoration: BoxDecoration(
               color: AppColors.amber500,
               borderRadius: BorderRadius.circular(10),
@@ -255,7 +256,7 @@ SizedBox(width: 5,),
         ),
       ],
     ),                   
-SizedBox(height: 10,),
+SizedBox(height: getHeight(context, 10)),
 Row(
   mainAxisAlignment: MainAxisAlignment.spaceBetween,
   crossAxisAlignment: CrossAxisAlignment.center,
@@ -281,7 +282,7 @@ Row(
           child: const Text("VISA"),
         ),
 
-        const SizedBox(width: 8),
+       SizedBox(width:getWidth(context, 8)),
 
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -296,7 +297,7 @@ Row(
     ),
   ],
 ),
-SizedBox(height: 10,),
+SizedBox(height: getWidth(context, 10)),
 Column(
   crossAxisAlignment: CrossAxisAlignment.start,
   children: [
@@ -307,7 +308,7 @@ Column(
       style: AppTextStyles.buttonText16,
     ),
 
-    const SizedBox(height: 8),
+    SizedBox(height: getWidth(context, 8)),
 
     /// 🔹 INPUT CONTAINER
     Container(
@@ -335,7 +336,7 @@ Column(
     
   ],
 ),
-SizedBox(height: 10,),
+SizedBox(height: getHeight(context, 10)),
 Column(
   crossAxisAlignment: CrossAxisAlignment.start,
   children: [
@@ -344,7 +345,7 @@ Column(
       style: AppTextStyles.buttonText16,
     ),
 
-    const SizedBox(height: 8),
+    SizedBox(height: getHeight(context, 8)),
 
     /// 🔹 INPUT CONTAINER
     Container(
@@ -361,7 +362,7 @@ Column(
         ),        
       ),
         ),
-        SizedBox(height: 10,),
+        SizedBox(height:getHeight(context, 10)),
      Column(
   children: [
 
@@ -377,7 +378,7 @@ Column(
       ],
     ),
 
-    const SizedBox(height: 8),
+    SizedBox(height: getHeight(context, 8)),
 
     /// 🔹 INPUT ROW
     Row(
@@ -400,7 +401,7 @@ Column(
           ),
         ),
 
-        const SizedBox(width: 10),
+        SizedBox(width: getWidth(context, 10)),
 
         /// CVV Field
      Expanded(
@@ -442,7 +443,7 @@ Column(
 )
       ],
     ),
-    SizedBox(height: 10,),
+    SizedBox(height:getHeight(context, 10)),
    Row(
   children: [
     GestureDetector(
@@ -452,8 +453,8 @@ Column(
         });
       },
       child: Container(
-        height: 22,
-        width: 22,
+        height: getHeight(context, 22),
+        width: getWidth(context, 22),
         decoration: BoxDecoration(
           color: isChecked ? Colors.blue : Colors.transparent,
           border: Border.all(color: AppColors.border),
@@ -464,7 +465,7 @@ Column(
             : null,
       ),
     ),
-    const SizedBox(width: 10),
+    SizedBox(width: getWidth(context, 10)),
     const Text("Save this card for future payments"),
   ],
 )
@@ -475,7 +476,7 @@ Column(
              ],
                       ),
                     ),
-                  SizedBox(height: 10),
+                  SizedBox(height: getHeight(context, 10)),
                    CheckoutSummary(
                     purchase: purchase
 

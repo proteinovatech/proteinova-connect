@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 class FilterButtonWidget extends StatefulWidget {
   final String selectedBranch;
@@ -27,7 +28,13 @@ class _FilterButtonWidgetState extends State<FilterButtonWidget> {
   late String localCategory;
   late String localStatus;
 
-  final List<String> statuses = ["All Statuses", "Available", "In Use", "Maintenance", "Damaged"];
+  final List<String> statuses = [
+    "All Statuses",
+    "Available",
+    "In Use",
+    "Maintenance",
+    "Damaged",
+  ];
 
   @override
   void initState() {
@@ -37,7 +44,12 @@ class _FilterButtonWidgetState extends State<FilterButtonWidget> {
     localStatus = widget.selectedStatus;
   }
 
-  void _showSelectionDialog(String title, List<String> options, String currentSelection, Function(String) onSelected) {
+  void _showSelectionDialog(
+    String title,
+    List<String> options,
+    String currentSelection,
+    Function(String) onSelected,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -51,7 +63,9 @@ class _FilterButtonWidgetState extends State<FilterButtonWidget> {
               final option = options[index];
               return ListTile(
                 title: Text(option),
-                trailing: option == currentSelection ? const Icon(Icons.check, color: Colors.blue) : null,
+                trailing: option == currentSelection
+                    ? const Icon(Icons.check, color: Colors.blue)
+                    : null,
                 onTap: () {
                   onSelected(option);
                   Navigator.pop(context);
@@ -83,24 +97,28 @@ class _FilterButtonWidgetState extends State<FilterButtonWidget> {
                     return Container(
                       decoration: const BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(30),
+                        ),
                       ),
                       child: SingleChildScrollView(
                         controller: scrollController,
                         child: Column(
                           children: [
-                            const SizedBox(height: 10),
+                            SizedBox(height: getHeight(context, 10)),
                             Container(
-                              width: 70,
-                              height: 5,
+                              width: getWidth(context, 70),
+                              height: getHeight(context, 5),
                               decoration: BoxDecoration(
                                 color: Colors.grey.shade300,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                             ),
-                            const SizedBox(height: 22),
+                            SizedBox(height: getHeight(context, 22)),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 22),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: getWidth(context, 22),
+                              ),
                               child: Row(
                                 children: [
                                   const Icon(Icons.tune, size: 24),
@@ -108,7 +126,10 @@ class _FilterButtonWidgetState extends State<FilterButtonWidget> {
                                   const Expanded(
                                     child: Text(
                                       "Advanced Filters",
-                                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                   GestureDetector(
@@ -118,40 +139,60 @@ class _FilterButtonWidgetState extends State<FilterButtonWidget> {
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 22),
+                            SizedBox(height: getHeight(context, 18)),
                             Divider(color: Colors.grey.shade300, height: 1),
+                            SizedBox(height: getHeight(context, 18)),
                             Padding(
-                              padding: const EdgeInsets.all(22),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: getWidth(context, 22),
+                              ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   buildFilterLabel("Branch Location"),
-                                  const SizedBox(height: 10),
+                                  SizedBox(height: getHeight(context, 10)),
                                   GestureDetector(
-                                    onTap: () => _showSelectionDialog("Branch", widget.availableBranches, localBranch, (val) {
-                                      setModalState(() => localBranch = val);
-                                    }),
+                                    onTap: () => _showSelectionDialog(
+                                      "Branch",
+                                      widget.availableBranches,
+                                      localBranch,
+                                      (val) {
+                                        setModalState(() => localBranch = val);
+                                      },
+                                    ),
                                     child: buildFilterDropdown(localBranch),
                                   ),
-                                  const SizedBox(height: 24),
+                                  SizedBox(height: getHeight(context, 24)),
                                   buildFilterLabel("Asset Category"),
-                                  const SizedBox(height: 10),
+                                  SizedBox(height: getHeight(context, 10)),
                                   GestureDetector(
-                                    onTap: () => _showSelectionDialog("Category", widget.availableCategories, localCategory, (val) {
-                                      setModalState(() => localCategory = val);
-                                    }),
+                                    onTap: () => _showSelectionDialog(
+                                      "Category",
+                                      widget.availableCategories,
+                                      localCategory,
+                                      (val) {
+                                        setModalState(
+                                          () => localCategory = val,
+                                        );
+                                      },
+                                    ),
                                     child: buildFilterDropdown(localCategory),
                                   ),
-                                  const SizedBox(height: 24),
+                                  SizedBox(height: getHeight(context, 24)),
                                   buildFilterLabel("Status"),
-                                  const SizedBox(height: 10),
+                                  SizedBox(height: getHeight(context, 10)),
                                   GestureDetector(
-                                    onTap: () => _showSelectionDialog("Status", statuses, localStatus, (val) {
-                                      setModalState(() => localStatus = val);
-                                    }),
+                                    onTap: () => _showSelectionDialog(
+                                      "Status",
+                                      statuses,
+                                      localStatus,
+                                      (val) {
+                                        setModalState(() => localStatus = val);
+                                      },
+                                    ),
                                     child: buildFilterDropdown(localStatus),
                                   ),
-                                  const SizedBox(height: 40),
+                                  SizedBox(height: getHeight(context, 40)),
                                   Row(
                                     children: [
                                       Expanded(
@@ -164,39 +205,59 @@ class _FilterButtonWidgetState extends State<FilterButtonWidget> {
                                             });
                                           },
                                           child: Container(
-                                            height: 50,
+                                            height: getHeight(context, 50),
                                             decoration: BoxDecoration(
                                               color: const Color(0xffF5F5F7),
-                                              borderRadius: BorderRadius.circular(14),
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
                                             ),
-                                            child: const Row(
-                                              mainAxisAlignment: MainAxisAlignment.center,
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
                                               children: [
-                                                Icon(Icons.filter_alt_off_outlined, size: 18),
-                                                SizedBox(width: 6),
-                                                Text("Clear", style: TextStyle(fontWeight: FontWeight.w600)),
+                                                Icon(
+                                                  Icons.filter_alt_off_outlined,
+                                                  size: getHeight(context, 18),
+                                                ),
+                                                SizedBox(
+                                                  width: getWidth(context, 6),
+                                                ),
+                                                Text(
+                                                  "Clear",
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
                                               ],
                                             ),
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(width: 12),
+                                      SizedBox(width: getWidth(context, 12)),
                                       Expanded(
                                         child: GestureDetector(
                                           onTap: () {
-                                            widget.onFilterChanged(localBranch, localCategory, localStatus);
+                                            widget.onFilterChanged(
+                                              localBranch,
+                                              localCategory,
+                                              localStatus,
+                                            );
                                             Navigator.pop(context);
                                           },
                                           child: Container(
-                                            height: 50,
+                                            height: getHeight(context, 50),
                                             decoration: BoxDecoration(
                                               color: const Color(0xffFFD600),
-                                              borderRadius: BorderRadius.circular(14),
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
                                             ),
-                                            child: const Center(
+                                            child: Center(
                                               child: Text(
                                                 "Apply",
-                                                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -219,8 +280,8 @@ class _FilterButtonWidgetState extends State<FilterButtonWidget> {
         );
       },
       child: Container(
-        height: 52,
-        width: 90,
+        height: getHeight(context, 52),
+        width: getWidth(context, 90),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: Colors.grey.shade300),
@@ -240,14 +301,17 @@ class _FilterButtonWidgetState extends State<FilterButtonWidget> {
   Widget buildFilterLabel(String text) {
     return Text(
       text,
-      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+      style: TextStyle(
+        fontSize: getWidth(context, 14),
+        fontWeight: FontWeight.w600,
+      ),
     );
   }
 
   Widget buildFilterDropdown(String text) {
     return Container(
-      height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      height: getHeight(context, 56),
+      padding: EdgeInsets.symmetric(horizontal: getWidth(context, 16)),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.grey.shade300),
@@ -255,10 +319,13 @@ class _FilterButtonWidgetState extends State<FilterButtonWidget> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(text, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+          Text(
+            text,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+          ),
           const Icon(Icons.keyboard_arrow_down),
         ],
       ),
     );
   }
-}
+}

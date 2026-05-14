@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/presentation/active_offer_details_bottom_sheet.dart';
 import 'package:proteinova_connect/features/admin/presentation/add_offer_bottom_sheet.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/admin_offers_prices_skeleton_loader.dart';
 import 'package:proteinova_connect/features/admin/widget/offer_price_widget.dart';
 import 'package:proteinova_connect/services/offer_service.dart';
 
@@ -50,7 +52,7 @@ class _OfferPriceState extends State<OfferPrice> {
           padding: const EdgeInsets.symmetric(horizontal: 18),
           child: Column(
             children: [
-              const SizedBox(height: 18),
+              SizedBox(height: getHeight(context, 18)),
 
               /// TOP BAR
               Row(
@@ -64,7 +66,7 @@ class _OfferPriceState extends State<OfferPrice> {
                     ),
                   ),
 
-                  const SizedBox(width: 14),
+                  SizedBox(width: getWidth(context, 14)),
 
                   const Expanded(
                     child: Text(
@@ -85,7 +87,7 @@ class _OfferPriceState extends State<OfferPrice> {
                       }
                     },
                     child: Container(
-                      height: 40,
+                      height: getHeight(context, 40),
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
                         color: const Color(0xff0B1742),
@@ -110,12 +112,12 @@ class _OfferPriceState extends State<OfferPrice> {
                 ],
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: getHeight(context, 24)),
 
               /// CONTENT
               Expanded(
                 child: isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(child: AdminOffersPricesSkeletonLoader())
                     : RefreshIndicator(
                         onRefresh: _fetchData,
                         child: SingleChildScrollView(
@@ -128,11 +130,14 @@ class _OfferPriceState extends State<OfferPrice> {
                                   Expanded(
                                     child: InkWell(
                                       onTap: () {
-                                        ActiveOffersDetailsBottomSheet.show(context);
+                                        ActiveOffersDetailsBottomSheet.show(
+                                          context,
+                                        );
                                       },
                                       child: offerCard(
                                         title: "Active Offers",
-                                        value: (cardData?['active_offers'] ?? 0).toString(),
+                                        value: (cardData?['active_offers'] ?? 0)
+                                            .toString(),
                                         subtitle: "Running Now",
                                         icon: Icons.attach_money,
                                         iconBg: const Color(0xffE7F7EE),
@@ -140,11 +145,13 @@ class _OfferPriceState extends State<OfferPrice> {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 14),
+                                  SizedBox(width: getWidth(context, 14)),
                                   Expanded(
                                     child: offerCard(
                                       title: "Product on Offers",
-                                      value: (cardData?['products_on_offer'] ?? 0).toString(),
+                                      value:
+                                          (cardData?['products_on_offer'] ?? 0)
+                                              .toString(),
                                       subtitle: "Products",
                                       icon: Icons.gps_fixed,
                                       iconBg: const Color(0xffF5ECFF),
@@ -154,25 +161,27 @@ class _OfferPriceState extends State<OfferPrice> {
                                 ],
                               ),
 
-                              const SizedBox(height: 16),
+                              SizedBox(height: getHeight(context, 16)),
 
                               Row(
                                 children: [
                                   Expanded(
                                     child: offerCard(
                                       title: "Expiring Soon",
-                                      value: (cardData?['expiring_soon'] ?? 0).toString(),
+                                      value: (cardData?['expiring_soon'] ?? 0)
+                                          .toString(),
                                       subtitle: "Within 7 days",
                                       icon: Icons.calendar_today_outlined,
                                       iconBg: const Color(0xffFFF2E9),
                                       iconColor: const Color(0xffF97316),
                                     ),
                                   ),
-                                  const SizedBox(width: 14),
+                                  SizedBox(width: getWidth(context, 14)),
                                   Expanded(
                                     child: offerCard(
                                       title: "Deactive Offers",
-                                      value: (cardData?['deactive_offers'] ?? 0).toString(),
+                                      value: (cardData?['deactive_offers'] ?? 0)
+                                          .toString(),
                                       subtitle: "Currently paused",
                                       icon: Icons.sync,
                                       iconBg: const Color(0xffFFF4E8),
@@ -182,7 +191,7 @@ class _OfferPriceState extends State<OfferPrice> {
                                 ],
                               ),
 
-                              const SizedBox(height: 24),
+                              SizedBox(height: getHeight(context, 18)),
 
                               /// ACTIVE OFFERS TABLE
                               Container(
@@ -214,7 +223,9 @@ class _OfferPriceState extends State<OfferPrice> {
                                         const Spacer(),
                                         InkWell(
                                           onTap: () {
-                                            ActiveOffersDetailsBottomSheet.show(context);
+                                            ActiveOffersDetailsBottomSheet.show(
+                                              context,
+                                            );
                                           },
                                           child: const Row(
                                             children: [
@@ -238,28 +249,50 @@ class _OfferPriceState extends State<OfferPrice> {
                                       ],
                                     ),
 
-                                    const SizedBox(height: 18),
+                                    SizedBox(height: getHeight(context, 12)),
 
                                     Scrollbar(
                                       child: SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
                                         child: SizedBox(
-                                          width: 600, // Fixed width for horizontal scrolling
+                                          width: getWidth(context, 600),
                                           child: Column(
                                             children: [
                                               /// TABLE HEADER
                                               Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: getWidth(
+                                                    context,
+                                                    10,
+                                                  ),
+                                                  vertical: getHeight(
+                                                    context,
+                                                    12,
+                                                  ),
+                                                ),
                                                 decoration: const BoxDecoration(
                                                   color: Color(0xffF9FAFB),
-                                                  border: Border(bottom: BorderSide(color: Color(0xffE5E7EB))),
+                                                  border: Border(
+                                                    bottom: BorderSide(
+                                                      color: Color(0xffE5E7EB),
+                                                    ),
+                                                  ),
                                                 ),
                                                 child: Row(
                                                   children: [
-                                                    _headerCell("OFFER NAME", 150),
+                                                    _headerCell(
+                                                      "OFFER NAME",
+                                                      150,
+                                                    ),
                                                     _headerCell("PRODUCT", 100),
-                                                    _headerCell("OFFER DETAILS", 120),
-                                                    _headerCell("VALID DATES", 130),
+                                                    _headerCell(
+                                                      "OFFER DETAILS",
+                                                      120,
+                                                    ),
+                                                    _headerCell(
+                                                      "VALID DATES",
+                                                      130,
+                                                    ),
                                                     _headerCell("STATUS", 80),
                                                   ],
                                                 ),
@@ -270,20 +303,62 @@ class _OfferPriceState extends State<OfferPrice> {
                                                   ? _emptyState()
                                                   : ListView.separated(
                                                       shrinkWrap: true,
-                                                      physics: const NeverScrollableScrollPhysics(),
-                                                      itemCount: offers.length > 5 ? 5 : offers.length,
-                                                      separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xffE5E7EB)),
+                                                      physics:
+                                                          const NeverScrollableScrollPhysics(),
+                                                      itemCount:
+                                                          offers.length > 5
+                                                          ? 5
+                                                          : offers.length,
+                                                      separatorBuilder:
+                                                          (context, index) =>
+                                                              const Divider(
+                                                                height: 1,
+                                                                color: Color(
+                                                                  0xffE5E7EB,
+                                                                ),
+                                                              ),
                                                       itemBuilder: (context, index) {
-                                                        final offer = offers[index];
+                                                        final offer =
+                                                            offers[index];
                                                         return Container(
-                                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                horizontal: 10,
+                                                                vertical: 14,
+                                                              ),
                                                           child: Row(
                                                             children: [
-                                                              _bodyCell(offer['offer_name'] ?? "-", 150, isBold: true),
-                                                              _bodyCell((offer['product_name'] == null || offer['product_name'].toString().isEmpty) ? "All" : offer['product_name'], 100),
-                                                              _bodyCell(_formatOfferDetails(offer), 120),
-                                                              _bodyCell("${offer['start_date']} to ${offer['end_date']}", 130),
-                                                              _statusCell(offer['status'] ?? "inactive", 80),
+                                                              _bodyCell(
+                                                                offer['offer_name'] ??
+                                                                    "-",
+                                                                150,
+                                                                isBold: true,
+                                                              ),
+                                                              _bodyCell(
+                                                                (offer['product_name'] ==
+                                                                            null ||
+                                                                        offer['product_name']
+                                                                            .toString()
+                                                                            .isEmpty)
+                                                                    ? "All"
+                                                                    : offer['product_name'],
+                                                                100,
+                                                              ),
+                                                              _bodyCell(
+                                                                _formatOfferDetails(
+                                                                  offer,
+                                                                ),
+                                                                120,
+                                                              ),
+                                                              _bodyCell(
+                                                                "${offer['start_date']} to ${offer['end_date']}",
+                                                                130,
+                                                              ),
+                                                              _statusCell(
+                                                                offer['status'] ??
+                                                                    "inactive",
+                                                                80,
+                                                              ),
                                                             ],
                                                           ),
                                                         );
@@ -298,7 +373,7 @@ class _OfferPriceState extends State<OfferPrice> {
                                 ),
                               ),
 
-                              const SizedBox(height: 24),
+                              SizedBox(height: getHeight(context, 24)),
                             ],
                           ),
                         ),
@@ -318,7 +393,11 @@ class _OfferPriceState extends State<OfferPrice> {
         padding: const EdgeInsets.only(right: 4),
         child: Text(
           text,
-          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xff6B7280)),
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: Color(0xff6B7280),
+          ),
         ),
       ),
     );
@@ -369,7 +448,10 @@ class _OfferPriceState extends State<OfferPrice> {
 
   String _formatOfferDetails(Map<String, dynamic> offer) {
     final type = offer['offer_type']?.toString().toLowerCase() ?? '';
-    final unit = (offer['discount_unit']?.toString() ?? '').replaceAll('_', ' ');
+    final unit = (offer['discount_unit']?.toString() ?? '').replaceAll(
+      '_',
+      ' ',
+    );
 
     if (type == 'fixed_amount' || type == 'fixed amount') {
       final val = offer['discount_value']?.toString() ?? '0';
@@ -395,13 +477,24 @@ class _OfferPriceState extends State<OfferPrice> {
           Container(
             height: 60,
             width: 60,
-            decoration: const BoxDecoration(color: Color(0xffF4F4F5), shape: BoxShape.circle),
-            child: const Icon(Icons.inbox_outlined, size: 28, color: Color(0xff94A3B8)),
+            decoration: const BoxDecoration(
+              color: Color(0xffF4F4F5),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.inbox_outlined,
+              size: 28,
+              color: Color(0xff94A3B8),
+            ),
           ),
           const SizedBox(height: 12),
           const Text(
             "No offers available",
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xff64748B)),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Color(0xff64748B),
+            ),
           ),
         ],
       ),

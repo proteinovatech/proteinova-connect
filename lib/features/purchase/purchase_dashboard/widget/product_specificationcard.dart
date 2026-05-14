@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/product_input_model.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/product_summary_model.dart';
 
@@ -171,7 +172,7 @@ void updateTotalEggs(ProductInput product) {
           ),
 
           if (isExpanded) ...[
-            const SizedBox(height: 10),
+            SizedBox(height: getHeight(context, 10)),
             const Divider(),
 
             Align(
@@ -211,7 +212,7 @@ void updateTotalEggs(ProductInput product) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 20),
+        SizedBox(height:getHeight(context, 20)),
 
       Row(
   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -239,9 +240,9 @@ void updateTotalEggs(ProductInput product) {
   ],
 ),
 
-        const SizedBox(height: 10),
-const Text("Egg Category & Grade", style: AppTextStyles.buttonText16),
- const SizedBox(height: 6),
+        SizedBox(height: getHeight(context, 10)),
+        const Text("Egg Category & Grade", style: AppTextStyles.buttonText16),
+         SizedBox(height: getHeight(context, 6)),
         // CATEGORY
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -288,9 +289,9 @@ const Text("Egg Category & Grade", style: AppTextStyles.buttonText16),
           ),
         ),
 
-        const SizedBox(height: 14),
+        SizedBox(height: getHeight(context, 14)),
         const Text("Number Trays (per Trays of 30 eggs)", style: AppTextStyles.buttonText16),
-         const SizedBox(height: 6),
+        SizedBox(height: getHeight(context, 6)),
         _buildField(
           controller:quantityControllers[index],
           hint: "Enter quantity",
@@ -308,9 +309,9 @@ const Text("Egg Category & Grade", style: AppTextStyles.buttonText16),
   },
         ),
 
-        const SizedBox(height: 14),
+        SizedBox(height: getHeight(context, 14)),
         const Text("Total Eggs (Auto)", style: AppTextStyles.buttonText16),
-         const SizedBox(height: 6),
+         SizedBox(height: getHeight(context, 6)),
         _buildField(
           controller: countControllers[index],
           hint: "Auto calculated",
@@ -320,9 +321,9 @@ const Text("Egg Category & Grade", style: AppTextStyles.buttonText16),
          
         ),
 
-        const SizedBox(height: 14),
+        SizedBox(height: getHeight(context, 14)),
         const Text("NECC Rate(per egg)", style: AppTextStyles.buttonText16), 
-        const SizedBox(height: 6),
+        SizedBox(height: getHeight(context, 6)),
         _buildField(
           controller: neccControllers[index],
           hint: "NECC Rate",
@@ -339,9 +340,9 @@ const Text("Egg Category & Grade", style: AppTextStyles.buttonText16),
 },
         ),
 
-        const SizedBox(height: 14),
+       SizedBox(height: getHeight(context, 14)),
          const Text("Market Minus(per egg)", style: AppTextStyles.buttonText16),
-          const SizedBox(height: 6),
+           SizedBox(height: getHeight(context, 6)),
         _buildField(
           controller: minusControllers[index],
           hint: "Market Minus",
@@ -358,9 +359,9 @@ const Text("Egg Category & Grade", style: AppTextStyles.buttonText16),
 },
         ),
 
-        const SizedBox(height: 14),
+        SizedBox(height: getHeight(context, 14)),
         const Text("Final Rate (per egg)", style: AppTextStyles.buttonText16), 
-        const SizedBox(height: 6),
+        SizedBox(height: getHeight(context, 6)),
      _buildField(
   controller: TextEditingController(
     text: product.rate.isEmpty ? "0.00" : product.rate,
@@ -371,9 +372,9 @@ const Text("Egg Category & Grade", style: AppTextStyles.buttonText16),
   isDisplayOnly: true,
 ),
 
-        const SizedBox(height: 14),
+         SizedBox(height: getHeight(context, 14)),
         const Text("Tray Type", style: AppTextStyles.buttonText16), 
-        const SizedBox(height: 6),
+        SizedBox(height: getHeight(context, 6)),
         // TRAY TYPE
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -386,10 +387,10 @@ const Text("Egg Category & Grade", style: AppTextStyles.buttonText16),
             value:product.trayType.isEmpty ? null : product.trayType ,
             isExpanded: true,
             hint: Row(
-              children:const [
-                SizedBox(width: 14),
+              children:[
+                SizedBox(width:getWidth(context, 14)),
                 Icon(Icons.all_inbox_outlined,color:AppColors.textSecondary,),
-                SizedBox(width: 16),
+                SizedBox(width: getWidth(context, 16)),
                 Text("Select Tray Type"),
               ],
             ),

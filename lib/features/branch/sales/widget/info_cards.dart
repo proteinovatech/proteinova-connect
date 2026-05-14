@@ -122,4 +122,8 @@ class _InfoCardsState extends State<InfoCards> {
       ),
     );
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 985535f3db39fce19bb7ce2ac31180ddc2961dc9

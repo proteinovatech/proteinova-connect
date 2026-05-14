@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_bloc.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_state.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/product_input_model.dart';
@@ -275,7 +276,7 @@ List<ProductInput> products = [ProductInput(),];
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(state.message),
-            const SizedBox(height: 10),
+             SizedBox(height: getHeight(context, 10)),
             ElevatedButton(
               onPressed: () {
                 context

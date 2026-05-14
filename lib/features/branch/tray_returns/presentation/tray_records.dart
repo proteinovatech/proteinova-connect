@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/bloc/tray_return_bloc.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/widget/buildfield1.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/widget/conditionbox.dart';
@@ -216,38 +217,32 @@ class _TrayRecordsState extends State<TrayRecords> {
                     SizedBox(height: size.height * 0.02),
                     Row(
                       children: [
-                        Expanded(
-                          child: conditionBox(
-                            index: 0,
-                            selectedIndex: selectedIndex,
-                            onTap: () => setState(() => selectedIndex = 0),
-                            icon: Icons.check_circle,
-                            text: "Good",
-                            color: Colors.green,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: conditionBox(
-                            index: 1,
-                            selectedIndex: selectedIndex,
-                            onTap: () => setState(() => selectedIndex = 1),
-                            icon: Icons.cancel,
-                            text: "Damaged",
-                            color: Colors.red,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: conditionBox(
-                            index: 2,
-                            selectedIndex: selectedIndex,
-                            onTap: () => setState(() => selectedIndex = 2),
-                            icon: Icons.delete,
-                            text: "Scrap",
-                            color: Colors.orange,
-                          ),
-                        ),
+                        Expanded(child: conditionBox(
+                          index: 0,
+                          selectedIndex: selectedIndex,
+                          onTap: () => setState(() => selectedIndex = 0),
+                          icon: Icons.check_circle,
+                          text: "Good",
+                          color: Colors.green,
+                        )),
+                        SizedBox(width: getWidth(context, 10)),
+                        Expanded(child: conditionBox(
+                          index: 1,
+                          selectedIndex: selectedIndex,
+                          onTap: () => setState(() => selectedIndex = 1),
+                          icon: Icons.cancel,
+                          text: "Damaged",
+                          color: Colors.red,
+                        )),
+                         SizedBox(width:getWidth(context, 10)),
+                        Expanded(child: conditionBox(
+                          index: 2,
+                          selectedIndex: selectedIndex,
+                          onTap: () => setState(() => selectedIndex = 2),
+                          icon: Icons.delete,
+                          text: "Scrap",
+                          color: Colors.orange,
+                        )),
                       ],
                     ),
                   ],
@@ -280,14 +275,8 @@ class _TrayRecordsState extends State<TrayRecords> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Icon(Icons.upload_file),
-                            const SizedBox(width: 8),
-                            Flexible(
-                              child: Text(
-                                fileName,
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
+                            SizedBox(width:getWidth(context, 8)),
+                            Flexible(child: Text(fileName, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis)),
                           ],
                         ),
                         const Text(
@@ -316,11 +305,8 @@ class _TrayRecordsState extends State<TrayRecords> {
                         });
                       },
                       child: Container(
-                        height: 45,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
+                        height: getHeight(context, 45),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
@@ -329,7 +315,7 @@ class _TrayRecordsState extends State<TrayRecords> {
                         child: Row(
                           children: [
                             const Icon(Icons.refresh, size: 18),
-                            const SizedBox(width: 6),
+                             SizedBox(width:getWidth(context, 6)),
                             Text("Reset", style: AppTextStyles.containerText),
                           ],
                         ),
@@ -362,11 +348,8 @@ class _TrayRecordsState extends State<TrayRecords> {
                         );
                       },
                       child: Container(
-                        height: 45,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
-                        ),
+                        height: getHeight(context, 45),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                         decoration: BoxDecoration(
                           color: Colors.yellow,
                           borderRadius: BorderRadius.circular(12),
@@ -375,17 +358,11 @@ class _TrayRecordsState extends State<TrayRecords> {
                         child: Row(
                           children: [
                             const Icon(Icons.save, size: 18),
-                            const SizedBox(width: 6),
+                             SizedBox(width:getWidth(context, 6)),
                             BlocBuilder<TrayReturnBloc, TrayReturnState>(
                               builder: (context, state) {
                                 if (state is TrayReturnSubmitting) {
-                                  return const SizedBox(
-                                    height: 18,
-                                    width: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  );
+                                  return SizedBox(height: getHeight(context, 18), width: getWidth(context, 18), child: CircularProgressIndicator(strokeWidth: 2));
                                 }
                                 return Text(
                                   "Save Returns",

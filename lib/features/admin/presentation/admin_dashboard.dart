@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/data/model/dashboard_model.dart';
 import 'package:proteinova_connect/features/admin/data/services/dashboard_service.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_dashboard_skeleton_loader.dart';
@@ -77,15 +78,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
           padding: const EdgeInsets.all(20),
 
           child: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.6,
+            height: getHeight(context, 380),
 
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
                   child: Container(
-                    width: 60,
-                    height: 6,
+                    width: getWidth(context, 60),
+                    height: getHeight(context, 6),
 
                     decoration: BoxDecoration(
                       color: Colors.grey.shade300,
@@ -94,7 +95,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: getHeight(context, 24)),
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -112,7 +113,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   ],
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: getHeight(context, 20)),
 
                 Expanded(child: content),
               ],
@@ -160,7 +161,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   children: [
-                    const SizedBox(height: 10),
+                    SizedBox(height: getHeight(context, 10)),
                     Row(
                       children: [
                         Expanded(
@@ -197,8 +198,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                             style: AppTextStyles.bodyText14dark,
                                           ),
 
-                                          const SizedBox(height: 10),
-
+                                          SizedBox(
+                                            height: getHeight(context, 10),
+                                          ),
                                           Text(
                                             "₹${dashboard?.revenue ?? 0}",
                                             style: AppTextStyles.bodyText16,
@@ -212,7 +214,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                             },
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        SizedBox(width: getWidth(context, 10)),
                         Expanded(
                           child: DashboardCard(
                             title: "Total Stock Value",
@@ -247,7 +249,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                             style: AppTextStyles.bodyText14dark,
                                           ),
 
-                                          const SizedBox(height: 10),
+                                          SizedBox(
+                                            height: getHeight(context, 10),
+                                          ),
 
                                           Text(
                                             "₹${dashboard?.totalStockValue ?? 0}",
@@ -264,7 +268,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: getHeight(context, 10)),
                     Row(
                       children: [
                         Expanded(
@@ -302,7 +306,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                             style: AppTextStyles.bodyText14dark,
                                           ),
 
-                                          const SizedBox(height: 10),
+                                          SizedBox(
+                                            height: getHeight(context, 10),
+                                          ),
 
                                           Text(
                                             "${dashboard?.incomingStockEggs ?? 0} Eggs",
@@ -317,7 +323,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                             },
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        SizedBox(width: getWidth(context, 10)),
                         Expanded(
                           child: DashboardCard(
                             title: "Dispatched Stock",
@@ -354,7 +360,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                             style: AppTextStyles.bodyText14dark,
                                           ),
 
-                                          const SizedBox(height: 10),
+                                          SizedBox(
+                                            height: getHeight(context, 10),
+                                          ),
 
                                           Text(
                                             "${dashboard?.dispatchedStockEggs ?? 0} Eggs",
@@ -371,7 +379,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: getHeight(context, 10)),
                     Row(
                       children: [
                         Expanded(
@@ -408,8 +416,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                             style: AppTextStyles.bodyText14dark,
                                           ),
 
-                                          const SizedBox(height: 10),
-
+                                          SizedBox(
+                                            height: getHeight(context, 10),
+                                          ),
                                           Text(
                                             "₹${dashboard?.branchRevenue ?? 0}",
                                             style: AppTextStyles.bodyText16,
@@ -423,7 +432,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                             },
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        SizedBox(width: getWidth(context, 10)),
                         Expanded(
                           child: DashboardCard(
                             title: "Total Stock Eggs",
@@ -459,7 +468,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                             style: AppTextStyles.bodyText14dark,
                                           ),
 
-                                          const SizedBox(height: 10),
+                                          SizedBox(
+                                            height: getHeight(context, 10),
+                                          ),
 
                                           Text(
                                             "${dashboard?.totalStockEggs ?? 0} Eggs",
@@ -476,7 +487,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: getHeight(context, 10)),
                     DashboardCard(
                       title: "Branch Eggs Sold",
                       value: "${dashboard?.branchSalesEggs ?? 0} Eggs",
@@ -509,7 +520,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                       style: AppTextStyles.bodyText14dark,
                                     ),
 
-                                    const SizedBox(height: 10),
+                                    SizedBox(height: getHeight(context, 10)),
 
                                     Text(
                                       "${dashboard?.branchSalesEggs ?? 0} Eggs",
@@ -523,11 +534,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         );
                       },
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: getHeight(context, 10)),
                     RecentActivityCard(
                       activities: dashboard?.recentActivity ?? [],
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: getHeight(context, 10)),
                     ActionsRequiredCard(),
                   ],
                 ),

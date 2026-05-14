@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/purchase/orders/presentation/purchase_success_screen.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/purchase_model.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/services/purchase_service.dart';
@@ -174,7 +175,7 @@ _buildRow("Broker Fee", "₹ ${widget.purchase.brokerFee}"),
           
         Container(
           width: double.infinity,
-          height: 50,
+          height: getHeight(context, 50),
           margin: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
@@ -215,9 +216,9 @@ _buildRow("Broker Fee", "₹ ${widget.purchase.brokerFee}"),
         ),
             ),
             child: isLoading
-    ? const SizedBox(
-        height: 24,
-        width: 24,
+    ? SizedBox(
+        height: getHeight(context, 24),
+        width: getWidth(context, 24),
         child: CircularProgressIndicator(
           strokeWidth: 2,
           color: Colors.black,
@@ -228,14 +229,14 @@ _buildRow("Broker Fee", "₹ ${widget.purchase.brokerFee}"),
         children: [
           Icon(Icons.lock_outline, color: AppColors.dark),
 
-          const SizedBox(width: 8),
+           SizedBox(width: getWidth(context, 8)),
 
           Text(
             "Pay",
             style: AppTextStyles.headingText20,
           ),
 
-          const SizedBox(width: 8),
+          SizedBox(width: getWidth(context, 8)),
 
           Text(
             "₹ ${totalCost.toStringAsFixed(2)}",
@@ -248,7 +249,7 @@ _buildRow("Broker Fee", "₹ ${widget.purchase.brokerFee}"),
         
         Container(
           width: double.infinity,
-          height: 50,
+          height: getHeight(context, 50),
           margin: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
             border: Border.all(color: AppColors.border),
