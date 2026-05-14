@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/branch/addexpense/bloc/expense_bloc.dart';
-import 'package:proteinova_connect/features/branch/addexpense/presentation/addexpense.dart';
+import 'package:proteinova_connect/features/branch/expense_management/presentation/addexpense.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ExpenseManagement extends StatefulWidget {
@@ -60,33 +61,12 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
             }
           }
         },
-builder: (context, state) {
-  final isLoading =
-      state is ExpenseLoading ||
-      state is ExpenseInitial ||
-      state is ExpenseSubmitting;
+        builder: (context, state) {
+          final isLoading = state is ExpenseLoading || state is ExpenseInitial || state is ExpenseSubmitting;
+          final expenses = state is ExpenseLoaded ? state.expenses : [];
+          final total = _getTotal(expenses);
 
-  final expenses =
-      state is ExpenseLoaded ? state.expenses : [];
-
-  final total = _getTotal(expenses);
-
-  double categoryTotal(String category) {
-    double sum = 0;
-    for (var item in expenses) {
-      if (item.category.toString().toLowerCase() == category.toLowerCase()) {
-        sum += double.tryParse(item.amount.toString()) ?? 0;
-      }
-    }
-    return sum;
-  }
-
-  final totalExpensesMtd = total;
-  final salaryPayroll = categoryTotal("Salary");
-  final transportFuel = categoryTotal("Transport");
-  final rentFacilities = categoryTotal("Rent");
-
-  return Padding(
+          return Padding(
             padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
             child: SingleChildScrollView(
               child: Column(
@@ -102,71 +82,31 @@ builder: (context, state) {
                       Text("Expense Management", style: AppTextStyles.headingText22),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                   SizedBox(height:getHeight(context, 10)),
                   const Divider(),
                   if (isLoading) const LinearProgressIndicator(minHeight: 2),
-                  const SizedBox(height: 10),
-
+                  SizedBox(height:getHeight(context, 10)),
                   // Summary Cards
-              Column(
-  children: [
-
-    /// First Row
-    Row(
-      children: [
-        Expanded(
-          child: _expenseCard(
-            title: "Total Expenses",
-            value:
-                "₹${totalExpensesMtd.toStringAsFixed(2)}",
-            icon: Icons.currency_rupee, subtitle: '',
-          ),
-        ),
-
-        const SizedBox(width: 10),
-
-        Expanded(
-          child: _expenseCard(
-            title: "Salary Payroll",
-            value:
-                "₹${salaryPayroll.toStringAsFixed(2)}",
-            subtitle: "Unchanged",
-            icon: Icons.people,
-          ),
-        ),
-      ],
-    ),
-
-    const SizedBox(height: 10),
-
-    /// Second Row
-    Row(
-      children: [
-        Expanded(
-          child: _expenseCard(
-            title: "Transport & Fuel",
-            value:
-                "₹${transportFuel.toStringAsFixed(2)}",
-            subtitle: "Unchanged",
-            icon: Icons.local_shipping,
-          ),
-        ),
-
-        const SizedBox(width: 10),
-
-        Expanded(
-          child: _expenseCard(
-            title: "Rent & Facilities",
-            value:
-                "₹${rentFacilities.toStringAsFixed(2)}",
-            icon: Icons.home, subtitle: '',
-          ),
-        ),
-      ],
-    ),
-  ],
-),
-                  const SizedBox(height: 15),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _expenseCard(
+                          title: "Total Expense (MTD)",
+                          value: "₹${total.toStringAsFixed(2)}",
+                          icon: Icons.currency_rupee,
+                        ),
+                      ),
+                     SizedBox(width:getWidth(context, 10)),
+                      Expanded(
+                        child: _expenseCard(
+                          title: "Total Records",
+                          value: "${expenses.length} entries",
+                          icon: Icons.receipt_long,
+                        ),
+                      ),
+                    ],
+                  ),
+                 SizedBox(height:getHeight(context, 15)),
 
                   // Add Expense Button
                   GestureDetector(
@@ -190,14 +130,14 @@ builder: (context, state) {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.add, color: AppColors.dark),
-                          const SizedBox(width: 8),
+                          SizedBox(width:getWidth(context, 8)),
                           Text("Add Expense", style: AppTextStyles.headingText20),
                         ],
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 15),
+                  SizedBox(height:getHeight(context, 15)),
 
                   // Category Grid
                   Container(
@@ -211,25 +151,25 @@ builder: (context, state) {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text("Expense Categories", style: AppTextStyles.headingText22),
-                        const SizedBox(height: 10),
+                        SizedBox(height:getHeight(context, 10)),
                         const Divider(),
-                        const SizedBox(height: 10),
+                       SizedBox(height:getHeight(context, 10)),
                         _buildCategoryGrid(),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 15),
+                  SizedBox(height:getHeight(context, 15)),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Recent Expenses", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const Text("Recent Expenses", style: AppTextStyles.headingText20),
                       Text("View All", style: AppTextStyles.blueText2),
                     ],
                   ),
 
-                  const SizedBox(height: 10),
+                  SizedBox(height:getHeight(context, 10)),
 
                   if (isLoading)
                     const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()))
@@ -258,21 +198,21 @@ builder: (context, state) {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(item.category, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                    Text("₹${item.amount}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green)),
+                                    Text(item.category, style:AppTextStyles.bodyText16),
+                                    Text("₹${item.amount}", style: AppTextStyles.bodyText16),
                                   ],
                                 ),
-                                const SizedBox(height: 8),
+                                SizedBox(height: getHeight(context, 8),),
                                 Text(item.description),
-                                const SizedBox(height: 8),
+                                 SizedBox(height: getHeight(context, 8),),
                                 Row(
                                   children: [
                                     const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-                                    const SizedBox(width: 4),
+                                     SizedBox(width: getWidth(context, 4),),
                                     Text(item.expenseDate, style: const TextStyle(color: Colors.grey, fontSize: 13)),
                                   ],
                                 ),
-                                const SizedBox(height: 8),
+                                SizedBox(height: getHeight(context, 8),),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
@@ -295,7 +235,7 @@ builder: (context, state) {
                       },
                     ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: getHeight(context, 20),),
                 ],
               ),
             ),
@@ -305,78 +245,37 @@ builder: (context, state) {
     );
   }
 
-Widget _expenseCard({
-  required String title,
-  required String value,
-  required IconData icon,
-  String? subtitle,
-}) {
-  return Container(
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: Colors.grey.shade200),
-    ),
-    child: Row(
-      children: [
-
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: const Color(0xFFE6EBF0),
-            borderRadius: BorderRadius.circular(8),
+  Widget _expenseCard({required String title, required String value, required IconData icon}) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: const Color(0xFFE6EBF0), borderRadius: BorderRadius.circular(8)),
+            child: Icon(icon, size: 20, color: Colors.grey.shade700),
           ),
-          child: Icon(
-            icon,
-            size: 20,
-            color: Colors.grey.shade700,
+           SizedBox(width: getWidth(context, 10),),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                 SizedBox(height: getHeight(context, 4),),
+                Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ],
+            ),
           ),
-        ),
+        ],
+      ),
+    );
+  }
 
-        const SizedBox(width: 10),
-
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
-              ),
-
-              const SizedBox(height: 4),
-
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              if (subtitle != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
   Widget _buildCategoryGrid() {
     final categories = [
       {"icon": Icons.person, "title": "Salary"},
@@ -411,7 +310,7 @@ Widget _expenseCard({
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(cat["icon"] as IconData, color: Colors.grey.shade700),
-              const SizedBox(height: 4),
+               SizedBox(height: getHeight(context, 4),),
               Text(cat["title"] as String, style: const TextStyle(fontSize: 12), textAlign: TextAlign.center),
             ],
           ),

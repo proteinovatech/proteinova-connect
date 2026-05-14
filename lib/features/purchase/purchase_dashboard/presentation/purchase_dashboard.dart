@@ -5,6 +5,7 @@ import 'package:proteinova_connect/core/cache/hive_service/purchase_hive_service
 import 'package:proteinova_connect/core/network/dio_client.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_bloc.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_event.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/purchase_repository.dart';
@@ -47,13 +48,13 @@ String? loadingPurchaseId;
               padding: EdgeInsets.symmetric(horizontal: size.width * 0.03),
               child: Column(
                 children: [
-                  SizedBox(height: 10),
+                  SizedBox(height: getHeight(context, 10)),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Image.asset("assets/erplogo.png",
-                          height: 37, width: 130),
+                          height: getHeight(context, 37), width: getWidth(context, 130)),
                       // Icon(Icons.notifications_outlined,
                       //     color: AppColors.textSecondary),
                     ],
@@ -97,143 +98,154 @@ String? loadingPurchaseId;
                       return const SizedBox();
                     }
 
-                    return ListView(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: size.width * 0.03),
-                      children: [
+                    return RefreshIndicator(
+                      onRefresh: () async {
+    context.read<PurchaseBloc>().add(
+      FetchPurchaseInitData(),
+    );
 
-                        Text("Purchase",
-                            style: AppTextStyles.headingText25),
-
-                        Text(
-                          "Manage Purchase orders and Incoming stocks.",
-                          style: AppTextStyles.bodyText16,
-                        ),
-
-                        const SizedBox(height: 15),
-
-                        /// NEW PURCHASE BUTTON
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => MultiBlocProvider(
-                                  providers: [
-                                    BlocProvider(
-                                      create: (_) => SupplierBloc(
-                                        SupplierRepository(
-                                            DioClient().dio),
-                                      )..add(FetchSuppliers()),
-                                    ),
-                                    BlocProvider(
-                                      create: (_) => PurchaseBloc(
-                                        SupplierRepository(
-                                            DioClient().dio),
-                                        PurchaseRepository(
-                                            DioClient().dio, cache,),PurchaseCacheService(),
-                                      )..add(FetchPurchaseInitData()),
-                                    ),
-                                  ],
-                                  child: Newpurchase(
-                                      isEdit: false,
-                                      purchaseData: null),
+    await Future.delayed(
+      const Duration(seconds: 1),
+    );
+  },
+                      child: ListView(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: size.width * 0.03),
+                        children: [
+                      
+                          Text("Purchase",
+                              style: AppTextStyles.headingText25),
+                      
+                          Text(
+                            "Manage Purchase orders and Incoming stocks.",
+                            style: AppTextStyles.bodyText16,
+                          ),
+                      
+                          const SizedBox(height: 15),
+                      
+                          /// NEW PURCHASE BUTTON
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MultiBlocProvider(
+                                    providers: [
+                                      BlocProvider(
+                                        create: (_) => SupplierBloc(
+                                          SupplierRepository(
+                                              DioClient().dio),
+                                        )..add(FetchSuppliers()),
+                                      ),
+                                      BlocProvider(
+                                        create: (_) => PurchaseBloc(
+                                          SupplierRepository(
+                                              DioClient().dio),
+                                          PurchaseRepository(
+                                              DioClient().dio, cache,),PurchaseCacheService(),
+                                        )..add(FetchPurchaseInitData()),
+                                      ),
+                                    ],
+                                    child: Newpurchase(
+                                        isEdit: false,
+                                        purchaseData: null),
+                                  ),
                                 ),
+                              );
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.amber600,
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            );
-                          },
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppColors.amber600,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.add,
-                                    color: AppColors.dark),
-                                const SizedBox(width: 8),
-                                Text("New Purchase Entry",
-                                    style:
-                                        AppTextStyles.headingText20),
-                              ],
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.add,
+                                      color: AppColors.dark),
+                                  const SizedBox(width: 8),
+                                  Text("New Purchase Entry",
+                                      style:
+                                          AppTextStyles.headingText20),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-
-                        const SizedBox(height: 15),
-
-                        /// PURCHASE LIST
-                        ...state.purchases.map((p) {
-  final items = p["items"] ?? [];
-  final expenses = p["expenses"] ?? [];
-  final itemsCost = items.fold(
-  0.0,
-  (sum, e) =>
-      sum +
-      ((e["trays"] ?? 0) *
-          (e["capacity"] ?? 0) *
-          (e["per_egg_price"] ?? 0)),
-);
-  
-
-  final expenseCost = expenses.fold(
-    0.0,
-    (sum, e) => sum + (e["amount"] ?? 0),
-  );
-
-  final totalCost = itemsCost + expenseCost;
-
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-
-        PurchaseCard(
-           isLoading:
-      loadingPurchaseId == p['id'].toString(),
-          movementStatus: p['movement_status'] ?? 'PENDING',
-            onArrivalTap: () async {
-               setState(() {
-    loadingPurchaseId = p['id'].toString();
-  });
-
-                         context.read<PurchaseBloc>().add(
-                           UpdateArrivalEvent(
-                             purchaseId: p['id'].toString(),
-                             data: {
-    "movement_status": "RECEIVED"
-  },
-                           ),
-                         );
-                       },
-
-          supplier: p['supplier_company_name'] ?? '',
-          orderId: "PO-${p["id"]}",
-          dateTime: p['created_at'] ?? '',
-          bottomId: "₹ ${totalCost.toStringAsFixed(2)}",
-          items: items.isNotEmpty
-              ? items.map((e) => e["egg_category_grade"]).join(", ")
-              : "",
-          itemboxes:
-              "${items.fold(0, (sum, e) => sum + (e["trays"] as int))} Trays",
-              
-              
-        ),
-
-        const SizedBox(height: 8),
-        
-       
-      ],
-    ),
-  );
-}).toList(),
-
-                        const SizedBox(height: 20),
-                      ],
+                      
+                          SizedBox(height: getHeight(context, 15)),
+                      
+                          /// PURCHASE LIST
+                          ...state.purchases.map((p) {
+                        final items = p["items"] ?? [];
+                        final expenses = p["expenses"] ?? [];
+                        final itemsCost = items.fold(
+                        0.0,
+                        (sum, e) =>
+                            sum +
+                            ((e["trays"] ?? 0) *
+                                (e["capacity"] ?? 0) *
+                                (e["per_egg_price"] ?? 0)),
+                      );
+                        
+                      
+                        final expenseCost = expenses.fold(
+                          0.0,
+                          (sum, e) => sum + (e["amount"] ?? 0),
+                        );
+                      
+                        final totalCost = itemsCost + expenseCost;
+                      
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                      
+                              PurchaseCard(
+                                 isLoading:
+                            loadingPurchaseId == p['id'].toString(),
+                                movementStatus: p['movement_status'] ?? 'PENDING',
+                                  onArrivalTap: () async {
+                                     setState(() {
+                          loadingPurchaseId = p['id'].toString();
+                        });
+                      
+                           context.read<PurchaseBloc>().add(
+                             UpdateArrivalEvent(
+                               purchaseId: p['id'].toString(),
+                               data: {
+                          "movement_status": "RECEIVED"
+                        },
+                             ),
+                           );
+                         },
+                      
+                                supplier: p['supplier_company_name'] ?? '',
+                                orderId: "PO-${p["id"]}",
+                                dateTime: p['created_at'] ?? '',
+                                bottomId: "₹ ${totalCost.toStringAsFixed(2)}",
+                                items: items.isNotEmpty
+                                    ? items.map((e) => e["egg_category_grade"]).join(", ")
+                                    : "",
+                                itemboxes:
+                                    "${items.fold(0, (sum, e) => sum + (e["trays"] as int))} Trays",
+                                    
+                                    
+                              ),
+                      
+                               SizedBox(height: getHeight(context, 8)),
+                              
+                             
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      
+                           SizedBox(height: getHeight(context, 20)),
+                        ],
+                      ),
                     );
                   },
                 ),
@@ -256,7 +268,7 @@ String? loadingPurchaseId;
       child: Row(
         children: [
           Icon(icon, color: Colors.grey),
-          const SizedBox(width: 8),
+          SizedBox(width: getWidth(context, 8)),
           Expanded(child: Text(text)),
           const Icon(Icons.keyboard_arrow_down,
               color: Colors.grey),

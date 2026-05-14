@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/branch/addexpense/bloc/expense_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,16 +24,16 @@ class _AddexpenseState extends State<Addexpense> {
   final TextEditingController dateController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
-final List<String> categoryList = [
-  "SALARY",
-  "RENT",
-  "ELECTRICITY",
-  "TRANSPORT",
-  "PACKING",
-  "MAINTENANCE",
-  "MISCELLANEOUS",
-  "OTHER_EXPENSES",
-];
+
+  final List<String> categoryList = [
+    "SALARY",
+    "PURCHASE",
+    "TRANSPORT",
+    "MAINTANANCE",
+    "RENT",
+    "PACKING",
+    "GENERAL",
+  ];
 
   @override
   void initState() {
@@ -210,7 +211,7 @@ final List<String> categoryList = [
                       child: GestureDetector(
                         onTap: () => setState(() => selectedPayment = "CASH"),
                         child: Container(
-                          height: 45,
+                          height: getHeight(context, 45),
                           decoration: BoxDecoration(
                             border: Border.all(color: selectedPayment == "CASH" ? Colors.blue : AppColors.border2),
                             borderRadius: BorderRadius.circular(8),
@@ -227,44 +228,44 @@ final List<String> categoryList = [
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                     SizedBox(width: getWidth(context, 10),),
                     Expanded(
                       child: GestureDetector(
                         onTap: () => setState(() => selectedPayment = "UPI"),
                         child: Container(
-                          height: 45,
+                          height: getHeight(context,45),
                           decoration: BoxDecoration(
                             border: Border.all(color: selectedPayment == "UPI" ? Colors.blue : Colors.grey),
                             borderRadius: BorderRadius.circular(8),
                             color: selectedPayment == "UPI" ? Colors.blue.withOpacity(0.1) : Colors.transparent,
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.account_balance_wallet),
-                              SizedBox(width: 6),
+                                SizedBox(width: getWidth(context, 6)),
                               Text("UPI"),
                             ],
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                     SizedBox(width: getWidth(context, 10)),
                     Expanded(
                       child: GestureDetector(
                         onTap: () => setState(() => selectedPayment = "BANK"),
                         child: Container(
-                          height: 45,
+                          height: getHeight(context, 45),
                           decoration: BoxDecoration(
                             border: Border.all(color: selectedPayment == "BANK" ? Colors.blue : Colors.grey),
                             borderRadius: BorderRadius.circular(8),
-                            color: selectedPayment == "CARD" ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+                            color: selectedPayment == "BANK" ? Colors.blue.withOpacity(0.1) : Colors.transparent,
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.account_balance),
-                              SizedBox(width: 6),
+                             SizedBox(width: getWidth(context, 6)),
                               Text("Bank"),
                             ],
                           ),
@@ -303,7 +304,7 @@ final List<String> categoryList = [
                 InkWell(
                   onTap: pickFile,
                   child: Container(
-                    height: 100,
+                    height: getHeight(context, 100),
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
@@ -317,7 +318,7 @@ final List<String> categoryList = [
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Icon(Icons.upload_file),
-                            const SizedBox(width: 8),
+                            SizedBox(width: getWidth(context, 8)),
                             Flexible(child: Text(fileName, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis)),
                           ],
                         ),
@@ -327,7 +328,7 @@ final List<String> categoryList = [
                   ),
                 ),
 
-                const SizedBox(height: 6),
+                SizedBox(height: getHeight(context, 6)),
                 const Divider(),
                 SizedBox(height: size.height * 0.02),
 
@@ -346,17 +347,17 @@ final List<String> categoryList = [
                           });
                         },
                         child: Container(
-                          height: 45,
+                          height: getHeight(context, 45),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Text("Reset", style: TextStyle(fontWeight: FontWeight.w500)),
+                          child: const Text("Reset", style: AppTextStyles.bodyText14dark),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: getWidth(context, 10)),
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
@@ -382,15 +383,15 @@ final List<String> categoryList = [
                           builder: (context, state) {
                             final isSubmitting = state is ExpenseSubmitting;
                             return Container(
-                              height: 45,
+                              height:getHeight(context, 45),
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 color: Colors.blueAccent,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: isSubmitting
-                                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                  : const Text("Save Expense", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                                  ? SizedBox(height:getHeight(context, 20), width:getWidth(context, 20), child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                  : const Text("Save Expense", style: AppTextStyles.whiteText),
                             );
                           },
                         ),

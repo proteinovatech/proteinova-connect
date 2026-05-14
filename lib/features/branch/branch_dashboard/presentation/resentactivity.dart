@@ -4,6 +4,7 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/data/model/dashboard_model.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/data/repository/dashboard_repository.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/widget/activityitem.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/widget/recent_activity_skeleton.dart';
 
 class Resentactivity extends StatefulWidget {
   const Resentactivity({super.key});
@@ -49,7 +50,7 @@ class _ResentactivityState
     return Scaffold(
 
       backgroundColor:
-          AppColors.background1,
+          AppColors.background,
 
       appBar: AppBar(
 
@@ -65,7 +66,7 @@ class _ResentactivityState
 
       body: isLoading
           ? const Center(
-              child: CircularProgressIndicator(),
+              child: RecentActivitySkeleton(),
             )
           : dashboardModel!.recentActivity.isEmpty
 
@@ -82,60 +83,71 @@ class _ResentactivityState
                     12,
                   ),
 
-                  child: ListView.builder(
-                    itemCount: dashboardModel!.recentActivity.length,
+                  child: RefreshIndicator(
+                    color: Colors.blue,
 
-                    itemBuilder: (context, index) {
-                      final activity = dashboardModel!.recentActivity[index];
+  onRefresh: () async {
+    setState(() {
+      isLoading = true;
+    });
 
-                      return Column(
-
-                        children: [
-
-                          ActivityItem(
-
-                            leading:
-                                CircleAvatar(
-
-                              radius: 25,
-
-                              backgroundColor:
-                                  Colors.grey,
-
-                              child: Icon(
-
-                                getIcon(
-                                  activity.tag,
+    await fetchRecentActivity();
+  },
+                    child: ListView.builder(
+                      itemCount: dashboardModel!.recentActivity.length,
+                    
+                      itemBuilder: (context, index) {
+                        final activity = dashboardModel!.recentActivity[index];
+                    
+                        return Column(
+                    
+                          children: [
+                    
+                            ActivityItem(
+                    
+                              leading:
+                                  CircleAvatar(
+                    
+                                radius: 25,
+                    
+                                backgroundColor:
+                                    Colors.grey,
+                    
+                                child: Icon(
+                    
+                                  getIcon(
+                                    activity.tag,
+                                  ),
+                    
+                                  color:
+                                      Colors.white,
                                 ),
-
-                                color:
-                                    Colors.white,
                               ),
-                            ),
-
-                            title: activity.title,
-
-                            subtitle: Text(
-                              activity.description,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
+                    
+                              title: activity.title,
+                    
+                              subtitle: Text(
+                                activity.description,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
                               ),
+                    
+                              time: activity.time,
+                    
+                              tag: activity.tag,
                             ),
-
-                            time: activity.time,
-
-                            tag: activity.tag,
-                          ),
-
-                          const SizedBox(
-                            height: 15,
-                          ),
-
-                          const Divider(),
-                        ],
-                      );
-                    },
+                    
+                            const SizedBox(
+                              height: 15,
+                            ),
+                    
+                            const Divider(),
+                          ],
+                        );
+                      },
+                    ),
                   ),
                 ),
     );

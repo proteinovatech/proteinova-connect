@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/branch/sales/bloc/sales_bloc.dart';
 import 'package:proteinova_connect/features/branch/sales/bloc/sales_event.dart';
 import 'package:proteinova_connect/features/branch/sales/bloc/sales_state.dart';
@@ -9,6 +10,7 @@ import 'package:proteinova_connect/features/branch/sales/presentation/sales_entr
 import 'package:proteinova_connect/features/branch/sales/widget/dashboardcard.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/dashboardcard2.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/recent_sales_card.dart';
+import 'package:proteinova_connect/features/branch/sales/widget/sales_skeleton_loader.dart';
 
 class Sales extends StatefulWidget {
   const Sales({super.key});
@@ -24,11 +26,11 @@ class _SalesState extends State<Sales> {
     return BlocProvider(
       create: (context) => SalesBloc()..add(FetchSalesDashboard()),
       child: Scaffold(
-        backgroundColor: AppColors.background1,
+        backgroundColor: AppColors.background,
         body: BlocBuilder<SalesBloc, SalesState>(
           builder: (context, state) {
             if (state is SalesLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: SalesSkeletonLoader());
             }
 
             if (state is SalesError) {
@@ -53,28 +55,38 @@ class _SalesState extends State<Sales> {
               final salesOrders = state.salesOrders;
 
               return Padding(
-                padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
+                padding: EdgeInsets.symmetric(horizontal:getWidth(context, 15)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: size.height * 0.07),
+                    SizedBox(height:getHeight(context, 15)),
                     _buildHeader(),
                     const Divider(),
                     Text(
                       "Sales & Dispatch",
                       style: AppTextStyles.headingText22,
                     ),
-                    const SizedBox(height: 20),
+                     SizedBox(height:getHeight(context, 10)),
                     _buildNewSaleButton(),
-                    const SizedBox(height: 10),
+                     SizedBox(height:getHeight(context, 10)),
                     Expanded(
-                      child: ListView(
-                        padding: const EdgeInsets.only(top: 10, bottom: 20),
-                        children: [
-                          _buildDashboardCards(dashboardData),
-                          const SizedBox(height: 25),
-                          _buildRecentSalesTable(salesOrders),
-                        ],
+                      child: RefreshIndicator(
+                        color: AppColors.blueAccent,
+
+    onRefresh: () async {
+      context.read<SalesBloc>().add(
+        FetchSalesDashboard(),
+      );
+    },
+
+                        child: ListView(
+                          padding: const EdgeInsets.only(top: 10, bottom: 20),
+                          children: [
+                            _buildDashboardCards(dashboardData),
+                            SizedBox(height:getHeight(context, 25)),
+                            _buildRecentSalesTable(salesOrders),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -93,7 +105,7 @@ class _SalesState extends State<Sales> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Image.asset("assets/erplogo.png", height: 40, width: 130),
+        Image.asset("assets/erplogo.png", height:getHeight(context, 40), width: getWidth(context, 130)),
         // Row(
         //   children: [
         //     const Icon(Icons.search_outlined),
@@ -134,7 +146,7 @@ class _SalesState extends State<Sales> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.add, color: AppColors.dark),
-            const SizedBox(width: 8),
+            SizedBox(width: getWidth(context, 8)),
             Text("New Sale", style: AppTextStyles.headingText20),
           ],
         ),
@@ -157,24 +169,24 @@ class _SalesState extends State<Sales> {
                     "0%",
                 subtitle: "Vs yesterday",
                 icon: Icons.currency_pound,
-                iconBg: const Color.fromARGB(255, 230, 235, 240),
-                iconColor: Colors.blue,
+                iconBg: AppColors.containerColor,
+                iconColor:AppColors.blueAccent,
               ),
             ),
-            const SizedBox(width: 10),
+           SizedBox(width:getWidth(context, 10)),
             Expanded(
               child: DashboardCard2(
                 title: "Pending Dispatches",
                 value: cards["pending_unloading"]?.toString() ?? "0",
                 subtitle: "Requires Assignment",
                 icon: Icons.timer_outlined,
-                iconBg: const Color.fromARGB(255, 230, 235, 240),
-                iconColor: Colors.blue,
+                iconBg: AppColors.containerColor,
+                iconColor:AppColors.blueAccent,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        SizedBox(height:getHeight(context, 10)),
         Row(
           children: [
             Expanded(
@@ -182,12 +194,12 @@ class _SalesState extends State<Sales> {
                 title: "Vehicle in transit",
                 value: cards["vehicles_in_transit"]?.toString() ?? "0",
                 subtitle: "Currently on route",
-                icon: Icons.local_shipping,
-                iconBg: const Color.fromARGB(255, 230, 235, 240),
-                iconColor: Colors.blue,
+                icon: Icons.local_shipping_outlined,
+                iconBg: AppColors.containerColor,
+                iconColor:AppColors.blueAccent,
               ),
             ),
-            const SizedBox(width: 10),
+             SizedBox(width: getWidth(context, 10)),
             Expanded(
               child: DashboardCard(
                 title: "Completed",
@@ -196,8 +208,8 @@ class _SalesState extends State<Sales> {
                 percent: "+5%",
                 subtitle: "From Daily Target",
                 icon: Icons.check_circle_outline,
-                iconBg: const Color.fromARGB(255, 230, 235, 240),
-                iconColor: Colors.blue,
+                iconBg: AppColors.containerColor,
+                iconColor:AppColors.blueAccent,
               ),
             ),
           ],
@@ -211,9 +223,9 @@ class _SalesState extends State<Sales> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,19 +235,19 @@ class _SalesState extends State<Sales> {
             children: [
               const Text(
                 "Recent Sales Orders",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: AppTextStyles.headingText20
               ),
-              _buildExportButton(),
+              // _buildExportButton(),
             ],
           ),
-          const SizedBox(height: 20),
+         SizedBox(height:getHeight(context, 20)),
           _buildTableHeader(),
-          const SizedBox(height: 10),
+          SizedBox(height:getHeight(context, 10)),
           orders.isEmpty
-              ? const Center(
+              ? Center(
                   child: Padding(
                     padding: EdgeInsets.all(20),
-                    child: Text("No Sales Orders Found"),
+                    child: Text("No Sales Orders Found",style: AppTextStyles.bodyText14,),
                   ),
                 )
               : ListView.separated(
@@ -254,25 +266,25 @@ class _SalesState extends State<Sales> {
     );
   }
 
-  Widget _buildExportButton() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.blue.shade200),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Row(
-        children: [
-          Icon(Icons.open_in_new, color: Colors.blue, size: 18),
-          SizedBox(width: 5),
-          Text(
-            "Export",
-            style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildExportButton() {
+  //   return Container(
+  //     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+  //     decoration: BoxDecoration(
+  //       border: Border.all(color:AppColors.border2),
+  //       borderRadius: BorderRadius.circular(8),
+  //     ),
+  //     child:  Row(
+  //       children: [
+  //         Icon(Icons.open_in_new, color:AppColors.blueAccent, size: 18),
+  //         SizedBox(width: 5),
+  //         Text(
+  //           "Export",
+  //           style:AppTextStyles.blueText2
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildTableHeader() {
     return Container(
@@ -287,66 +299,42 @@ class _SalesState extends State<Sales> {
             flex: 2,
             child: Text(
               "ORDER ID",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-                fontSize: 12,
-              ),
+              style: AppTextStyles.bodyText12dark
             ),
           ),
           Expanded(
-            flex: 2,
+            flex: 1,
             child: Text(
               "DATE",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-                fontSize: 12,
-              ),
+              style: AppTextStyles.bodyText12dark
             ),
           ),
           Expanded(
             flex: 2,
             child: Text(
               "CUSTOMER",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-                fontSize: 12,
-              ),
+              style: AppTextStyles.bodyText12dark
             ),
           ),
           Expanded(
-            flex: 2,
+            flex: 1,
             child: Text(
               "QTY",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-                fontSize: 12,
-              ),
+              style: AppTextStyles.bodyText12dark
             ),
           ),
           Expanded(
             flex: 2,
             child: Text(
               "AMOUNT",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-                fontSize: 12,
-              ),
+              style: AppTextStyles.bodyText12dark
             ),
           ),
           Expanded(
             flex: 2,
             child: Text(
               "STATUS",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-                fontSize: 12,
-              ),
+              style: AppTextStyles.bodyText12dark
             ),
           ),
         ],
@@ -363,14 +351,14 @@ class _SalesState extends State<Sales> {
             flex: 2,
             child: Text(
               order["order_id"]?.toString() ?? "-",
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              style: AppTextStyles.bodyText12
             ),
           ),
           Expanded(
             flex: 2,
             child: Text(
               order["date"]?.toString().split('T').first ?? "-",
-              style: const TextStyle(fontSize: 13),
+              style: AppTextStyles.bodyText12
             ),
           ),
           Expanded(
@@ -380,14 +368,11 @@ class _SalesState extends State<Sales> {
               children: [
                 Text(
                   order["customer"]?.toString() ?? "-",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
+                  style:AppTextStyles.bodyText12
                 ),
                 Text(
                   order["payment_method"]?.toString() ?? "CASH",
-                  style: const TextStyle(fontSize: 11),
+                  style: AppTextStyles.bodyText12
                 ),
               ],
             ),
@@ -396,14 +381,14 @@ class _SalesState extends State<Sales> {
             flex: 2,
             child: Text(
               "${order["items_qty"] ?? 0} Tr",
-              style: const TextStyle(fontSize: 13),
+              style:AppTextStyles.bodyText12,
             ),
           ),
           Expanded(
             flex: 2,
             child: Text(
               "₹${order["amount"]}",
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              style: AppTextStyles.bodyText12
             ),
           ),
           Expanded(
@@ -415,17 +400,13 @@ class _SalesState extends State<Sales> {
                 color:
                     (order["payment_status"]?.toString().toLowerCase() ==
                         "paid")
-                    ? Colors.green
-                    : Colors.orange,
+                    ? AppColors.green
+                    : AppColors.deepOrange,
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Text(
                 order["payment_status"]?.toString() ?? "-",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 11,
-                ),
+                style: AppTextStyles.whiteText
               ),
             ),
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
+import 'package:proteinova_connect/features/admin/presentation/receive_stockscreen.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_incoming_stock_queue_skeleton_loader.dart';
 import 'package:proteinova_connect/features/admin/widget/incoming_widget.dart';
 import '../inventory/data/inventory_repository.dart';
@@ -27,6 +28,23 @@ class _IncomingStockState extends State<IncomingStock> {
     _fetchData();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _startAutoRefresh();
+  }
+
+  void _startAutoRefresh() {
+    Future.delayed(const Duration(seconds: 3), () async {
+      if (!mounted) return;
+
+      await _fetchData();
+
+      _startAutoRefresh();
+    });
+  }
+
   Future<void> _fetchData() async {
     setState(() => isLoading = true);
     try {
@@ -51,14 +69,10 @@ class _IncomingStockState extends State<IncomingStock> {
 
   Future<void> _receiveStock(int dispatchId) async {
     try {
-      // Using branchId 1 as default
-      await _repository.receiveStock(1, dispatchId);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Stock received successfully")),
-        );
-      }
-      _fetchData();
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => ReceiveStockScreen(id: dispatchId)),
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -258,9 +272,7 @@ class _IncomingStockState extends State<IncomingStock> {
                                   type: p.productName,
                                   status: p.status,
                                   isReceive:
-                                      p.status.toUpperCase() ==
-                                          "READY FOR UNLOADING" ||
-                                      p.status.toUpperCase() == "ARRIVAL",
+                                      p.status.toUpperCase() != "RECEIVED",
                                   onReceive: () {
                                     Navigator.pop(context);
                                     _receiveStock(p.id);
@@ -684,23 +696,23 @@ class _IncomingStockState extends State<IncomingStock> {
 
                         const SizedBox(height: 10),
 
-                        /// ROWS
-                        ..._filteredPurchases.map(
-                          (purchase) => buildTableRow(
-                            po: purchase.poNumber,
-                            date: _formatDate(purchase.createdAt),
-                            supplier: purchase.supplierName,
-                            location: purchase.location,
-                            quantity: "${purchase.totalQuantity} Eggs",
-                            type: purchase.productName,
-                            status: purchase.status,
-                            isReceive:
-                                purchase.status.toUpperCase() ==
-                                    "READY FOR UNLOADING" ||
-                                purchase.status.toUpperCase() == "ARRIVAL",
-                            onReceive: () => _receiveStock(purchase.id),
-                          ),
+                      /// ROWS
+                      ..._filteredPurchases.map(
+                        (purchase) => buildTableRow(
+                          po: purchase.poNumber,
+                          date: _formatDate(purchase.createdAt),
+                          supplier: purchase.supplierName,
+                          location: purchase.location,
+                          quantity: "${purchase.totalQuantity} Eggs",
+                          type: purchase.productName,
+                          status: purchase.status,
+                          isReceive:
+                              purchase.status.toUpperCase() ==
+                                  "READY FOR UNLOADING" ||
+                              purchase.status.toUpperCase() == "ARRIVAL",
+                          onReceive: () => _receiveStock(purchase.id),
                         ),
+                      ),
 
                         if (_filteredPurchases.isEmpty)
                           const Padding(

@@ -33,7 +33,7 @@ class AppColors {
   static const Color light = Color.fromARGB(255, 124, 124, 124);
 
   static const Color background = Color(0xFFFFFFFF);
-  static const Color background1 = Color.fromARGB(255, 239, 242, 252);
+  static const Color background1 = Colors.white;
   static const Color cardBackground = Color(0xFFFFFFFF);
 
   static const Color border = Color(0xFFE0E0E0);
