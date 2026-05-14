@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../models/approval_model.dart';
 
 class ApprovalTableRow extends StatelessWidget {
@@ -88,10 +89,7 @@ class ApprovalTableRow extends StatelessWidget {
     final bool isRejected = approval.status.toLowerCase() == "rejected";
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-
-      padding: const EdgeInsets.all(16),
-
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
       decoration: BoxDecoration(
         color: Colors.white,
 
@@ -188,139 +186,79 @@ class ApprovalTableRow extends StatelessWidget {
                             const SizedBox(width: 8),
 
                             Expanded(
-                              child: infoCard(
-                                icon: Icons.local_shipping_outlined,
-                                title: "Requester",
-                                value:
-                                    "${approval.type}\n${approval.requester}",
+                              flex: 2,
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: approval.status == "Approved"
+                                        ? Colors.green.shade100
+                                        : approval.status == "Rejected"
+                                        ? Colors.red.shade100
+                                        : Colors.orange.shade100,
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: Text(
+                                    approval.status,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: approval.status == "Approved"
+                                          ? Colors.green
+                                          : approval.status == "Rejected"
+                                          ? Colors.red
+                                          : Colors.orange,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            Expanded(
+                              flex: 2,
+                              child: Row(
+                                children: [
+                                  InkWell(
+                                    onTap: onView,
+                                    child: const Icon(
+                                      Icons.remove_red_eye_outlined,
+                                      size: 20,
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: 14),
+
+                                  InkWell(
+                                    onTap: onApprove,
+                                    child: const Icon(
+                                      Icons.check_circle_outline,
+                                      color: Colors.green,
+                                      size: 20,
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: 14),
+
+                                  InkWell(
+                                    onTap: onReject,
+                                    child: const Icon(
+                                      Icons.cancel_outlined,
+                                      color: Colors.red,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ],
                     ),
-
-                    const SizedBox(height: 10),
-
-                    /// STATUS + VIEW
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-
-                          decoration: BoxDecoration(
-                            color: isApproved
-                                ? Colors.green.shade100
-                                : isRejected
-                                ? Colors.red.shade100
-                                : Colors.orange.shade100,
-
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-
-                          child: Text(
-                            approval.status,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: isApproved
-                                  ? Colors.green
-                                  : isRejected
-                                  ? Colors.red
-                                  : Colors.orange,
-                            ),
-                          ),
-                        ),
-
-                        const Spacer(),
-
-                        InkWell(
-                          onTap: onView,
-                          child: const Row(
-                            children: [
-                              Text(
-                                "View",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xff374151),
-                                ),
-                              ),
-
-                              SizedBox(width: 4),
-
-                              Icon(
-                                Icons.chevron_right,
-                                color: Color(0xff9CA3AF),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
                   ],
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 20),
-
-          /// ACTION BUTTONS
-          Row(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  height: 46,
-                  child: OutlinedButton(
-                    onPressed: onReject,
-
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.red.shade200),
-
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-
-                    child: const Text(
-                      "Reject",
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 8),
-
-              Expanded(
-                child: SizedBox(
-                  height: 46,
-                  child: ElevatedButton(
-                    onPressed: onApprove,
-
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: Colors.green,
-
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-
-                    child: const Text(
-                      "Approve",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
                 ),
               ),
             ],

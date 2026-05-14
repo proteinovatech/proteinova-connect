@@ -4,6 +4,7 @@ import 'package:proteinova_connect/core/cache/hive_service/purchase_hive_service
 import 'package:proteinova_connect/core/network/dio_client.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/purchase_model.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/purchase_repository.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/supplier_repository.dart';
@@ -56,7 +57,7 @@ SizedBox(height: size.height*0.02,),
           SizedBox(height: size.height*0.02,),
            Container(
             width: double.infinity,
-            height: 50,
+            height: getHeight(context, 50),
             margin: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(5),
@@ -98,7 +99,7 @@ SizedBox(height: size.height*0.02,),
           SizedBox(height: size.height*0.01,),
           Container(
             width: double.infinity,
-            height: 50,
+            height: getHeight(context, 50),
             margin: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
               border: Border.all(color: AppColors.border),

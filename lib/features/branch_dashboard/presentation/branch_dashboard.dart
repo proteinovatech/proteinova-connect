@@ -161,11 +161,16 @@
 //         child: Column(
 //           crossAxisAlignment: CrossAxisAlignment.start,
 
+<<<<<<< HEAD
 //           children: [
 //             SizedBox(height: size.height * 0.07),
 
 //             Row(
 //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+=======
+  final DashboardRepository repository = DashboardRepository(DioClient().dio);
+  bool isLoading = true;
+>>>>>>> ec78a5184d180deb7f94f49ab2e969028965f4a5
 
 //               children: [
 //                 Image.asset("assets/erplogo.png", height: 40, width: 130),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/admin_expense_management_skeleton_loader.dart';
 import 'package:proteinova_connect/features/admin/supplier/widgets/add_supplier_bottom_sheet.dart';
 
 import '../models/supplier_model.dart';
@@ -44,9 +46,9 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
       setState(() {
         isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to load suppliers: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Failed to load suppliers: $e")));
     }
   }
 
@@ -96,13 +98,13 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
         filteredSuppliers.remove(supplier);
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("${supplier.name} Deleted")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("${supplier.name} Deleted")));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to delete supplier: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Failed to delete supplier: $e")));
     }
   }
 
@@ -157,178 +159,201 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            children: [
-              const SizedBox(height: 10),
+      body: isLoading
+          ? const AdminExpenseManagementSkeletonLoader()
+          : RefreshIndicator(
+              onRefresh: fetchSuppliers,
+              child: SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: getWidth(context, 16),
+                  ),
+                  child: Column(
+                    children: [
+                      SizedBox(height: getHeight(context, 10)),
 
-              Row(
-                children: [
-IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-        ),
-                  const Expanded(
-                    child: Text(
-                      "Suppliers",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            icon: const Icon(
+                              Icons.arrow_back,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const Expanded(
+                            child: Text(
+                              "Suppliers",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xffF4C400),
+                              foregroundColor: Colors.black,
+                            ),
+                            onPressed: addSupplier,
+                            icon: const Icon(Icons.add),
+                            label: const Text("Add Supplier"),
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xffF4C400),
-                      foregroundColor: Colors.black,
-                    ),
-                    onPressed: addSupplier,
-                    icon: const Icon(Icons.add),
-                    label: const Text("Add Supplier"),
-                  ),
-                ],
-              ),
 
-              const SizedBox(height: 14),
+                      SizedBox(height: getHeight(context, 14)),
 
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Manage your vendor relationships and\ntrack supply statuses.",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black54,
-                    height: 1.5,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: searchController,
-                        onChanged: searchSupplier,
-                        decoration: InputDecoration(
-                          hintText: "Filter suppliers...",
-                          prefixIcon: const Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Manage your vendor relationships and\ntrack supply statuses.",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black54,
+                            height: 1.5,
                           ),
                         ),
                       ),
-                    ),
 
-                    const SizedBox(width: 10),
+                      SizedBox(height: getHeight(context, 20)),
 
-                    InkWell(
-                      onTap: filterAction,
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(14),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: getWidth(context, 12),
+                          vertical: getHeight(context, 12),
                         ),
-                        child: const Icon(Icons.filter_alt_outlined),
-                      ),
-                    ),
-
-                    const SizedBox(width: 10),
-
-                    InkWell(
-                      onTap: downloadAction,
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(14),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Icon(Icons.download),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: searchController,
+                                onChanged: searchSupplier,
+                                decoration: InputDecoration(
+                                  hintText: "Filter suppliers...",
+                                  prefixIcon: const Icon(Icons.search),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(width: getWidth(context, 10)),
+
+                            InkWell(
+                              onTap: filterAction,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getWidth(context, 16),
+                                  vertical: getHeight(context, 16),
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: const Icon(Icons.filter_alt_outlined),
+                              ),
+                            ),
+
+                            SizedBox(width: getWidth(context, 10)),
+
+                            InkWell(
+                              onTap: downloadAction,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getWidth(context, 16),
+                                  vertical: getHeight(context, 16),
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: const Icon(Icons.download),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+
+                      SizedBox(height: getHeight(context, 20)),
+
+                      Expanded(
+                        child: isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : ListView.builder(
+                                itemCount: filteredSuppliers.length,
+                                itemBuilder: (context, index) {
+                                  final supplier = filteredSuppliers[index];
+
+                                  return SupplierCardAdmin(
+                                    supplier: supplier,
+                                    onEdit: () => editSupplier(supplier),
+                                    onMore: () => showMoreOptions(supplier),
+                                  );
+                                },
+                              ),
+                      ),
+
+                      Row(
+                        children: [
+                          Text(
+                            "Showing ${filteredSuppliers.length} records",
+                            style: const TextStyle(color: Colors.black54),
+                          ),
+                        ],
+                      ),
+
+                      SizedBox(height: getHeight(context, 12)),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              height: getHeight(context, 50),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade200,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Center(child: Text("Previous")),
+                            ),
+                          ),
+                          SizedBox(width: getWidth(context, 12)),
+                          Expanded(
+                            child: Container(
+                              height: getHeight(context, 50),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  "Next",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      SizedBox(height: getHeight(context, 10)),
+                    ],
+                  ),
                 ),
               ),
-
-              const SizedBox(height: 20),
-
-              Expanded(
-                child: isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : ListView.builder(
-                        itemCount: filteredSuppliers.length,
-                        itemBuilder: (context, index) {
-                          final supplier = filteredSuppliers[index];
-
-                          return SupplierCardAdmin(
-                            supplier: supplier,
-                            onEdit: () => editSupplier(supplier),
-                            onMore: () => showMoreOptions(supplier),
-                          );
-                        },
-                      ),
-              ),
-
-              Row(
-                children: [
-                  Text(
-                    "Showing ${filteredSuppliers.length} records",
-                    style: const TextStyle(color: Colors.black54),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: const Center(child: Text("Previous")),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Container(
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          "Next",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 10),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

@@ -58,7 +58,10 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
     super.dispose();
   }
 
-  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+  Future<void> _selectDate(
+    BuildContext context,
+    TextEditingController controller,
+  ) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -74,7 +77,9 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
 
   Future<void> _saveOffer() async {
     if (nameController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter offer name")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please enter offer name")));
       return;
     }
 
@@ -84,7 +89,9 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
 
     final offerData = {
       "offer_name": nameController.text.trim(),
-      "product_name": selectedProduct == "Select Egg Category" ? null : selectedProduct,
+      "product_name": selectedProduct == "Select Egg Category"
+          ? null
+          : selectedProduct,
       "offer_type": selectedOfferType,
       "discount_value": double.tryParse(discountController.text) ?? 0.0,
       "discount_unit": selectedDiscountUnit,
@@ -104,7 +111,9 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
     if (success) {
       Navigator.pop(context, true);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Failed to create offer")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Failed to create offer")));
     }
   }
 
@@ -162,7 +171,11 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                       color: const Color(0xffF3F4F6),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.close, color: Color(0xff6B7280), size: 20),
+                    child: const Icon(
+                      Icons.close,
+                      color: Color(0xff6B7280),
+                      size: 20,
+                    ),
                   ),
                 ),
               ],
@@ -179,7 +192,7 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  buildLabel("Offer Name", isRequired: true),
+                  buildLabel(context, "Offer Name", isRequired: true),
                   const SizedBox(height: 10),
                   buildTextField(
                     hint: "e.g. Summer Offer",
@@ -195,12 +208,17 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            buildLabel("Product", isRequired: true),
+                            buildLabel(context, "Product", isRequired: true),
                             const SizedBox(height: 10),
                             buildDropdown(
                               value: selectedProduct,
-                              items: ["Select Egg Category", "Brown Eggs", "White Eggs"],
-                              onChanged: (val) => setState(() => selectedProduct = val!),
+                              items: [
+                                "Select Egg Category",
+                                "Brown Eggs",
+                                "White Eggs",
+                              ],
+                              onChanged: (val) =>
+                                  setState(() => selectedProduct = val!),
                             ),
                           ],
                         ),
@@ -212,12 +230,17 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            buildLabel("Offer Type", isRequired: true),
+                            buildLabel(context, "Offer Type", isRequired: true),
                             const SizedBox(height: 10),
                             buildDropdown(
                               value: selectedOfferType,
-                              items: ["Fixed Amount", "Percentage", "Buy X Get Y"],
-                              onChanged: (val) => setState(() => selectedOfferType = val!),
+                              items: [
+                                "Fixed Amount",
+                                "Percentage",
+                                "Buy X Get Y",
+                              ],
+                              onChanged: (val) =>
+                                  setState(() => selectedOfferType = val!),
                             ),
                           ],
                         ),
@@ -235,7 +258,11 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              buildLabel("Discount Value", isRequired: true),
+                              buildLabel(
+                                context,
+                                "Discount Value",
+                                isRequired: true,
+                              ),
                               const SizedBox(height: 10),
                               buildTextField(
                                 hint: "0.00",
@@ -251,12 +278,13 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              buildLabel("Unit", isRequired: true),
+                              buildLabel(context, "Unit", isRequired: true),
                               const SizedBox(height: 10),
                               buildDropdown(
                                 value: selectedDiscountUnit,
                                 items: ["Per Egg", "Per Tray", "Total Bill"],
-                                onChanged: (val) => setState(() => selectedDiscountUnit = val!),
+                                onChanged: (val) =>
+                                    setState(() => selectedDiscountUnit = val!),
                               ),
                             ],
                           ),
@@ -272,7 +300,11 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              buildLabel("Buy Quantity", isRequired: true),
+                              buildLabel(
+                                context,
+                                "Buy Quantity",
+                                isRequired: true,
+                              ),
                               const SizedBox(height: 10),
                               buildTextField(
                                 hint: "0",
@@ -288,7 +320,11 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              buildLabel("Free Quantity", isRequired: true),
+                              buildLabel(
+                                context,
+                                "Free Quantity",
+                                isRequired: true,
+                              ),
                               const SizedBox(height: 10),
                               buildTextField(
                                 hint: "0",
@@ -309,12 +345,15 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            buildLabel("Start Date", isRequired: true),
+                            buildLabel(context, "Start Date", isRequired: true),
                             const SizedBox(height: 10),
                             InkWell(
-                              onTap: () => _selectDate(context, startDateController),
+                              onTap: () =>
+                                  _selectDate(context, startDateController),
                               child: IgnorePointer(
-                                child: buildDateField(controller: startDateController),
+                                child: buildDateField(
+                                  controller: startDateController,
+                                ),
                               ),
                             ),
                           ],
@@ -327,12 +366,15 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            buildLabel("End Date", isRequired: true),
+                            buildLabel(context, "End Date", isRequired: true),
                             const SizedBox(height: 10),
                             InkWell(
-                              onTap: () => _selectDate(context, endDateController),
+                              onTap: () =>
+                                  _selectDate(context, endDateController),
                               child: IgnorePointer(
-                                child: buildDateField(controller: endDateController),
+                                child: buildDateField(
+                                  controller: endDateController,
+                                ),
                               ),
                             ),
                           ],
@@ -353,7 +395,11 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                       ),
                       const Text(
                         "Is Active",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xff111827)),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xff111827),
+                        ),
                       ),
                     ],
                   ),
@@ -383,7 +429,9 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
 
           /// BOTTOM BUTTONS
           Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
             child: Material(
               color: Colors.white,
               child: Container(
@@ -407,7 +455,11 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                           child: const Center(
                             child: Text(
                               "Cancel",
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xff111827)),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xff111827),
+                              ),
                             ),
                           ),
                         ),
@@ -422,12 +474,28 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                           height: 48,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
-                            gradient: const LinearGradient(colors: [Color(0xff2563EB), Color(0xff3B82F6)]),
+                            gradient: const LinearGradient(
+                              colors: [Color(0xff2563EB), Color(0xff3B82F6)],
+                            ),
                           ),
                           child: Center(
                             child: isSaving
-                                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                : const Text("Save Offer", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Text(
+                                    "Save Offer",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                           ),
                         ),
                       ),
@@ -455,8 +523,15 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
           Container(
             height: 56,
             width: 56,
-            decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xffEEF2FF)),
-            child: const Icon(Icons.local_offer_outlined, size: 28, color: Color(0xff374151)),
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(0xffEEF2FF),
+            ),
+            child: const Icon(
+              Icons.local_offer_outlined,
+              size: 28,
+              color: Color(0xff374151),
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -464,13 +539,23 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  nameController.text.isEmpty ? "Offer Preview" : nameController.text,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xff111827)),
+                  nameController.text.isEmpty
+                      ? "Offer Preview"
+                      : nameController.text,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xff111827),
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   _getPreviewDescription(),
-                  style: const TextStyle(fontSize: 13, height: 1.4, color: Color(0xff6B7280)),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    height: 1.4,
+                    color: Color(0xff6B7280),
+                  ),
                 ),
               ],
             ),

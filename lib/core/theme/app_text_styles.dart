@@ -18,6 +18,22 @@ class AppTextStyles {
     fontWeight: FontWeight.w500,
     color: AppColors.textPrimary,
   );
+   static const TextStyle headingTextbold19 = TextStyle(
+    fontSize: 19,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textPrimary,
+  );
+  static const TextStyle headingText21 = TextStyle(
+    fontSize: 21,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textPrimary,
+  );
+  static const TextStyle headingText16 = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textPrimary,
+  );
+
 
   // color text
   
@@ -31,10 +47,15 @@ class AppTextStyles {
     fontWeight: FontWeight.bold,
     color: AppColors.blueAccent, // dark brown
   );
+   static const TextStyle blueText13 = TextStyle(
+    fontSize: 13,
+    fontWeight: FontWeight.bold,
+    color: AppColors.blueAccent, // dark brown
+  );
   
    static const TextStyle redtext = TextStyle(
-    fontSize: 15.5,
-    fontWeight: FontWeight.w500,
+    fontSize: 14.5,
+    fontWeight: FontWeight.w700,
     color: AppColors.redAccent,
   );
 
@@ -76,6 +97,11 @@ class AppTextStyles {
     fontWeight: FontWeight.normal,
     color: AppColors.textSecondary,
   );
+  static const TextStyle bodyText13 = TextStyle(
+    fontSize: 13,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textSecondary,
+  );
   static const TextStyle bodyText12 = TextStyle(
     fontSize: 10.5,
     fontWeight: FontWeight.normal,
@@ -88,6 +114,11 @@ class AppTextStyles {
   );
   static const TextStyle bodyText10dark = TextStyle(
     fontSize: 10,
+    fontWeight: FontWeight.w600,
+    color: AppColors.dark,
+  );
+  static const TextStyle bodyText9dark = TextStyle(
+    fontSize: 9,
     fontWeight: FontWeight.w600,
     color: AppColors.dark,
   );

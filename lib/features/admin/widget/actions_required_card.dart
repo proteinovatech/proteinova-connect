@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 class ActionsRequiredCard extends StatelessWidget {
   const ActionsRequiredCard({super.key});
@@ -9,73 +11,75 @@ class ActionsRequiredCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.grey.shade300,
-        ),
+
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.09),
+            blurRadius: 12,
+            spreadRadius: 1,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           /// TITLE
-           Row(
-             children: [
-               Expanded(
-                 child: Text(
+          Row(
+            children: [
+              Expanded(
+                child: Text(
                   "Actions Required",
-                  style: AppTextStyles.headingText20
-                           ),
-               ),
-                
-                 Text(
-                "3 Alerts",
-                style: AppTextStyles.redtext
-                         ),
+                  style: AppTextStyles.headingText16,
+                ),
+              ),
 
-             ],
-           ),
+              Text("3 Alerts", style: AppTextStyles.redtext),
+            ],
+          ),
 
-          const SizedBox(height: 16),
+          SizedBox(height: getHeight(context, 16)),
 
           /// ITEM 1
           _buildActionItem(
             title: "Low Stock Alert",
-            body:
-                "Egg trays are running low in Chennai warehouse.",
+            body: "Egg trays are running low in Chennai warehouse.",
             subtitle: "Needs immediate refill",
-            lineColor: Colors.red,
+            lineColor: AppColors.red,
+            context,
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: getHeight(context, 12)),
 
           /// ITEM 2
           _buildActionItem(
             title: "Pending Dispatch",
-            body:
-                "3 shipments are waiting for dispatch approval.",
+            body: "3 shipments are waiting for dispatch approval.",
             subtitle: "Pending since 4 hours",
-            lineColor: Colors.orange,
+            lineColor: AppColors.orange,
+            context,
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: getHeight(context, 12)),
 
           /// ITEM 3
           _buildActionItem(
             title: "Payment Due",
-            body:
-                "Supplier payment needs to be completed today.",
+            body: "Supplier payment needs to be completed today.",
             subtitle: "Due by 6:00 PM",
-            lineColor: Colors.blue,
+            lineColor: AppColors.blue,
+            context,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildActionItem({
+  Widget _buildActionItem(
+    BuildContext context, {
     required String title,
     required String body,
     required String subtitle,
@@ -90,11 +94,10 @@ class ActionsRequiredCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           /// LEFT LINE
           Container(
-            width: 5,
-            height: 110,
+            width: getWidth(context, 5),
+            height: getHeight(context, 110),
             decoration: BoxDecoration(
               color: lineColor,
               borderRadius: BorderRadius.circular(10),
@@ -105,17 +108,14 @@ class ActionsRequiredCard extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Row(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   /// ICON
                   Container(
-                    height: 38,
-                    width: 38,
+                    height: getHeight(context, 38),
+                    width: getWidth(context, 38),
                     decoration: BoxDecoration(
-                      color:
-                          lineColor.withOpacity(0.12),
+                      color: lineColor.withOpacity(0.12),
                       shape: BoxShape.circle,
                     ),
 
@@ -128,33 +128,22 @@ class ActionsRequiredCard extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(width: 12),
+                  SizedBox(width: getWidth(context, 12)),
 
                   /// TEXTS
                   Expanded(
                     child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text(title, style: AppTextStyles.bodyText14dark),
 
-                        Text(
-                          title,
-                          style: AppTextStyles.bodyText14dark
-                        ),
+                        SizedBox(height: getHeight(context, 6)),
 
-                        const SizedBox(height: 6),
+                        Text(body, style: AppTextStyles.bodyText14),
 
-                        Text(
-                          body,
-                          style: AppTextStyles.bodyText14
-                        ),
+                        SizedBox(height: getHeight(context, 8)),
 
-                        const SizedBox(height: 8),
-
-                        Text(
-                          subtitle,
-                          style: AppTextStyles.blueText2
-                        ),
+                        Text(subtitle, style: AppTextStyles.blueText2),
                       ],
                     ),
                   ),

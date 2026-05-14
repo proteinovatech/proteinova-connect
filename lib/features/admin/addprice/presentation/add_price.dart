@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/data/services/dashboard_service.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_addprice_skeleton_loader.dart';
 import 'package:proteinova_connect/services/offer_service.dart';
@@ -147,13 +148,11 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
 
         title: Text(
           "Pricing Matrix",
-          style: AppTextStyles.headingText25.copyWith(
-            fontSize: isSmall ? 22 : 26,
+          style: AppTextStyles.headingText16.copyWith(
+            fontSize: isSmall ? 22 : 22,
             color: Colors.black,
           ),
         ),
-
-       
       ),
 
       body: isLoading || isRefreshing
@@ -206,21 +205,19 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                                         children: [
                                           Text(
                                             "Add Price",
-                                            style: AppTextStyles.headingText22
+                                            style: AppTextStyles.headingText16
                                                 .copyWith(
                                                   fontSize: isSmall ? 18 : 22,
                                                 ),
                                           ),
 
-                                          const SizedBox(height: 6),
+                                          SizedBox(
+                                            height: getHeight(context, 6),
+                                          ),
 
                                           Text(
                                             "${products.length} Active Products",
-                                            style: AppTextStyles.bodyText14
-                                                .copyWith(
-                                                  color: Colors.grey.shade600,
-                                                  fontSize: isSmall ? 13 : 15,
-                                                ),
+                                            style: AppTextStyles.bodyText13,
                                           ),
                                         ],
                                       ),
@@ -237,8 +234,10 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                                               ? null
                                               : _fetchCurrentPrices,
                                           child: Container(
-                                            width: isSmall ? 150 : 190,
-                                            height: 52,
+                                            width: isSmall
+                                                ? getWidth(context, 120)
+                                                : getWidth(context, 160),
+                                            height: getHeight(context, 52),
 
                                             decoration: BoxDecoration(
                                               color: Colors.white,
@@ -278,7 +277,9 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                                           ),
                                         ),
 
-                                        const SizedBox(height: 12),
+                                        SizedBox(
+                                          height: getHeight(context, 12),
+                                        ),
 
                                         /// UPDATE BUTTON
                                         GestureDetector(
@@ -286,9 +287,10 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                                               ? null
                                               : _bulkUpdatePrices,
                                           child: Container(
-                                            width: isSmall ? 150 : 190,
-                                            height: 52,
-
+                                            width: isSmall
+                                                ? getWidth(context, 120)
+                                                : getWidth(context, 160),
+                                            height: getHeight(context, 52),
                                             decoration: BoxDecoration(
                                               color: const Color(0xff071A52),
 
@@ -345,13 +347,16 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                             ),
                           ),
 
-                          Divider(color: Colors.grey.shade200, height: 1),
+                          Divider(
+                            color: Colors.grey.shade200,
+                            height: getHeight(context, 1),
+                          ),
 
                           /// TABLE HEADER
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 16,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: getWidth(context, 14),
+                              vertical: getHeight(context, 12),
                             ),
 
                             color: const Color(0xffFAFAFA),
@@ -372,7 +377,7 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                                 ),
 
                                 /// NCC RATE
-                                const SizedBox(width: 8),
+                                SizedBox(width: getWidth(context, 1)),
 
                                 /// RATE PER EGG
                                 Expanded(
@@ -396,12 +401,16 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                           /// PRODUCT LIST
                           if (isLoading)
                             Padding(
-                              padding: EdgeInsets.symmetric(vertical: 24),
+                              padding: EdgeInsets.symmetric(
+                                vertical: getHeight(context, 24),
+                              ),
                               child: Center(child: CircularProgressIndicator()),
                             )
                           else if (products.isEmpty)
                             Padding(
-                              padding: EdgeInsets.symmetric(vertical: 24),
+                              padding: EdgeInsets.symmetric(
+                                vertical: getHeight(context, 24),
+                              ),
                               child: Center(
                                 child: Text(
                                   "No product categories found in DB",
@@ -423,9 +432,9 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                                 final item = products[index];
 
                                 return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 22,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: getWidth(context, 14),
+                                    vertical: getHeight(context, 14),
                                   ),
 
                                   decoration: BoxDecoration(
@@ -442,6 +451,7 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
 
                                     children: [
                                       /// PRODUCT NAME
+                                      SizedBox(width: getWidth(context, 10)),
                                       Expanded(
                                         flex: 3,
 
@@ -454,9 +464,7 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                                         ),
                                       ),
 
-                                      const SizedBox(width: 8),
-
-                                      const SizedBox(width: 8),
+                                      SizedBox(width: getWidth(context, 8)),
 
                                       /// RATE PER EGG
                                       Expanded(
@@ -465,6 +473,7 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                                         child: priceField(
                                           controller: item["egg"],
                                           isSmall: isSmall,
+                                          context,
                                         ),
                                       ),
                                     ],
@@ -476,11 +485,14 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: getHeight(context, 22)),
 
                     /// INFO BOX
                     Container(
-                      width: double.infinity,
+                      width: getWidth(context, 300),
+
+                      height: getHeight(context, 55),
+
                       padding: const EdgeInsets.all(18),
 
                       decoration: BoxDecoration(
@@ -501,7 +513,7 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                             size: isSmall ? 24 : 30,
                           ),
 
-                          const SizedBox(width: 14),
+                          SizedBox(width: getWidth(context, 14)),
 
                           Expanded(
                             child: Text(
@@ -516,7 +528,7 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 30),
+                    SizedBox(height: getHeight(context, 30)),
                   ],
                 ),
               ),
@@ -525,14 +537,15 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
   }
 
   /// PRICE FIELD
-  Widget priceField({
+  Widget priceField(
+    BuildContext context, {
     required TextEditingController controller,
     required bool isSmall,
   }) {
     return Container(
-      height: 52,
+      height: getHeight(context, 45),
 
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      padding: EdgeInsets.symmetric(horizontal: getWidth(context, 10)),
 
       decoration: BoxDecoration(
         color: Colors.white,
@@ -551,13 +564,13 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
             ),
           ),
 
-          const SizedBox(width: 4),
+          SizedBox(width: getWidth(context, 4)),
 
           Expanded(
             child: TextField(
               controller: controller,
 
-              textAlign: TextAlign.right,
+              textAlign: TextAlign.center,
 
               keyboardType: TextInputType.number,
 

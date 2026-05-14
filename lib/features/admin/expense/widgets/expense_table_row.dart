@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 import '../models/expense_model.dart';
 
@@ -37,7 +38,10 @@ class ExpenseTableRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      padding: EdgeInsets.symmetric(
+        horizontal: getWidth(context, 14),
+        vertical: getHeight(context, 14),
+      ),
 
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

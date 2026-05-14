@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_bloc.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_event.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_state.dart';
@@ -206,7 +207,7 @@ Align(
 
              Text("Origin Location",style: AppTextStyles.buttonText16,),
     
-          const SizedBox(height: 6),
+          SizedBox(height: getHeight(context, 6)),
 
           
           Container(
@@ -247,7 +248,7 @@ Align(
            SizedBox(height: size.height*0.02),
 
              Text("Broker Name",style: AppTextStyles.buttonText16,),
-             const SizedBox(height: 6),
+             SizedBox(height: getHeight(context, 6)),
 
              Container(  
              padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -267,7 +268,7 @@ Align(
                SizedBox(height: size.height*0.02),
 
              Text("Broker Contact Number",style: AppTextStyles.buttonText16,),
-             const SizedBox(height: 6),
+             SizedBox(height: getHeight(context, 6)),
 
              Container(  
              padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -288,7 +289,7 @@ Align(
             SizedBox(height: size.height*0.02),
              const Text("Delivery Date",
                 style: AppTextStyles.buttonText16),
-            const SizedBox(height: 6),
+            SizedBox(height: getHeight(context, 6)),
 
             InkWell(
               onTap: () async {
@@ -317,7 +318,7 @@ Align(
                   children: [
                     SizedBox(width: size.width*0.02,),
                     Icon(Icons.calendar_today_outlined,color:AppColors.textSecondary),
-                    SizedBox(width: 20),
+                    SizedBox(width: getWidth(context, 20)),
                     Text(
                       deliveryDate == null
                           ? "Select Delivery Date"

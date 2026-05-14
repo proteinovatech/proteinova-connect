@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 class InfoTile extends StatelessWidget {
   final IconData icon;
@@ -12,7 +13,7 @@ class InfoTile extends StatelessWidget {
       children: [
         Icon(icon, size: 18, color: const Color(0xff9CA3AF)),
 
-        const SizedBox(width: 8),
+        SizedBox(width: getWidth(context, 8)),
 
         Expanded(
           child: Text(

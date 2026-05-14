@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 Widget dispatchCard({
   required String id,
@@ -9,6 +10,7 @@ Widget dispatchCard({
   required String qty,
   required String status,
   required Color statusColor,
+  required BuildContext context,
 }) {
   return Container(
     width: double.infinity,
@@ -17,10 +19,11 @@ Widget dispatchCard({
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: Colors.grey.shade200),
+      border: Border.all(color: Colors.grey.shade300),
     ),
     child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         /// LEFT SIDE
         Column(
@@ -37,14 +40,14 @@ Widget dispatchCard({
                 size: 20,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: getHeight(context, 8)),
             Text(
               id,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             ),
           ],
         ),
-        const SizedBox(width: 14),
+        SizedBox(width: getWidth(context, 10)),
 
         /// CENTER & RIGHT DETAILS
         Expanded(
@@ -57,14 +60,14 @@ Widget dispatchCard({
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    infoRow(Icons.calendar_today, "Date", date),
-                    const SizedBox(height: 12),
-                    infoRow(Icons.location_on, "Destination Branch", branch),
-                    const SizedBox(height: 12),
+                    infoRow(Icons.calendar_today, "Date", date,context,),
+                    SizedBox(height: getHeight(context, 8)),
+                    infoRow(Icons.location_on, "Destination Branch", branch,context,),
+                    SizedBox(height: getHeight(context, 8)),
                     infoRow(
                       Icons.local_shipping,
                       "Vehicle & Driver",
-                      vehicle,
+                      vehicle,context,
                       subtitle: driver,
                     ),
                   ],
@@ -73,9 +76,9 @@ Widget dispatchCard({
 
               /// VERTICAL DIVIDER
               Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12),
-                width: 1,
-                height: 100,
+                margin: EdgeInsets.symmetric(horizontal: getWidth(context, 10)),
+                width: getWidth(context, 1),
+                height: getHeight(context, 120),
                 color: Colors.grey.shade200,
               ),
 
@@ -85,8 +88,9 @@ Widget dispatchCard({
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    infoRow(Icons.inventory_2_outlined, "Total Qty", qty),
-                    const SizedBox(height: 18),
+                    SizedBox(height: getHeight(context, 6)),
+                    infoRow(Icons.inventory_2_outlined, "Total Qty", qty,context,),
+                    SizedBox(height: getHeight(context, 10)),
                     Row(
                       children: [
                         Container(
@@ -101,7 +105,7 @@ Widget dispatchCard({
                             color: statusColor,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: getWidth(context, 6)),
                         const Expanded(
                           child: Text(
                             "Status",
@@ -111,11 +115,11 @@ Widget dispatchCard({
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: getHeight(context, 8)),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 7,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: getWidth(context, 12),
+                        vertical: getHeight(context, 7),
                       ),
                       decoration: BoxDecoration(
                         color: statusColor.withOpacity(0.10),
@@ -137,19 +141,18 @@ Widget dispatchCard({
           ),
         ),
 
-        const SizedBox(width: 4),
-
+        //const SizedBox(width: 4),
         /// RIGHT ARROW
-        const Padding(
-          padding: EdgeInsets.only(top: 45),
-          child: Icon(Icons.chevron_right, size: 20, color: Colors.grey),
-        ),
+        // const Padding(
+        //   padding: EdgeInsets.only(top: 45),
+        //   child: Icon(Icons.chevron_right, size: 20, color: Colors.grey),
+        // ),
       ],
     ),
   );
 }
 
-Widget infoRow(IconData icon, String label, String value, {String? subtitle}) {
+Widget infoRow(IconData icon, String label, String value,BuildContext context, {String? subtitle}) {
   return Row(
     crossAxisAlignment: CrossAxisAlignment.start,
 
@@ -163,7 +166,7 @@ Widget infoRow(IconData icon, String label, String value, {String? subtitle}) {
         child: Icon(icon, size: 14),
       ),
 
-      const SizedBox(width: 8),
+       SizedBox(width: getWidth(context, 8)),
 
       Expanded(
         child: Column(
@@ -173,7 +176,7 @@ Widget infoRow(IconData icon, String label, String value, {String? subtitle}) {
               label,
               style: const TextStyle(color: Colors.grey, fontSize: 10),
             ),
-            const SizedBox(height: 2),
+            SizedBox(height:getHeight(context, 2),),
             Text(
               value,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),

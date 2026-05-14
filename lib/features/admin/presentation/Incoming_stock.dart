@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/features/admin/presentation/receive_stockscreen.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/admin_incoming_stock_queue_skeleton_loader.dart';
 import 'package:proteinova_connect/features/admin/widget/incoming_widget.dart';
 import '../inventory/data/inventory_repository.dart';
 import '../inventory/models/inventory_model.dart';
@@ -382,301 +384,317 @@ class _IncomingStockState extends State<IncomingStock> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        body: Center(child: AdminIncomingStockQueueSkeletonLoader()),
+      );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              /// TOP BAR
-              Row(
-                children: [
-                  InkWell(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(
-                      Icons.arrow_back,
-                      size: 22,
-                      color: Color(0xff111827),
+      backgroundColor: AppColors.background,
+
+      body: RefreshIndicator(
+        onRefresh: _fetchData,
+
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+
+            padding: const EdgeInsets.all(12),
+
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+
+              children: [
+                /// TOP BAR
+                Row(
+                  children: [
+                    InkWell(
+                      onTap: () => Navigator.pop(context),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        size: 22,
+                        color: Color(0xff111827),
+                      ),
                     ),
+                    const SizedBox(width: 14),
+                    const Text(
+                      "Incoming Stock Queue",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 6),
+
+                Text(
+                  "Manage and receive incoming shipments from suppliers to update inventory.",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade700,
+                    height: 1.5,
                   ),
-                  const SizedBox(width: 14),
-                  const Text(
-                    "Incoming Stock Queue",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+
+                const SizedBox(height: 16),
+
+                /// CARDS
+                GestureDetector(
+                  onTap: () {
+                    final today = DateTime.now().toLocal();
+                    final todayStr =
+                        "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+                    _showShipmentModal(
+                      "Expected Today",
+                      purchases
+                          .where(
+                            (p) => p.arrivalDate.split('T').first == todayStr,
+                          )
+                          .toList(),
+                    );
+                  },
+                  child: buildOverviewCard(
+                    title: "Expected Today",
+                    value: "$_expectedTodayShipments Shipments",
+                    subtitle: "Totaling $_expectedTodayEggs eggs",
+                    icon: Icons.event_available_outlined,
+                    iconBg: const Color(0xFFF2F2F2),
                   ),
-                ],
-              ),
-
-              const SizedBox(height: 6),
-
-              Text(
-                "Manage and receive incoming shipments from suppliers to update inventory.",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade700,
-                  height: 1.5,
                 ),
-              ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 14),
 
-              /// CARDS
-              GestureDetector(
-                onTap: () {
-                  final today = DateTime.now().toLocal();
-                  final todayStr =
-                      "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
-                  _showShipmentModal(
-                    "Expected Today",
-                    purchases
-                        .where(
-                          (p) => p.arrivalDate.split('T').first == todayStr,
-                        )
-                        .toList(),
-                  );
-                },
-                child: buildOverviewCard(
-                  title: "Expected Today",
-                  value: "$_expectedTodayShipments Shipments",
-                  subtitle: "Totaling $_expectedTodayEggs eggs",
-                  icon: Icons.event_available_outlined,
-                  iconBg: const Color(0xFFF2F2F2),
+                GestureDetector(
+                  onTap: () {
+                    _showShipmentModal(
+                      "Ready for Unloading",
+                      purchases.where((p) {
+                        final status = p.status.toUpperCase();
+                        return status == "ARRIVAL" ||
+                            status == "READY_FOR_UNLOADING";
+                      }).toList(),
+                    );
+                  },
+                  child: buildOverviewCard(
+                    title: "Ready for Unloading",
+                    value: "$_readyForUnloadingShipments Shipments",
+                    subtitle: "Requires immediate actions",
+                    icon: Icons.local_shipping_outlined,
+                    iconBg: Colors.green,
+                    iconColor: Colors.white,
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 14),
+                const SizedBox(height: 14),
 
-              GestureDetector(
-                onTap: () {
-                  _showShipmentModal(
-                    "Ready for Unloading",
-                    purchases.where((p) {
-                      final status = p.status.toUpperCase();
-                      return status == "ARRIVAL" ||
-                          status == "READY_FOR_UNLOADING";
-                    }).toList(),
-                  );
-                },
-                child: buildOverviewCard(
-                  title: "Ready for Unloading",
-                  value: "$_readyForUnloadingShipments Shipments",
-                  subtitle: "Requires immediate actions",
-                  icon: Icons.local_shipping_outlined,
-                  iconBg: Colors.green,
-                  iconColor: Colors.white,
+                GestureDetector(
+                  onTap: () {
+                    final today = DateTime.now().toLocal();
+                    final todayStr =
+                        "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+                    _showShipmentModal(
+                      "Upcoming Shipments",
+                      purchases.where((p) {
+                        if (p.arrivalDate.isEmpty) return false;
+                        final arrivalStr = p.arrivalDate.split('T').first;
+                        return arrivalStr.compareTo(todayStr) > 0;
+                      }).toList(),
+                    );
+                  },
+                  child: buildOverviewCard(
+                    title: "Upcoming Shipments",
+                    value: "$_upcomingShipments Shipments",
+                    subtitle: "Next scheduled deliveries",
+                    icon: Icons.send_outlined,
+                    iconBg: Colors.blue,
+                    iconColor: Colors.white,
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 14),
+                const SizedBox(height: 16),
 
-              GestureDetector(
-                onTap: () {
-                  final today = DateTime.now().toLocal();
-                  final todayStr =
-                      "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
-                  _showShipmentModal(
-                    "Upcoming Shipments",
-                    purchases.where((p) {
-                      if (p.arrivalDate.isEmpty) return false;
-                      final arrivalStr = p.arrivalDate.split('T').first;
-                      return arrivalStr.compareTo(todayStr) > 0;
-                    }).toList(),
-                  );
-                },
-                child: buildOverviewCard(
-                  title: "Upcoming Shipments",
-                  value: "$_upcomingShipments Shipments",
-                  subtitle: "Next scheduled deliveries",
-                  icon: Icons.send_outlined,
-                  iconBg: Colors.blue,
-                  iconColor: Colors.white,
-                ),
-              ),
+                /// SEARCH BAR
+                // Container(
+                //   padding: const EdgeInsets.symmetric(horizontal: 12),
+                //   decoration: BoxDecoration(
+                //     color: Colors.white,
+                //     borderRadius: BorderRadius.circular(12),
+                //     border: Border.all(color: Colors.grey.shade300),
+                //   ),
+                //   child: TextField(
+                //     style: const TextStyle(fontSize: 13),
+                //     onChanged: (value) {
+                //       setState(() {
+                //         searchQuery = value;
+                //       });
+                //     },
+                //     decoration: const InputDecoration(
+                //       border: InputBorder.none,
+                //       icon: Icon(Icons.search, size: 18),
+                //       hintText: "Search PO, Supplier, or Product...",
+                //       hintStyle: TextStyle(fontSize: 12),
+                //     ),
+                //   ),
+                // ),
 
-              const SizedBox(height: 16),
+                /// FILTERS
+                Row(
+                  children: [
+                    Expanded(
+                      child: buildFilterBox(
+                        icon: Icons.calendar_month_outlined,
+                        text: selectedStatus == "All Status"
+                            ? "Status: All"
+                            : "Status: $selectedStatus",
+                        onTap: () {
+                          final statuses = [
+                            "All Status",
+                            "Expected Today",
+                            "Ready for Unloading",
+                            "Purchased",
+                            "In Transit",
+                            "Received",
+                            "Delayed",
+                          ];
+                          _showFilterMenu(context, statuses, selectedStatus, (
+                            val,
+                          ) {
+                            setState(() => selectedStatus = val);
+                          });
+                        },
+                      ),
+                    ),
 
-              /// SEARCH BAR
-              // Container(
-              //   padding: const EdgeInsets.symmetric(horizontal: 12),
-              //   decoration: BoxDecoration(
-              //     color: Colors.white,
-              //     borderRadius: BorderRadius.circular(12),
-              //     border: Border.all(color: Colors.grey.shade300),
-              //   ),
-              //   child: TextField(
-              //     style: const TextStyle(fontSize: 13),
-              //     onChanged: (value) {
-              //       setState(() {
-              //         searchQuery = value;
-              //       });
-              //     },
-              //     decoration: const InputDecoration(
-              //       border: InputBorder.none,
-              //       icon: Icon(Icons.search, size: 18),
-              //       hintText: "Search PO, Supplier, or Product...",
-              //       hintStyle: TextStyle(fontSize: 12),
-              //     ),
-              //   ),
-              // ),
+                    const SizedBox(width: 6),
 
-              /// FILTERS
-              Row(
-                children: [
-                  Expanded(
-                    child: buildFilterBox(
-                      icon: Icons.calendar_month_outlined,
-                      text: selectedStatus == "All Status"
-                          ? "Status: All"
-                          : "Status: $selectedStatus",
+                    Expanded(
+                      child: buildFilterBox(
+                        icon: Icons.home_outlined,
+                        text: selectedSupplier,
+                        onTap: () {
+                          final suppliers = [
+                            "All Suppliers",
+                            ...purchases
+                                .map((p) => p.supplierName)
+                                .toSet()
+                                .toList(),
+                          ];
+                          _showFilterMenu(
+                            context,
+                            suppliers,
+                            selectedSupplier,
+                            (val) {
+                              setState(() => selectedSupplier = val);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(width: 6),
+
+                    InkWell(
                       onTap: () {
-                        final statuses = [
-                          "All Status",
-                          "Expected Today",
-                          "Ready for Unloading",
-                          "Purchased",
-                          "In Transit",
-                          "Received",
-                          "Delayed",
-                        ];
-                        _showFilterMenu(context, statuses, selectedStatus, (
-                          val,
-                        ) {
-                          setState(() => selectedStatus = val);
+                        setState(() {
+                          selectedStatus = "All Status";
+                          selectedSupplier = "All Suppliers";
+                          searchQuery = "";
                         });
                       },
-                    ),
-                  ),
-
-                  const SizedBox(width: 6),
-
-                  Expanded(
-                    child: buildFilterBox(
-                      icon: Icons.home_outlined,
-                      text: selectedSupplier,
-                      onTap: () {
-                        final suppliers = [
-                          "All Suppliers",
-                          ...purchases
-                              .map((p) => p.supplierName)
-                              .toSet()
-                              .toList(),
-                        ];
-                        _showFilterMenu(context, suppliers, selectedSupplier, (
-                          val,
-                        ) {
-                          setState(() => selectedSupplier = val);
-                        });
-                      },
-                    ),
-                  ),
-
-                  const SizedBox(width: 6),
-
-                  InkWell(
-                    onTap: () {
-                      setState(() {
-                        selectedStatus = "All Status";
-                        selectedSupplier = "All Suppliers";
-                        searchQuery = "";
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey.shade300),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: const Icon(Icons.tune, size: 18),
                       ),
-                      child: const Icon(Icons.tune, size: 18),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              /// TABLE HEADER
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Container(
-                  width: 650,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Column(
-                    children: [
-                      /// HEADER
-                      const Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: Text(
-                              "PURCHASE RECORD",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 11,
+                /// TABLE HEADER
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Container(
+                    width: 650,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Column(
+                      children: [
+                        /// HEADER
+                        const Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Text(
+                                "PURCHASE RECORD",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
                               ),
                             ),
-                          ),
 
-                          Expanded(
-                            flex: 3,
-                            child: Text(
-                              "SUPPLIER DETAILS",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 11,
+                            Expanded(
+                              flex: 3,
+                              child: Text(
+                                "SUPPLIER DETAILS",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
                               ),
                             ),
-                          ),
 
-                          Expanded(
-                            flex: 3,
-                            child: Text(
-                              "PRODUCT & QUANTITY",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 11,
+                            Expanded(
+                              flex: 3,
+                              child: Text(
+                                "PRODUCT & QUANTITY",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
                               ),
                             ),
-                          ),
 
-                          Expanded(
-                            flex: 2,
-                            child: Text(
-                              "STATUS",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 11,
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                "STATUS",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
                               ),
                             ),
-                          ),
 
-                          Expanded(
-                            flex: 1,
-                            child: Text(
-                              "ACTION",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 11,
+                            Expanded(
+                              flex: 1,
+                              child: Text(
+                                "ACTION",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
 
-                      const SizedBox(height: 10),
+                        const SizedBox(height: 10),
 
                       /// ROWS
                       ..._filteredPurchases.map(
@@ -689,29 +707,26 @@ class _IncomingStockState extends State<IncomingStock> {
                           type: purchase.productName,
                           status: purchase.status,
                           isReceive:
-                              purchase.status.toUpperCase() != "RECEIVED",
-                          onReceive: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    ReceiveStockScreen(id: purchase.id),
-                              ),
-                            );
-                          },
+                              purchase.status.toUpperCase() ==
+                                  "READY FOR UNLOADING" ||
+                              purchase.status.toUpperCase() == "ARRIVAL",
+                          onReceive: () => _receiveStock(purchase.id),
                         ),
                       ),
 
-                      if (_filteredPurchases.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.all(20),
-                          child: Text("No records found matching your search"),
-                        ),
-                    ],
+                        if (_filteredPurchases.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.all(20),
+                            child: Text(
+                              "No records found matching your search",
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
