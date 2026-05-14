@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/supplier_request_model.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/services/supplier_service.dart';
 
@@ -302,23 +303,23 @@ class _AddSupplierPopupState extends State<AddSupplierPopup> {
                         const SizedBox(height: 10),
 
                         TextField(
-                          controller: phoneController,
-                          decoration: InputDecoration(
-                            hintText:
-                                "+91 9876543210",
-                            border:
-                                OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(
-                                      16),
-                            ),
-                            contentPadding:
-                                const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 18,
-                            ),
-                          ),
-                        ),
+  controller: phoneController,
+  keyboardType: TextInputType.number,
+  inputFormatters: [
+    FilteringTextInputFormatter.digitsOnly,
+    LengthLimitingTextInputFormatter(10),
+  ],
+  decoration: InputDecoration(
+    hintText: "+91 9876543210",
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+    ),
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 18,
+    ),
+  ),
+),
                       ],
                     ),
                   ),

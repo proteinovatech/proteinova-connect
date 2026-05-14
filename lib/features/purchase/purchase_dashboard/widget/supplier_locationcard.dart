@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:proteinova_connect/core/theme/app_colors.dart';
@@ -279,6 +280,10 @@ Align(
             ),child: TextField(
                controller: brokerNumController,
                  keyboardType: TextInputType.number, 
+                  inputFormatters: [
+    FilteringTextInputFormatter.digitsOnly,
+    LengthLimitingTextInputFormatter(10),
+  ],
     decoration: InputDecoration(
       prefixIcon: Icon(Icons.phone_outlined,color:AppColors.light,),
       hintText: "Enter broker number",

@@ -1,5 +1,4 @@
 class SupplierRequestModel {
-
   final String supplierCompanyName;
   final String supplierName;
   final String email;
@@ -16,15 +15,49 @@ class SupplierRequestModel {
     required this.status,
   });
 
-  Map<String, dynamic> toJson() {
+  factory SupplierRequestModel.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return SupplierRequestModel(
+      supplierCompanyName:
+          json["supplier_company_name"] ?? "",
 
+      supplierName:
+          json["supplier_name"] ?? "",
+
+      email:
+          json["email"] ?? "",
+
+      phoneNumber:
+          json["phone_number"] ?? "",
+
+      supplierLocation:
+          json["supplier_location"] ?? "",
+
+      status:
+          json["status"] ?? "",
+    );
+  }
+
+  Map<String, dynamic> toJson() {
     return {
-      "supplier_company_name": supplierCompanyName,
-      "supplier_name": supplierName,
-      "email": email,
-      "phone_number": phoneNumber,
-      "supplier_location": supplierLocation,
-      "status": status,
+      "supplier_company_name":
+          supplierCompanyName,
+
+      "supplier_name":
+          supplierName,
+
+      "email":
+          email,
+
+      "phone_number":
+          phoneNumber,
+
+      "supplier_location":
+          supplierLocation,
+
+      "status":
+          status,
     };
   }
 }

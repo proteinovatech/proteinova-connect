@@ -27,13 +27,32 @@ class SupplierService {
     }
   }
 
-  /// GET SUPPLIERS
- // Future<List<dynamic>> getSuppliers() async {
+ /// GET SUPPLIERS
+Future<List<SupplierRequestModel>>
+    getSuppliers() async {
+  try {
+    final response = await dio.get(
+      "/api/getSupplier",
+    );
 
-    //final response = await dio.get(
-    //  "/api/supplier",
-    //);
+    List<dynamic> data = response.data['data'];
 
-   // return response.data;
-  //}
+    return data
+        .map(
+          (e) => SupplierRequestModel.fromJson(
+            e as Map<String, dynamic>,
+          ),
+        )
+        .toList();
+  } on DioException catch (e) {
+
+  print("STATUS CODE: ${e.response?.statusCode}");
+
+  print("RESPONSE DATA: ${e.response?.data}");
+
+  print("ERROR: $e");
+
+  rethrow;
+}
+} 
 }
