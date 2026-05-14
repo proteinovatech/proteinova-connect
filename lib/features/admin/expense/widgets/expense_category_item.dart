@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 class ExpenseCategoryItem extends StatelessWidget {
   final String title;
@@ -18,8 +19,8 @@ class ExpenseCategoryItem extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 58,
-          height: 58,
+          width: getWidth(context, 44),
+          height: getHeight(context, 44),
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(16),
@@ -27,14 +28,14 @@ class ExpenseCategoryItem extends StatelessWidget {
           child: Icon(icon),
         ),
 
-        const SizedBox(height: 10),
+        SizedBox(height: getHeight(context, 10)),
 
         Text(
           title,
           textAlign: TextAlign.center,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
         ),
       ],
     );

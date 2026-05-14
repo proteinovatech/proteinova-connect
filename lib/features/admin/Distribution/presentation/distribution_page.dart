@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/Distribution/presentation/dispatch_planning_page.dart';
 import 'package:proteinova_connect/features/admin/Distribution/widget/dispatchcard_widget.dart';
 import 'package:proteinova_connect/features/admin/Distribution/widget/statcard_widget.dart';
@@ -73,20 +74,21 @@ class _DistributionPageState extends State<DistributionPage> {
         elevation: 0,
         scrolledUnderElevation: 0,
         automaticallyImplyLeading: false,
-        toolbarHeight: 90,
+        toolbarHeight: getHeight(context, 65),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
               "Distribution Dashboard",
-              style: AppTextStyles.headingText22,
+              style: AppTextStyles.headingText21,
             ),
-            const SizedBox(height: 4),
-            Text(
-              "Monitor and manage all dispatches",
-              style: AppTextStyles.bodyText14,
-            ),
+            SizedBox(height: getHeight(context, 4)),
+            // Text(
+            //   "Monitor and manage all dispatches",
+            //   style: AppTextStyles.bodyText14,
+            // ),
+            //SizedBox(height: getHeight(context, 4)),
           ],
         ),
         actions: [
@@ -104,9 +106,9 @@ class _DistributionPageState extends State<DistributionPage> {
                 });
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
+                padding: EdgeInsets.symmetric(
+                  horizontal: getWidth(context, 10),
+                  vertical: getHeight(context, 10),
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.amber500,
@@ -151,7 +153,7 @@ class _DistributionPageState extends State<DistributionPage> {
                             context: context,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: getWidth(context, 12)),
                         Expanded(
                           child: statCard(
                             icon: Icons.send,
@@ -164,7 +166,7 @@ class _DistributionPageState extends State<DistributionPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: getHeight(context, 12)),
                     Row(
                       children: [
                         Expanded(
@@ -177,7 +179,7 @@ class _DistributionPageState extends State<DistributionPage> {
                             context: context,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: getWidth(context, 12)),
                         Expanded(
                           child: statCard(
                             icon: Icons.inventory_2_outlined,
@@ -190,7 +192,7 @@ class _DistributionPageState extends State<DistributionPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 22),
+                    SizedBox(height: getHeight(context, 14)),
 
                     /// DISPATCH SECTION
                     Container(
@@ -202,7 +204,7 @@ class _DistributionPageState extends State<DistributionPage> {
                         boxShadow: [
                           BoxShadow(
                             blurRadius: 10,
-                            color: AppColors.textPrimary.withOpacity(0.03),
+                            color: AppColors.textPrimary.withOpacity(0.09),
                             offset: const Offset(0, 4),
                           ),
                         ],
@@ -212,18 +214,18 @@ class _DistributionPageState extends State<DistributionPage> {
                         children: [
                           const Text(
                             "Recent & Planned Dispatches",
-                            style: AppTextStyles.headingText20,
+                            style: AppTextStyles.headingTextbold19,
                           ),
-                          const SizedBox(height: 18),
+                          SizedBox(height: getHeight(context, 18)),
 
                           /// SEARCH + FILTER
                           Row(
                             children: [
                               Expanded(
                                 child: Container(
-                                  height: 48,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
+                                  height: getHeight(context, 40),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: getWidth(context, 12),
                                   ),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(14),
@@ -236,7 +238,7 @@ class _DistributionPageState extends State<DistributionPage> {
                                         color: Colors.grey,
                                         size: 20,
                                       ),
-                                      const SizedBox(width: 10),
+                                      SizedBox(width: getWidth(context, 10)),
                                       Expanded(
                                         child: TextField(
                                           controller: _searchController,
@@ -255,11 +257,11 @@ class _DistributionPageState extends State<DistributionPage> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 10),
+                              SizedBox(width: getWidth(context, 10)),
                               Container(
-                                height: 48,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
+                                height: getHeight(context, 40),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getWidth(context, 14),
                                 ),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(14),
@@ -272,11 +274,11 @@ class _DistributionPageState extends State<DistributionPage> {
                                     value: _selectedStatus.isEmpty
                                         ? null
                                         : _selectedStatus,
-                                    hint: const Row(
+                                    hint: Row(
                                       children: [
-                                        Icon(Icons.tune, size: 18),
-                                        SizedBox(width: 6),
-                                        Text(
+                                        const Icon(Icons.tune, size: 18),
+                                        SizedBox(width: getWidth(context, 6)),
+                                        const Text(
                                           "Filter",
                                           style: TextStyle(
                                             fontSize: 13,
@@ -325,14 +327,16 @@ class _DistributionPageState extends State<DistributionPage> {
                             ],
                           ),
 
-                          const SizedBox(height: 20),
+                          SizedBox(height: getHeight(context, 15)),
 
                           /// DISPATCH LIST
                           if (dispatches.isEmpty)
-                            const Center(
+                            Center(
                               child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: 40),
-                                child: Text("No dispatches found"),
+                                padding: EdgeInsets.symmetric(
+                                  vertical: getHeight(context, 40),
+                                ),
+                                child: const Text("No dispatches found"),
                               ),
                             )
                           else
@@ -369,11 +373,12 @@ class _DistributionPageState extends State<DistributionPage> {
                                     dispatch['status']?.toString() ?? "PENDING",
                                 statusColor: _getStatusColor(
                                   dispatch['status']?.toString() ?? "PENDING",
-                                ),
+                                  
+                                ), context: context,
                               );
                             }),
 
-                          const SizedBox(height: 20),
+                          SizedBox(height: getHeight(context, 20)),
 
                           /// PAGINATION
                           if (pagination != null)
@@ -397,10 +402,10 @@ class _DistributionPageState extends State<DistributionPage> {
                                             }
                                           : null,
                                     ),
-                                    const SizedBox(width: 8),
+                                    SizedBox(width: getWidth(context, 8)),
                                     Container(
-                                      height: 38,
-                                      width: 38,
+                                      height: getHeight(context, 38),
+                                      width: getWidth(context, 38),
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(10),
                                         border: Border.all(color: Colors.blue),
@@ -415,7 +420,7 @@ class _DistributionPageState extends State<DistributionPage> {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
+                                    SizedBox(width: getWidth(context, 8)),
                                     IconButton(
                                       icon: const Icon(Icons.chevron_right),
                                       onPressed:
@@ -434,7 +439,7 @@ class _DistributionPageState extends State<DistributionPage> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: getHeight(context, 20)),
                   ],
                 ),
               ),

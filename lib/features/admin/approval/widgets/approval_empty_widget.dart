@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 class ApprovalEmptyWidget extends StatelessWidget {
   const ApprovalEmptyWidget({super.key});
@@ -9,7 +10,6 @@ class ApprovalEmptyWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-
           Icon(
             Icons.assignment_outlined,
             size: 120,
@@ -20,45 +20,34 @@ class ApprovalEmptyWidget extends StatelessWidget {
 
           const Text(
             "No approvals found",
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w700,
-            ),
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: getHeight(context, 12)),
 
           const Text(
             "No approvals found in this status.",
-            style: TextStyle(
-              fontSize: 18,
-              color: Color(0xff6B7280),
-            ),
+            style: TextStyle(fontSize: 13, color: Color(0xff6B7280)),
           ),
 
-          const SizedBox(height: 24),
+          SizedBox(height: getHeight(context, 20)),
 
           OutlinedButton.icon(
             style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 18,
+              padding: EdgeInsets.symmetric(
+                horizontal: getWidth(context, 24),
+                vertical: getHeight(context, 15),
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              side: const BorderSide(
-                color: Color(0xffE5E7EB),
-              ),
+              side: const BorderSide(color: Color(0xffE5E7EB)),
             ),
             onPressed: () {},
             icon: const Icon(Icons.filter_alt_outlined),
             label: const Text(
               "Change Status",
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.black,
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.black),
             ),
           ),
         ],

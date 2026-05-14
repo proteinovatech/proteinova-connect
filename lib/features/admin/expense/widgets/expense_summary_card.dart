@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 class ExpenseSummaryCard extends StatelessWidget {
   final String title;
@@ -27,49 +28,42 @@ class ExpenseSummaryCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: const Color(0xffE5E7EB),
-            ),
+            border: Border.all(color: const Color(0xffE5E7EB)),
           ),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-
                   Expanded(
                     child: Text(
                       title,
                       style: const TextStyle(
-                        fontSize: 15,
+                        fontSize: 13,
                         color: Color(0xff6B7280),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-
+                  SizedBox(width: getWidth(context, 4)),
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: iconBg,
-                      borderRadius:
-                          BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(icon),
+                    child: Icon(icon, size: 20),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 18),
+              SizedBox(height: getHeight(context, 18)),
 
               Text(
                 amount,
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: 20,
                   fontWeight: FontWeight.w700,
                 ),
               ),

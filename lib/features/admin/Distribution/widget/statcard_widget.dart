@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'dispatch_bottomsheet.dart';
 
 Widget statCard({
@@ -77,25 +78,24 @@ Widget statCard({
             ],
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: getHeight(context, 12)),
 
           Text(
             title,
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
 
-          const SizedBox(height: 10),
+          SizedBox(height: getHeight(context, 10)),
 
           Text(
             count,
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
-
-          const SizedBox(height: 6),
+          SizedBox(height: getHeight(context, 6)),
 
           Text(
             subtitle,
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 11),
           ),
         ],
       ),

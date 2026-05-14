@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/data/model/branch_model.dart';
 import 'package:proteinova_connect/features/admin/menu/branch_management/data/model/branch_form_data_model.dart';
 import 'package:proteinova_connect/features/admin/menu/branch_management/data/services/branch_service.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/admin_branch_management_skeleton_loader.dart';
 import 'package:proteinova_connect/features/branch/branch_details/widget/buildfield.dart';
 
 class AddBranchDetails extends StatefulWidget {
@@ -90,18 +92,18 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
   String? selectedManager;
   @override
   Widget build(BuildContext context) {
-    final Size size = MediaQuery.of(context).size;
+   
 
     return Scaffold(
-      backgroundColor: AppColors.background1,
+      backgroundColor: AppColors.white,
 
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: const AdminBranchManagementSkeletonLoader())
           : SafeArea(
               child: SingleChildScrollView(
                 padding: EdgeInsets.symmetric(
-                  horizontal: size.width * 0.05,
-                  vertical: 16,
+                  horizontal: getWidth(context, 18),
+                  vertical: getHeight(context, 16),
                 ),
 
                 child: Column(
@@ -124,7 +126,7 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                       ],
                     ),
 
-                    SizedBox(height: size.height * 0.02),
+                    SizedBox(height: getHeight(context, 2)),
 
                     Container(
                       width: double.infinity,
@@ -136,9 +138,10 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
 
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 8,
-                            spreadRadius: 2,
+                            color: Colors.black.withOpacity(0.09),
+                            blurRadius: 12,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
@@ -151,10 +154,10 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                             "Basic Information",
                             style: AppTextStyles.headingText20,
                           ),
-
+                          SizedBox(height: getHeight(context, 6)),
                           const Divider(),
 
-                          SizedBox(height: size.height * 0.01),
+                          SizedBox(height: getHeight(context, 12)),
 
                           Row(
                             children: [
@@ -163,13 +166,12 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     buildField("Branch name*"),
-                                    const SizedBox(height: 6),
-
+                                    SizedBox(height: getHeight(context, 6)),
                                     Container(
                                       width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 14,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: getWidth(context, 12),
+                                        vertical: getHeight(context, 14),
                                       ),
 
                                       decoration: BoxDecoration(
@@ -195,20 +197,19 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                 ),
                               ),
 
-                              const SizedBox(width: 16),
+                              SizedBox(width: getWidth(context, 16)),
 
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     buildField("Branch code*"),
-                                    const SizedBox(height: 6),
-
+                                    SizedBox(height: getHeight(context, 6)),
                                     Container(
                                       width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 14,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: getWidth(context, 12),
+                                        vertical: getHeight(context, 14),
                                       ),
 
                                       decoration: BoxDecoration(
@@ -236,7 +237,7 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                             ],
                           ),
 
-                          SizedBox(height: size.height * 0.02),
+                          SizedBox(height: getHeight(context, 12)),
 
                           Row(
                             children: [
@@ -246,13 +247,13 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                   children: [
                                     buildField("Region*"),
 
-                                    const SizedBox(height: 6),
+                                    SizedBox(height: getHeight(context, 6)),
 
                                     Container(
                                       width: double.infinity,
 
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: getWidth(context, 12),
                                       ),
 
                                       decoration: BoxDecoration(
@@ -299,18 +300,17 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 16),
+                              SizedBox(width: getWidth(context, 16)),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     buildField("Status*"),
-                                    const SizedBox(height: 6),
-
+                                    SizedBox(height: getHeight(context, 6)),
                                     Container(
                                       width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: getWidth(context, 12),
                                       ),
 
                                       decoration: BoxDecoration(
@@ -363,7 +363,7 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                       ),
                     ),
 
-                    SizedBox(height: size.height * 0.02),
+                    SizedBox(height: getHeight(context, 18)),
 
                     Container(
                       width: double.infinity,
@@ -375,9 +375,10 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
 
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 8,
-                            spreadRadius: 2,
+                            color: Colors.black.withOpacity(0.09),
+                            blurRadius: 12,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
@@ -390,23 +391,23 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                             "Location & Contact",
                             style: AppTextStyles.headingText20,
                           ),
-
+                          SizedBox(height: getHeight(context, 6)),
                           const Divider(),
 
-                          SizedBox(height: size.height * 0.01),
+                          SizedBox(height: getHeight(context, 12)),
 
                           Text(
                             "Address line1",
                             style: AppTextStyles.bodyText14dark,
                           ),
 
-                          SizedBox(height: size.height * 0.01),
+                          SizedBox(height: getHeight(context, 12)),
 
                           Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 14,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: getWidth(context, 12),
+                              vertical: getHeight(context, 14),
                             ),
 
                             decoration: BoxDecoration(
@@ -427,7 +428,7 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                             ),
                           ),
 
-                          SizedBox(height: size.height * 0.02),
+                          SizedBox(height: getHeight(context, 14)),
 
                           Row(
                             children: [
@@ -436,13 +437,13 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     buildField("City*"),
-                                    const SizedBox(height: 6),
+                                    SizedBox(height: getHeight(context, 6)),
 
                                     Container(
                                       width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 14,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: getWidth(context, 12),
+                                        vertical: getHeight(context, 5),
                                       ),
 
                                       decoration: BoxDecoration(
@@ -468,20 +469,20 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                 ),
                               ),
 
-                              const SizedBox(width: 16),
+                              SizedBox(width: getWidth(context, 6)),
 
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     buildField("Postal/Zip code*"),
-                                    const SizedBox(height: 6),
+                                    SizedBox(height: getHeight(context, 12)),
 
                                     Container(
                                       width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 14,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: getWidth(context, 12),
+                                        vertical: getHeight(context, 2),
                                       ),
 
                                       decoration: BoxDecoration(
@@ -502,11 +503,10 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
 
                                           border: InputBorder.none,
 
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                                horizontal: 12,
-                                                vertical: 14,
-                                              ),
+                                          contentPadding: EdgeInsets.symmetric(
+                                            horizontal: getWidth(context, 12),
+                                            vertical: getHeight(context, 14),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -516,7 +516,7 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                             ],
                           ),
 
-                          SizedBox(height: size.height * 0.02),
+                          SizedBox(height: getHeight(context, 12)),
 
                           Row(
                             children: [
@@ -525,13 +525,13 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     buildField("Contact number*"),
-                                    const SizedBox(height: 6),
+                                    SizedBox(height: getHeight(context, 12)),
 
                                     Container(
                                       width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 14,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: getWidth(context, 12),
+                                        vertical: getHeight(context, 6),
                                       ),
 
                                       decoration: BoxDecoration(
@@ -558,20 +558,20 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                 ),
                               ),
 
-                              const SizedBox(width: 16),
+                              SizedBox(width: getWidth(context, 4)),
 
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     buildField("Email Address*"),
-                                    const SizedBox(height: 6),
+                                    SizedBox(height: getHeight(context, 12)),
 
                                     Container(
                                       width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 14,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: getWidth(context, 12),
+                                        vertical: getHeight(context, 6),
                                       ),
 
                                       decoration: BoxDecoration(
@@ -602,7 +602,7 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                       ),
                     ),
 
-                    SizedBox(height: size.height * 0.02),
+                    SizedBox(height: getHeight(context, 12)),
 
                     Container(
                       width: double.infinity,
@@ -614,9 +614,10 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
 
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 8,
-                            spreadRadius: 2,
+                            color: Colors.black.withOpacity(0.09),
+                            blurRadius: 12,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
@@ -629,11 +630,10 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                             "Management & Operations",
                             style: AppTextStyles.headingText20,
                           ),
-
+                          SizedBox(height: getHeight(context, 6)),
                           const Divider(),
 
-                          SizedBox(height: size.height * 0.02),
-
+                          SizedBox(height: getHeight(context, 12)),
                           Row(
                             children: [
                               Expanded(
@@ -641,12 +641,12 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     buildField("Branch Manager*"),
-                                    const SizedBox(height: 6),
+                                    SizedBox(height: getHeight(context, 12)),
 
                                     Container(
                                       width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: getWidth(context, 12),
                                       ),
 
                                       decoration: BoxDecoration(
@@ -691,20 +691,19 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                 ),
                               ),
 
-                              const SizedBox(width: 16),
+                              SizedBox(width: getWidth(context, 8)),
 
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     buildField("MAX Stock*"),
-                                    const SizedBox(height: 6),
+                                    SizedBox(height: getHeight(context, 12)),
 
                                     Container(
                                       width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 14,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: getWidth(context, 12),
                                       ),
 
                                       decoration: BoxDecoration(
@@ -732,17 +731,17 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                               ),
                             ],
                           ),
-                          SizedBox(height: size.height * 0.02),
+                          SizedBox(height: getHeight(context, 12)),
                           Text(
                             "Additional Notes",
                             style: AppTextStyles.bodyText14dark,
                           ),
-                          const SizedBox(height: 6),
+                          SizedBox(height: getHeight(context, 12)),
                           Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 14,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: getWidth(context, 12),
+                              vertical: getHeight(context, 12),
                             ),
 
                             decoration: BoxDecoration(
@@ -771,20 +770,20 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                       ),
                     ),
 
-                    SizedBox(height: size.height * 0.03),
+                    SizedBox(height: getHeight(context, 12)),
                     Row(
                       children: [
                         Expanded(
                           child: Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 14,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: getWidth(context, 12),
+                              vertical: getHeight(context, 14),
                             ),
 
                             decoration: BoxDecoration(
                               color: AppColors.background,
-                              border: Border.all(color: AppColors.background),
+                              border: Border.all(color: AppColors.border),
 
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -796,7 +795,7 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: getWidth(context, 4)),
                         Expanded(
                           child: GestureDetector(
                             onTap: () async {
@@ -853,9 +852,9 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
 
                             child: Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 14,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: getWidth(context, 12),
+                                vertical: getHeight(context, 14),
                               ),
 
                               decoration: BoxDecoration(
@@ -867,9 +866,9 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
 
                               child: Row(
                                 children: [
-                                  const SizedBox(width: 10),
+                                  SizedBox(width: getWidth(context, 6)),
                                   Icon(Icons.check),
-                                  const SizedBox(width: 5),
+                                  SizedBox(width: getWidth(context, 6)),
                                   Text(
                                     widget.branch == null
                                         ? "Save Branch"

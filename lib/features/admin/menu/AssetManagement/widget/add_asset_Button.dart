@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 import '../data/asset_repository.dart';
 import '../models/asset_model.dart';
@@ -17,7 +18,7 @@ Widget addAssetButton(BuildContext context, {VoidCallback? onAssetAdded}) {
     },
     child: Container(
       width: double.infinity,
-      height: 56,
+      height: getHeight(context, 50),
       decoration: BoxDecoration(
         color: const Color(0xffFFD600),
         borderRadius: BorderRadius.circular(18),
@@ -115,60 +116,60 @@ class _AddAssetBottomSheetState extends State<AddAssetBottomSheet> {
             controller: scrollController,
             child: Column(
               children: [
-                const SizedBox(height: 10),
+                SizedBox(height: getHeight(context, 5)),
                 Container(
-                  width: 70,
-                  height: 5,
+                  width: getWidth(context, 30),
+                  height: getHeight(context, 5),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade300,
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                const SizedBox(height: 22),
+                SizedBox(height: getHeight(context, 20)),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 22),
                   child: Row(
                     children: [
-                      const Icon(Icons.add, size: 28),
-                      const SizedBox(width: 12),
-                      const Expanded(
+                      Icon(Icons.add, size: getWidth(context, 28)),
+                      SizedBox(width: getWidth(context, 12)),
+                      Expanded(
                         child: Text(
                           "Add New Asset",
                           style: TextStyle(
-                            fontSize: 24,
+                            fontSize: getWidth(context, 24),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                       GestureDetector(
                         onTap: () => Navigator.pop(context),
-                        child: const Icon(Icons.close, size: 28),
+                        child: Icon(Icons.close, size: getWidth(context, 28)),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 22),
+                SizedBox(height: getHeight(context, 22)),
                 Divider(color: Colors.grey.shade300, height: 1),
                 Padding(
-                  padding: const EdgeInsets.all(22),
+                  padding: EdgeInsets.all(getWidth(context, 22)),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       buildLabel("Asset Name"),
-                      const SizedBox(height: 10),
+                      SizedBox(height: getHeight(context, 10)),
                       buildField(
                         controller: nameController,
                         hint: "Enter asset name",
                       ),
-                      const SizedBox(height: 22),
+                      SizedBox(height: getHeight(context, 22)),
                       buildLabel("Asset ID"),
-                      const SizedBox(height: 10),
+                      SizedBox(height: getHeight(context, 10)),
                       buildField(
                         controller: assetIdController,
                         hint: "Asset ID",
                         enabled: false,
                       ),
-                      const SizedBox(height: 22),
+                      SizedBox(height: getHeight(context, 22)),
                       Row(
                         children: [
                           Expanded(
@@ -176,7 +177,7 @@ class _AddAssetBottomSheetState extends State<AddAssetBottomSheet> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 buildLabel("Category"),
-                                const SizedBox(height: 10),
+                                SizedBox(height: getHeight(context, 10)),
                                 _buildDropdown(
                                   value: selectedCategory,
                                   items: [
@@ -191,13 +192,13 @@ class _AddAssetBottomSheetState extends State<AddAssetBottomSheet> {
                               ],
                             ),
                           ),
-                          const SizedBox(width: 14),
+                          SizedBox(width: getWidth(context, 14)),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 buildLabel("Quantity"),
-                                const SizedBox(height: 10),
+                                SizedBox(height: getHeight(context, 10)),
                                 buildField(
                                   controller: quantityController,
                                   hint: "Enter quantity",
@@ -208,7 +209,7 @@ class _AddAssetBottomSheetState extends State<AddAssetBottomSheet> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 22),
+                      SizedBox(height: getHeight(context, 22)),
                       Row(
                         children: [
                           Expanded(
@@ -216,7 +217,7 @@ class _AddAssetBottomSheetState extends State<AddAssetBottomSheet> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 buildLabel("Location"),
-                                const SizedBox(height: 10),
+                                SizedBox(height: getHeight(context, 10)),
                                 _buildDropdown(
                                   value: selectedLocation,
                                   items: [
@@ -231,13 +232,13 @@ class _AddAssetBottomSheetState extends State<AddAssetBottomSheet> {
                               ],
                             ),
                           ),
-                          const SizedBox(width: 14),
+                          SizedBox(width: getWidth(context, 14)),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 buildLabel("Status"),
-                                const SizedBox(height: 10),
+                                SizedBox(height: getHeight(context, 10)),
                                 _buildDropdown(
                                   value: selectedStatus,
                                   items: [
@@ -254,7 +255,7 @@ class _AddAssetBottomSheetState extends State<AddAssetBottomSheet> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 40),
+                      SizedBox(height: getHeight(context, 40)),
                       Row(
                         children: [
                           Expanded(
@@ -280,12 +281,12 @@ class _AddAssetBottomSheetState extends State<AddAssetBottomSheet> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 14),
+                          SizedBox(width: getWidth(context, 14)),
                           Expanded(
                             child: InkWell(
                               onTap: isSaving ? null : _saveAsset,
                               child: Container(
-                                height: 54,
+                                height: getHeight(context, 54),
                                 decoration: BoxDecoration(
                                   color: const Color(0xffFFD600),
                                   borderRadius: BorderRadius.circular(14),
@@ -333,7 +334,7 @@ class _AddAssetBottomSheetState extends State<AddAssetBottomSheet> {
     TextInputType keyboardType = TextInputType.text,
   }) {
     return Container(
-      height: 56,
+      height: getHeight(context, 54),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: enabled ? Colors.white : const Color(0xffF5F5F7),
@@ -359,7 +360,7 @@ class _AddAssetBottomSheetState extends State<AddAssetBottomSheet> {
     required ValueChanged<String?> onChanged,
   }) {
     return Container(
-      height: 56,
+      height: getHeight(context, 56),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),

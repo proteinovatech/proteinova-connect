@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 class ApprovalTableHeader extends StatelessWidget {
   const ApprovalTableHeader({super.key});
@@ -20,9 +21,8 @@ class ApprovalTableHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 20,
+      padding: EdgeInsets.symmetric(
+       horizontal: getWidth(context, 18), vertical: getHeight(context, 12),
       ),
       decoration: BoxDecoration(
         border: Border(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/widget/add_asset_Button.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/widget/total_tracked_bottomsheet_widget.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/widget/asset_table_widget.dart';
@@ -6,6 +7,7 @@ import 'package:proteinova_connect/features/admin/menu/AssetManagement/widget/cu
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/widget/damaged_bottomsheet.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/widget/filter_button_widget.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/widget/under_maintenance_bottomsheet.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/admin_expense_management_skeleton_loader.dart';
 
 import '../data/asset_repository.dart';
 import '../models/asset_model.dart';
@@ -43,9 +45,9 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
     } catch (e) {
       setState(() => isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error fetching assets: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error fetching assets: $e')));
       }
     }
   }
@@ -72,22 +74,24 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
     return assets.where((a) {
       // Search filter
       final query = searchQuery.toLowerCase();
-      final matchesSearch = query.isEmpty ||
+      final matchesSearch =
+          query.isEmpty ||
           a.name.toLowerCase().contains(query) ||
           a.assetId.toLowerCase().contains(query) ||
           a.category.toLowerCase().contains(query);
 
       // Branch filter
-      final matchesBranch = selectedBranch == 'All Branches' ||
-          a.location == selectedBranch;
+      final matchesBranch =
+          selectedBranch == 'All Branches' || a.location == selectedBranch;
 
       // Category filter
-      final matchesCategory = selectedCategory == 'All Categories' ||
+      final matchesCategory =
+          selectedCategory == 'All Categories' ||
           a.category == selectedCategory;
 
       // Status filter
-      final matchesStatus = selectedStatus == 'All Statuses' ||
-          a.status == selectedStatus;
+      final matchesStatus =
+          selectedStatus == 'All Statuses' || a.status == selectedStatus;
 
       return matchesSearch && matchesBranch && matchesCategory && matchesStatus;
     }).toList();
@@ -147,17 +151,16 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: AdminExpenseManagementSkeletonLoader());
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xffF5F5F7),
+      backgroundColor: Colors.white,
 
       appBar: AppBar(
-        backgroundColor: const Color(0xffF5F5F7),
+        backgroundColor: Colors.white,
         elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
           icon: const Icon(Icons.arrow_back, color: Colors.black, size: 24),
@@ -175,14 +178,14 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: getHeight(context, 4)),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 color: const Color(0xffFFF7D6),
                 borderRadius: BorderRadius.circular(30),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
@@ -190,7 +193,7 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
                     size: 14,
                     color: Colors.black,
                   ),
-                  SizedBox(width: 5),
+                  SizedBox(width: getWidth(context, 5)),
                   Text(
                     'Admin',
                     style: TextStyle(
@@ -208,8 +211,8 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Container(
-              width: 44,
-              height: 44,
+              width: getWidth(context, 44),
+              height: getHeight(context, 44),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(14),
@@ -221,155 +224,161 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
         ],
       ),
 
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              /// ── STAT CARDS ROW 1 ──────────────────────────────────────
-              IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: _showBottomSheet,
-                        child: _statCard(
-                          icon: Icons.inventory_2_outlined,
-                          iconColor: Colors.blue,
-                          title: 'Total Tracked Assets',
-                          count: _totalTracked.toString(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: _showInUseSheet,
-                        child: _statCard(
-                          icon: Icons.local_shipping_outlined,
-                          iconColor: Colors.green,
-                          title: 'Currently In Use',
-                          count: _currentlyInUse.toString(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              /// ── STAT CARDS ROW 2 ──────────────────────────────────────
-              IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: _showMaintenanceSheet,
-                        child: _statCard(
-                          icon: Icons.build_outlined,
-                          iconColor: Colors.purple,
-                          title: 'Under Maintenance',
-                          count: _underMaintenance.toString(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: _showDamagedSheet,
-                        child: _statCard(
-                          icon: Icons.warning_amber_rounded,
-                          iconColor: Colors.red,
-                          title: 'Damaged',
-                          count: _damaged.toString(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 18),
-
-              /// ── ACTION CONTAINER ──────────────────────────────────────
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: 10,
-                      color: Colors.black.withOpacity(0.03),
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    /// Search + Filter
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: TextField(
-                            onChanged: (value) =>
-                                setState(() => searchQuery = value),
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: 'Search assets...',
-                              hintStyle:
-                                  TextStyle(color: Colors.grey.shade500),
-                              icon: Icon(
-                                Icons.search,
-                                color: Colors.grey.shade500,
+      body: isLoading
+          ? const AdminExpenseManagementSkeletonLoader()
+          : RefreshIndicator(
+              onRefresh: _fetchData,
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      /// ── STAT CARDS ROW 1 ──────────────────────────────────────
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: _showBottomSheet,
+                                child: _statCard(
+                                  icon: Icons.inventory_2_outlined,
+                                  iconColor: Colors.blue,
+                                  title: 'Total Tracked Assets',
+                                  count: _totalTracked.toString(),
+                                ),
                               ),
                             ),
-                          ),
+                            SizedBox(width: getWidth(context, 12)),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: _showInUseSheet,
+                                child: _statCard(
+                                  icon: Icons.local_shipping_outlined,
+                                  iconColor: Colors.green,
+                                  title: 'Currently In Use',
+                                  count: _currentlyInUse.toString(),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 10),
-                        FilterButtonWidget(
-                          selectedBranch: selectedBranch,
-                          selectedCategory: selectedCategory,
-                          selectedStatus: selectedStatus,
-                          availableBranches: _availableBranches,
-                          availableCategories: _availableCategories,
-                          onFilterChanged: (branch, category, status) {
-                            setState(() {
-                              selectedBranch = branch;
-                              selectedCategory = category;
-                              selectedStatus = status;
-                            });
-                          },
+                      ),
+
+                      SizedBox(height: getHeight(context, 12)),
+
+                      /// ── STAT CARDS ROW 2 ──────────────────────────────────────
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: _showMaintenanceSheet,
+                                child: _statCard(
+                                  icon: Icons.build_outlined,
+                                  iconColor: Colors.purple,
+                                  title: 'Under Maintenance',
+                                  count: _underMaintenance.toString(),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: getWidth(context, 12)),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: _showDamagedSheet,
+                                child: _statCard(
+                                  icon: Icons.warning_amber_rounded,
+                                  iconColor: Colors.red,
+                                  title: 'Damaged',
+                                  count: _damaged.toString(),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
 
-                    const SizedBox(height: 14),
+                      SizedBox(height: getHeight(context, 18)),
 
-                    /// Add Asset button
-                    addAssetButton(context, onAssetAdded: _fetchData),
-                  ],
+                      /// ── ACTION CONTAINER ──────────────────────────────────────
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 10,
+                              color: Colors.black.withOpacity(0.10),
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            /// Search + Filter
+                            Row(
+                              children: [
+                                Expanded(
+                                  flex: 3,
+                                  child: TextField(
+                                    onChanged: (value) =>
+                                        setState(() => searchQuery = value),
+                                    decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: 'Search assets...',
+                                      hintStyle: TextStyle(
+                                        color: Colors.grey.shade500,
+                                      ),
+                                      icon: Icon(
+                                        Icons.search,
+                                        color: Colors.grey.shade500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: getWidth(context, 10)),
+                                FilterButtonWidget(
+                                  selectedBranch: selectedBranch,
+                                  selectedCategory: selectedCategory,
+                                  selectedStatus: selectedStatus,
+                                  availableBranches: _availableBranches,
+                                  availableCategories: _availableCategories,
+                                  onFilterChanged: (branch, category, status) {
+                                    setState(() {
+                                      selectedBranch = branch;
+                                      selectedCategory = category;
+                                      selectedStatus = status;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+
+                            SizedBox(height: getHeight(context, 14)),
+
+                            /// Add Asset button
+                            addAssetButton(context, onAssetAdded: _fetchData),
+                          ],
+                        ),
+                      ),
+
+                      SizedBox(height: getHeight(context, 24)),
+
+                      /// ── ASSET TABLE ───────────────────────────────────────────
+                      AssetTableWidget(
+                        assets: _filteredAssets,
+                        onStatusChanged: _fetchData,
+                      ),
+
+                      SizedBox(height: getHeight(context, 30)),
+                    ],
+                  ),
                 ),
               ),
-
-              const SizedBox(height: 14),
-
-              /// ── ASSET TABLE ───────────────────────────────────────────
-              AssetTableWidget(
-                assets: _filteredAssets,
-                onStatusChanged: _fetchData,
-              ),
-
-              const SizedBox(height: 30),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 
@@ -390,7 +399,7 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
         boxShadow: [
           BoxShadow(
             blurRadius: 10,
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withOpacity(0.10),
             offset: const Offset(0, 4),
           ),
         ],
@@ -406,14 +415,14 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
             ),
             child: Icon(icon, color: iconColor),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: getHeight(context, 16)),
           Text(
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: getHeight(context, 8)),
           Text(
             count,
             style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold),

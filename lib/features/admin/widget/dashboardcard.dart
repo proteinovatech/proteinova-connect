@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 class DashboardCard extends StatefulWidget {
   final String title;
@@ -114,7 +115,7 @@ class _DashboardCardState extends State<DashboardCard> {
               ],
             ),
 
-            const SizedBox(height: 14),
+             SizedBox(height:getHeight(context, 10),),
 
             /// VALUE
             Text(

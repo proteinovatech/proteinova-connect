@@ -4,6 +4,12 @@ class AppColors {
   static const Color redAccent = Color(0xFFD32F2F);
   static const Color blueAccent = Color(0xFF1976D2);
 
+  static const Color red = Colors.red;
+  static const Color orange = Colors.orange;
+  static const Color green = Colors.green;
+  static const Color white = Colors.white;
+  static const Color blue = Colors.blue;
+
   static const Color amber50 = Color.fromARGB(255, 252, 252, 173);
   static const Color amber100 = Color.fromARGB(255, 243, 218, 183);
   static const Color amber200 = Color.fromARGB(255, 224, 178, 135);
@@ -25,13 +31,11 @@ class AppColors {
   static const Color deepOrange = Colors.deepOrange;
 
   static const Color light = Color.fromARGB(255, 124, 124, 124);
-  static const Color green = Colors.green;
 
   static const Color background = Color(0xFFFFFFFF);
   static const Color background1 = Color.fromARGB(255, 239, 242, 252);
   static const Color cardBackground = Color(0xFFFFFFFF);
 
-  static const Color white = Colors.white;
   static const Color border = Color(0xFFE0E0E0);
   static const Color border2 = Color.fromARGB(255, 198, 208, 240);
 }

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/data/model/branch_model.dart';
 import 'package:proteinova_connect/features/admin/menu/branch_management/data/services/branch_service.dart';
 import 'package:proteinova_connect/features/admin/menu/branch_management/presentation/add_branch_details.dart';
 import 'package:proteinova_connect/features/admin/menu/branch_management/widget/info_cards.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_branch_management_skeleton_loader.dart';
-import 'package:proteinova_connect/features/admin/skeletonloader/admin_dashboard_skeleton_loader.dart';
 
 class BranchManagement extends StatefulWidget {
   const BranchManagement({super.key});
@@ -144,7 +144,7 @@ class _BranchManagementState extends State<BranchManagement> {
               ),
             ),
 
-            const SizedBox(width: 12),
+            SizedBox(width: getWidth(context, 12)),
 
             Expanded(
               child: Column(
@@ -162,12 +162,12 @@ class _BranchManagementState extends State<BranchManagement> {
                     ),
                   ),
 
-                  const SizedBox(height: 8),
+                  SizedBox(height: getHeight(context, 8)),
 
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: getWidth(context, 10),
+                      vertical: getHeight(context, 5),
                     ),
 
                     decoration: BoxDecoration(
@@ -176,19 +176,18 @@ class _BranchManagementState extends State<BranchManagement> {
                       borderRadius: BorderRadius.circular(30),
                     ),
 
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
 
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.verified_user_outlined,
                           size: 14,
                           color: Colors.black,
                         ),
 
-                        SizedBox(width: 6),
-
-                        Flexible(
+                        SizedBox(width: getWidth(context, 6)),
+                        const Flexible(
                           child: Text(
                             "Role: Inventory & Ops Admin",
 
@@ -208,7 +207,7 @@ class _BranchManagementState extends State<BranchManagement> {
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 10, top: 12, bottom: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: EdgeInsets.symmetric(horizontal: getWidth(context, 12)),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
@@ -264,11 +263,13 @@ class _BranchManagementState extends State<BranchManagement> {
 
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: getWidth(context, 16),
+                  ),
 
                   child: Column(
                     children: [
-                      const SizedBox(height: 20),
+                      SizedBox(height: getHeight(context, 20)),
                       Row(
                         children: [
                           Expanded(
@@ -283,7 +284,7 @@ class _BranchManagementState extends State<BranchManagement> {
                               iconColor: AppColors.green,
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: getWidth(context, 10)),
                           Expanded(
                             child: InfoCards(
                               title: "Total Egg Stock",
@@ -298,7 +299,7 @@ class _BranchManagementState extends State<BranchManagement> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: getHeight(context, 10)),
                       Row(
                         children: [
                           Expanded(
@@ -313,7 +314,7 @@ class _BranchManagementState extends State<BranchManagement> {
                               iconColor: AppColors.green,
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: getWidth(context, 10)),
                           Expanded(
                             child: InfoCards(
                               title: "Branch Revenue (MTD)",
@@ -328,7 +329,7 @@ class _BranchManagementState extends State<BranchManagement> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: getHeight(context, 10)),
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -369,9 +370,9 @@ class _BranchManagementState extends State<BranchManagement> {
                                           });
                                         },
                                         child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 10,
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: getWidth(context, 12),
+                                            vertical: getHeight(context, 10),
                                           ),
                                           decoration: BoxDecoration(
                                             color: AppColors.amber50,
@@ -382,7 +383,9 @@ class _BranchManagementState extends State<BranchManagement> {
                                           child: Row(
                                             children: [
                                               const Icon(Icons.add, size: 20),
-                                              const SizedBox(width: 8),
+                                              SizedBox(
+                                                width: getWidth(context, 8),
+                                              ),
                                               Text(
                                                 "Add New Branch",
                                                 style: AppTextStyles
@@ -396,10 +399,10 @@ class _BranchManagementState extends State<BranchManagement> {
                                     ],
                                   ),
 
-                                  const SizedBox(height: 20),
+                                  SizedBox(height: getHeight(context, 20)),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: getWidth(context, 12),
                                     ),
 
                                     decoration: BoxDecoration(
@@ -425,15 +428,15 @@ class _BranchManagementState extends State<BranchManagement> {
                                     ),
                                   ),
 
-                                  const SizedBox(height: 10),
+                                  SizedBox(height: getHeight(context, 10)),
 
                                   /// FILTER ROW
                                   Row(
                                     children: [
                                       Expanded(
                                         child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: getWidth(context, 12),
                                           ),
 
                                           decoration: BoxDecoration(
@@ -480,12 +483,11 @@ class _BranchManagementState extends State<BranchManagement> {
                                         ),
                                       ),
 
-                                      const SizedBox(width: 12),
-
+                                      SizedBox(width: getWidth(context, 12)),
                                       Expanded(
                                         child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: getWidth(context, 12),
                                           ),
 
                                           decoration: BoxDecoration(
@@ -533,379 +535,517 @@ class _BranchManagementState extends State<BranchManagement> {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 10),
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 14,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.background1,
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          flex: 4,
-                                          child: FittedBox(
-                                            fit: BoxFit.scaleDown,
-                                            alignment: Alignment.centerLeft,
-                                            child: Text(
-                                              "BRANCH\nDETAILS",
-                                              style:
-                                                  AppTextStyles.bodyText10dark,
+                                  SizedBox(height: getHeight(context, 12)),
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+
+                                    child: SizedBox(
+                                      width: getWidth(context, 470),
+
+                                      child: Column(
+                                        children: [
+                                          /// TABLE HEADER
+                                          Container(
+                                            width: double.infinity,
+
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: getWidth(context, 16),
+                                              vertical: getHeight(context, 14),
                                             ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 4,
-                                          child: FittedBox(
-                                            fit: BoxFit.scaleDown,
-                                            child: Text(
-                                              "BRANCH\nMANAGER",
-                                              style:
-                                                  AppTextStyles.bodyText10dark,
+
+                                            decoration: BoxDecoration(
+                                              color: AppColors.background1,
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
                                             ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: FittedBox(
-                                            fit: BoxFit.scaleDown,
-                                            child: Text(
-                                              "STATUS",
-                                              style:
-                                                  AppTextStyles.bodyText10dark,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 3,
-                                          child: FittedBox(
-                                            fit: BoxFit.scaleDown,
-                                            child: Text(
-                                              "CURRENT\nSTOCK",
-                                              style:
-                                                  AppTextStyles.bodyText10dark,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 3,
-                                          child: FittedBox(
-                                            fit: BoxFit.scaleDown,
-                                            child: Text(
-                                              "SALES(MTD)",
-                                              style:
-                                                  AppTextStyles.bodyText10dark,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 3,
-                                          child: FittedBox(
-                                            fit: BoxFit.contain,
-                                            child: Text(
-                                              "ACTIONS",
-                                              style:
-                                                  AppTextStyles.bodyText10dark,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  filteredBranches.isEmpty
-                                      ? Align(
-                                          alignment: Alignment.center,
-                                          child: Column(
-                                            children: [
-                                              const SizedBox(height: 10),
-                                              Text(
-                                                "No branches found",
-                                                style: AppTextStyles
-                                                    .bodyText14dark,
-                                              ),
-                                              Text(
-                                                "Add a new branch to get started",
-                                                style: AppTextStyles.bodyText14,
-                                              ),
-                                            ],
-                                          ),
-                                        )
-                                      : ListView.separated(
-                                          shrinkWrap: true,
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
 
-                                          itemCount: filteredBranches.length,
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                  flex: 2,
 
-                                          separatorBuilder: (_, __) =>
-                                              const SizedBox(height: 10),
+                                                  child: FittedBox(
+                                                    fit: BoxFit.scaleDown,
+                                                    alignment:
+                                                        Alignment.centerLeft,
 
-                                          itemBuilder: (context, index) {
-                                            final branch =
-                                                filteredBranches[index];
-
-                                            return Container(
-                                              padding: const EdgeInsets.all(14),
-
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-
-                                                border: Border.all(
-                                                  color: Colors.grey.shade300,
-                                                ),
-                                              ),
-
-                                              child: Row(
-                                                children: [
-                                                  Expanded(
-                                                    flex: 4,
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          branch.branchName,
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          style: AppTextStyles
-                                                              .bodyText12dark,
-                                                        ),
-                                                        Text(
-                                                          branch.city,
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          style: AppTextStyles
-                                                              .bodyText10,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-
-                                                  Expanded(
-                                                    flex: 4,
                                                     child: Text(
-                                                      branch.managerEmail,
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
+                                                      "BRANCH\nDETAILS",
                                                       style: AppTextStyles
-                                                          .bodyText10,
+                                                          .bodyText9dark,
                                                     ),
                                                   ),
+                                                ),
 
-                                                  Expanded(
-                                                    flex: 2,
-                                                    child: Center(
-                                                      child: Container(
-                                                        padding:
-                                                            const EdgeInsets.symmetric(
-                                                              horizontal: 8,
-                                                              vertical: 5,
-                                                            ),
+                                                Expanded(
+                                                  flex: 5,
 
-                                                        decoration: BoxDecoration(
-                                                          color:
-                                                              branch.status ==
-                                                                  "Active"
-                                                              ? Colors
-                                                                    .green
-                                                                    .shade100
-                                                              : Colors
-                                                                    .red
-                                                                    .shade100,
+                                                  child: FittedBox(
+                                                    fit: BoxFit.scaleDown,
 
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                20,
-                                                              ),
-                                                        ),
+                                                    child: Text(
+                                                      "BRANCH\nMANAGER",
+                                                      style: AppTextStyles
+                                                          .bodyText9dark,
+                                                    ),
+                                                  ),
+                                                ),
 
-                                                        child: Text(
-                                                          branch.status,
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          style: TextStyle(
-                                                            color:
-                                                                branch.status ==
-                                                                    "Active"
-                                                                ? Colors.green
-                                                                : Colors.red,
-                                                            fontSize: 9,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                          ),
+                                                Expanded(
+                                                  flex: 3,
+
+                                                  child: FittedBox(
+                                                    fit: BoxFit.scaleDown,
+
+                                                    child: Text(
+                                                      "STATUS",
+                                                      style: AppTextStyles
+                                                          .bodyText9dark,
+                                                    ),
+                                                  ),
+                                                ),
+
+                                                Expanded(
+                                                  flex: 3,
+
+                                                  child: FittedBox(
+                                                    fit: BoxFit.scaleDown,
+
+                                                    child: Text(
+                                                      "CURRENT\nSTOCK",
+                                                      style: AppTextStyles
+                                                          .bodyText9dark,
+                                                    ),
+                                                  ),
+                                                ),
+
+                                                Expanded(
+                                                  flex: 3,
+
+                                                  child: FittedBox(
+                                                    fit: BoxFit.scaleDown,
+
+                                                    child: Text(
+                                                      "SALES(MTD)",
+                                                      style: AppTextStyles
+                                                          .bodyText9dark,
+                                                    ),
+                                                  ),
+                                                ),
+
+                                                Expanded(
+                                                  flex: 2,
+
+                                                  child: FittedBox(
+                                                    fit: BoxFit.scaleDown,
+
+                                                    child: Text(
+                                                      "ACTIONS",
+                                                      style: AppTextStyles
+                                                          .bodyText9dark,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+
+                                          SizedBox(
+                                            height: getHeight(context, 20),
+                                          ),
+
+                                          /// EMPTY
+                                          filteredBranches.isEmpty
+                                              ? Align(
+                                                  alignment: Alignment.center,
+
+                                                  child: Column(
+                                                    children: [
+                                                      SizedBox(
+                                                        height: getHeight(
+                                                          context,
+                                                          10,
                                                         ),
                                                       ),
-                                                    ),
-                                                  ),
 
-                                                  Expanded(
-                                                    flex: 3,
-                                                    child: Column(
-                                                      children: [
-                                                        Text(
-                                                          "${branch.currentStock}",
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style: AppTextStyles
-                                                              .bodyText10dark,
+                                                      Text(
+                                                        "No branches found",
+                                                        style: AppTextStyles
+                                                            .bodyText14dark,
+                                                      ),
+
+                                                      Text(
+                                                        "Add a new branch to get started",
+                                                        style: AppTextStyles
+                                                            .bodyText14,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                )
+                                              /// LIST
+                                              : ListView.separated(
+                                                  shrinkWrap: true,
+
+                                                  physics:
+                                                      const NeverScrollableScrollPhysics(),
+
+                                                  itemCount:
+                                                      filteredBranches.length,
+
+                                                  separatorBuilder: (_, __) =>
+                                                      SizedBox(
+                                                        height: getHeight(
+                                                          context,
+                                                          10,
                                                         ),
-                                                        Text(
-                                                          "trays",
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style: AppTextStyles
-                                                              .bodyText10,
+                                                      ),
+
+                                                  itemBuilder: (context, index) {
+                                                    final branch =
+                                                        filteredBranches[index];
+
+                                                    return Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                            14,
+                                                          ),
+
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white,
+
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              12,
+                                                            ),
+
+                                                        border: Border.all(
+                                                          color: Colors
+                                                              .grey
+                                                              .shade300,
                                                         ),
-                                                      ],
-                                                    ),
-                                                  ),
+                                                      ),
 
-                                                  Expanded(
-                                                    flex: 3,
-                                                    child: Text(
-                                                      "₹ ${branch.totalSales.toStringAsFixed(2)}",
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: AppTextStyles
-                                                          .bodyText10,
-                                                    ),
-                                                  ),
-
-                                                  Expanded(
-                                                    flex: 3,
-                                                    child: FittedBox(
-                                                      fit: BoxFit.scaleDown,
                                                       child: Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
                                                                 .center,
+
                                                         children: [
-                                                          GestureDetector(
-                                                            onTap: () {
-                                                              Navigator.push(
-                                                                context,
-                                                                MaterialPageRoute(
-                                                                  builder:
-                                                                      (
-                                                                        context,
-                                                                      ) => AddBranchDetails(
-                                                                        branch:
-                                                                            branch,
-                                                                      ),
+                                                          /// BRANCH DETAILS
+                                                          Expanded(
+                                                            flex: 2,
+
+                                                            child: Column(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+
+                                                              children: [
+                                                                Text(
+                                                                  branch
+                                                                      .branchName,
+
+                                                                  maxLines: 1,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+
+                                                                  style: AppTextStyles
+                                                                      .bodyText12dark,
                                                                 ),
-                                                              ).then((value) {
-                                                                if (value ==
-                                                                    true) {
-                                                                  loadBranches();
-                                                                }
-                                                              });
-                                                            },
-                                                            child: const Icon(
-                                                              Icons
-                                                                  .edit_outlined,
-                                                              size: 14,
+
+                                                                const SizedBox(
+                                                                  height: 2,
+                                                                ),
+
+                                                                Text(
+                                                                  branch.city,
+
+                                                                  maxLines: 1,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+
+                                                                  style: AppTextStyles
+                                                                      .bodyText10,
+                                                                ),
+                                                              ],
                                                             ),
                                                           ),
 
-                                                          const SizedBox(
-                                                            width: 4,
+                                                          /// MANAGER
+                                                          Expanded(
+                                                            flex: 5,
+
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets.symmetric(
+                                                                    horizontal:
+                                                                        4,
+                                                                  ),
+
+                                                              child: Text(
+                                                                branch
+                                                                    .managerEmail,
+
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+
+                                                                maxLines: 1,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+
+                                                                style: AppTextStyles
+                                                                    .bodyText10,
+                                                              ),
+                                                            ),
                                                           ),
 
-                                                          GestureDetector(
-                                                            onTap: () async {
-                                                              final confirm = await showDialog<bool>(
-                                                                context:
-                                                                    context,
-                                                                builder: (context) => AlertDialog(
-                                                                  title: const Text(
-                                                                    "Delete Branch",
-                                                                  ),
-                                                                  content:
-                                                                      const Text(
-                                                                        "Are you sure you want to delete this branch?",
-                                                                      ),
-                                                                  actions: [
-                                                                    TextButton(
-                                                                      onPressed: () =>
-                                                                          Navigator.pop(
-                                                                            context,
-                                                                            false,
-                                                                          ),
-                                                                      child: const Text(
-                                                                        "Cancel",
-                                                                      ),
-                                                                    ),
-                                                                    TextButton(
-                                                                      onPressed: () =>
-                                                                          Navigator.pop(
-                                                                            context,
-                                                                            true,
-                                                                          ),
-                                                                      child: const Text(
-                                                                        "Delete",
-                                                                        style: TextStyle(
-                                                                          color:
-                                                                              Colors.red,
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              );
+                                                          /// STATUS
+                                                          Expanded(
+                                                            flex: 3,
 
-                                                              if (confirm ==
-                                                                  true) {
-                                                                try {
-                                                                  await BranchService()
-                                                                      .deleteBranch(
-                                                                        branch
-                                                                            .id,
-                                                                      );
-                                                                  loadBranches();
-                                                                } catch (e) {
-                                                                  ScaffoldMessenger.of(
-                                                                    context,
-                                                                  ).showSnackBar(
-                                                                    SnackBar(
-                                                                      content: Text(
-                                                                        "Error: $e",
-                                                                      ),
+                                                            child: Center(
+                                                              child: Container(
+                                                                padding:
+                                                                    const EdgeInsets.symmetric(
+                                                                      horizontal:
+                                                                          8,
+                                                                      vertical:
+                                                                          5,
                                                                     ),
-                                                                  );
-                                                                }
-                                                              }
-                                                            },
-                                                            child: const Icon(
-                                                              Icons
-                                                                  .delete_outline,
-                                                              size: 16,
-                                                              color: Colors.red,
+
+                                                                decoration: BoxDecoration(
+                                                                  color:
+                                                                      branch.status ==
+                                                                          "Active"
+                                                                      ? Colors
+                                                                            .green
+                                                                            .shade100
+                                                                      : Colors
+                                                                            .red
+                                                                            .shade100,
+
+                                                                  borderRadius:
+                                                                      BorderRadius.circular(
+                                                                        20,
+                                                                      ),
+                                                                ),
+
+                                                                child: Text(
+                                                                  branch.status,
+
+                                                                  style: TextStyle(
+                                                                    color:
+                                                                        branch.status ==
+                                                                            "Active"
+                                                                        ? Colors
+                                                                              .green
+                                                                        : Colors
+                                                                              .red,
+
+                                                                    fontSize: 9,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+
+                                                          /// STOCK
+                                                          Expanded(
+                                                            flex: 3,
+
+                                                            child: Column(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+
+                                                              children: [
+                                                                Text(
+                                                                  "${branch.currentStock}",
+
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
+
+                                                                  style: AppTextStyles
+                                                                      .bodyText10dark,
+                                                                ),
+
+                                                                Text(
+                                                                  "trays",
+
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
+
+                                                                  style: AppTextStyles
+                                                                      .bodyText10,
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+
+                                                          /// SALES
+                                                          Expanded(
+                                                            flex: 3,
+
+                                                            child: Text(
+                                                              "₹ ${branch.totalSales.toStringAsFixed(2)}",
+
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
+
+                                                              style: AppTextStyles
+                                                                  .bodyText10,
+                                                            ),
+                                                          ),
+
+                                                          /// ACTIONS
+                                                          Expanded(
+                                                            flex: 2,
+
+                                                            child: Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+
+                                                              children: [
+                                                                GestureDetector(
+                                                                  onTap: () {
+                                                                    Navigator.push(
+                                                                      context,
+
+                                                                      MaterialPageRoute(
+                                                                        builder:
+                                                                            (
+                                                                              context,
+                                                                            ) => AddBranchDetails(
+                                                                              branch: branch,
+                                                                            ),
+                                                                      ),
+                                                                    ).then((
+                                                                      value,
+                                                                    ) {
+                                                                      if (value ==
+                                                                          true) {
+                                                                        loadBranches();
+                                                                      }
+                                                                    });
+                                                                  },
+
+                                                                  child: const Icon(
+                                                                    Icons
+                                                                        .edit_outlined,
+                                                                    size: 14,
+                                                                  ),
+                                                                ),
+
+                                                                const SizedBox(
+                                                                  width: 6,
+                                                                ),
+
+                                                                GestureDetector(
+                                                                  onTap: () async {
+                                                                    final confirm = await showDialog<bool>(
+                                                                      context:
+                                                                          context,
+
+                                                                      builder: (context) => AlertDialog(
+                                                                        title: const Text(
+                                                                          "Delete Branch",
+                                                                        ),
+
+                                                                        content:
+                                                                            const Text(
+                                                                              "Are you sure you want to delete this branch?",
+                                                                            ),
+
+                                                                        actions: [
+                                                                          TextButton(
+                                                                            onPressed: () => Navigator.pop(
+                                                                              context,
+                                                                              false,
+                                                                            ),
+
+                                                                            child: const Text(
+                                                                              "Cancel",
+                                                                            ),
+                                                                          ),
+
+                                                                          TextButton(
+                                                                            onPressed: () => Navigator.pop(
+                                                                              context,
+                                                                              true,
+                                                                            ),
+
+                                                                            child: const Text(
+                                                                              "Delete",
+
+                                                                              style: TextStyle(
+                                                                                color: Colors.red,
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    );
+
+                                                                    if (confirm ==
+                                                                        true) {
+                                                                      try {
+                                                                        await BranchService().deleteBranch(
+                                                                          branch
+                                                                              .id,
+                                                                        );
+
+                                                                        loadBranches();
+                                                                      } catch (
+                                                                        e
+                                                                      ) {
+                                                                        ScaffoldMessenger.of(
+                                                                          context,
+                                                                        ).showSnackBar(
+                                                                          SnackBar(
+                                                                            content: Text(
+                                                                              "Error: $e",
+                                                                            ),
+                                                                          ),
+                                                                        );
+                                                                      }
+                                                                    }
+                                                                  },
+
+                                                                  child: const Icon(
+                                                                    Icons
+                                                                        .delete_outline,
+                                                                    size: 16,
+                                                                    color: Colors
+                                                                        .red,
+                                                                  ),
+                                                                ),
+                                                              ],
                                                             ),
                                                           ),
                                                         ],
                                                       ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                  const SizedBox(height: 10),
+                                                    );
+                                                  },
+                                                ),
+
+                                          SizedBox(
+                                            height: getHeight(context, 10),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),

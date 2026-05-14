@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 import '../models/approval_model.dart';
 
@@ -33,7 +34,10 @@ class ApprovalTableRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
+      padding: EdgeInsets.symmetric(
+        horizontal: getWidth(context, 18),
+        vertical: getHeight(context, 22),
+      ),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
       ),
@@ -64,9 +68,9 @@ class ApprovalTableRow extends StatelessWidget {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
+                padding: EdgeInsets.symmetric(
+                  horizontal: getWidth(context, 12),
+                  vertical: getHeight(context, 6),
                 ),
                 decoration: BoxDecoration(
                   color: approval.status == "Approved"

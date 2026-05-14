@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-Widget buildLabel(String text, {bool isRequired = true}) {
+Widget buildLabel(BuildContext context, String text, {bool isRequired = true}) {
   return RichText(
     text: TextSpan(
       text: text,
