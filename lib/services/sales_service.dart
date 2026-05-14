@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:proteinova_connect/core/config/api_config.dart';
 import 'package:http/http.dart' as http;
+import 'package:proteinova_connect/core/network/api_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SalesService {
@@ -90,27 +91,57 @@ class SalesService {
     }
   }
 
-  static Future<bool> createSale(Map<String, dynamic> body) async {
-    try {
-      final baseUrl = ApiConfig.baseUrl;
-      final response = await http.post(
-        Uri.parse("$baseUrl/api/sales"),
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-        body: jsonEncode(body),
+static Future<bool> createSale(
+  Map<String, dynamic> body,
+) async {
+  try {
+
+    final baseUrl = ApiConstants.baseUrl;
+
+    print("POST URL => $baseUrl/api/sales");
+
+    print("POST BODY =>");
+    print(jsonEncode(body));
+
+    final response = await http.post(
+      Uri.parse("$baseUrl/api/sales"),
+
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+
+      body: jsonEncode(body),
+    );
+
+    print("STATUS CODE => ${response.statusCode}");
+
+    print("RAW RESPONSE =>");
+    print(response.body);
+
+    /// HTML ERROR PAGE
+    if (response.body
+        .trim()
+        .startsWith("<!DOCTYPE")) {
+
+      throw Exception(
+        "Backend crashed. Check Node.js console.",
       );
-
-      print("CREATE SALE RESPONSE => ${response.body}");
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return true;
-      }
-      return false;
-    } catch (e) {
-      print("CREATE SALE ERROR => $e");
-      return false;
     }
+
+    if (response.statusCode == 200 ||
+        response.statusCode == 201) {
+
+      return true;
+    }
+
+    return false;
+
+  } catch (e) {
+
+    print("CREATE SALE ERROR => $e");
+
+    rethrow;
   }
+}
 }

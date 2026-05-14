@@ -11,7 +11,7 @@ class ExpenseRepository {
   Future<List<ExpenseModel>> fetchExpenses() async {
     try {
        final response = await http.get(
-      Uri.parse(ApiConstants.dashboard),
+      Uri.parse(ApiConstants.dashboard as String),
       headers: {
         "Accept": "application/json",
       },

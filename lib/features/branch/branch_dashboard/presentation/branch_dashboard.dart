@@ -305,8 +305,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                           child: Stock(
                             title: "Closing Stock",
 
-                            value:
-                                "${dashboardModel!.cards.closingStock} Eggs",
+                            value: "${dashboardModel!.cards.closingStock} Eggs",
 
                             percent: "0%",
 
@@ -455,8 +454,8 @@ class _BranchDashboardState extends State<BranchDashboard> {
                           ),
 
                           const SizedBox(height: 15),
-dashboardModel == null ||
-dashboardModel!.lowStockAlerts.isEmpty
+                          dashboardModel == null ||
+                                  dashboardModel!.lowStockAlerts.isEmpty
                               ? const Center(
                                   child: Padding(
                                     padding: EdgeInsets.all(20),
@@ -464,13 +463,17 @@ dashboardModel!.lowStockAlerts.isEmpty
                                   ),
                                 )
                               : ListView.builder(
-                                  itemCount: dashboardModel!.lowStockAlerts.length,
+                                  itemCount:
+                                      dashboardModel!.lowStockAlerts.length,
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
                                   itemBuilder: (context, index) {
-                                    final alert = dashboardModel!.lowStockAlerts[index];
+                                    final alert =
+                                        dashboardModel!.lowStockAlerts[index];
                                     return Padding(
-                                      padding: const EdgeInsets.only(bottom: 10),
+                                      padding: const EdgeInsets.only(
+                                        bottom: 10,
+                                      ),
                                       child: lowStockBox(
                                         title: alert.title,
                                         subtitle: alert.subtitle,

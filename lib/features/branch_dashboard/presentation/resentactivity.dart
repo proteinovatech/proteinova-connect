@@ -1,232 +1,232 @@
-import 'dart:convert';
+// import 'dart:convert';
 
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:proteinova_connect/core/theme/app_colors.dart';
-import 'package:proteinova_connect/features/branch_dashboard/widget/activityitem.dart';
+// import 'package:flutter/material.dart';
+// import 'package:http/http.dart' as http;
+// import 'package:proteinova_connect/core/theme/app_colors.dart';
+// import 'package:proteinova_connect/features/branch_dashboard/widget/activityitem.dart';
 
-class Resentactivity extends StatefulWidget {
-  const Resentactivity({super.key});
+// class Resentactivity extends StatefulWidget {
+//   const Resentactivity({super.key});
 
-  @override
-  State<Resentactivity> createState() =>
-      _ResentactivityState();
-}
+//   @override
+//   State<Resentactivity> createState() =>
+//       _ResentactivityState();
+// }
 
-class _ResentactivityState
-    extends State<Resentactivity> {
+// class _ResentactivityState
+//     extends State<Resentactivity> {
 
-  List recentActivity = [];
+//   List recentActivity = [];
 
-  bool isLoading = true;
+//   bool isLoading = true;
 
-  @override
-  void initState() {
-    super.initState();
-    fetchRecentActivity();
-  }
+//   @override
+//   void initState() {
+//     super.initState();
+//     fetchRecentActivity();
+//   }
 
-  Future<void> fetchRecentActivity() async {
+//   Future<void> fetchRecentActivity() async {
 
-    try {
+//     try {
 
-      final response = await http.get(
-        Uri.parse(
-          "https://proteinova-system.onrender.com/api/branch/dashboard",
-        ),
-      );
+//       final response = await http.get(
+//         Uri.parse(
+//           "https://proteinova-system.onrender.com/api/branch/dashboard",
+//         ),
+//       );
 
-      if (response.statusCode == 200) {
+//       if (response.statusCode == 200) {
 
-        final data = jsonDecode(response.body);
+//         final data = jsonDecode(response.body);
 
-        setState(() {
+//         setState(() {
 
-  recentActivity =
+//   recentActivity =
 
-      (data["recent_activity"] as List)
+//       (data["recent_activity"] as List)
 
-          .map(
-            (e) => {
+//           .map(
+//             (e) => {
 
-              "title":
-                  e["actor_name"],
+//               "title":
+//                   e["actor_name"],
 
-              "description":
-                  e["activity"],
+//               "description":
+//                   e["activity"],
 
-              "time":
-                  e["created_at"],
+//               "time":
+//                   e["created_at"],
 
-              "tag":
-                  e["activity_type"],
-            },
-          )
-          .toList();
+//               "tag":
+//                   e["activity_type"],
+//             },
+//           )
+//           .toList();
 
-  isLoading = false;
-});
-      } else {
+//   isLoading = false;
+// });
+//       } else {
 
-        setState(() {
-          isLoading = false;
-        });
+//         setState(() {
+//           isLoading = false;
+//         });
 
-        print(
-          "Status Code : ${response.statusCode}",
-        );
-      }
+//         print(
+//           "Status Code : ${response.statusCode}",
+//         );
+//       }
 
-    } catch (e) {
+//     } catch (e) {
 
-      setState(() {
-        isLoading = false;
-      });
+//       setState(() {
+//         isLoading = false;
+//       });
 
-      print(e);
-    }
-  }
+//       print(e);
+//     }
+//   }
 
-  @override
-  Widget build(BuildContext context) {
+//   @override
+//   Widget build(BuildContext context) {
 
-    return Scaffold(
+//     return Scaffold(
 
-      backgroundColor:
-          AppColors.background1,
+//       backgroundColor:
+//           AppColors.background1,
 
-      appBar: AppBar(
+//       appBar: AppBar(
 
-        backgroundColor:
-            AppColors.background,
+//         backgroundColor:
+//             AppColors.background,
 
-        scrolledUnderElevation: 0,
+//         scrolledUnderElevation: 0,
 
-        title: const Text(
-          "Recent Activity",
-        ),
-      ),
+//         title: const Text(
+//           "Recent Activity",
+//         ),
+//       ),
 
-      body: isLoading
+//       body: isLoading
 
-          ? const Center(
-              child:
-                  CircularProgressIndicator(),
-            )
+//           ? const Center(
+//               child:
+//                   CircularProgressIndicator(),
+//             )
 
-          : recentActivity.isEmpty
+//           : recentActivity.isEmpty
 
-              ? const Center(
-                  child: Text(
-                    "No Recent Activity",
-                  ),
-                )
+//               ? const Center(
+//                   child: Text(
+//                     "No Recent Activity",
+//                   ),
+//                 )
 
-              : Padding(
+//               : Padding(
 
-                  padding:
-                      const EdgeInsets.all(
-                    12,
-                  ),
+//                   padding:
+//                       const EdgeInsets.all(
+//                     12,
+//                   ),
 
-                  child: ListView.builder(
+//                   child: ListView.builder(
 
-                    itemCount:
-                        recentActivity.length,
+//                     itemCount:
+//                         recentActivity.length,
 
-                    itemBuilder:
-                        (context, index) {
+//                     itemBuilder:
+//                         (context, index) {
 
-                      final activity =
-                          recentActivity[index];
+//                       final activity =
+//                           recentActivity[index];
 
-                      return Column(
+//                       return Column(
 
-                        children: [
+//                         children: [
 
-                          ActivityItem(
+//                           ActivityItem(
 
-                            leading:
-                                CircleAvatar(
+//                             leading:
+//                                 CircleAvatar(
 
-                              radius: 25,
+//                               radius: 25,
 
-                              backgroundColor:
-                                  Colors.grey,
+//                               backgroundColor:
+//                                   Colors.grey,
 
-                              child: Icon(
+//                               child: Icon(
 
-                                getIcon(
-                                  activity["tag"]
-                                      .toString(),
-                                ),
+//                                 getIcon(
+//                                   activity["tag"]
+//                                       .toString(),
+//                                 ),
 
-                                color:
-                                    Colors.white,
-                              ),
-                            ),
+//                                 color:
+//                                     Colors.white,
+//                               ),
+//                             ),
 
-                            title:
-                                activity["title"]
-                                        ?.toString() ??
-                                    "No Title",
+//                             title:
+//                                 activity["title"]
+//                                         ?.toString() ??
+//                                     "No Title",
 
-                            subtitle: Text(
+//                             subtitle: Text(
 
-                              activity["description"]
-                                      ?.toString() ??
-                                  "No Description",
+//                               activity["description"]
+//                                       ?.toString() ??
+//                                   "No Description",
 
-                              style:
-                                  const TextStyle(
+//                               style:
+//                                   const TextStyle(
 
-                                fontWeight:
-                                    FontWeight
-                                        .bold,
+//                                 fontWeight:
+//                                     FontWeight
+//                                         .bold,
 
-                                fontSize: 12,
-                              ),
-                            ),
+//                                 fontSize: 12,
+//                               ),
+//                             ),
 
-                            time:
-                                activity["time"]
-                                        ?.toString() ??
-                                    "",
+//                             time:
+//                                 activity["time"]
+//                                         ?.toString() ??
+//                                     "",
 
-                            tag:
-                                activity["tag"]
-                                        ?.toString() ??
-                                    "",
-                          ),
+//                             tag:
+//                                 activity["tag"]
+//                                         ?.toString() ??
+//                                     "",
+//                           ),
 
-                          const SizedBox(
-                            height: 15,
-                          ),
+//                           const SizedBox(
+//                             height: 15,
+//                           ),
 
-                          const Divider(),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-    );
-  }
+//                           const Divider(),
+//                         ],
+//                       );
+//                     },
+//                   ),
+//                 ),
+//     );
+//   }
 
-  IconData getIcon(String tag) {
+//   IconData getIcon(String tag) {
 
-    switch (tag.toLowerCase()) {
+//     switch (tag.toLowerCase()) {
 
-      case "delivery":
-        return Icons.local_shipping;
+//       case "delivery":
+//         return Icons.local_shipping;
 
-      case "error":
-        return Icons.error_outline;
+//       case "error":
+//         return Icons.error_outline;
 
-      case "procurement":
-        return Icons.shopping_cart;
+//       case "procurement":
+//         return Icons.shopping_cart;
 
-      default:
-        return Icons.person;
-    }
-  }
-}
+//       default:
+//         return Icons.person;
+//     }
+//   }
+// }
