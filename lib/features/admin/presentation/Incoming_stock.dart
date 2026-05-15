@@ -31,18 +31,6 @@ class _IncomingStockState extends State<IncomingStock> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    _startAutoRefresh();
-  }
-
-  void _startAutoRefresh() {
-    Future.delayed(const Duration(seconds: 3), () async {
-      if (!mounted) return;
-
-      await _fetchData();
-
-      _startAutoRefresh();
-    });
   }
 
   Future<void> _fetchData() async {
@@ -696,23 +684,23 @@ class _IncomingStockState extends State<IncomingStock> {
 
                         const SizedBox(height: 10),
 
-                      /// ROWS
-                      ..._filteredPurchases.map(
-                        (purchase) => buildTableRow(
-                          po: purchase.poNumber,
-                          date: _formatDate(purchase.createdAt),
-                          supplier: purchase.supplierName,
-                          location: purchase.location,
-                          quantity: "${purchase.totalQuantity} Eggs",
-                          type: purchase.productName,
-                          status: purchase.status,
-                          isReceive:
-                              purchase.status.toUpperCase() ==
-                                  "READY FOR UNLOADING" ||
-                              purchase.status.toUpperCase() == "ARRIVAL",
-                          onReceive: () => _receiveStock(purchase.id),
+                        /// ROWS
+                        ..._filteredPurchases.map(
+                          (purchase) => buildTableRow(
+                            po: purchase.poNumber,
+                            date: _formatDate(purchase.createdAt),
+                            supplier: purchase.supplierName,
+                            location: purchase.location,
+                            quantity: "${purchase.totalQuantity} Eggs",
+                            type: purchase.productName,
+                            status: purchase.status,
+                            isReceive:
+                                purchase.status.toUpperCase() ==
+                                    "READY FOR UNLOADING" ||
+                                purchase.status.toUpperCase() == "ARRIVAL",
+                            onReceive: () => _receiveStock(purchase.id),
+                          ),
                         ),
-                      ),
 
                         if (_filteredPurchases.isEmpty)
                           const Padding(
