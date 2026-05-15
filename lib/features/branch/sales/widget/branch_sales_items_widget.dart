@@ -125,7 +125,7 @@ class _BranchSalesItemsWidgetState extends State<BranchSalesItemsWidget> {
 
                   child: Center(
                     child: Text(
-                      "DOZEN",
+                      "TRAYS",
 
                       style: TextStyle(
                         fontSize: 9,
@@ -232,7 +232,7 @@ class _BranchSalesItemsWidgetState extends State<BranchSalesItemsWidget> {
                     bool productMatched = false;
 
                     int totalEggs = 0;
-                    int totalDozens = 0;
+                    int totalTrays = 0;
 
                     /// LOOP SALES ITEMS
                     for (int i = 0; i < widget.salesItemCount; i++) {
@@ -255,13 +255,13 @@ class _BranchSalesItemsWidgetState extends State<BranchSalesItemsWidget> {
                         productMatched = true;
 
                         totalEggs += eggs;
-                        totalDozens += (eggs ~/ 12);
+                        totalTrays += (eggs ~/ 30);
                       }
                     }
 
                     /// OFFER APPLY
                     final bool eligible = offer["offer_type"] == "buy_x_get_y"
-                        ? totalDozens >=
+                        ? totalTrays >=
                               (int.tryParse(
                                     (offer["buy_qty"] ?? offer["buyTrays"] ?? 0)
                                         .toString(),
@@ -353,7 +353,7 @@ class _BranchSalesItemsWidgetState extends State<BranchSalesItemsWidget> {
                                 const SizedBox(height: 6),
 
                                 Text(
-                                  "Entered Dozens : $totalDozens",
+                                  "Entered Trays : $totalTrays",
                                   style: TextStyle(color: Colors.grey.shade700),
                                 ),
                               ],

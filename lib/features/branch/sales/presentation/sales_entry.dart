@@ -296,12 +296,11 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         return;
       }
 
-      /// WEBSITE LOGIC
       /// 1 tray = 30 eggs
       final int eggsPerTray = 30;
 
-      /// UI shows 12 eggs
-      final int computedEggs = dozenValue * 12;
+      /// UI shows Trays (30 eggs)
+      final int computedEggs = dozenValue * 30;
 
       /// RATE
       final double productRate = _extractRateFromProduct(product, eggsPerTray);
@@ -425,8 +424,8 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               style: AppTextStyles.bodyText14,
             ),
             SizedBox(height: getHeight(context, 20)),
-            buildWarehouseDropdown(),
 
+            // buildWarehouseDropdown(),
             SizedBox(height: getHeight(context, 20)),
 
             /// TRANSACTION DETAILS
@@ -537,16 +536,13 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                         ) ??
                         0;
 
-                    if (currentStock < 12) {
+                    if (currentStock < 30) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Out of Stock")),
                       );
 
                       return;
                     }
-
-                    /// REDUCE STOCK
-                    productList[productIndex]["stock_eggs"] = currentStock - 12;
                   }
 
                   int currentDozen =
@@ -578,7 +574,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                       ) ??
                       0;
 
-                  if (currentStock < 12) {
+                  if (currentStock < 30) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Out of Stock")),
                     );
@@ -586,9 +582,6 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                   }
 
                   setState(() {
-                    /// REDUCE STOCK
-                    productList[productIndex]["stock_eggs"] = currentStock - 12;
-
                     salesItemCount++;
 
                     _ensureRowCapacity(salesItemCount);
@@ -720,16 +713,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                   "login_user_id": loginUserId,
 
                   "branch_id": branchId,
-                  "type": (() {
-                    bool isBulk = false;
-                    for (var item in salesItems) {
-                      if ((int.tryParse(item["eggs"].toString()) ?? 0) >= 100) {
-                        isBulk = true;
-                        break;
-                      }
-                    }
-                    return isBulk ? "Bulk Sale" : "SALE";
-                  })(),
+                  "type": "SALE",
                   "customer_number": customerNumberController.text.trim(),
 
                   "customer_name": customerNameController.text.trim(),
@@ -748,19 +732,10 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
                   "customer_debit": double.tryParse(debtController.text) ?? 0,
 
-                  "cash_received": (() {
-                    bool needsReview = false;
-                    for (var item in salesItems) {
-                      if ((int.tryParse(item["eggs"].toString()) ?? 0) >= 100) {
-                        needsReview = true;
-                        break;
-                      }
-                    }
-                    if (needsReview) return 0.0;
-                    return double.tryParse(amountController.text) ??
-                        double.tryParse(_grandTotalValue()) ??
-                        0.0;
-                  })(),
+                  "cash_received":
+                      double.tryParse(amountController.text) ??
+                      double.tryParse(_grandTotalValue()) ??
+                      0.0,
 
                   "upi_app": null,
 
@@ -777,16 +752,6 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                   "sold_to": "Retail",
 
                   "notes": "",
-                  "status": (() {
-                    bool needsReview = false;
-                    for (var item in salesItems) {
-                      if ((int.tryParse(item["eggs"].toString()) ?? 0) >= 100) {
-                        needsReview = true;
-                        break;
-                      }
-                    }
-                    return needsReview ? "PENDING_REVIEW" : "APPROVED";
-                  })(),
 
                   "items": salesItems
                       .where(
@@ -824,10 +789,13 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                     if (status == "PENDING_REVIEW") {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text("Sale sent for approval"),
+                          content: Text(
+                            "Payment Received. Sale sent for admin approval.",
+                          ),
                           backgroundColor: Colors.orange,
                         ),
                       );
+                      Navigator.pop(context);
                     }
                     /// APPROVED DIRECTLY
                     else if (status == "APPROVED" || status == "SUCCESS") {
@@ -837,6 +805,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                           backgroundColor: Colors.green,
                         ),
                       );
+                      Navigator.pop(context);
                     }
                     /// REJECTED
                     else if (status == "REJECTED") {
@@ -1244,7 +1213,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
           SizedBox(width: getWidth(context, 6)),
 
-          /// DOZEN
+          /// TRAYS
           Container(
             width: getWidth(context, 40),
             height: getHeight(context, 38),

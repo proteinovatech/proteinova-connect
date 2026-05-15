@@ -69,9 +69,6 @@ class _PaymentSummaryWidgetState extends State<BranchPaymentSummaryWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final bool needsApproval = widget.selectedEggsMap.values.any(
-      (v) => (int.tryParse(v.toString()) ?? 0) >= 100,
-    );
     final double discountValue = double.tryParse(widget.offerDiscount) ?? 0;
 
     return Column(
@@ -152,36 +149,7 @@ class _PaymentSummaryWidgetState extends State<BranchPaymentSummaryWidget> {
           ),
         ),
 
-        const SizedBox(height: 15),
-
-        /// APPROVAL WARNING
-        if (needsApproval)
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.orange.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.orange.shade200),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.info_outline, color: Colors.orange.shade700, size: 20),
-                const SizedBox(width: 10),
-                const Expanded(
-                  child: Text(
-                    "High quantity detected (100+ eggs). This order requires Admin Approval before payment.",
-                    style: TextStyle(
-                      color: Color(0xffC05600),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+        const SizedBox(height: 24),
 
         /// SUBMIT BUTTON
         SizedBox(
@@ -191,17 +159,15 @@ class _PaymentSummaryWidgetState extends State<BranchPaymentSummaryWidget> {
             onPressed: isSubmitting
                 ? null
                 : () async {
-                    if (!needsApproval) {
-                      if (widget.amountController.text.trim().isEmpty ||
-                          widget.amountController.text.trim() == "0") {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            backgroundColor: Colors.red,
-                            content: Text("Please enter payment amount"),
-                          ),
-                        );
-                        return;
-                      }
+                    if (widget.amountController.text.trim().isEmpty ||
+                        widget.amountController.text.trim() == "0") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          backgroundColor: Colors.red,
+                          content: Text("Please enter payment amount"),
+                        ),
+                      );
+                      return;
                     }
 
                     setState(() {
@@ -210,96 +176,6 @@ class _PaymentSummaryWidgetState extends State<BranchPaymentSummaryWidget> {
 
                     try {
                       await widget.onSubmit();
-
-                      if (!mounted) return;
-
-                      if (!needsApproval) {
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (context) {
-                            return Dialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Container(
-                                width: 350,
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      height: 80,
-                                      width: 80,
-                                      decoration: BoxDecoration(
-                                        color: Colors.green.shade100,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.check_circle,
-                                        color: Colors.green,
-                                        size: 60,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    const Text(
-                                      "Order Saved Successfully!",
-                                      style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Text(
-                                      "Grand Total : ₹ ${widget.grandTotal}",
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 24),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: OutlinedButton(
-                                            onPressed: () {
-                                              Navigator.pop(context); // Close dialog
-                                              Navigator.pop(context, true); // Go back
-                                            },
-                                            child: const Text("Close"),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: ElevatedButton.icon(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.amber,
-                                            ),
-                                            onPressed: () async {
-                                              // Print bill logic
-                                            },
-                                            icon: const Icon(
-                                              Icons.print,
-                                              color: Colors.black,
-                                              size: 20,
-                                            ),
-                                            label: const Text(
-                                              "Print",
-                                              style: TextStyle(
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      }
                     } catch (e) {
                       if (!mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -317,8 +193,7 @@ class _PaymentSummaryWidgetState extends State<BranchPaymentSummaryWidget> {
                     }
                   },
             style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  needsApproval ? Colors.orange : const Color(0xff12B321),
+              backgroundColor: const Color(0xff12B321),
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -336,33 +211,29 @@ class _PaymentSummaryWidgetState extends State<BranchPaymentSummaryWidget> {
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      const Text(
+                        "Complete Transaction",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Icon(
+                        Icons.currency_rupee,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 2),
                       Text(
-                        needsApproval
-                            ? "Request Admin Approval"
-                            : "Complete Transaction",
+                        widget.grandTotal,
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      if (!needsApproval) ...[
-                        const SizedBox(width: 12),
-                        const Icon(
-                          Icons.currency_rupee,
-                          color: Colors.white,
-                          size: 14,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          widget.grandTotal,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
                     ],
                   ),
           ),
