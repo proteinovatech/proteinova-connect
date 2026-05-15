@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/Distribution/presentation/dispatch_planning_page.dart';
@@ -21,24 +22,44 @@ class _DistributionPageState extends State<DistributionPage> {
   int currentPage = 1;
   final TextEditingController _searchController = TextEditingController();
   String _selectedStatus = "";
+  Timer? _refreshTimer;
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
     _fetchData();
+    _startAutoRefresh();
   }
 
-  Future<void> _fetchData() async {
-    setState(() => isLoading = true);
+  void _startAutoRefresh() {
+    _refreshTimer?.cancel();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (mounted && !isLoading) {
+        _fetchData(isAuto: true);
+      }
+    });
+  }
+
+  Future<void> _fetchData({bool isAuto = false}) async {
+    if (!isAuto) setState(() => isLoading = true);
     final data = await DispatchService.fetchDispatchDashboard(
       page: currentPage,
       search: _searchController.text,
       status: _selectedStatus,
     );
-    setState(() {
-      dashboardData = data;
-      isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        dashboardData = data;
+        isLoading = false;
+      });
+    }
   }
 
   Color _getStatusColor(String status) {
@@ -151,6 +172,7 @@ class _DistributionPageState extends State<DistributionPage> {
                             count: "${cards?['active_vehicles'] ?? 0}",
                             subtitle: "Vehicles currently available",
                             context: context,
+                            data: dispatches,
                           ),
                         ),
                         SizedBox(width: getWidth(context, 12)),
@@ -162,6 +184,7 @@ class _DistributionPageState extends State<DistributionPage> {
                             count: "${cards?['todays_dispatches'] ?? 0}",
                             subtitle: "Dispatched today",
                             context: context,
+                            data: dispatches,
                           ),
                         ),
                       ],
@@ -177,6 +200,7 @@ class _DistributionPageState extends State<DistributionPage> {
                             count: "${cards?['in_transit'] ?? 0}",
                             subtitle: "Deliveries in progress",
                             context: context,
+                            data: dispatches,
                           ),
                         ),
                         SizedBox(width: getWidth(context, 12)),
@@ -188,6 +212,7 @@ class _DistributionPageState extends State<DistributionPage> {
                             count: "${cards?['total_delivered_today'] ?? 0}",
                             subtitle: "Eggs delivered today",
                             context: context,
+                            data: dispatches,
                           ),
                         ),
                       ],

@@ -118,8 +118,8 @@ class _IncomingStockState extends State<IncomingStock> {
         list = list
             .where(
               (p) =>
-                  p.status.toUpperCase() == "ARRIVAL" ||
-                  p.status.toUpperCase() == "READY_FOR_UNLOADING",
+                  p.purchaseStatus.toUpperCase() == "PURCHASED" &&
+                  p.movementStatus.toUpperCase() == "RECEIVED",
             )
             .toList();
       } else if (selectedStatus == "In Transit") {
@@ -177,8 +177,8 @@ class _IncomingStockState extends State<IncomingStock> {
     return purchases
         .where(
           (p) =>
-              p.status.toUpperCase() == "ARRIVAL" ||
-              p.status.toUpperCase() == "READY_FOR_UNLOADING",
+              p.purchaseStatus.toUpperCase() == "PURCHASED" &&
+              p.movementStatus.toUpperCase() == "RECEIVED",
         )
         .length;
   }
@@ -260,7 +260,10 @@ class _IncomingStockState extends State<IncomingStock> {
                                   type: p.productName,
                                   status: p.status,
                                   isReceive:
-                                      p.status.toUpperCase() != "RECEIVED",
+                                      p.purchaseStatus.toUpperCase() ==
+                                          "PURCHASED" &&
+                                      p.movementStatus.toUpperCase() ==
+                                          "RECEIVED",
                                   onReceive: () {
                                     Navigator.pop(context);
                                     _receiveStock(p.id);
@@ -459,9 +462,8 @@ class _IncomingStockState extends State<IncomingStock> {
                     _showShipmentModal(
                       "Ready for Unloading",
                       purchases.where((p) {
-                        final status = p.status.toUpperCase();
-                        return status == "ARRIVAL" ||
-                            status == "READY_FOR_UNLOADING";
+                        return p.purchaseStatus.toUpperCase() == "PURCHASED" &&
+                            p.movementStatus.toUpperCase() == "RECEIVED";
                       }).toList(),
                     );
                   },
@@ -669,16 +671,16 @@ class _IncomingStockState extends State<IncomingStock> {
                               ),
                             ),
 
-                            Expanded(
-                              flex: 1,
-                              child: Text(
-                                "ACTION",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ),
+                            // Expanded(
+                            //   flex: 1,
+                            //   child: Text(
+                            //     "ACTION",
+                            //     style: TextStyle(
+                            //       fontWeight: FontWeight.bold,
+                            //       fontSize: 11,
+                            //     ),
+                            //   ),
+                            // ),
                           ],
                         ),
 
@@ -695,9 +697,16 @@ class _IncomingStockState extends State<IncomingStock> {
                             type: purchase.productName,
                             status: purchase.status,
                             isReceive:
+<<<<<<< HEAD
                                 purchase.status.toUpperCase() ==
                                     "READY FOR UNLOADING" ||
                                 purchase.status.toUpperCase() == "ARRIVAL",
+=======
+                                purchase.purchaseStatus.toUpperCase() ==
+                                    "PURCHASED" &&
+                                purchase.movementStatus.toUpperCase() ==
+                                    "RECEIVED",
+>>>>>>> 684384e99c646bb4306eb5cb488a2232957ef4bc
                             onReceive: () => _receiveStock(purchase.id),
                           ),
                         ),

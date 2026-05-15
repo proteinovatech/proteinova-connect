@@ -1,7 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/supplier_request_model.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/services/supplier_service.dart';
 
-class AddSupplierScreen extends StatelessWidget {
+class AddSupplierScreen extends StatefulWidget {
   const AddSupplierScreen({super.key});
+
+  @override
+  State<AddSupplierScreen> createState() => _AddSupplierScreenState();
+}
+
+class _AddSupplierScreenState extends State<AddSupplierScreen> {
+   final TextEditingController supplierController =
+      TextEditingController();
+
+  final TextEditingController contactController =
+      TextEditingController();
+
+  final TextEditingController emailController =
+      TextEditingController();
+
+  final TextEditingController phoneController =
+      TextEditingController();
+
+  final TextEditingController locationController =
+    TextEditingController();
+
+  String region = "Select region";
+
+  String status = "Active";
 
   @override
   Widget build(BuildContext context) {
@@ -46,40 +74,29 @@ class AddSupplierScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 /// SUPPLIER NAME
-                const Text(
+                Text(
                   "Supplier Company Name",
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                  style: AppTextStyles.buttonText16
                 ),
 
                 const SizedBox(height: 8),
 
                 TextField(
-                  decoration: InputDecoration(
-                    hintText: "e.g. Apex Farms",
-                    hintStyle: TextStyle(
-                      color: Colors.grey.shade500,
-                      fontSize: 13,
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 14,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Color(0xfffacc15)),
-                    ),
+                controller: supplierController,
+                decoration: InputDecoration(
+                  hintText: "e.g. Apex Farms",
+                  border: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(16),
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 18,
                   ),
                 ),
+              ),
+
 
                 const SizedBox(height: 18),
 
@@ -91,52 +108,38 @@ class AddSupplierScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                           Text(
                             "Location / Region",
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: AppTextStyles.buttonText16
                           ),
 
                           const SizedBox(height: 8),
 
-                          DropdownButtonFormField<String>(
-                            value: "Select region...",
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 14,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                            ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: "Select region...",
-                                child: Text("Select region.."),
-                              ),
-                              DropdownMenuItem(
-                                value: "North Region",
-                                child: Text("North Region"),
-                              ),
-                              DropdownMenuItem(
-                                value: "South Region",
-                                child: Text("South Region"),
-                              ),
-                            ],
-                            onChanged: (value) {},
-                          ),
+                          TextField(
+  controller: locationController,
+
+  style: const TextStyle(
+    fontSize: 15,
+    color: Colors.black,
+  ),
+
+  decoration: InputDecoration(
+    hintText: "e.g. Hyderabad, India",
+
+    isDense: true,
+
+    contentPadding:
+        const EdgeInsets.symmetric(
+      horizontal: 14,
+      vertical: 16,
+    ),
+
+    border: OutlineInputBorder(
+      borderRadius:
+          BorderRadius.circular(16),
+    ),
+  ),
+),
                         ],
                       ),
                     ),
@@ -148,48 +151,55 @@ class AddSupplierScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                           Text(
                             "Status",
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: AppTextStyles.buttonText16
                           ),
 
                           const SizedBox(height: 8),
 
                           DropdownButtonFormField<String>(
-                            value: "Active",
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 14,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                            ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: "Active",
-                                child: Text("Active"),
-                              ),
-                              DropdownMenuItem(
-                                value: "Inactive",
-                                child: Text("Inactive"),
-                              ),
-                            ],
-                            onChanged: (value) {},
-                          ),
+            isExpanded: true,
+            value: status,
+
+            style: const TextStyle(
+              fontSize: 15,
+              color: Colors.black,
+            ),
+
+            items: ["Active", "Inactive"]
+                .map(
+                  (e) => DropdownMenuItem(
+                    value: e,
+                    child: Text(
+                      e,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                )
+                .toList(),
+
+            onChanged: (value) {
+              setState(() {
+                status = value!;
+              });
+            },
+
+            decoration: InputDecoration(
+              isDense: true,
+
+              contentPadding:
+                  const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 14,
+              ),
+
+              border: OutlineInputBorder(
+                borderRadius:
+                    BorderRadius.circular(16),
+              ),
+            ),
+          ),
                         ],
                       ),
                     ),
@@ -199,34 +209,29 @@ class AddSupplierScreen extends StatelessWidget {
                 const SizedBox(height: 18),
 
                 /// PRIMARY CONTACT
-                const Text(
+                 Text(
                   "Primary Contact Name",
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                  style: AppTextStyles.buttonText16
                 ),
 
                 const SizedBox(height: 8),
 
                 TextField(
-                  decoration: InputDecoration(
-                    hintText: "e.g. Jane Doe",
-                    hintStyle: TextStyle(
-                      color: Colors.grey.shade500,
-                      fontSize: 13,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 14,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
-                    ),
+                controller: contactController,
+                decoration: InputDecoration(
+                  hintText: "e.g. Jane Doe",
+                  border: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(16),
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 18,
                   ),
                 ),
+              ),
+
 
                 const SizedBox(height: 18),
 
@@ -238,41 +243,31 @@ class AddSupplierScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                           Text(
                             "Email Address",
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: AppTextStyles.buttonText16
                           ),
 
                           const SizedBox(height: 8),
 
                           TextField(
-                            decoration: InputDecoration(
-                              hintText: "name@company.com",
-                              hintStyle: TextStyle(
-                                color: Colors.grey.shade500,
-                                fontSize: 13,
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 14,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
+                          controller: emailController,
+                          decoration: InputDecoration(
+                            hintText:
+                                "name@company.com",
+                            border:
+                                OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.circular(
+                                      16),
+                            ),
+                            contentPadding:
+                                const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 18,
                             ),
                           ),
+                        ),
                         ],
                       ),
                     ),
@@ -284,41 +279,31 @@ class AddSupplierScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                           Text(
                             "Phone Number",
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: AppTextStyles.buttonText16
                           ),
 
                           const SizedBox(height: 8),
 
-                          TextField(
-                            decoration: InputDecoration(
-                              hintText: "+1 (555) 000-0000",
-                              hintStyle: TextStyle(
-                                color: Colors.grey.shade500,
-                                fontSize: 13,
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 14,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                            ),
-                          ),
+                           TextField(
+  controller: phoneController,
+  keyboardType: TextInputType.number,
+  inputFormatters: [
+    FilteringTextInputFormatter.digitsOnly,
+    LengthLimitingTextInputFormatter(10),
+  ],
+  decoration: InputDecoration(
+    hintText: "+91 9876543210",
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+    ),
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 18,
+    ),
+  ),
+),
                         ],
                       ),
                     ),
@@ -373,14 +358,52 @@ class AddSupplierScreen extends StatelessWidget {
                     //   ),
                     // ),
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context, {
-                          "supplier": "Apex Farms",
-                          "contactperson": "Robert",
-                          "contactnumber": "+91 1234567890",
-                          "status": "Active",
-                        });
-                      },
+                     onPressed: () async {
+
+  try {
+
+    final supplier = SupplierRequestModel(
+
+      supplierCompanyName:
+          supplierController.text,
+
+      supplierName:
+          contactController.text,
+
+      email:
+          emailController.text,
+
+      phoneNumber:
+          phoneController.text,
+
+      supplierLocation:
+          locationController.text,
+
+      status:
+          status.toUpperCase(),
+    );
+
+    await SupplierService().postSupplier(
+      supplier,
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Supplier Added"),
+      ),
+    );
+
+    Navigator.pop(context);
+
+  } catch (e) {
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Error: $e"),
+      ),
+    );
+  }
+},
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xfffacc15),
                         foregroundColor: Colors.black,

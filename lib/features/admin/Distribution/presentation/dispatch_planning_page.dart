@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
@@ -41,16 +42,52 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
     },
   ];
 
+  final List<String> _productCategories = [
+    "White large",
+    "White correct size",
+    "white export",
+    "white medium",
+    "white bullet",
+    "white small eggs",
+    "Brown eggs",
+    "country eggs",
+    "quail eggs",
+    "duck eggs",
+  ];
+
   bool _isSaving = false;
+  Timer? _refreshTimer;
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    _dispatchDateController.dispose();
+    _arrivalDateController.dispose();
+    _vehicleNoController.dispose();
+    _driverNameController.dispose();
+    _driverNumberController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
     _dispatchDateController.text = DateTime.now().toString().split(' ').first;
     _fetchInitialData();
+    _startAutoRefresh();
   }
 
-  Future<void> _fetchInitialData() async {
+  void _startAutoRefresh() {
+    _refreshTimer?.cancel();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (mounted && !_isSaving) {
+        _fetchInitialData(isAuto: true);
+      }
+    });
+  }
+
+  Future<void> _fetchInitialData({bool isAuto = false}) async {
     try {
       final branches = await DispatchService.fetchBranches();
       final stock = await DispatchService.fetchWarehouseStock();
@@ -58,12 +95,25 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
         setState(() {
           _branches = branches;
           _availableStock = stock;
+
+          // Update available eggs for current items if they match categories
+          for (var item in _dispatchItems) {
+            if (item['category'] != null) {
+              final s = _availableStock.firstWhere(
+                (st) =>
+                    st['category'].toString().toLowerCase() ==
+                    item['category'].toString().toLowerCase(),
+                orElse: () => {'total_eggs': 0},
+              );
+              item['available_eggs'] = s['total_eggs'];
+            }
+          }
         });
       }
     } catch (e) {
-      if (mounted) {
+      if (!isAuto && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error loading initial data: $e")),
+          SnackBar(content: Text("Error loading data: $e")),
         );
       }
     }
@@ -80,19 +130,23 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
     });
   }
 
-  void _updateItem(int index, {String? category, int? eggs}) {
+  void _updateItem(int index, {String? category, int? eggs, int? trays}) {
     setState(() {
       if (category != null) {
         _dispatchItems[index]['category'] = category;
         final stock = _availableStock.firstWhere(
-          (s) => s['category'] == category,
+          (s) => s['category'].toString().toLowerCase() == category.toLowerCase(),
           orElse: () => {'total_eggs': 0},
         );
         _dispatchItems[index]['available_eggs'] = stock['total_eggs'];
       }
       if (eggs != null) {
         _dispatchItems[index]['eggs_to_dispatch'] = eggs;
-        _dispatchItems[index]['trays_to_dispatch'] = (eggs / 30).ceil();
+        _dispatchItems[index]['trays_to_dispatch'] = (eggs / 30).floor();
+      }
+      if (trays != null) {
+        _dispatchItems[index]['trays_to_dispatch'] = trays;
+        _dispatchItems[index]['eggs_to_dispatch'] = trays * 30;
       }
     });
   }
@@ -118,6 +172,13 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
         _arrivalDateController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill all required fields")),
+      );
+      return;
+    }
+
+    if (_driverNumberController.text.length != 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Driver number must be exactly 10 digits")),
       );
       return;
     }
@@ -150,22 +211,26 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
     setState(() => _isSaving = true);
 
     try {
+      final selectedBranch = _branches.firstWhere(
+        (b) => b['id'] == _selectedBranchId,
+        orElse: () => {},
+      );
+
       final dispatchData = {
-        "branch_id": _selectedBranchId,
+        "shop_name": selectedBranch['branch_name'] ?? "",
         "dispatch_date": _dispatchDateController.text,
-        "expected_arrival_date": _arrivalDateController.text,
+        "arrival_date": _arrivalDateController.text,
         "vehicle_number": _vehicleNoController.text,
         "driver_name": _driverNameController.text,
-        "driver_number": _driverNumberController.text,
+        "driver_phone": _driverNumberController.text,
         "notes": _notesController.text,
-        "empty_plastic_trays": _emptyPlasticTrays,
-        "empty_paper_trays": _emptyPaperTrays,
-        "dispatch_items": activeItems
+        "plastic_trays": _emptyPlasticTrays,
+        "paper_trays": _emptyPaperTrays,
+        "items": activeItems
             .map(
               (i) => {
-                "product_category": i['category'],
-                "quantity": i['eggs_to_dispatch'],
-                "quantity_trays": i['trays_to_dispatch'],
+                "egg_category_grade": i['category'],
+                "trays": i['trays_to_dispatch'],
               },
             )
             .toList(),
@@ -226,22 +291,20 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
       ),
 
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-
-            children: [
-              /// TITLE
-              // const Text("New Dispatch", style: AppTextStyles.headingText25),
-
-              // const SizedBox(height: 4),
-
-              // Text(
-              //   "Manage dispatching to update inventory",
-              //   style: AppTextStyles.bodyText12,
-              // ),
+        child: RefreshIndicator(
+          onRefresh: () => _fetchInitialData(),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("New Dispatch", style: AppTextStyles.headingText25),
+                const SizedBox(height: 4),
+                Text(
+                  "Manage dispatching to update inventory",
+                  style: AppTextStyles.bodyText12,
+                ),
 
               //const SizedBox(height: 22),
 
@@ -490,7 +553,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                         Expanded(
                           flex: 2,
                           child: Text(
-                            "Available\n(Eggs)",
+                            "Available\n(Trays)",
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 9,
@@ -510,9 +573,9 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                           ),
                         ),
                         Expanded(
-                          flex: 2,
+                          flex: 1,
                           child: Text(
-                            "Trays\n(Auto)",
+                            "Action",
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 9,
@@ -556,20 +619,35 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                       "Category",
                                       style: TextStyle(fontSize: 11),
                                     ),
-                                    items: _availableStock
-                                        .map(
-                                          (s) => DropdownMenuItem<String>(
-                                            value: s['category'],
-                                            child: Text(
-                                              s['category'] ?? "",
-                                              style: const TextStyle(
-                                                fontSize: 11,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
+                                    items: _productCategories.map((cat) {
+                                      final stock = _availableStock.firstWhere(
+                                        (s) =>
+                                            s['category']
+                                                .toString()
+                                                .toLowerCase() ==
+                                            cat.toLowerCase(),
+                                        orElse: () => {'total_eggs': 0},
+                                      );
+                                      final int count =
+                                          stock['total_eggs'] ?? 0;
+
+                                      return DropdownMenuItem<String>(
+                                        value: cat,
+                                        child: Text(
+                                          "$cat (${count})",
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: count > 0
+                                                ? Colors.green
+                                                : Colors.red,
+                                            fontWeight: count > 0
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
                                           ),
-                                        )
-                                        .toList(),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      );
+                                    }).toList(),
                                     onChanged: (val) =>
                                         _updateItem(index, category: val),
                                   ),
@@ -581,10 +659,13 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                               flex: 2,
                               child: Center(
                                 child: Text(
-                                  "${item['available_eggs']}",
-                                  style: const TextStyle(
+                                  "${(item['available_eggs'] / 30).floor()} T",
+                                  style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
+                                    color: (item['available_eggs'] ?? 0) >= 30
+                                        ? Colors.green
+                                        : Colors.red,
                                   ),
                                 ),
                               ),
@@ -609,7 +690,13 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                   ),
                                   decoration: const InputDecoration(
                                     border: InputBorder.none,
+                                    hintText: "0",
                                   ),
+                                  controller: TextEditingController(
+                                    text: item['eggs_to_dispatch'].toString(),
+                                  )..selection = TextSelection.collapsed(
+                                      offset: item['eggs_to_dispatch'].toString().length,
+                                    ),
                                   onChanged: (val) => _updateItem(
                                     index,
                                     eggs: int.tryParse(val) ?? 0,
@@ -627,16 +714,44 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                   border: Border.all(
                                     color: Colors.grey.shade300,
                                   ),
-                                  color: Colors.grey.shade50,
                                 ),
-                                child: Center(
-                                  child: Text(
-                                    "${item['trays_to_dispatch']}",
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                child: TextField(
+                                  textAlign: TextAlign.center,
+                                  keyboardType: TextInputType.number,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
                                   ),
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: "0",
+                                  ),
+                                  controller: TextEditingController(
+                                    text: item['trays_to_dispatch'].toString(),
+                                  )..selection = TextSelection.collapsed(
+                                      offset: item['trays_to_dispatch'].toString().length,
+                                    ),
+                                  onChanged: (val) => _updateItem(
+                                    index,
+                                    trays: int.tryParse(val) ?? 0,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: getWidth(context, 8)),
+                            Expanded(
+                              flex: 1,
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (_dispatchItems.length > 1) {
+                                    setState(() {
+                                      _dispatchItems.removeAt(index);
+                                    });
+                                  }
+                                },
+                                child: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.red,
                                 ),
                               ),
                             ),
@@ -1005,8 +1120,9 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   /// CARD
   static Widget buildCard({required Widget child}) {

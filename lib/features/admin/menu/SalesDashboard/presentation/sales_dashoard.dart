@@ -544,7 +544,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                                 child: const Row(
                                   children: [
                                     Expanded(
-                                      flex: 26,
+                                      flex: 32,
 
                                       child: Text(
                                         "ORDER DETAILS",
@@ -558,7 +558,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                                     ),
 
                                     Expanded(
-                                      flex: 16,
+                                      flex: 20,
 
                                       child: Center(
                                         child: Text(
@@ -574,7 +574,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                                     ),
 
                                     Expanded(
-                                      flex: 16,
+                                      flex: 20,
 
                                       child: Center(
                                         child: Text(
@@ -590,7 +590,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                                     ),
 
                                     Expanded(
-                                      flex: 14,
+                                      flex: 18,
 
                                       child: Center(
                                         child: Text(
@@ -606,7 +606,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                                     ),
 
                                     Expanded(
-                                      flex: 14,
+                                      flex: 18,
 
                                       child: Center(
                                         child: Text(
@@ -622,7 +622,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                                     ),
 
                                     Expanded(
-                                      flex: 14,
+                                      flex: 18,
 
                                       child: Center(
                                         child: Text(
@@ -638,7 +638,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                                     ),
 
                                     Expanded(
-                                      flex: 10,
+                                      flex: 14,
 
                                       child: Center(
                                         child: Text(

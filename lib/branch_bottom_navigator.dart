@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
+import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
@@ -34,9 +37,11 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.pushReplacement(
+              context.read<AuthBloc>().add(LogoutRequested());
+              Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (_) => SignupScreen()),
+                MaterialPageRoute(builder: (_) => const SignupScreen()),
+                (route) => false,
               );
             },
             child: Text("Logout", style: TextStyle(color: Colors.red)),
@@ -80,7 +85,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
 
   int selectedIndex = 0;
 
-  final List<Widget> pages = [BranchDashboard(), Sales(), DailyClosing()];
+  final List<Widget> pages = [BranchDashboard(), Sales(), Inventory(), DailyClosing()];
 
   @override
   Widget build(BuildContext context) {
@@ -98,9 +103,9 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
           children: [
             _buildNavItem(Icons.grid_view, 0),
             _buildNavItem(Icons.shopping_cart_outlined, 1),
-            // _buildNavItem(Icons.inventory_2_outlined, 2),
-            _buildNavItem(Icons.receipt_long, 2),
-            _buildNavItem(Icons.menu_outlined, 3),
+            _buildNavItem(Icons.inventory_2_outlined, 2),
+            _buildNavItem(Icons.receipt_long, 3),
+            _buildNavItem(Icons.menu_outlined, 4),
           ],
         ),
       ),
@@ -112,7 +117,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
 
     return GestureDetector(
       onTap: () {
-        if (index == 3) {
+        if (index == 4) {
           _openSideMenu();
         } else {
           setState(() {
@@ -150,10 +155,11 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
         return "Dashboard";
       case 1:
         return "Sales";
-
       case 2:
-        return "Daily closing";
+        return "Inventory";
       case 3:
+        return "Daily closing";
+      case 4:
         return "Menu";
       default:
         return "";

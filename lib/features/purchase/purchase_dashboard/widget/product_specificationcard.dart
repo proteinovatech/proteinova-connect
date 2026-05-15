@@ -325,20 +325,13 @@ void updateTotalEggs(ProductInput product) {
         const Text("NECC Rate(per egg)", style: AppTextStyles.buttonText16), 
         SizedBox(height: getHeight(context, 6)),
         _buildField(
-          controller: neccControllers[index],
-          hint: "NECC Rate",
-          isNumeric: true,
-          prefixText: "₹ ",
-          icon: Icons.trending_up_outlined,
-          onChanged: (value) {
-  setState(() {
-    product.necc = value;
-  });
-
-  calculateFinalRate(index);
-   widget.onProductsChanged(products);
-},
-        ),
+  controller: neccControllers[index],
+  hint: "NECC Rate",
+  isNumeric: true,
+  prefixText: "₹ ",
+  icon: Icons.trending_up_outlined,
+  isDisplayOnly: true,
+),
 
        SizedBox(height: getHeight(context, 14)),
          const Text("Market Minus(per egg)", style: AppTextStyles.buttonText16),

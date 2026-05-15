@@ -31,7 +31,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     await Future.delayed(const Duration(seconds: 1));
 
     await loadDashboard();
-
+    if (!mounted) return;
     setState(() {
       isRefreshing = false;
     });
@@ -46,12 +46,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Future<void> loadDashboard() async {
     try {
       final data = await DashboardService().fetchDashboard();
-
+      if (!mounted) return;
       setState(() {
         dashboard = data;
         isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         isLoading = false;
       });
