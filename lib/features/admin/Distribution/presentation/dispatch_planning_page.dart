@@ -41,6 +41,19 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
     },
   ];
 
+  final List<String> _productCategories = [
+    "White large",
+    "White correct size",
+    "white export",
+    "white medium",
+    "white bullet",
+    "white small eggs",
+    "Brown eggs",
+    "country eggs",
+    "quail eggs",
+    "duck eggs",
+  ];
+
   bool _isSaving = false;
 
   @override
@@ -80,19 +93,23 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
     });
   }
 
-  void _updateItem(int index, {String? category, int? eggs}) {
+  void _updateItem(int index, {String? category, int? eggs, int? trays}) {
     setState(() {
       if (category != null) {
         _dispatchItems[index]['category'] = category;
         final stock = _availableStock.firstWhere(
-          (s) => s['category'] == category,
+          (s) => s['category'].toString().toLowerCase() == category.toLowerCase(),
           orElse: () => {'total_eggs': 0},
         );
         _dispatchItems[index]['available_eggs'] = stock['total_eggs'];
       }
       if (eggs != null) {
         _dispatchItems[index]['eggs_to_dispatch'] = eggs;
-        _dispatchItems[index]['trays_to_dispatch'] = (eggs / 30).ceil();
+        _dispatchItems[index]['trays_to_dispatch'] = (eggs / 30).floor();
+      }
+      if (trays != null) {
+        _dispatchItems[index]['trays_to_dispatch'] = trays;
+        _dispatchItems[index]['eggs_to_dispatch'] = trays * 30;
       }
     });
   }
@@ -150,22 +167,26 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
     setState(() => _isSaving = true);
 
     try {
+      final selectedBranch = _branches.firstWhere(
+        (b) => b['id'] == _selectedBranchId,
+        orElse: () => {},
+      );
+
       final dispatchData = {
-        "branch_id": _selectedBranchId,
+        "shop_name": selectedBranch['branch_name'] ?? "",
         "dispatch_date": _dispatchDateController.text,
-        "expected_arrival_date": _arrivalDateController.text,
+        "arrival_date": _arrivalDateController.text,
         "vehicle_number": _vehicleNoController.text,
         "driver_name": _driverNameController.text,
-        "driver_number": _driverNumberController.text,
+        "driver_phone": _driverNumberController.text,
         "notes": _notesController.text,
-        "empty_plastic_trays": _emptyPlasticTrays,
-        "empty_paper_trays": _emptyPaperTrays,
-        "dispatch_items": activeItems
+        "plastic_trays": _emptyPlasticTrays,
+        "paper_trays": _emptyPaperTrays,
+        "items": activeItems
             .map(
               (i) => {
-                "product_category": i['category'],
-                "quantity": i['eggs_to_dispatch'],
-                "quantity_trays": i['trays_to_dispatch'],
+                "egg_category_grade": i['category'],
+                "trays": i['trays_to_dispatch'],
               },
             )
             .toList(),
@@ -233,15 +254,14 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
 
             children: [
-              /// TITLE
-              // const Text("New Dispatch", style: AppTextStyles.headingText25),
+              const Text("New Dispatch", style: AppTextStyles.headingText25),
 
-              // const SizedBox(height: 4),
+              const SizedBox(height: 4),
 
-              // Text(
-              //   "Manage dispatching to update inventory",
-              //   style: AppTextStyles.bodyText12,
-              // ),
+              Text(
+                "Manage dispatching to update inventory",
+                style: AppTextStyles.bodyText12,
+              ),
 
               //const SizedBox(height: 22),
 
@@ -510,9 +530,9 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                           ),
                         ),
                         Expanded(
-                          flex: 2,
+                          flex: 1,
                           child: Text(
-                            "Trays\n(Auto)",
+                            "Action",
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 9,
@@ -556,12 +576,12 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                       "Category",
                                       style: TextStyle(fontSize: 11),
                                     ),
-                                    items: _availableStock
+                                    items: _productCategories
                                         .map(
-                                          (s) => DropdownMenuItem<String>(
-                                            value: s['category'],
+                                          (cat) => DropdownMenuItem<String>(
+                                            value: cat,
                                             child: Text(
-                                              s['category'] ?? "",
+                                              cat,
                                               style: const TextStyle(
                                                 fontSize: 11,
                                               ),
@@ -609,7 +629,13 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                   ),
                                   decoration: const InputDecoration(
                                     border: InputBorder.none,
+                                    hintText: "0",
                                   ),
+                                  controller: TextEditingController(
+                                    text: item['eggs_to_dispatch'].toString(),
+                                  )..selection = TextSelection.collapsed(
+                                      offset: item['eggs_to_dispatch'].toString().length,
+                                    ),
                                   onChanged: (val) => _updateItem(
                                     index,
                                     eggs: int.tryParse(val) ?? 0,
@@ -627,16 +653,44 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                   border: Border.all(
                                     color: Colors.grey.shade300,
                                   ),
-                                  color: Colors.grey.shade50,
                                 ),
-                                child: Center(
-                                  child: Text(
-                                    "${item['trays_to_dispatch']}",
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                child: TextField(
+                                  textAlign: TextAlign.center,
+                                  keyboardType: TextInputType.number,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
                                   ),
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: "0",
+                                  ),
+                                  controller: TextEditingController(
+                                    text: item['trays_to_dispatch'].toString(),
+                                  )..selection = TextSelection.collapsed(
+                                      offset: item['trays_to_dispatch'].toString().length,
+                                    ),
+                                  onChanged: (val) => _updateItem(
+                                    index,
+                                    trays: int.tryParse(val) ?? 0,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: getWidth(context, 8)),
+                            Expanded(
+                              flex: 1,
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (_dispatchItems.length > 1) {
+                                    setState(() {
+                                      _dispatchItems.removeAt(index);
+                                    });
+                                  }
+                                },
+                                child: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.red,
                                 ),
                               ),
                             ),
