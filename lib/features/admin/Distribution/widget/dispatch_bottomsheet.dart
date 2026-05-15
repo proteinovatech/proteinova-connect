@@ -10,13 +10,18 @@ Widget dispatchBottomSheet(
 
   // Filter logic based on title
   List<dynamic> filteredRecords = [];
+  final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
   if (title == "Active Vehicles") {
     // Show dispatches that are currently active (In Transit, Arrival, Loading)
+    // AND are not old arrivals from past days (matching backend logic)
     filteredRecords = records.where((r) {
       final status = r['status']?.toString().toUpperCase() ?? "";
-      return status == 'IN_TRANSIT' ||
-          status == 'ARRIVAL' ||
-          status == 'LOADING';
+      final date = r['date']?.toString().split('T').first ?? "";
+      bool isActiveStatus =
+          ['IN_TRANSIT', 'ARRIVAL', 'LOADING'].contains(status);
+      bool isRecentOrFuture = date.compareTo(today) >= 0;
+      return isActiveStatus && isRecentOrFuture;
     }).toList();
   } else if (title == "In Transit") {
     // Strictly In Transit
