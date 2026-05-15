@@ -12,279 +12,680 @@ Widget dispatchCard({
   required Color statusColor,
   required BuildContext context,
 }) {
+
+  ValueNotifier<bool> showLocation =
+      ValueNotifier(false);
+
+  ValueNotifier<bool> showVehicle =
+      ValueNotifier(false);
+
   return Container(
+
     width: double.infinity,
-    margin: EdgeInsets.only(bottom: getHeight(context, 14)),
-    padding: EdgeInsets.all(getWidth(context, 16)),
+
+    margin: EdgeInsets.only(
+      bottom: getHeight(context, 14),
+    ),
+
+    padding: EdgeInsets.all(
+      getWidth(context, 14),
+    ),
+
     decoration: BoxDecoration(
+
       color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: Colors.grey.shade200),
+
+      borderRadius:
+          BorderRadius.circular(18),
+
+      border: Border.all(
+        color: Colors.grey.shade200,
+      ),
+
       boxShadow: [
+
         BoxShadow(
-          color: Colors.black.withOpacity(0.04),
+
+          color:
+              Colors.black.withOpacity(0.04),
+
           blurRadius: 10,
+
           offset: const Offset(0, 4),
         ),
       ],
     ),
 
     child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
+
       children: [
-        /// TOP HEADER
+
+        /// TOP ROW
         Row(
+
           children: [
+
             Container(
-              padding: const EdgeInsets.all(12),
+
+              padding:
+                  const EdgeInsets.all(10),
+
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.10),
-                borderRadius: BorderRadius.circular(14),
+
+                color:
+                    Colors.blue.withOpacity(
+                  0.10,
+                ),
+
+                borderRadius:
+                    BorderRadius.circular(
+                  12,
+                ),
               ),
+
               child: const Icon(
+
                 Icons.local_shipping_outlined,
+
                 color: Colors.blue,
-                size: 22,
+
+                size: 20,
               ),
             ),
 
-            SizedBox(width: getWidth(context, 12)),
+            SizedBox(
+              width:
+                  getWidth(context, 10),
+            ),
 
+            /// ID & DATE
             Expanded(
+
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+
                 children: [
+
                   Text(
+
                     id,
+
                     style: TextStyle(
-                      fontSize: getWidth(context, 15),
-                      fontWeight: FontWeight.bold,
+
+                      fontSize:
+                          getWidth(context, 14),
+
+                      fontWeight:
+                          FontWeight.bold,
                     ),
                   ),
 
-                  SizedBox(height: getHeight(context, 4)),
+                  SizedBox(
+                    height:
+                        getHeight(context, 4),
+                  ),
 
                   Text(
-                    "Dispatch ID",
+
+                    date,
+
                     style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: getWidth(context, 11),
+
+                      color:
+                          Colors.grey.shade600,
+
+                      fontSize:
+                          getWidth(context, 11),
                     ),
                   ),
                 ],
               ),
             ),
 
-            /// STATUS
+            /// QTY
+           /// QUANTITY
+Container(
+
+  padding: EdgeInsets.symmetric(
+    horizontal: getWidth(context, 10),
+    vertical: getHeight(context, 6),
+  ),
+
+  decoration: BoxDecoration(
+
+    color:
+        Colors.orange.withOpacity(
+      0.10,
+    ),
+
+    borderRadius:
+        BorderRadius.circular(10),
+  ),
+
+  child: Row(
+
+    mainAxisSize: MainAxisSize.min,
+
+    crossAxisAlignment:
+        CrossAxisAlignment.start,
+
+    children: [
+
+      Icon(
+        Icons.inventory_2_outlined,
+        size: 16,
+        color: Colors.orange,
+      ),
+
+      SizedBox(
+        width: getWidth(context, 6),
+      ),
+
+      Column(
+
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+        children: [
+
+          Text(
+
+            "Qty",
+
+            style: TextStyle(
+
+              color: Colors.orange,
+
+              fontSize:
+                  getWidth(context, 9),
+
+              fontWeight:
+                  FontWeight.w600,
+            ),
+          ),
+
+          SizedBox(
+            height: getHeight(context, 2),
+          ),
+
+          Text(
+            qty,textAlign: TextAlign.center,
+            style: TextStyle(
+
+              color: Colors.orange,
+
+              fontWeight:
+                  FontWeight.bold,
+
+              fontSize:
+                  getWidth(context, 11),
+            ),
+          ),
+        ],
+      ),
+    ],
+  ),
+), ],
+        ),
+
+        SizedBox(
+          height:
+              getHeight(context, 14),
+        ),
+
+        /// STATUS + ICONS
+        Row(
+
+          mainAxisAlignment:
+              MainAxisAlignment.spaceBetween,
+
+          children: [
+
             Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: getWidth(context, 14),
-                vertical: getHeight(context, 7),
+
+              padding:
+                  EdgeInsets.symmetric(
+
+                horizontal:
+                    getWidth(context, 12),
+
+                vertical:
+                    getHeight(context, 7),
               ),
+
               decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(30),
+
+                color:
+                    statusColor.withOpacity(
+                  0.12,
+                ),
+
+                borderRadius:
+                    BorderRadius.circular(
+                  30,
+                ),
               ),
+
               child: Row(
+
                 children: [
+
                   Icon(
+
                     Icons.circle,
+
                     size: 10,
+
                     color: statusColor,
                   ),
-                  SizedBox(width: getWidth(context, 6)),
+
+                  SizedBox(
+                    width:
+                        getWidth(context, 6),
+                  ),
+
                   Text(
+
                     status,
+
                     style: TextStyle(
+
                       color: statusColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: getWidth(context, 11),
+
+                      fontWeight:
+                          FontWeight.bold,
+
+                      fontSize:
+                          getWidth(context, 11),
                     ),
                   ),
                 ],
               ),
             ),
+
+            /// ICONS
+            Row(
+
+              children: [
+
+                /// LOCATION ICON
+                ValueListenableBuilder(
+
+                  valueListenable:
+                      showLocation,
+
+                  builder:
+                      (
+                        context,
+                        locationOpen,
+                        _,
+                      ) {
+
+                    return GestureDetector(
+
+                      onTap: () {
+
+                        showLocation.value =
+                            !showLocation
+                                .value;
+
+                        if (showLocation
+                            .value) {
+
+                          showVehicle.value =
+                              false;
+                        }
+                      },
+
+                      child: Container(
+
+                        padding:
+                            const EdgeInsets
+                                .all(8),
+
+                        decoration:
+                            BoxDecoration(
+
+                          color:
+                              locationOpen
+                                  ? Colors.blue
+                                      .withOpacity(
+                                      0.12,
+                                    )
+                                  : Colors.grey
+                                      .shade100,
+
+                          borderRadius:
+                              BorderRadius
+                                  .circular(
+                            10,
+                          ),
+                        ),
+
+                        child: Icon(
+
+                          Icons
+                              .location_on_outlined,
+
+                          size: 18,
+
+                          color:
+                              locationOpen
+                                  ? Colors
+                                      .blue
+                                  : Colors
+                                      .black87,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                SizedBox(
+                  width:
+                      getWidth(context, 8),
+                ),
+
+                /// VEHICLE ICON
+                ValueListenableBuilder(
+
+                  valueListenable:
+                      showVehicle,
+
+                  builder:
+                      (
+                        context,
+                        vehicleOpen,
+                        _,
+                      ) {
+
+                    return GestureDetector(
+
+                      onTap: () {
+
+                        showVehicle.value =
+                            !showVehicle
+                                .value;
+
+                        if (showVehicle
+                            .value) {
+
+                          showLocation.value =
+                              false;
+                        }
+                      },
+
+                      child: Container(
+
+                        padding:
+                            const EdgeInsets
+                                .all(8),
+
+                        decoration:
+                            BoxDecoration(
+
+                          color:
+                              vehicleOpen
+                                  ? Colors
+                                      .orange
+                                      .withOpacity(
+                                      0.12,
+                                    )
+                                  : Colors.grey
+                                      .shade100,
+
+                          borderRadius:
+                              BorderRadius
+                                  .circular(
+                            10,
+                          ),
+                        ),
+
+                        child: Icon(
+
+                          Icons
+                              .local_shipping_outlined,
+
+                          size: 18,
+
+                          color:
+                              vehicleOpen
+                                  ? Colors
+                                      .orange
+                                  : Colors
+                                      .black87,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ],
         ),
 
-        SizedBox(height: getHeight(context, 18)),
+        /// LOCATION DETAILS
+        ValueListenableBuilder(
 
-        /// INFO CARDS
-        Row(
-          children: [
-            Expanded(
-              child: buildMiniCard(
-                context: context,
-                icon: Icons.calendar_today_outlined,
-                title: "Date",
-                value: date,
+          valueListenable:
+              showLocation,
+
+          builder:
+              (
+                context,
+                locationOpen,
+                _,
+              ) {
+
+            if (!locationOpen) {
+
+              return const SizedBox();
+            }
+
+            return Padding(
+
+              padding: EdgeInsets.only(
+                top:
+                    getHeight(context, 14),
               ),
-            ),
 
-            SizedBox(width: getWidth(context, 10)),
+              child:
+                  buildExpandableTile(
 
-            Expanded(
-              child: buildMiniCard(
                 context: context,
-                icon: Icons.inventory_2_outlined,
-                title: "Quantity",
-                value: qty,
+
+                icon: Icons
+                    .location_on_outlined,
+
+                title:
+                    "Destination Branch",
+
+                value: branch,
               ),
-            ),
-          ],
+            );
+          },
         ),
 
-        SizedBox(height: getHeight(context, 12)),
+        /// VEHICLE DETAILS
+        ValueListenableBuilder(
 
-        /// BRANCH
-        buildFullInfoTile(
-          context: context,
-          icon: Icons.location_on_outlined,
-          title: "Destination Branch",
-          value: branch,
-        ),
+          valueListenable:
+              showVehicle,
 
-        SizedBox(height: getHeight(context, 12)),
+          builder:
+              (
+                context,
+                vehicleOpen,
+                _,
+              ) {
 
-        /// VEHICLE & DRIVER
-        buildFullInfoTile(
-          context: context,
-          icon: Icons.local_shipping_outlined,
-          title: "Vehicle",
-          value: vehicle,
-          subtitle: "Driver : $driver",
+            if (!vehicleOpen) {
+
+              return const SizedBox();
+            }
+
+            return Padding(
+
+              padding: EdgeInsets.only(
+                top:
+                    getHeight(context, 14),
+              ),
+
+              child:
+                  buildExpandableTile(
+
+                context: context,
+
+                icon: Icons
+                    .local_shipping_outlined,
+
+                title: "Vehicle",
+
+                value: vehicle,
+
+                subtitle:
+                    "Driver : $driver",
+              ),
+            );
+          },
         ),
       ],
     ),
   );
 }
 
-Widget buildMiniCard({
+Widget buildExpandableTile({
+
   required BuildContext context,
+
   required IconData icon,
+
   required String title,
+
   required String value,
-}) {
-  return Container(
-    padding: EdgeInsets.symmetric(
-      horizontal: getWidth(context, 12),
-      vertical: getHeight(context, 12),
-    ),
-    decoration: BoxDecoration(
-      color: Colors.grey.shade50,
-      borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: Colors.grey.shade200),
-    ),
 
-    child: Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(
-            icon,
-            size: 16,
-            color: Colors.black87,
-          ),
-        ),
-
-        SizedBox(width: getWidth(context, 10)),
-
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: getWidth(context, 10),
-                ),
-              ),
-
-              SizedBox(height: getHeight(context, 3)),
-
-              Text(
-                value,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: getWidth(context, 12),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-Widget buildFullInfoTile({
-  required BuildContext context,
-  required IconData icon,
-  required String title,
-  required String value,
   String? subtitle,
 }) {
+
   return Container(
-    padding: EdgeInsets.all(getWidth(context, 12)),
+
+    padding:
+        EdgeInsets.all(
+      getWidth(context, 12),
+    ),
+
     decoration: BoxDecoration(
+
       color: Colors.grey.shade50,
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: Colors.grey.shade200),
+
+      borderRadius:
+          BorderRadius.circular(14),
+
+      border: Border.all(
+        color: Colors.grey.shade200,
+      ),
     ),
 
     child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
+
       children: [
+
         Container(
-          padding: const EdgeInsets.all(10),
+
+          padding:
+              const EdgeInsets.all(9),
+
           decoration: BoxDecoration(
+
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+
+            borderRadius:
+                BorderRadius.circular(10),
           ),
+
           child: Icon(
+
             icon,
+
             size: 18,
+
             color: Colors.black87,
           ),
         ),
 
-        SizedBox(width: getWidth(context, 12)),
+        SizedBox(
+          width:
+              getWidth(context, 10),
+        ),
 
         Expanded(
+
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+
             children: [
+
               Text(
+
                 title,
+
                 style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: getWidth(context, 11),
+
+                  color:
+                      Colors.grey.shade600,
+
+                  fontSize:
+                      getWidth(context, 11),
                 ),
               ),
 
-              SizedBox(height: getHeight(context, 4)),
+              SizedBox(
+                height:
+                    getHeight(context, 4),
+              ),
 
               Text(
+
                 value,
+
                 style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: getWidth(context, 13),
+
+                  fontWeight:
+                      FontWeight.bold,
+
+                  fontSize:
+                      getWidth(context, 13),
                 ),
               ),
 
               if (subtitle != null) ...[
-                SizedBox(height: getHeight(context, 4)),
+
+                SizedBox(
+                  height:
+                      getHeight(context, 4),
+                ),
+
                 Text(
+
                   subtitle,
+
                   style: TextStyle(
-                    color: Colors.grey.shade700,
-                    fontSize: getWidth(context, 11),
+
+                    color:
+                        Colors.grey.shade700,
+
+                    fontSize:
+                        getWidth(context, 11),
                   ),
                 ),
               ],
