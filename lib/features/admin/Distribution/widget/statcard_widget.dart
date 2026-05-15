@@ -11,6 +11,7 @@ Widget statCard({
   required String title,
   required String count,
   required String subtitle,
+  List<dynamic>? data,
 }) {
   return GestureDetector(
     onTap: () {
@@ -25,7 +26,7 @@ Widget statCard({
             minChildSize: 0.45,
             maxChildSize: 0.95,
 
-            builder: (_, controller) {
+            builder: (context, controller) {
               return Container(
                 decoration: const BoxDecoration(
                   color: Colors.white,
@@ -36,7 +37,7 @@ Widget statCard({
                 child: SingleChildScrollView(
                   controller: controller,
 
-                  child: dispatchBottomSheet(title: title),
+                  child: dispatchBottomSheet(context, title: title, data: data),
                 ),
               );
             },
