@@ -395,13 +395,11 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
                         if (!isLoading &&
                             errorText == null &&
                             filteredApprovals.isEmpty)
-                        Expanded(
-  child: Center(
-    child: SingleChildScrollView(
-      child: ApprovalEmptyWidget(),
-    ),
-  ),
-),
+                        Center(
+                          child: SingleChildScrollView(
+                            child: ApprovalEmptyWidget(),
+                          ),
+                        ),
 
                         /// TABLE DATA
                         if (!isLoading &&
@@ -410,17 +408,17 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
                           Expanded(
                             child: ListView.builder(
                               itemCount: filteredApprovals.length,
-
+                            
                               itemBuilder: (context, index) {
                                 final approval = filteredApprovals[index];
-
+                            
                                 return ApprovalTableRow(
                                   approval: approval,
-
+                            
                                   onApprove: () => approveRequest(approval),
-
+                            
                                   onReject: () => rejectRequest(approval),
-
+                            
                                   onView: () => viewRequest(approval),
                                 );
                               },
