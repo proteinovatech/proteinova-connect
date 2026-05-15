@@ -131,10 +131,15 @@ class _PurchaseEmployeecardState extends State<PurchaseEmployeecard> {
              
            SizedBox(height:size.height*0.01),
            _buildField(
-            controller:widget.contactController , 
+            controller:widget.contactController ,
+             
             hint: "Enter contact no",
             isNumeric: true,
-            icon:Icons.phone_outlined),
+            icon:Icons.phone_outlined,
+            inputFormatters: [
+    FilteringTextInputFormatter.digitsOnly,
+    LengthLimitingTextInputFormatter(10),
+  ],),
 
              SizedBox(height: size.height*0.02),
               Text("Description",style: AppTextStyles.buttonText16,),
@@ -160,7 +165,8 @@ class _PurchaseEmployeecardState extends State<PurchaseEmployeecard> {
      IconData? icon,
       double? height,
      bool isNumeric = false, 
-     String? prefixText, // 👈 add this
+     String? prefixText, 
+     List<TextInputFormatter>? inputFormatters,
   }) {
     return Container(
        height:height,
@@ -176,11 +182,16 @@ class _PurchaseEmployeecardState extends State<PurchaseEmployeecard> {
         maxLines: maxLines,
         style: AppTextStyles.formInputs15,
          keyboardType:
-          isNumeric ? TextInputType.number : TextInputType.text, // 👈
+          isNumeric ? TextInputType.number : TextInputType.text, 
 
-      inputFormatters: isNumeric
-          ? [FilteringTextInputFormatter.digitsOnly] // 👈 only numbers
-          : [],
+     inputFormatters: inputFormatters ??
+    (isNumeric
+        ? [
+            FilteringTextInputFormatter.allow(
+              RegExp(r'^\d{0,9}(\.\d{0,2})?$'),
+            ),
+          ]
+        : []),
         decoration: InputDecoration(
           hintText: hint,
           border: InputBorder.none,

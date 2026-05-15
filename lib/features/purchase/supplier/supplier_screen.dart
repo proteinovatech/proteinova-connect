@@ -1,19 +1,87 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/supplier_request_model.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/services/supplier_service.dart';
+
 import 'package:proteinova_connect/features/purchase/supplier/add_supplier_screen.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/editbutton.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/statusbadge.dart';
+import 'package:proteinova_connect/features/purchase/supplier/widget/supplier_shimmer.dart';
 
 
-class SuppliersScreen extends StatelessWidget {
+class SuppliersScreen extends StatefulWidget {
   const SuppliersScreen({super.key});
 
+  @override
+  State<SuppliersScreen> createState() => _SuppliersScreenState();
+}
+
+class _SuppliersScreenState extends State<SuppliersScreen> {
+  List<SupplierRequestModel> suppliers = [];
+  List<SupplierRequestModel> filteredSuppliers = [];
+
+bool isLoading = true;
+@override
+void initState() {
+  super.initState();
+  fetchSuppliers();
+}
+
+Future<void> fetchSuppliers() async {
+  try {
+    final List<SupplierRequestModel> data =
+    await SupplierService().getSuppliers();
+       print(data);
+    print(data.length);
+    setState(() {
+      suppliers = data;
+      filteredSuppliers = data;
+      isLoading = false;
+    });
+  } catch (e) {
+    setState(() {
+      isLoading = false;
+    });
+  }
+}
+void filterSuppliers(String query) {
+
+  if (query.isEmpty) {
+
+    setState(() {
+      filteredSuppliers = suppliers;
+    });
+
+  } else {
+
+    setState(() {
+      filteredSuppliers = suppliers.where((supplier) {
+
+        return supplier.supplierCompanyName
+                .toLowerCase()
+                .contains(query.toLowerCase()) ||
+
+            supplier.supplierName
+                .toLowerCase()
+                .contains(query.toLowerCase()) ||
+
+            supplier.phoneNumber
+                .toLowerCase()
+                .contains(query.toLowerCase());
+
+      }).toList();
+    });
+  }
+}
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     return Scaffold(
+      
       appBar: AppBar(
-        backgroundColor: const Color(0xfff5f6fa),
+        backgroundColor:AppColors.background,
+        scrolledUnderElevation: 0,
         elevation: 0,
         toolbarHeight: 90,
 
@@ -53,20 +121,18 @@ class SuppliersScreen extends StatelessWidget {
                 //   );
                 // },
                 onPressed: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AddSupplierScreen(),
-                    ),
-                  );
+  final result = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) =>
+          const AddSupplierScreen(),
+    ),
+  );
 
-                  if (result != null) {
-                    print(result["supplier"]);
-                    print(result["contactperson"]);
-
-                    /// here add your card list update logic
-                  }
-                },
+  if (result == true) {
+    fetchSuppliers();
+  }
+},
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xfffacc15),
                   foregroundColor: Colors.black,
@@ -86,11 +152,10 @@ class SuppliersScreen extends StatelessWidget {
           ),
         ],
       ),
-      backgroundColor: const Color(0xfff5f6fa),
+      backgroundColor:AppColors.background,
       body: RefreshIndicator(
          onRefresh: () async {
-    // your refresh API/bloc call here
-    await Future.delayed(const Duration(seconds: 2));
+   await fetchSuppliers();
   },
         child: SafeArea(
           child: SingleChildScrollView(
@@ -113,93 +178,100 @@ class SuppliersScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
-                          children: const [
+                          children:  [
                             Icon(Icons.search, color: Colors.grey),
                             SizedBox(width: 10),
-                            Expanded(
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  hintText: "Filter Supplier...",
-                                  border: InputBorder.none,
-                                ),
-                              ),
-                            ),
+                           Expanded(
+  child: TextField(
+  onChanged: filterSuppliers,
+
+  decoration: InputDecoration(
+    hintText: "Filter Supplier...",
+    border: InputBorder.none,
+  ),
+),
+),
                           ],
                         ),
                       ),
-                      SizedBox(width: size.width * 0.09),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        height: 45,
-                        width: 95,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: const [
-                            Icon(Icons.filter_alt_outlined),
-                            SizedBox(width: 1),
-                            Expanded(child: Text("Filter")),
-                          ],
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        height: 45,
-                        width: 55,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: const [Icon(Icons.file_download_outlined)],
-                        ),
-                      ),
+                      // SizedBox(width: size.width * 0.09),
+                      // Container(
+                      //   padding: const EdgeInsets.symmetric(horizontal: 12),
+                      //   height: 45,
+                      //   width: 95,
+                      //   decoration: BoxDecoration(
+                      //     border: Border.all(color: Colors.grey.shade300),
+                      //     borderRadius: BorderRadius.circular(8),
+                      //   ),
+                      //   child: Row(
+                      //     children: const [
+                      //       Icon(Icons.filter_alt_outlined),
+                      //       SizedBox(width: 1),
+                      //       Expanded(child: Text("Filter")),
+                      //     ],
+                      //   ),
+                      // ),
+                      // SizedBox(width: 10),
+                      // Container(
+                      //   padding: const EdgeInsets.symmetric(horizontal: 12),
+                      //   height: 45,
+                      //   width: 55,
+                      //   decoration: BoxDecoration(
+                      //     border: Border.all(color: Colors.grey.shade300),
+                      //     borderRadius: BorderRadius.circular(8),
+                      //   ),
+                      //   child: Row(
+                      //     children: const [Icon(Icons.file_download_outlined)],
+                      //   ),
+                      // ),
                     ],
                   ),
-                  PurchaseCards(
-                    status: "Active",
-                    statusColor: Colors.green,
-                    textColor: Colors.white,
-                    supplier: "Apex Farms",
-                    orderId: 'PO-1024',
-                    dateTime: 'Today, 10.45 PM',
-                    bottomId: '\$7,500.00',
-                    items: 'Jumbo White(Grade AA)',
-                    itemboxes: '500 Boxes',
-                    contactperson: 'Robert',
-                    contactnumber: '+91 1234567890',
-                  ),
-                  SizedBox(height: 10),
-                  PurchaseCards(
-                    status: "Active",
-                    statusColor: Colors.green,
-                    textColor: Colors.white,
-                    supplier: "Golden",
-                    orderId: 'PO-1025',
-                    dateTime: 'Today, 10.45 PM',
-                    bottomId: '\$8,500.00',
-                    items: 'Jumbo White(Grade AA)',
-                    itemboxes: '500 Boxes',
-                    contactperson: 'James',
-                    contactnumber: '+91 1234567890',
-                  ),
-                  SizedBox(height: 10),
-                  PurchaseCards(
-                    status: "Active",
-                    statusColor: Colors.green,
-                    textColor: Colors.white,
-                    supplier: "MR.D ",
-                    orderId: 'PO-1026',
-                    dateTime: 'Today, 10.45 PM',
-                    bottomId: '\$6,500.00',
-                    items: 'Jumbo White(Grade AA)',
-                    itemboxes: '500 Boxes',
-                    contactperson: 'David kim',
-                    contactnumber: '+91 1234567890',
-                  ),
+                 isLoading
+    ? const SupplierShimmer()
+    : ListView.builder(
+        shrinkWrap: true,
+        physics:
+            const NeverScrollableScrollPhysics(),
+        itemCount: filteredSuppliers.length,
+        itemBuilder: (context, index) {
+          final supplier = filteredSuppliers[index];
+
+          return PurchaseCards(
+  status: supplier.status,
+
+  statusColor:
+      supplier.status == "ACTIVE"
+          ? Colors.green
+          : Colors.grey,
+
+  textColor: Colors.white,
+
+  supplier:
+      supplier.supplierCompanyName,
+
+  orderId:
+      "ID-${index + 1}",
+
+  dateTime:
+      supplier.supplierLocation,
+
+  bottomId:
+      supplier.email,
+
+  items:
+      "Supplier Details",
+
+  itemboxes:
+      supplier.status,
+
+  contactperson:
+      supplier.supplierName,
+
+  contactnumber:
+      supplier.phoneNumber,
+);
+        },
+      ),
                 ],
               ),
             ),
@@ -318,6 +390,7 @@ class SuppliersScreen extends StatelessWidget {
   }
 }
 
+
 class PurchaseCards extends StatelessWidget {
   final String status;
   final Color statusColor;
@@ -331,6 +404,7 @@ class PurchaseCards extends StatelessWidget {
   final String itemboxes;
   final String contactperson;
   final String contactnumber;
+
   const PurchaseCards({
     super.key,
     required this.status,
@@ -345,18 +419,23 @@ class PurchaseCards extends StatelessWidget {
     required this.contactperson,
     required this.contactnumber,
   });
+
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.grey.shade300),
       ),
+
       child: Column(
-        crossAxisAlignment: .start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// 🔹 STATUS
+
+          /// STATUS
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -367,42 +446,122 @@ class PurchaseCards extends StatelessWidget {
               ),
             ],
           ),
-          Text(supplier, style: AppTextStyles.headingText22),
-          Text(orderId, style: AppTextStyles.headingText20),
 
-          // Text(dateTime, style: AppTextStyles.bodyText16),
-          const SizedBox(height: 30),
+          /// COMPANY NAME
+          Text(
+            supplier,
+            style: AppTextStyles.headingText22,
+          ),
+
+          const SizedBox(height: 4),
+
+          /// ORDER ID
+          Text(
+            orderId,
+            style: AppTextStyles.bodyText16,
+          ),
+
+          const SizedBox(height: 6),
+
+          /// LOCATION
+          Text(
+            dateTime,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
           Divider(color: Colors.grey.shade300),
 
-          /// 🔹 SUPPLIER
+          const SizedBox(height: 14),
+
+          /// CONTACT PERSON
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(5),
+                padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: const Icon(Icons.store_outlined, color: Colors.grey),
+                child: const Icon(
+                  Icons.person_outline,
+                  color: Colors.grey,
+                ),
               ),
+
               const SizedBox(width: 10),
-              Text(contactperson, style: AppTextStyles.bodyText16),
+
+              Expanded(
+                child: Text(
+                  contactperson,
+                  style: AppTextStyles.bodyText16,
+                ),
+              ),
             ],
           ),
-          SizedBox(height: 10),
-          Text(contactnumber, style: AppTextStyles.headingText22),
 
-          // Text(itemboxes, style: AppTextStyles.bodyText16),
-          // const SizedBox(height: 50),
-          // Divider(color: Colors.grey.shade300),
+          const SizedBox(height: 12),
 
-          /// 🔹 EDIT BUTTON
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              // Text(bottomId, style: AppTextStyles.headingText22),
-              const EditButton(),
-            ],
+          /// PHONE
+          Text(
+            contactnumber,
+            style: AppTextStyles.headingText22,
+          ),
+
+          const SizedBox(height: 8),
+
+          /// EMAIL
+          Text(
+            bottomId,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          /// EXTRA DETAILS
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(10),
+            ),
+
+            child: Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      items,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    Text(
+                      itemboxes,
+                      style: const TextStyle(
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+
+                
+              ],
+            ),
           ),
         ],
       ),
