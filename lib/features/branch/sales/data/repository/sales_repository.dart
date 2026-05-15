@@ -1,41 +1,30 @@
-import 'dart:convert';
-
-import 'package:http/http.dart'
-    as http;
-
-import 'package:proteinova_connect/core/network/api_constants.dart';
-
+import '../datasource/branch_sales_remote_datasource.dart';
 import '../model/sales_entry_model.dart';
 
 class SalesRepository {
+  final BranchSalesRemoteDatasource _datasource = BranchSalesRemoteDatasource();
 
-  Future<SalesEntryModel>
-      fetchSalesEntry() async {
-
-    final response = await http.get(
-
-      Uri.parse(
-        ApiConstants.salesEntry,
-      ),
-
-      headers: {
-        "Accept": "application/json",
-      },
+  Future<SalesEntryModel> fetchSalesEntry({required int loginUserId, int? branchId}) async {
+    final data = await _datasource.getSalesEntry(
+      loginUserId: loginUserId,
+      branchId: branchId,
     );
+    return SalesEntryModel.fromJson(data);
+  }
 
-    if (response.statusCode == 200) {
+  Future<Map<String, dynamic>> fetchSalesDashboard({String? branchId}) async {
+    return await _datasource.getSalesDashboard(branchId: branchId);
+  }
 
-      final data =
-          jsonDecode(response.body);
+  Future<Map<String, dynamic>> createSale(Map<String, dynamic> body) async {
+    return await _datasource.createSale(body: body);
+  }
 
-      return SalesEntryModel.fromJson(
-        data,
-      );
-    } else {
+  Future<Map<String, dynamic>> fetchSingleSale(String id) async {
+    return await _datasource.getSingleSale(id: id);
+  }
 
-      throw Exception(
-        "Failed to load sales entry",
-      );
-    }
+  Future<Map<String, dynamic>> findCustomer(String number) async {
+    return await _datasource.getCustomerByNumber(number);
   }
 }

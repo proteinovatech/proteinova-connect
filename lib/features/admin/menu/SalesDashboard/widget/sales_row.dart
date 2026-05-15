@@ -24,12 +24,7 @@ class SalesRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-
-      child: Container(
-        width: 700,
-
+    return Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
 
         decoration: BoxDecoration(
@@ -204,7 +199,6 @@ class SalesRow extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 }

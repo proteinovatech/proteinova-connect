@@ -34,11 +34,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           /// SAVE BRANCH ID
 
           final branchId = result['user']['branch_id'];
+          final userId = result['user']['id'];
 
           print("BRANCH ID => $branchId");
-          print(result['user']);
-          print(result['user']['branch_id']);
+          print("USER ID => $userId");
+          
           await prefs.setInt('branch_id', branchId ?? 0);
+          await prefs.setInt('user_id', userId ?? 0);
 
           //         if (result['user']['role'] == "purchase") {
           //           emit(AuthSuccessPurchase());

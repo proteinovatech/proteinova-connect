@@ -68,7 +68,7 @@ class BranchSalesRemoteDatasource {
   // GET /api/branch/sales/dashboard
   // ──────────────────────────────────────────────
   Future<Map<String, dynamic>> getSalesDashboard({String? branchId}) async {
-    final Uri uri = Uri.parse("$baseUrl/api/branch/sales/dashboard").replace(
+    final Uri uri = Uri.parse("$baseUrl/api/sales/").replace(
       queryParameters: {
         if (branchId != null && branchId.isNotEmpty && branchId != "all")
           "branch_id": branchId,

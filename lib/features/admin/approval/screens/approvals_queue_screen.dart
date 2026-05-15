@@ -168,6 +168,7 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
         );
       }).toList();
 
+      if (!mounted) return;
       setState(() {
         approvals = mapped;
         filteredApprovals = mapped;

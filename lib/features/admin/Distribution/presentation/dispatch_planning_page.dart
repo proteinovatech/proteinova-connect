@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
@@ -55,15 +56,38 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
   ];
 
   bool _isSaving = false;
+  Timer? _refreshTimer;
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    _dispatchDateController.dispose();
+    _arrivalDateController.dispose();
+    _vehicleNoController.dispose();
+    _driverNameController.dispose();
+    _driverNumberController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
     _dispatchDateController.text = DateTime.now().toString().split(' ').first;
     _fetchInitialData();
+    _startAutoRefresh();
   }
 
-  Future<void> _fetchInitialData() async {
+  void _startAutoRefresh() {
+    _refreshTimer?.cancel();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (mounted && !_isSaving) {
+        _fetchInitialData(isAuto: true);
+      }
+    });
+  }
+
+  Future<void> _fetchInitialData({bool isAuto = false}) async {
     try {
       final branches = await DispatchService.fetchBranches();
       final stock = await DispatchService.fetchWarehouseStock();
@@ -71,12 +95,25 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
         setState(() {
           _branches = branches;
           _availableStock = stock;
+
+          // Update available eggs for current items if they match categories
+          for (var item in _dispatchItems) {
+            if (item['category'] != null) {
+              final s = _availableStock.firstWhere(
+                (st) =>
+                    st['category'].toString().toLowerCase() ==
+                    item['category'].toString().toLowerCase(),
+                orElse: () => {'total_eggs': 0},
+              );
+              item['available_eggs'] = s['total_eggs'];
+            }
+          }
         });
       }
     } catch (e) {
-      if (mounted) {
+      if (!isAuto && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error loading initial data: $e")),
+          SnackBar(content: Text("Error loading data: $e")),
         );
       }
     }
@@ -135,6 +172,13 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
         _arrivalDateController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill all required fields")),
+      );
+      return;
+    }
+
+    if (_driverNumberController.text.length != 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Driver number must be exactly 10 digits")),
       );
       return;
     }
@@ -247,21 +291,20 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
       ),
 
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-
-            children: [
-              const Text("New Dispatch", style: AppTextStyles.headingText25),
-
-              const SizedBox(height: 4),
-
-              Text(
-                "Manage dispatching to update inventory",
-                style: AppTextStyles.bodyText12,
-              ),
+        child: RefreshIndicator(
+          onRefresh: () => _fetchInitialData(),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("New Dispatch", style: AppTextStyles.headingText25),
+                const SizedBox(height: 4),
+                Text(
+                  "Manage dispatching to update inventory",
+                  style: AppTextStyles.bodyText12,
+                ),
 
               //const SizedBox(height: 22),
 
@@ -510,7 +553,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                         Expanded(
                           flex: 2,
                           child: Text(
-                            "Available\n(Eggs)",
+                            "Available\n(Trays)",
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 9,
@@ -576,20 +619,35 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                       "Category",
                                       style: TextStyle(fontSize: 11),
                                     ),
-                                    items: _productCategories
-                                        .map(
-                                          (cat) => DropdownMenuItem<String>(
-                                            value: cat,
-                                            child: Text(
-                                              cat,
-                                              style: const TextStyle(
-                                                fontSize: 11,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
+                                    items: _productCategories.map((cat) {
+                                      final stock = _availableStock.firstWhere(
+                                        (s) =>
+                                            s['category']
+                                                .toString()
+                                                .toLowerCase() ==
+                                            cat.toLowerCase(),
+                                        orElse: () => {'total_eggs': 0},
+                                      );
+                                      final int count =
+                                          stock['total_eggs'] ?? 0;
+
+                                      return DropdownMenuItem<String>(
+                                        value: cat,
+                                        child: Text(
+                                          "$cat (${count})",
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: count > 0
+                                                ? Colors.green
+                                                : Colors.red,
+                                            fontWeight: count > 0
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
                                           ),
-                                        )
-                                        .toList(),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      );
+                                    }).toList(),
                                     onChanged: (val) =>
                                         _updateItem(index, category: val),
                                   ),
@@ -601,10 +659,13 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                               flex: 2,
                               child: Center(
                                 child: Text(
-                                  "${item['available_eggs']}",
-                                  style: const TextStyle(
+                                  "${(item['available_eggs'] / 30).floor()} T",
+                                  style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
+                                    color: (item['available_eggs'] ?? 0) >= 30
+                                        ? Colors.green
+                                        : Colors.red,
                                   ),
                                 ),
                               ),
@@ -1059,8 +1120,9 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   /// CARD
   static Widget buildCard({required Widget child}) {

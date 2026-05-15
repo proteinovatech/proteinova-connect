@@ -95,9 +95,12 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                         children: [
-                          Text(
+                          const Text(
                             "Profile",
-                            style: AppTextStyles.headingText25
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
 
                           IconButton(
@@ -151,15 +154,21 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
                                   const SizedBox(height: 16),
 
                                   const Text(
-                                    "Abin Raj",
-                                    style: AppTextStyles.headingText21
+                                    "ABIN Raj",
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
 
                                   const SizedBox(height: 5),
 
                                   Text(
                                     "Branch Manager",
-                                    style: AppTextStyles.bodyText14dark
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: 15,
+                                    ),
                                   ),
 
                                   const SizedBox(height: 24),
@@ -312,18 +321,17 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
             children: [
               Text(
                 title,
-                
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
               ),
 
               const SizedBox(height: 4),
 
               Text(
                 value,
-                style:TextStyle(color: Colors.grey.shade600, fontSize: 13), 
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
