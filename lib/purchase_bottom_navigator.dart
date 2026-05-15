@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
+import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
@@ -251,10 +254,9 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
                                     onTap: () async {
                                       Navigator.pop(context);
 
-                                      final prefs =
-                                          await SharedPreferences.getInstance();
-
-                                      await prefs.clear();
+                                      context.read<AuthBloc>().add(
+                                        LogoutRequested(),
+                                      );
 
                                       Navigator.pushAndRemoveUntil(
                                         context,
@@ -406,7 +408,7 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
     return GestureDetector(
       onTap: () {
         if (index == 2) {
-          _showProfileOptions(context); 
+          _showProfileOptions(context);
         } else {
           setState(() {
             selectedIndex = index;

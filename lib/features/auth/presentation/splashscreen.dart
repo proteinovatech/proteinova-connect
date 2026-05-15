@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 import 'package:proteinova_connect/branch_bottom_navigator.dart';
-import 'package:proteinova_connect/features/purchase/purchase_bottom_navigator.dart';
+import 'package:proteinova_connect/purchase_bottom_navigator.dart';
+import 'package:proteinova_connect/admin_bottom_navigator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
@@ -40,6 +41,8 @@ class _SplashScreenState extends State<SplashScreen> {
       nextScreen = const PurchaseBottomNavigator();
     } else if (role == "branch") {
       nextScreen = const BranchBottomNavigator();
+    } else if (role == "admin") {
+      nextScreen = const AdminBottomNavigator();
     } else {
       nextScreen = const SignupScreen();
     }

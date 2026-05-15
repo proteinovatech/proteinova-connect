@@ -1293,12 +1293,12 @@ import 'package:proteinova_connect/features/branch/sales/widget/branch_product_s
 import 'package:proteinova_connect/features/branch/sales/widget/branch_sales_items_widget.dart';
 
 import 'package:proteinova_connect/features/branch/sales/data/datasource/branch_sales_remote_datasource.dart';
-import 'package:proteinova_connect/features/branch/sales/widget/branch__sales_items_widget.dart' hide BranchSalesItemsWidget;
+import 'package:proteinova_connect/features/branch/sales/widget/branch__sales_items_widget.dart'
+    hide BranchSalesItemsWidget;
 import 'package:proteinova_connect/features/branch/sales/widget/branch_payment_summary_widget.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/branch_product_selection_widget.dart';
 
 import 'package:proteinova_connect/features/branch/sales/widget/sales_entry_skeleton.dart';
-
 
 class SalesEntryPage extends StatefulWidget {
   const SalesEntryPage({super.key});
@@ -1703,10 +1703,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
         ),
         titleSpacing: 0,
-        title: const Text(
-          "Sales Entry",
-          style: AppTextStyles.headingText22
-        ),
+        title: const Text("Sales Entry", style: AppTextStyles.headingText22),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -1718,10 +1715,10 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               "Log new sales transactions to automatically update branch inventory.",
               style: AppTextStyles.bodyText14,
             ),
-            SizedBox(height:getHeight(context, 20)),
+            SizedBox(height: getHeight(context, 20)),
             buildWarehouseDropdown(),
 
-           SizedBox(height:getHeight(context, 20)),
+            SizedBox(height: getHeight(context, 20)),
 
             /// TRANSACTION DETAILS
             buildCard(
@@ -1730,14 +1727,14 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 children: [
                   const Text(
                     "Transaction Details",
-                    style: AppTextStyles.headingText22
+                    style: AppTextStyles.headingText22,
                   ),
-                  SizedBox(height:getHeight(context, 20)),
+                  SizedBox(height: getHeight(context, 20)),
 
                   /// CUSTOMER NUMBER
                   buildLabel("Customer Number"),
 
-                  SizedBox(height:getHeight(context, 8)),
+                  SizedBox(height: getHeight(context, 8)),
 
                   buildTextField(
                     hint: "Enter customer number",
@@ -1756,11 +1753,11 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                       }
                     },
                   ),
-                  SizedBox(height:getHeight(context, 18)),
+                  SizedBox(height: getHeight(context, 18)),
 
                   /// CUSTOMER NAME
                   buildLabel("Customer Name"),
-                  SizedBox(height:getHeight(context, 8)),
+                  SizedBox(height: getHeight(context, 8)),
                   TextField(
                     controller: customerNameController,
 
@@ -1787,19 +1784,19 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                       ),
                     ),
                   ),
-                 SizedBox(height:getHeight(context, 18)),
+                  SizedBox(height: getHeight(context, 18)),
 
                   /// SALES DATE
                   buildLabel("Sales Date"),
 
-                  SizedBox(height:getHeight(context, 8)),
+                  SizedBox(height: getHeight(context, 8)),
 
                   buildDateField(),
                 ],
               ),
             ),
 
-            SizedBox(height:getHeight(context, 18)),
+            SizedBox(height: getHeight(context, 18)),
 
             /// PRODUCT SELECTION
             BranchProductSelectionWidget(
@@ -1901,7 +1898,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               },
               selectedEggsMap: {},
             ),
-            SizedBox(height:getHeight(context, 18)),
+            SizedBox(height: getHeight(context, 18)),
 
             /// SALES ITEMS
             BranchSalesItemsWidget(
@@ -1922,7 +1919,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               onOffersApplied: (List<int> p1) {},
             ),
 
-          SizedBox(height:getHeight(context, 18)),
+            SizedBox(height: getHeight(context, 18)),
 
             /// PAYMENT METHOD
             BranchPaymentSummaryWidget(
@@ -2058,7 +2055,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               },
             ),
 
-            SizedBox(height:getHeight(context, 30)),
+            SizedBox(height: getHeight(context, 30)),
           ],
         ),
       ),
@@ -2098,7 +2095,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             icon: const Icon(
               Icons.arrow_drop_down,
 
-              color:AppColors.dark,
+              color: AppColors.dark,
 
               size: 20,
             ),
@@ -2139,7 +2136,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
 
-        border: Border.all(color:AppColors.border),
+        border: Border.all(color: AppColors.border),
       ),
 
       child: Row(
@@ -2214,10 +2211,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
   /// LABEL
   Widget buildLabel(String text) {
-    return Text(
-      text,
-      style: AppTextStyles.buttonText16
-    );
+    return Text(text, style: AppTextStyles.buttonText16);
   }
 
   /// TEXT FIELD
@@ -2385,7 +2379,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ),
 
-          SizedBox(width:getWidth(context, 6)),
+          SizedBox(width: getWidth(context, 6)),
 
           /// PRODUCT
           Expanded(
@@ -2432,7 +2426,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ),
 
-          SizedBox(width:getWidth(context, 6)),
+          SizedBox(width: getWidth(context, 6)),
 
           /// DOZEN
           Container(
@@ -2468,7 +2462,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ),
 
-          SizedBox(width:getWidth(context, 8)),
+          SizedBox(width: getWidth(context, 8)),
 
           /// EGGS
           SizedBox(
@@ -2483,7 +2477,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ),
 
-          SizedBox(width:getWidth(context, 8)),
+          SizedBox(width: getWidth(context, 8)),
 
           /// RATE
           SizedBox(
@@ -2525,7 +2519,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ),
 
-          SizedBox(width: getWidth(context,6)),
+          SizedBox(width: getWidth(context, 6)),
 
           /// DELETE
           GestureDetector(
@@ -2599,7 +2593,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ),
 
-          SizedBox(height:getHeight(context, 8)),
+          SizedBox(height: getHeight(context, 8)),
 
           AnimatedContainer(
             duration: const Duration(milliseconds: 250),

@@ -122,6 +122,46 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
     final totalTrays = (items as List).fold<int>(0, (int sum, dynamic item) {
       return sum + (int.tryParse(item['trays'].toString()) ?? 0);
     });
+
+    final expenses = purchase?['expenses'] ?? [];
+
+    final double itemsTotal = (items as List).fold<double>(0, (
+      double sum,
+      dynamic item,
+    ) {
+      final double trays = double.tryParse(item['trays'].toString()) ?? 0;
+      final double capacity =
+          double.tryParse(item['capacity'].toString()) ?? 30;
+      final double price =
+          double.tryParse(item['per_egg_price'].toString()) ?? 0;
+      return sum + (trays * capacity * price);
+    });
+
+    final double transportCharge = (expenses as List)
+        .where((e) => e['expense_type'] == "TRANSPORT")
+        .fold<double>(
+          0,
+          (double sum, dynamic e) =>
+              sum + (double.tryParse(e['amount'].toString()) ?? 0),
+        );
+
+    final double otherCharge = (expenses as List)
+        .where((e) => e['expense_type'] != "TRANSPORT")
+        .fold<double>(
+          0,
+          (double sum, dynamic e) =>
+              sum + (double.tryParse(e['amount'].toString()) ?? 0),
+        );
+
+    final double totalAmount = itemsTotal + transportCharge + otherCharge;
+
+    final traySummary = (items as List).fold<Map<String, int>>({}, (map, item) {
+      final type = item['tray_type']?.toString() ?? "Other";
+      final trays = int.tryParse(item['trays'].toString()) ?? 0;
+      map[type] = (map[type] ?? 0) + trays;
+      return map;
+    });
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7F7),
 
@@ -252,7 +292,10 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
 
                         const SizedBox(height: 8),
 
-                        Text(purchase?['supplier_company_name'] ?? ""),
+                        Text(
+                          purchase?['supplier_company_name']?.toString() ??
+                              "N/A",
+                        ),
                       ],
                     ),
                   ),
@@ -298,13 +341,29 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
                           ),
                           child: Column(
                             children: [
-                              _row("Product", item['egg_category_grade']),
+                              _row(
+                                "Product",
+                                item['egg_category_grade']?.toString() ?? "N/A",
+                              ),
 
-                              _row("Tray Type", item['tray_type']),
+                              _row(
+                                "Tray Type",
+                                item['tray_type']?.toString() ?? "N/A",
+                              ),
 
                               _row("Trays", trays.toString()),
 
+                              _row(
+                                "Price/Egg",
+                                "₹${item['per_egg_price']?.toString() ?? "0"}",
+                              ),
+
                               _row("Eggs", eggs.toString()),
+
+                              _row(
+                                "Total Price",
+                                "₹${(eggs * (double.tryParse(item['per_egg_price']?.toString() ?? "0") ?? 0)).toStringAsFixed(0)}",
+                              ),
                             ],
                           ),
                         ),
@@ -324,6 +383,10 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
                   _summaryRow("Total Trays", totalTrays.toString()),
 
                   _summaryRow("Total Eggs", totalEggs.toString()),
+
+                  ...traySummary.entries
+                      .map((e) => _summaryRow(e.key, e.value.toString()))
+                      .toList(),
                 ],
               ),
             ),
@@ -358,9 +421,15 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
                         ),
                         child: Column(
                           children: [
-                            _row("Product", detail['product']),
+                            _row(
+                              "Product",
+                              detail['product']?.toString() ?? "N/A",
+                            ),
 
-                            _row("Tray Type", detail['trayType']),
+                            _row(
+                              "Tray Type",
+                              detail['trayType']?.toString() ?? "N/A",
+                            ),
 
                             const SizedBox(height: 14),
 
@@ -427,6 +496,65 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
                     style: TextStyle(
                       color: Colors.orange,
                       fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            /// BILL SUMMARY
+            _buildCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Bill Summary",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  const SizedBox(height: 16),
+                  _summaryRow(
+                    "Items (${(items as List).length})",
+                    "₹${itemsTotal.toStringAsFixed(0)}",
+                  ),
+                  _summaryRow(
+                    "Transport Charge",
+                    "₹${transportCharge.toStringAsFixed(0)}",
+                  ),
+                  _summaryRow(
+                    "Other Charge",
+                    "₹${otherCharge.toStringAsFixed(0)}",
+                  ),
+                  const Divider(thickness: 1, color: Colors.black),
+                  _summaryRow(
+                    "Total Amount",
+                    "₹${totalAmount.toStringAsFixed(0)}",
+                    isNet: true,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            /// NOTES
+            _buildCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Notes",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      hintText: "Enter any additional notes...",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ],
@@ -508,15 +636,28 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
     );
   }
 
-  Widget _summaryRow(String title, String value) {
+  Widget _summaryRow(String title, String value, {bool isNet = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title),
-
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: TextStyle(
+              fontWeight: isNet ? FontWeight.bold : FontWeight.normal,
+              fontSize: isNet ? 16 : 14,
+              color: isNet ? Colors.black : Colors.grey.shade700,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: isNet ? 16 : 14,
+              color: Colors.black,
+            ),
+          ),
         ],
       ),
     );
