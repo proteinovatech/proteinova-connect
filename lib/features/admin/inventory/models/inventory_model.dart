@@ -67,6 +67,8 @@ class PurchaseModel {
   final String status;
   final String location;
   final String createdAt;
+  final String purchaseStatus;
+  final String movementStatus;
 
   PurchaseModel({
     required this.id,
@@ -78,6 +80,8 @@ class PurchaseModel {
     required this.status,
     required this.location,
     required this.createdAt,
+    required this.purchaseStatus,
+    required this.movementStatus,
   });
 
   factory PurchaseModel.fromJson(Map<String, dynamic> json) {
@@ -106,6 +110,8 @@ class PurchaseModel {
       status: json['purchase_status']?.toString() ?? json['movement_status']?.toString() ?? json['status']?.toString() ?? '',
       location: json['purchased_location']?.toString() ?? json['vehicle_driver']?.toString() ?? json['location']?.toString() ?? '',
       createdAt: json['created_at']?.toString() ?? json['dispatch_date']?.toString() ?? '',
+      purchaseStatus: json['purchase_status']?.toString() ?? '',
+      movementStatus: json['movement_status']?.toString() ?? '',
     );
   }
 }

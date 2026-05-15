@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
+import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
@@ -34,9 +37,11 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.pushReplacement(
+              context.read<AuthBloc>().add(LogoutRequested());
+              Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (_) => SignupScreen()),
+                MaterialPageRoute(builder: (_) => const SignupScreen()),
+                (route) => false,
               );
             },
             child: Text("Logout", style: TextStyle(color: Colors.red)),

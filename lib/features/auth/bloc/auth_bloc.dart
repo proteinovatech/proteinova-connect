@@ -71,5 +71,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthFailure("Something went wrong"));
       }
     });
+
+    on<LogoutRequested>((event, emit) async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+      emit(AuthInitial());
+    });
   }
 }

@@ -11,3 +11,5 @@ class LoginRequested extends AuthEvent {
     required this.role
   });
 }
+
+class LogoutRequested extends AuthEvent {}

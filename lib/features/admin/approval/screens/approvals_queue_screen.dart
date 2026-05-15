@@ -297,14 +297,9 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
       body: SafeArea(
         child: isLoading
             ? const Center(child: AdminDistributionSkeletonLoader())
-            : RefreshIndicator(
-                onRefresh: _fetchApprovals,
-
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-
-                  padding: const EdgeInsets.all(16),
-
+            : Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
                   children: [
                     /// SEARCH + FILTER
                     Row(
@@ -344,90 +339,64 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
 
                     SizedBox(height: getHeight(context, 24)),
 
-              /// TABLE
-              /// TABLE
+              /// LIST
               Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+                child: RefreshIndicator(
+                  onRefresh: _fetchApprovals,
+                  child: Builder(
+                    builder: (context) {
+                      if (isLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
 
-                  child: Container(
-                    width: 1050,
-                    margin: const EdgeInsets.only(bottom: 10),
-
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: const Color(0xffE5E7EB)),
-                    ),
-
-                    child: Column(
-                      children: [
-                        /// HEADER
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 18,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(color: Colors.grey.shade200),
-                            ),
-                          ),
-                        //  child: const ApprovalTableHeader(),
-                        ),
-
-                        /// EMPTY
-                        if (isLoading)
-                          const Expanded(
-                            child: Center(child: CircularProgressIndicator()),
-                          ),
-
-                        if (!isLoading && errorText != null)
-                          Expanded(
-                            child: Center(
+                      if (!isLoading && errorText != null) {
+                        return ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            SizedBox(height: getHeight(context, 100)),
+                            Center(
                               child: Text(
                                 errorText!,
                                 style: const TextStyle(color: Colors.red),
                               ),
                             ),
-                          ),
+                          ],
+                        );
+                      }
 
-                        if (!isLoading &&
-                            errorText == null &&
-                            filteredApprovals.isEmpty)
-                        Expanded(
-  child: Center(
-    child: SingleChildScrollView(
-      child: ApprovalEmptyWidget(),
-    ),
-  ),
-),
+                      if (!isLoading && errorText == null && filteredApprovals.isEmpty) {
+                        return ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            SizedBox(height: getHeight(context, 50)),
+                            ApprovalEmptyWidget(),
+                          ],
+                        );
+                      }
 
-                        /// TABLE DATA
-                        if (!isLoading &&
-                            errorText == null &&
-                            filteredApprovals.isNotEmpty)
-                          Expanded(
-                            child: ListView.builder(
-                              itemCount: filteredApprovals.length,
+                      if (!isLoading && errorText == null && filteredApprovals.isNotEmpty) {
+                        return ListView.separated(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.only(bottom: 20),
+                          itemCount: filteredApprovals.length,
+                          separatorBuilder: (context, index) => const SizedBox(height: 16),
+                          itemBuilder: (context, index) {
+                            final approval = filteredApprovals[index];
+                            return ApprovalTableRow(
+                              approval: approval,
+                              onApprove: () => approveRequest(approval),
+                              onReject: () => rejectRequest(approval),
+                              onView: () => viewRequest(approval),
+                            );
+                          },
+                        );
+                      }
 
-                              itemBuilder: (context, index) {
-                                final approval = filteredApprovals[index];
-
-                                return ApprovalTableRow(
-                                  approval: approval,
-
-                                  onApprove: () => approveRequest(approval),
-
-                                  onReject: () => rejectRequest(approval),
-
-                                  onView: () => viewRequest(approval),
-                                );
-                              },
-                            ),
-                          ),
-                      ],
-                    ),
+                      return ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: const [],
+                      );
+                    },
                   ),
                 ),
               ),

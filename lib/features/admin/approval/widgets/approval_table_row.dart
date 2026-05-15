@@ -23,13 +23,11 @@ class ApprovalTableRow extends StatelessWidget {
     Color iconColor = const Color(0xff6B7280),
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
       ),
-
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -45,7 +43,8 @@ class ApprovalTableRow extends StatelessWidget {
 
           const SizedBox(width: 8),
 
-          Expanded(
+          /// FIXED
+          Flexible(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -67,6 +66,7 @@ class ApprovalTableRow extends StatelessWidget {
                   value,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
+                  softWrap: true,
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -185,70 +185,62 @@ class ApprovalTableRow extends StatelessWidget {
 
                             const SizedBox(width: 8),
 
-                            Expanded(
-                              flex: 2,
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: approval.status == "Approved"
-                                        ? Colors.green.shade100
-                                        : approval.status == "Rejected"
-                                        ? Colors.red.shade100
-                                        : Colors.orange.shade100,
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                  child: Text(
-                                    approval.status,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: approval.status == "Approved"
-                                          ? Colors.green
-                                          : approval.status == "Rejected"
-                                          ? Colors.red
-                                          : Colors.orange,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            Expanded(
-                              flex: 2,
+                            Flexible(
                               child: Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  InkWell(
-                                    onTap: onView,
-                                    child: const Icon(
-                                      Icons.remove_red_eye_outlined,
-                                      size: 20,
+                                  Flexible(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: approval.status == "Approved"
+                                            ? Colors.green.shade100
+                                            : approval.status == "Rejected"
+                                            ? Colors.red.shade100
+                                            : Colors.orange.shade100,
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                      child: Text(
+                                        approval.status,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: approval.status == "Approved"
+                                              ? Colors.green
+                                              : approval.status == "Rejected"
+                                              ? Colors.red
+                                              : Colors.orange,
+                                        ),
+                                      ),
                                     ),
                                   ),
 
-                                  const SizedBox(width: 14),
+                                  const SizedBox(width: 8),
 
-                                  InkWell(
-                                    onTap: onApprove,
-                                    child: const Icon(
-                                      Icons.check_circle_outline,
-                                      color: Colors.green,
-                                      size: 20,
+                                  TextButton(
+                                    onPressed: onView,
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: const Color(0xffF3F4F6),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 8,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
                                     ),
-                                  ),
-
-                                  const SizedBox(width: 14),
-
-                                  InkWell(
-                                    onTap: onReject,
-                                    child: const Icon(
-                                      Icons.cancel_outlined,
-                                      color: Colors.red,
-                                      size: 20,
+                                    child: const Text(
+                                      "View",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xff111827),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -256,6 +248,36 @@ class ApprovalTableRow extends StatelessWidget {
                             ),
                           ],
                         ),
+
+                        if (!isApproved && !isRejected) ...[
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              InkWell(
+                                onTap: onReject,
+                                child: Row(
+                                  children: const [
+                                    Icon(Icons.cancel_outlined, color: Colors.red, size: 20),
+                                    SizedBox(width: 4),
+                                    Text("Reject", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 24),
+                              InkWell(
+                                onTap: onApprove,
+                                child: Row(
+                                  children: const [
+                                    Icon(Icons.check_circle_outline, color: Colors.green, size: 20),
+                                    SizedBox(width: 4),
+                                    Text("Accept", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ],
