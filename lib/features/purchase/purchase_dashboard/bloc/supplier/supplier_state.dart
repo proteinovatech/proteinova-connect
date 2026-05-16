@@ -1,3 +1,4 @@
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_event.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/supplier_model.dart';
 
 
@@ -18,3 +19,13 @@ class SupplierError extends SupplierState {
 
   SupplierError(this.message);
 }
+class SupplierSubmitting extends SupplierState {}
+
+class SupplierSubmitSuccess extends SupplierState {}
+
+class SupplierSubmitFailure extends SupplierState {
+  final String message;
+
+  SupplierSubmitFailure(this.message);
+}
+

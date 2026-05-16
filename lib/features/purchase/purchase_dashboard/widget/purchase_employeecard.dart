@@ -112,7 +112,15 @@ class _PurchaseEmployeecardState extends State<PurchaseEmployeecard> {
            _buildField(
             controller:widget.numberController , 
             hint: "Enter number",
-            icon:Icons.label_outline 
+            icon:Icons.label_outline,
+            onChanged: (value) {
+    widget.numberController.value = TextEditingValue(
+      text: value.toUpperCase(),
+      selection: TextSelection.collapsed(
+        offset: value.length,
+      ),
+    );
+  }, 
             ),
 
              SizedBox(height: size.height*0.02),
@@ -158,47 +166,61 @@ class _PurchaseEmployeecardState extends State<PurchaseEmployeecard> {
     );
   }
   Widget _buildField({
-    required TextEditingController controller,
-    required String hint,
-    bool enabled = true,
-    int maxLines = 1,
-     IconData? icon,
-      double? height,
-     bool isNumeric = false, 
-     String? prefixText, 
-     List<TextInputFormatter>? inputFormatters,
-  }) {
-    return Container(
-       height:height,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: AppColors.containerColor,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: TextField(
-        controller: controller,
-        enabled: enabled,
-        maxLines: maxLines,
-        style: AppTextStyles.formInputs15,
-         keyboardType:
-          isNumeric ? TextInputType.number : TextInputType.text, 
+  required TextEditingController controller,
+  required String hint,
+  bool enabled = true,
+  int maxLines = 1,
+  IconData? icon,
+  double? height,
+  bool isNumeric = false,
+  String? prefixText,
+  List<TextInputFormatter>? inputFormatters,
+  TextCapitalization? textCapitalization,
+  Function(String)? onChanged,
+}) {
+  return Container(
+    height: height,
+    padding: const EdgeInsets.symmetric(horizontal: 10),
+    decoration: BoxDecoration(
+      color: AppColors.containerColor,
+      border: Border.all(color: AppColors.border),
+      borderRadius: BorderRadius.circular(5),
+    ),
+    child: TextField(
+      controller: controller,
+      enabled: enabled,
+      maxLines: maxLines,
 
-     inputFormatters: inputFormatters ??
-    (isNumeric
-        ? [
-            FilteringTextInputFormatter.allow(
-              RegExp(r'^\d{0,9}(\.\d{0,2})?$'),
-            ),
-          ]
-        : []),
-        decoration: InputDecoration(
-          hintText: hint,
-          border: InputBorder.none,
-          prefixIcon: icon != null ? Icon(icon, color: AppColors.light) : null,
-          prefixText: prefixText
-        ),
+      textCapitalization:
+          textCapitalization ?? TextCapitalization.none,
+
+      onChanged: onChanged,
+
+      style: AppTextStyles.formInputs15,
+
+      keyboardType:
+          isNumeric ? TextInputType.number : TextInputType.text,
+
+      inputFormatters:
+          inputFormatters ??
+          (isNumeric
+              ? [
+                  FilteringTextInputFormatter.allow(
+                    RegExp(r'^\d{0,9}(\.\d{0,2})?$'),
+                  ),
+                ]
+              : []),
+
+      decoration: InputDecoration(
+        hintText: hint,
+        border: InputBorder.none,
+        prefixIcon:
+            icon != null
+                ? Icon(icon, color: AppColors.light)
+                : null,
+        prefixText: prefixText,
       ),
-    );
-  }
+    ),
+  );
 }
+  }
