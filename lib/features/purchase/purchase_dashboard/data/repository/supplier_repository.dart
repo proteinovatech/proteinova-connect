@@ -1,6 +1,8 @@
 
 import 'package:dio/dio.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/supplier_model.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/supplier_request_model.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/services/supplier_service.dart';
 
 
 class SupplierRepository {
@@ -21,4 +23,9 @@ class SupplierRepository {
       throw Exception("Failed to load suppliers: $e");
     }
   }
+  Future<void> postSupplier(
+  SupplierRequestModel supplier,
+) async {
+  await SupplierService().postSupplier(supplier);
+}
 }

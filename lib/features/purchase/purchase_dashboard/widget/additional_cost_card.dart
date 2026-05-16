@@ -100,7 +100,7 @@ class _AdditionalCostCardState extends State<AdditionalCostCard> {
         Row(
           children: [
             Expanded(
-              child: _costField("Loading Charges",widget.loadingController),
+              child: _costField("Loading ",widget.loadingController),
             ),
             const SizedBox(width: 10),
             Expanded(

@@ -24,3 +24,12 @@ class PurchaseLoaded extends PurchaseState {
     this.message
   });
 }
+class PurchaseSubmitting extends PurchaseState {}
+
+class PurchaseSubmitSuccess extends PurchaseState {}
+
+class PurchaseSubmitFailure extends PurchaseState {
+  final String message;
+
+  PurchaseSubmitFailure(this.message);
+}

@@ -11,7 +11,7 @@ import 'purchase_state.dart';
   List<dynamic> _allPurchases = [];
   PurchaseBloc(this.supplierRepository, this.purchaseRepository,this.cache)
       : super(PurchaseInitial()) {
-
+    on<SubmitPurchaseEvent>(_onSubmitPurchase);
     /// 🔹 INIT (Suppliers)
     on<FetchPurchaseInitData>((event, emit) async {
       emit(PurchaseLoading());
@@ -97,8 +97,36 @@ on<SearchPurchaseEvent>((event, emit) {
   ));
 });
 
-
   }
+  Future<void> _onSubmitPurchase(
+  SubmitPurchaseEvent event,
+  Emitter<PurchaseState> emit,
+) async {
+  try {
+    emit(PurchaseSubmitting());
+
+    await purchaseRepository.postPurchase(event.purchase);
+
+    // refresh purchase list
+    final updatedList = await purchaseRepository.getPurchases();
+
+    _allPurchases = updatedList;
+
+    emit(PurchaseSubmitSuccess());
+
+    emit(
+      PurchaseLoaded(
+        allPurchases: updatedList,
+        purchases: updatedList,
+      ),
+    );
+  } catch (e) {
+    emit(PurchaseSubmitFailure(
+      "Failed to submit purchase",
+    ));
+  }
+}
+
 }
 
 
