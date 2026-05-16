@@ -32,7 +32,6 @@ final Color statusTextColor;
 
   @override
   Widget build(BuildContext context) {
-    final Size size=MediaQuery.of(context).size;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       padding: const EdgeInsets.all(14),

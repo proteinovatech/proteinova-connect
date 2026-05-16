@@ -73,20 +73,30 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                 icon: Icons.person_outline,
                 title: "Profile",
                 subtitle: "Manage admin profile details",
-
                 onTap: onProfileTap,
               ),
 
               const SizedBox(height: 18),
 
-              /// ROLE & PERMISSION
+              /// STAFF MANAGEMENT
               SettingsOptionTile(
-                icon: Icons.admin_panel_settings_outlined,
-                title: "Role & Permission",
-                subtitle: "Manage roles and access permissions",
-
-                onTap: onRolePermissionTap,
+                icon: Icons.people_outline,
+                title: "Staff Management",
+                subtitle: "Manage your staff members and access",
+                onTap: onRolePermissionTap, // Reusing this for staff management
               ),
+
+              const SizedBox(height: 18),
+
+              /// ROLE & PERMISSION (Optional, keeping as placeholder or for future)
+              // SettingsOptionTile(
+              //   icon: Icons.admin_panel_settings_outlined,
+              //   title: "Roles & Permissions",
+              //   subtitle: "Manage roles and access permissions",
+              //   onTap: () {
+              //     // This could lead to a screen like CreateRole.jsx
+              //   },
+              // ),
             ],
           ),
         ),

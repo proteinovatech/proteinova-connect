@@ -8,7 +8,6 @@ import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/widget/activityitem.dart';
 import 'package:proteinova_connect/features/branch/inventory/presentation/receivestock.dart';
 import 'package:proteinova_connect/features/branch/inventory/widget/order_shipmentcard.dart';
-import 'package:proteinova_connect/features/branch/inventory/widget/shipment_filter_row.dart';
 import 'package:proteinova_connect/features/branch/inventory/widget/shipmentcard.dart';
 
 class Inventory extends StatefulWidget {
@@ -19,7 +18,6 @@ class Inventory extends StatefulWidget {
 }
 
 class _InventoryState extends State<Inventory> {
-
   bool isLoading = true;
 
   Map<String, dynamic>? inventoryData;
@@ -30,160 +28,95 @@ class _InventoryState extends State<Inventory> {
     fetchInventory();
   }
 
- Future<void> fetchInventory() async {
+  Future<void> fetchInventory() async {
+    try {
+      final String baseUrl = dotenv.env['BASE_URL'] ?? "";
 
-  try {
-
-    final String baseUrl =
-        dotenv.env['BASE_URL'] ?? "";
-
-    final response = await http.get(
-
-      Uri.parse(
-        "$baseUrl/api/branch/incoming-stock/1",
-      ),
-    );
-
-    if (response.statusCode == 200) {
-
-      setState(() {
-
-        inventoryData =
-            jsonDecode(response.body);
-
-        isLoading = false;
-      });
-
-    } else {
-
-      setState(() {
-        isLoading = false;
-      });
-
-      print(
-        "STATUS CODE : ${response.statusCode}",
+      final response = await http.get(
+        Uri.parse("$baseUrl/api/branch/incoming-stock/1"),
       );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          inventoryData = jsonDecode(response.body);
+
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+
+        print("STATUS CODE : ${response.statusCode}");
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+
+      print("ERROR : $e");
     }
-
-  } catch (e) {
-
-    setState(() {
-      isLoading = false;
-    });
-
-    print("ERROR : $e");
   }
-}
+
   @override
   Widget build(BuildContext context) {
-
-    final Size size =
-        MediaQuery.of(context).size;
+    final Size size = MediaQuery.of(context).size;
 
     if (isLoading) {
-
-      return const Scaffold(
-        body: Center(
-          child:
-              CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final cards =
-        inventoryData?["cards"] ?? {};
+    final cards = inventoryData?["cards"] ?? {};
 
-    final shipments =
-        inventoryData?["shipments"] ?? [];
+    final shipments = inventoryData?["shipments"] ?? [];
 
-    final recentActivity =
-        inventoryData?["recent_activity"] ??
-            [];
+    final recentActivity = inventoryData?["recent_activity"] ?? [];
 
     return Scaffold(
-
-      backgroundColor:
-          AppColors.background1,
+      backgroundColor: AppColors.background1,
 
       body: Padding(
-
         padding: EdgeInsets.only(
           left: size.height * 0.01,
           right: size.height * 0.01,
         ),
 
         child: Column(
-
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-
-            SizedBox(
-              height: size.height * 0.01,
-            ),
+            SizedBox(height: size.height * 0.01),
 
             Padding(
-
-              padding: EdgeInsets.symmetric(
-                horizontal:
-                    size.width * 0.04,
-              ),
+              padding: EdgeInsets.symmetric(horizontal: size.width * 0.04),
 
               child: Column(
-
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: [
-
-                  SizedBox(
-                    height:
-                        size.height * 0.06,
-                  ),
+                  SizedBox(height: size.height * 0.06),
 
                   Row(
-
-                    mainAxisAlignment:
-                        MainAxisAlignment
-                            .spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                     children: [
-
-                      Image.asset(
-                        "assets/erplogo.png",
-                        height: 40,
-                        width: 130,
-                      ),
+                      Image.asset("assets/erplogo.png", height: 40, width: 130),
 
                       Row(
-
                         children: [
+                          const Icon(Icons.notifications_outlined),
 
-                          const Icon(
-                            Icons
-                                .notifications_outlined,
-                          ),
-
-                          SizedBox(
-                            width:
-                                size.width *
-                                    0.02,
-                          ),
+                          SizedBox(width: size.width * 0.02),
 
                           CircleAvatar(
-
                             radius: 18,
 
-                            backgroundColor:
-                                Colors.grey
-                                    .shade300,
+                            backgroundColor: Colors.grey.shade300,
 
                             child: Icon(
                               Icons.person,
                               size: 20,
-                              color:
-                                  AppColors.background,
+                              color: AppColors.background,
                             ),
                           ),
                         ],
@@ -197,389 +130,239 @@ class _InventoryState extends State<Inventory> {
             const Divider(),
 
             Expanded(
-
-              child:
-                  SingleChildScrollView(
-
+              child: SingleChildScrollView(
                 child: Column(
-
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
 
                   children: [
-
-                    Text(
-                      "Incoming Queue",
-                      style:
-                          AppTextStyles
-                              .headingText25,
-                    ),
+                    Text("Incoming Queue", style: AppTextStyles.headingText25),
 
                     Text(
                       "Manage Stock Shipments",
-                      style:
-                          AppTextStyles
-                              .bodyText16,
+                      style: AppTextStyles.bodyText16,
                     ),
 
-                    SizedBox(
-                      height:
-                          size.height *
-                              0.02,
-                    ),
+                    SizedBox(height: size.height * 0.02),
 
-                    Row(
-
-                      children: [
-
-                        Expanded(
-
-                          child:
-                              ShipmentCard(
-
-                            title:
-                                "Expected Today",
-
-                            count:
-                                "${cards["expected_today"] ?? 0} Shipments",
-
-                            subtitle:
-                                "Incoming shipments",
-
-                            icon:
-                                Icons.event,
-                          ),
-                        ),
-
-                        const SizedBox(
-                          width: 10,
-                        ),
-
-                        Expanded(
-
-                          child:
-                              ShipmentCard(
-
-                            title:
-                                "Ready for Unloading",
-
-                            count:
-                                "${cards["ready_for_unloading"] ?? 0} Shipments",
-
-                            subtitle:
-                                "Requires immediate action",
-
-                            icon: Icons
-                                .local_shipping_outlined,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    SizedBox(
-                      height:
-                          size.height *
-                              0.02,
-                    ),
-
-                    const ShipmentFilterRow(),
-
-                    SizedBox(
-                      height:
-                          size.height *
-                              0.02,
-                    ),
-
-                    Text(
-                      "Shipments",
-                      style:
-                          AppTextStyles
-                              .headingText22,
-                    ),
-
-                    const SizedBox(
-                      height: 10,
-                    ),
-
-                    shipments.isEmpty
-
-                        ? const Center(
-                            child: Padding(
-                              padding:
-                                  EdgeInsets.all(
-                                      20),
-                              child: Text(
-                                "No Shipments Found",
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        double cardWidth = constraints.maxWidth > 800 
+                            ? (constraints.maxWidth - 20) / 3 
+                            : (constraints.maxWidth - 10) / 2;
+                        return Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: [
+                            SizedBox(
+                              width: cardWidth,
+                              child: ShipmentCard(
+                                title: "EXPECTED TODAY",
+                                count: "${cards["expected_today"] ?? 0} Shipments",
+                                subtitle: "Today's expected deliveries",
+                                icon: Icons.event,
                               ),
                             ),
+                            SizedBox(
+                              width: cardWidth,
+                              child: ShipmentCard(
+                                title: "READY FOR UNLOADING",
+                                count: "${cards["ready_for_unloading"] ?? 0} Shipments",
+                                subtitle: "Requires immediate action",
+                                icon: Icons.local_shipping_outlined,
+                              ),
+                            ),
+                            SizedBox(
+                              width: cardWidth,
+                              child: ShipmentCard(
+                                title: "TOTAL IN TRANSIT",
+                                count: "${cards["total_eggs_in_transit"] ?? 0} Eggs",
+                                subtitle: "Stock currently moving",
+                                icon: Icons.send_outlined,
+                              ),
+                            ),
+                            SizedBox(
+                              width: cardWidth,
+                              child: ShipmentCard(
+                                title: "DELAYED IN TRANSIT",
+                                count: "${cards["delayed_in_transit"] ?? 0} Shipments",
+                                subtitle: "Current transit delays",
+                                icon: Icons.warning_amber_rounded,
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                    ),
+                    SizedBox(height: size.height * 0.02),
+
+                    // const ShipmentFilterRow(),
+
+                    // SizedBox(height: size.height * 0.02),
+                    Text("Shipments", style: AppTextStyles.headingText22),
+
+                    const SizedBox(height: 10),
+
+                    shipments.isEmpty
+                        ? const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(20),
+                              child: Text("No Shipments Found"),
+                            ),
                           )
-
                         : ListView.builder(
-
-                            itemCount:
-                                shipments.length,
+                            itemCount: shipments.length,
 
                             shrinkWrap: true,
 
-                            physics:
-                                const NeverScrollableScrollPhysics(),
+                            physics: const NeverScrollableScrollPhysics(),
 
-                            itemBuilder:
-                                (
-                                  context,
-                                  index,
-                                ) {
-
-                              final shipment =
-                                  shipments[
-                                      index];
+                            itemBuilder: (context, index) {
+                              final shipment = shipments[index];
 
                               final status =
                                   shipment["status"]
-                                          ?.toString()
-                                          .trim()
-                                          .toUpperCase() ??
-                                      "";
+                                      ?.toString()
+                                      .trim()
+                                      .toUpperCase() ??
+                                  "";
 
                               return OrderShipmentcard(
+                                orderId: shipment["dispatch_code"] ?? "",
 
-                                orderId:
-                                    shipment[
-                                            "dispatch_code"] ??
-                                        "",
+                                dateTime: shipment["expected_arrival"] ?? "",
 
-                                dateTime:
-                                    shipment[
-                                            "expected_arrival"] ??
-                                        "",
+                                status: shipment["status"] ?? "",
 
-                                status:
-                                    shipment[
-                                            "status"] ??
-                                        "",
+                                statusBgColor: status == "READY_FOR_UNLOAD"
+                                    ? AppColors.green
+                                    : status == "DELAYED"
+                                    ? AppColors.redAccent
+                                    : status == "IN_TRANSIT"
+                                    ? AppColors.containerColor2
+                                    : AppColors.deepOrange,
 
-                                statusBgColor:
-                                    status ==
-                                            "READY_FOR_UNLOAD"
-                                        ? AppColors
-                                            .green
-                                        : status ==
-                                                "DELAYED"
-                                            ? AppColors
-                                                .redAccent
-                                            : status ==
-                                                    "IN_TRANSIT"
-                                                ? AppColors
-                                                    .containerColor2
-                                                : AppColors
-                                                    .deepOrange,
+                                statusTextColor: status == "IN_TRANSIT"
+                                    ? AppColors.textSecondary
+                                    : AppColors.background,
 
-                                statusTextColor:
-                                    status ==
-                                            "IN_TRANSIT"
-                                        ? AppColors
-                                            .textSecondary
-                                        : AppColors
-                                            .background,
+                                buttonColor: status == "READY_FOR_UNLOAD"
+                                    ? AppColors.amber600
+                                    : AppColors.background,
 
-                                buttonColor:
-                                    status ==
-                                            "READY_FOR_UNLOAD"
-                                        ? AppColors
-                                            .amber600
-                                        : AppColors
-                                            .background,
+                                supplier: shipment["supplier_or_from"] ?? "",
 
-                                supplier:
-                                    shipment[
-                                            "supplier_or_from"] ??
-                                        "",
-
-                                product:
-                                    shipment[
-                                            "product_summary"] ??
-                                        "",
+                                product: shipment["product_summary"] ?? "",
 
                                 quantity:
                                     "${shipment["total_trays"] ?? 0} Tray",
 
-                                buttonText:
-                                    status ==
-                                            "READY_FOR_UNLOAD"
-                                        ? "Receive Stock"
-                                        : status ==
-                                                "DELAYED"
-                                            ? "Track Shipment"
-                                            : status ==
-                                                    "IN_TRANSIT"
-                                                ? "View Details"
-                                                : "Inspect & Receive",
-
-                              onReceiveTap: () async {
-
-  try {
-
-    final String baseUrl =
-        dotenv.env['BASE_URL'] ?? "";
-
-    final dispatchId =
-        shipment["dispatch_id"];
-
-    final response = await http.put(
-
-      Uri.parse(
-        "$baseUrl/api/branch/incoming-stock/1/dispatch/$dispatchId/arrival",
-      ),
-
-      headers: {
-        "Content-Type":
-            "application/json",
-      },
-    );
-
-    if (response.statusCode == 200) {
-
-      print("Arrival Updated");
-
-      Navigator.push(
-
-        context,
-
-        MaterialPageRoute(
-          builder: (context) =>
-               Receivestock(dispatchid: dispatchId,),
-        ),
-      );
-
-    } else {
-
-      print(
-        "PUT ERROR : ${response.statusCode}",
-      );
-    }
-
-  } catch (e) {
-
-    print("ERROR : $e");
-  }
-}, );
+                                buttonText: status == "READY_FOR_UNLOAD"
+                                    ? "Receive Stock"
+                                    : status == "DELAYED"
+                                    ? "Track Shipment"
+                                    : status == "IN_TRANSIT"
+                                    ? "Mark as Arrival"
+                                    : "Inspect & Receive",
+                                onReceiveTap: () async {
+                                  final dispatchId = shipment["dispatch_id"];
+                                  if (status == "IN_TRANSIT") {
+                                    try {
+                                      final String baseUrl =
+                                          dotenv.env['BASE_URL'] ?? "";
+                                      final response = await http.put(
+                                        Uri.parse(
+                                          "$baseUrl/api/dispatch/$dispatchId/status",
+                                        ),
+                                        headers: {
+                                          "Content-Type": "application/json",
+                                        },
+                                        body: jsonEncode({"status": "ARRIVAL"}),
+                                      );
+                                      if (response.statusCode == 200) {
+                                        fetchInventory();
+                                      } else {
+                                        print(
+                                          "PUT ERROR : ${response.statusCode}",
+                                        );
+                                      }
+                                    } catch (e) {
+                                      print("ERROR : $e");
+                                    }
+                                  } else {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Receivestock(
+                                          dispatchid: dispatchId,
+                                        ),
+                                      ),
+                                    ).then((value) {
+                                      if (value == true) {
+                                        fetchInventory();
+                                      }
+                                    });
+                                  }
+                                },
+                              );
                             },
                           ),
 
-                    const SizedBox(
-                      height: 20,
-                    ),
+                    const SizedBox(height: 20),
 
                     Row(
-
-                      mainAxisAlignment:
-                          MainAxisAlignment
-                              .spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                       children: [
-
                         const Text(
-
                           "Recent activity",
 
-                          style:
-                              AppTextStyles
-                                  .headingText22,
+                          style: AppTextStyles.headingText22,
                         ),
 
                         const Text(
-
                           "View All",
 
-                          style: TextStyle(
-                            color:
-                                Colors.blue,
-                          ),
+                          style: TextStyle(color: Colors.blue),
                         ),
                       ],
                     ),
 
-                    const SizedBox(
-                      height: 20,
-                    ),
+                    const SizedBox(height: 20),
 
                     recentActivity.isEmpty
-
-                        ? const Center(
-                            child: Text(
-                              "No Recent Activity",
-                            ),
-                          )
-
+                        ? const Center(child: Text("No Recent Activity"))
                         : ListView.builder(
-
-                            itemCount:
-                                recentActivity
-                                    .length,
+                            itemCount: recentActivity.length,
 
                             shrinkWrap: true,
 
-                            physics:
-                                const NeverScrollableScrollPhysics(),
+                            physics: const NeverScrollableScrollPhysics(),
 
-                            itemBuilder:
-                                (
-                                  context,
-                                  index,
-                                ) {
-
-                              final item =
-                                  recentActivity[
-                                      index];
+                            itemBuilder: (context, index) {
+                              final item = recentActivity[index];
 
                               return Column(
-
                                 children: [
-
                                   ActivityItem(
-
-                                    leading:
-                                        const CircleAvatar(
-
-                                      backgroundColor:
-                                          Colors
-                                              .grey,
+                                    leading: const CircleAvatar(
+                                      backgroundColor: Colors.grey,
 
                                       child: Icon(
-                                        Icons
-                                            .person,
-                                        color:
-                                            Colors
-                                                .white,
+                                        Icons.person,
+                                        color: Colors.white,
                                       ),
                                     ),
 
-                                    title:
-                                        item[
-                                                "actor_name"] ??
-                                            "",
+                                    title: item["actor_name"] ?? "",
 
-                                    subtitle:
-                                        Text(
-                                      item[
-                                              "activity"] ??
-                                          "",
-                                    ),
+                                    subtitle: Text(item["activity"] ?? ""),
 
-                                    time:
-                                        item[
-                                                "created_at"] ??
-                                            "",
+                                    time: item["created_at"] ?? "",
 
-                                    tag:
-                                        item[
-                                                "activity_type"] ??
-                                            "",
+                                    tag: item["activity_type"] ?? "",
                                   ),
 
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
+                                  const SizedBox(height: 10),
                                 ],
                               );
                             },

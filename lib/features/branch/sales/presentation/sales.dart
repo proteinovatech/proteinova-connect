@@ -9,7 +9,6 @@ import 'package:proteinova_connect/features/branch/sales/bloc/sales_state.dart';
 import 'package:proteinova_connect/features/branch/sales/presentation/sales_entry.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/dashboardcard.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/dashboardcard2.dart';
-import 'package:proteinova_connect/features/branch/sales/widget/recent_sales_card.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/sales_skeleton_loader.dart';
 
 import '../data/repository/sales_repository.dart';
@@ -90,7 +89,6 @@ class _SalesState extends State<Sales> {
                     Text("Error: ${state.error}"),
                     ElevatedButton(
                       onPressed: () {
-                        create:
                         (context) =>
                             SalesBloc()
                               ..add(FetchSalesDashboard(branchId: branchId));
@@ -328,22 +326,22 @@ class _SalesState extends State<Sales> {
     );
   }
 
-  Widget _buildExportButton() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.border2),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.open_in_new, color: AppColors.blueAccent, size: 18),
-          SizedBox(width: 5),
-          Text("Export", style: AppTextStyles.blueText2),
-        ],
-      ),
-    );
-  }
+  // Widget _buildExportButton() {
+  //   return Container(
+  //     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+  //     decoration: BoxDecoration(
+  //       border: Border.all(color: AppColors.border2),
+  //       borderRadius: BorderRadius.circular(8),
+  //     ),
+  //     child: Row(
+  //       children: [
+  //         Icon(Icons.open_in_new, color: AppColors.blueAccent, size: 18),
+  //         SizedBox(width: 5),
+  //         Text("Export", style: AppTextStyles.blueText2),
+  //       ],
+  //     ),
+  //   );
+  // }
   // Widget _buildExportButton() {
   //   return Container(
   //     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),

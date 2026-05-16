@@ -159,16 +159,7 @@ class _PaymentSummaryWidgetState extends State<BranchPaymentSummaryWidget> {
             onPressed: isSubmitting
                 ? null
                 : () async {
-                    if (widget.amountController.text.trim().isEmpty ||
-                        widget.amountController.text.trim() == "0") {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          backgroundColor: Colors.red,
-                          content: Text("Please enter payment amount"),
-                        ),
-                      );
-                      return;
-                    }
+                    // Proceed with submission; empty amount defaults to full payment
 
                     setState(() {
                       isSubmitting = true;

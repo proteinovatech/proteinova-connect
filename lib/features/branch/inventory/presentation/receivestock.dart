@@ -23,10 +23,13 @@ class _ReceivestockState extends State<Receivestock> {
   bool isTrayExpanded = true;
   bool isReceivedExpanded = true;
   bool isLoading = true;
+  bool isSubmitting = false;
 
   Map<String, dynamic> receiveInfo = {};
   Map<String, dynamic> summary = {};
   List receivedItems = [];
+  Map<String, int> damagedTrays = {};
+  TextEditingController notesController = TextEditingController();
 
   @override
   void initState() {
@@ -86,6 +89,68 @@ class _ReceivestockState extends State<Receivestock> {
       });
 
       print("ERROR : $e");
+    }
+  }
+
+  Future<void> handleArrival() async {
+    try {
+      final response = await http.put(
+        Uri.parse("${ApiConstants.baseUrl}/api/branch/incoming-stock/1/dispatch/${widget.dispatchid}/arrival"),
+        headers: {"Accept": "application/json"},
+      );
+      if (response.statusCode == 200) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Arrival marked successfully!")));
+        fetchReceiveStock();
+      } else {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to mark arrival: ${response.statusCode}")));
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+  }
+
+  Future<void> handleConfirmReceive() async {
+    setState(() {
+      isSubmitting = true;
+    });
+    try {
+      List<Map<String, dynamic>> items = receivedItems.map((item) {
+        int eggs = item["eggs"] ?? 0;
+        int trays = item["trays"] ?? 1;
+        double eggsPerTray = trays > 0 ? eggs / trays : 0;
+        int damaged = damagedTrays[item["product"]] ?? 0;
+        int traysToMarkDamaged = eggsPerTray > 0 ? (damaged / eggsPerTray).ceil() : 0;
+
+        return {
+          "egg_category_grade": item["product"],
+          "damaged_trays": traysToMarkDamaged
+        };
+      }).toList();
+
+      final response = await http.post(
+        Uri.parse("${ApiConstants.baseUrl}/api/branch/incoming-stock/1/dispatch/${widget.dispatchid}/receive"),
+        headers: {"Content-Type": "application/json", "Accept": "application/json"},
+        body: jsonEncode({
+          "dispatch_id": widget.dispatchid.toString(),
+          "items": items,
+          "notes": notesController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Stock received successfully!")));
+        if (mounted) Navigator.pop(context, true);
+      } else {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to confirm receive: ${response.statusCode}")));
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+    } finally {
+      if (mounted) {
+        setState(() {
+          isSubmitting = false;
+        });
+      }
     }
   }
 
@@ -186,6 +251,31 @@ class _ReceivestockState extends State<Receivestock> {
                 ),
               ],
             ),
+            if (receiveInfo["status"] != "ARRIVAL" && receiveInfo["status"] != "DELIVERED")
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: ElevatedButton(
+                  onPressed: handleArrival,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    minimumSize: const Size(0, 30),
+                  ),
+                  child: const Text("Mark Arrival", style: TextStyle(color: Colors.white, fontSize: 12)),
+                ),
+              )
+            else if (receiveInfo["status"] == "ARRIVAL")
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade700,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text("Arrived", style: TextStyle(color: Colors.white, fontSize: 12)),
+                ),
+              ),
 
             Text(
 
@@ -686,10 +776,16 @@ class _ReceivestockState extends State<Receivestock> {
                 "${item["eggs"] ?? 0}",
 
             damagedEggs:
-                "${item["damaged_eggs"] ?? 0}",
+                "${damagedTrays[item["product"]] ?? 0}",
 
             goodEggs:
-                "${item["good_eggs"] ?? item["eggs"] ?? 0}",
+                "${(item["eggs"] ?? 0) - (damagedTrays[item["product"]] ?? 0)}",
+
+            onChanged: (val) {
+              setState(() {
+                damagedTrays[item["product"]] = int.tryParse(val) ?? 0;
+              });
+            },
           );
         },
       ).toList(),
@@ -811,6 +907,28 @@ class _ReceivestockState extends State<Receivestock> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Notes",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: notesController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        hintText: "Enter any additional notes...",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -824,39 +942,42 @@ class _ReceivestockState extends State<Receivestock> {
 
                 Expanded(
 
-                  child: Container(
-
-                    padding:
-                        const EdgeInsets
-                            .symmetric(
-                      vertical: 14,
-                    ),
-
-                    alignment:
-                        Alignment.center,
-
-                    decoration:
-                        BoxDecoration(
-
-                      color:
-                          AppColors.background,
-
-                      borderRadius:
-                          BorderRadius.circular(
-                              8),
-
-                      border: Border.all(
-                        color:
-                            AppColors.border2,
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+  
+                      padding:
+                          const EdgeInsets
+                              .symmetric(
+                        vertical: 14,
                       ),
-                    ),
-
-                    child: Text(
-
-                      "Cancel",
-
-                      style: AppTextStyles
-                          .bodyText14dark,
+  
+                      alignment:
+                          Alignment.center,
+  
+                      decoration:
+                          BoxDecoration(
+  
+                        color:
+                            AppColors.background,
+  
+                        borderRadius:
+                            BorderRadius.circular(
+                                8),
+  
+                        border: Border.all(
+                          color:
+                              AppColors.border2,
+                        ),
+                      ),
+  
+                      child: Text(
+  
+                        "Cancel",
+  
+                        style: AppTextStyles
+                            .bodyText14dark,
+                      ),
                     ),
                   ),
                 ),
@@ -865,33 +986,36 @@ class _ReceivestockState extends State<Receivestock> {
 
                 Expanded(
 
-                  child: Container(
-
-                    padding:
-                        const EdgeInsets
-                            .symmetric(
-                      vertical: 14,
-                    ),
-
-                    alignment:
-                        Alignment.center,
-
-                    decoration:
-                        BoxDecoration(
-
-                      color: Colors.orange,
-
-                      borderRadius:
-                          BorderRadius.circular(
-                              8),
-                    ),
-
-                    child: const Text(
-
-                      "Confirm Receive",
-
-                      style: AppTextStyles
-                          .bodyText14dark,
+                  child: GestureDetector(
+                    onTap: isSubmitting ? null : handleConfirmReceive,
+                    child: Container(
+  
+                      padding:
+                          const EdgeInsets
+                              .symmetric(
+                        vertical: 14,
+                      ),
+  
+                      alignment:
+                          Alignment.center,
+  
+                      decoration:
+                          BoxDecoration(
+  
+                        color: isSubmitting ? Colors.grey : Colors.orange,
+  
+                        borderRadius:
+                            BorderRadius.circular(
+                                8),
+                      ),
+  
+                      child: Text(
+  
+                        isSubmitting ? "Processing..." : "Confirm Receive",
+  
+                        style: AppTextStyles
+                            .bodyText14dark,
+                      ),
                     ),
                   ),
                 ),

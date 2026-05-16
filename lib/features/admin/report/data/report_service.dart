@@ -270,7 +270,6 @@ class ReportService {
 
     final list = response.data as List<dynamic>? ?? [];
 
-    int totalDispatches = list.length;
     int totalTrays = 0;
     Map<String, int> destMap = {};
 

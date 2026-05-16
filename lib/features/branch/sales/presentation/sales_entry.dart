@@ -24,6 +24,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   double offerDiscount = 0;
   bool customerFound = false;
   int salesItemCount = 0;
+  List trayList = [];
   List dozenList = [];
 
   List eggsList = [];
@@ -38,6 +39,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   List<String> warehouseList = [];
 
   List<String> selectedProducts = [];
+  final List<TextEditingController> trayControllers = [];
   final List<TextEditingController> dozenControllers = [];
   final BranchSalesRemoteDatasource datasource = BranchSalesRemoteDatasource();
   Map<String, dynamic> salesEntryData = {};
@@ -94,7 +96,8 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             response['customer_name']?.toString() ?? "";
         dateController.text = response['sales_date']?.toString() ?? "";
         productList = response['product_details'] ?? [];
-        dozenList = response['dozen_list'] ?? [];
+        trayList = response['tray_list'] ?? response['dozen_list'] ?? [];
+        dozenList = response['dozen_list_actual'] ?? [];
         eggsList = response['eggs_list'] ?? [];
         rateList = response['rate_list'] ?? [];
         totalList = response['total_list'] ?? [];
@@ -245,16 +248,17 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
       /// BUY X GET Y
       if (offer["offer_type"] == "buy_x_get_y") {
-        final int needEggs = int.tryParse(offer["buyTrays"].toString()) ?? 0;
+        final int buyQty = int.tryParse((offer["buy_qty"] ?? offer["buyTrays"] ?? 0).toString()) ?? 0;
+        final int freeQty = int.tryParse((offer["free_qty"] ?? offer["getTrays"] ?? 1).toString()) ?? 1;
+        
+        // 1 unit here usually means trays (30 eggs)
+        final int thresholdEggs = (buyQty + freeQty) * 30;
+        final int freeEggs = freeQty * 30;
 
-        if (totalEggs >= needEggs) {
-          final double ratePerEgg = totalEggs == 0
-              ? 0
-              : matchedTotal / totalEggs;
-
-          final int freeEggs = int.tryParse(offer["getTrays"].toString()) ?? 0;
-
-          discount += freeEggs * ratePerEgg;
+        if (totalEggs >= thresholdEggs && thresholdEggs > 0) {
+          final int sets = totalEggs ~/ thresholdEggs;
+          final double ratePerEgg = totalEggs == 0 ? 0 : matchedTotal / totalEggs;
+          discount += (sets * freeEggs) * ratePerEgg;
         }
       }
       /// FLAT DISCOUNT
@@ -272,12 +276,52 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
   Future<void> _recalculateRowFromApi(int index) async {
     final String selectedProduct = selectedProducts[index];
+    final String trayText = trayControllers[index].text.trim();
     final String dozenText = dozenControllers[index].text.trim();
-    final int dozenValue = int.tryParse(dozenText) ?? 0;
+    
+    final int trayValue = int.tryParse(trayText) ?? 0;
+    
+    // Custom logic: 1.1 means 1 dozen and 1 egg. 0.1 means 1 egg.
+    double totalDozenInput = double.tryParse(dozenText) ?? 0;
+    int inputDozens = totalDozenInput.floor();
+    // Extract eggs from decimal part (e.g., .1 -> 1, .11 -> 11)
+    int inputEggs = 0;
+    if (dozenText.contains('.')) {
+      String decimalPart = dozenText.split('.')[1];
+      inputEggs = int.tryParse(decimalPart) ?? 0;
+    }
+    
+    int currentTotalEggs = (trayValue * 30) + (inputDozens * 12) + inputEggs;
+    
+    // Auto-convert to trays: 30 eggs = 1 tray
+    int normalizedTrays = currentTotalEggs ~/ 30;
+    int remainingEggs = currentTotalEggs % 30;
+    int normalizedDozens = remainingEggs ~/ 12;
+    int finalRemainingEggs = remainingEggs % 12;
+    
+    // Update state with normalized values
     setState(() {
-      dozenList[index] = dozenValue;
+      trayList[index] = normalizedTrays;
+      // To show as D.E where E is single eggs
+      dozenList[index] = normalizedDozens + (finalRemainingEggs / 100.0); // Using /100 to avoid .1 becoming .10 unexpectedly if we parse later
+      
+      // Update controllers to "auto show" the conversion
+      String newTrayStr = normalizedTrays.toString();
+      String newDozenStr = finalRemainingEggs > 0 
+          ? "$normalizedDozens.$finalRemainingEggs" 
+          : normalizedDozens.toString();
+          
+      if (trayControllers[index].text != newTrayStr) {
+        trayControllers[index].text = newTrayStr;
+      }
+      if (dozenControllers[index].text != newDozenStr && !dozenText.endsWith('.')) {
+        dozenControllers[index].text = newDozenStr;
+      }
+      
+      eggsList[index] = currentTotalEggs;
     });
-    if (selectedProduct == "Select Product" || dozenValue <= 0) {
+    
+    if (selectedProduct == "Select Product" || currentTotalEggs <= 0) {
       setState(() {
         eggsList[index] = 0;
         rateList[index] = 0;
@@ -299,8 +343,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       /// 1 tray = 30 eggs
       final int eggsPerTray = 30;
 
-      /// UI shows Trays (30 eggs)
-      final int computedEggs = dozenValue * 30;
+      final int computedEggs = currentTotalEggs;
 
       /// RATE
       final double productRate = _extractRateFromProduct(product, eggsPerTray);
@@ -333,12 +376,14 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
           }
           /// BUY X GET Y
           else if (offer["offer_type"] == "buy_x_get_y") {
-            int buyQty = int.tryParse(offer["buy_qty"].toString()) ?? 0;
+            int buyQty = int.tryParse((offer["buy_qty"] ?? offer["buyTrays"] ?? 0).toString()) ?? 0;
+            int freeQty = int.tryParse((offer["free_qty"] ?? offer["getTrays"] ?? 1).toString()) ?? 1;
 
-            int freeQty = int.tryParse(offer["free_qty"].toString()) ?? 0;
+            final int thresholdEggs = (buyQty + freeQty) * 30;
 
-            if (computedEggs >= buyQty) {
-              final freeAmount = freeQty * productRate;
+            if (computedEggs >= thresholdEggs && thresholdEggs > 0) {
+              final int sets = computedEggs ~/ thresholdEggs;
+              final double freeAmount = (sets * freeQty * 30) * productRate;
               finalTotal = (total - freeAmount).clamp(0, total);
             }
           }
@@ -367,19 +412,19 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         salesItems = List.generate(salesItemCount, (i) {
           return {
             "product_name": selectedProducts[i],
-
+            "trays": trayList[i],
             "dozen": dozenList[i],
-
             "eggs": eggsList[i],
-
-            "trays": ((int.tryParse(eggsList[i].toString()) ?? 0) / 30).ceil(),
-
             "rate": rateList[i],
-
             "total": totalList[i],
           };
         });
         calculateOfferDiscount();
+        
+        // Sync payment amount
+        if (amountController.text.isEmpty || amountController.text == "0") {
+           amountController.text = _grandTotalValue();
+        }
 
         print("salesItems => ");
         print(salesItems);
@@ -545,15 +590,15 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                     }
                   }
 
-                  int currentDozen =
-                      int.tryParse(dozenControllers[existingIndex].text) ?? 0;
+                  int currentTray =
+                      int.tryParse(trayControllers[existingIndex].text) ?? 0;
 
-                  currentDozen += 1;
+                  currentTray += 1;
 
-                  dozenControllers[existingIndex].text = currentDozen
+                  trayControllers[existingIndex].text = currentTray
                       .toString();
 
-                  dozenList[existingIndex] = currentDozen;
+                  trayList[existingIndex] = currentTray;
 
                   await _recalculateRowFromApi(existingIndex);
 
@@ -590,9 +635,11 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
                     selectedProducts[rowIndex] = productName;
 
-                    dozenControllers[rowIndex].text = "1";
+                    trayControllers[rowIndex].text = "1";
+                    dozenControllers[rowIndex].text = "0";
 
-                    dozenList[rowIndex] = 1;
+                    trayList[rowIndex] = 1;
+                    dozenList[rowIndex] = 0;
                   });
 
                   await _recalculateRowFromApi(salesItemCount - 1);
@@ -762,11 +809,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                       .map(
                         (e) => {
                           "egg_category_grade": e["product_name"],
+                          "trays": e["trays"],
                           "dozen": e["dozen"],
                           "eggs": e["eggs"],
-                          "trays":
-                              ((int.tryParse(e["eggs"].toString()) ?? 0) / 30)
-                                  .ceil(),
                           "total": e["total"],
                         },
                       )
@@ -1154,21 +1199,18 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
           /// NUMBER
           SizedBox(
             width: getWidth(context, 10),
-
             child: Text(
               "$no",
-
               textAlign: TextAlign.center,
-
               style: AppTextStyles.bodyText12dark,
             ),
           ),
 
-          SizedBox(width: getWidth(context, 6)),
+          SizedBox(width: getWidth(context, 4)),
 
           /// PRODUCT
           Expanded(
-            flex: 4,
+            flex: 3,
 
             child: Container(
               height: getHeight(context, 38),
@@ -1211,100 +1253,105 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ),
 
-          SizedBox(width: getWidth(context, 6)),
+          SizedBox(width: getWidth(context, 4)),
 
           /// TRAYS
           Container(
-            width: getWidth(context, 40),
+            width: getWidth(context, 35),
             height: getHeight(context, 38),
-
             alignment: Alignment.center,
-
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
-
               border: Border.all(color: AppColors.border),
             ),
-
             child: TextField(
-              controller: dozenControllers[no - 1],
-
+              controller: trayControllers[no - 1],
               keyboardType: TextInputType.number,
-
               textAlign: TextAlign.center,
-
-              style: const TextStyle(fontSize: 12),
-
+              style: const TextStyle(fontSize: 11),
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.symmetric(vertical: 10),
               ),
-
               onChanged: (_) async {
                 await _recalculateRowFromApi(no - 1);
               },
             ),
           ),
 
-          SizedBox(width: getWidth(context, 8)),
+          SizedBox(width: getWidth(context, 4)),
+
+          /// DOZEN
+          Container(
+            width: getWidth(context, 35),
+            height: getHeight(context, 38),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: TextField(
+              controller: dozenControllers[no - 1],
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 11),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(vertical: 10),
+              ),
+              onChanged: (_) async {
+                await _recalculateRowFromApi(no - 1);
+              },
+            ),
+          ),
+
+          SizedBox(width: getWidth(context, 4)),
 
           /// EGGS
           SizedBox(
-            width: getWidth(context, 24),
-
+            width: getWidth(context, 20),
             child: Text(
               eggsList.length >= no ? eggsList[no - 1].toString() : "0",
-
               textAlign: TextAlign.center,
-
-              style: AppTextStyles.bodyText12,
+              style: const TextStyle(fontSize: 11),
             ),
           ),
 
-          SizedBox(width: getWidth(context, 8)),
+          SizedBox(width: getWidth(context, 4)),
 
           /// RATE
           SizedBox(
-            width: getWidth(context, 42),
-
+            width: getWidth(context, 35),
             child: Text(
               "₹${rateList.length >= no ? rateList[no - 1] : 0}",
-
               textAlign: TextAlign.center,
-
               maxLines: 1,
-
               overflow: TextOverflow.ellipsis,
-
-              style: AppTextStyles.bodyText12dark,
+              style: const TextStyle(fontSize: 10),
             ),
           ),
 
-          SizedBox(width: getWidth(context, 8)),
+          SizedBox(width: getWidth(context, 4)),
 
           /// TOTAL
           SizedBox(
-            width: getWidth(context, 48),
-
+            width: getWidth(context, 40),
             child: Text(
               "₹${totalList.length >= no ? totalList[no - 1] : 0}",
-
               textAlign: TextAlign.center,
-
-              maxLines: 2,
-
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
-
               style: const TextStyle(
                 color: Colors.green,
                 fontWeight: FontWeight.bold,
-                fontSize: 11,
+                fontSize: 10,
               ),
             ),
           ),
 
-          SizedBox(width: getWidth(context, 6)),
+          SizedBox(width: getWidth(context, 4)),
 
           /// DELETE
           GestureDetector(
@@ -1316,10 +1363,18 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                   selectedProducts.removeAt(index);
                 }
 
+                if (trayControllers.length > index) {
+                  trayControllers[index].dispose();
+                  trayControllers.removeAt(index);
+                }
+
                 if (dozenControllers.length > index) {
                   dozenControllers[index].dispose();
-
                   dozenControllers.removeAt(index);
+                }
+
+                if (trayList.length > index) {
+                  trayList.removeAt(index);
                 }
 
                 if (dozenList.length > index) {
@@ -1465,6 +1520,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     while (selectedProducts.length < count) {
       selectedProducts.add("Select Product");
     }
+    while (trayList.length < count) {
+      trayList.add(0);
+    }
     while (dozenList.length < count) {
       dozenList.add(0);
     }
@@ -1477,14 +1535,21 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     while (totalList.length < count) {
       totalList.add(0);
     }
+    while (trayControllers.length < count) {
+      trayControllers.add(TextEditingController(text: "0"));
+    }
     while (dozenControllers.length < count) {
       dozenControllers.add(TextEditingController(text: "0"));
     }
 
     for (int i = 0; i < count; i++) {
-      final String value = dozenList[i].toString();
-      if (dozenControllers[i].text != value) {
-        dozenControllers[i].text = value;
+      final String trayVal = trayList[i].toString();
+      final String dozenVal = dozenList[i].toString();
+      if (trayControllers[i].text != trayVal) {
+        trayControllers[i].text = trayVal;
+      }
+      if (dozenControllers[i].text != dozenVal) {
+        dozenControllers[i].text = dozenVal;
       }
     }
 
