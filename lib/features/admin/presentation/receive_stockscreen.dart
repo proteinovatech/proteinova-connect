@@ -119,13 +119,13 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
       return sum + (trays * capacity);
     });
 
-    final totalTrays = (items as List).fold<int>(0, (int sum, dynamic item) {
+    final totalTrays = (items).fold<int>(0, (int sum, dynamic item) {
       return sum + (int.tryParse(item['trays'].toString()) ?? 0);
     });
 
     final expenses = purchase?['expenses'] ?? [];
 
-    final double itemsTotal = (items as List).fold<double>(0, (
+    final double itemsTotal = (items).fold<double>(0, (
       double sum,
       dynamic item,
     ) {
@@ -145,7 +145,7 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
               sum + (double.tryParse(e['amount'].toString()) ?? 0),
         );
 
-    final double otherCharge = (expenses as List)
+    final double otherCharge = (expenses)
         .where((e) => e['expense_type'] != "TRANSPORT")
         .fold<double>(
           0,
@@ -155,7 +155,7 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
 
     final double totalAmount = itemsTotal + transportCharge + otherCharge;
 
-    final traySummary = (items as List).fold<Map<String, int>>({}, (map, item) {
+    final traySummary = (items).fold<Map<String, int>>({}, (map, item) {
       final type = item['tray_type']?.toString() ?? "Other";
       final trays = int.tryParse(item['trays'].toString()) ?? 0;
       map[type] = (map[type] ?? 0) + trays;
@@ -515,7 +515,7 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
                   ),
                   const SizedBox(height: 16),
                   _summaryRow(
-                    "Items (${(items as List).length})",
+                    "Items (${(items).length})",
                     "₹${itemsTotal.toStringAsFixed(0)}",
                   ),
                   _summaryRow(

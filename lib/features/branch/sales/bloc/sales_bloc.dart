@@ -1,22 +1,27 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/features/branch/sales/bloc/sales_event.dart';
 import 'package:proteinova_connect/features/branch/sales/bloc/sales_state.dart';
-import 'package:proteinova_connect/services/branch_sales_service.dart';
+import 'package:proteinova_connect/features/branch/sales/data/repository/sales_repository.dart';
 
 class SalesBloc extends Bloc<SalesEvent, SalesState> {
+  final SalesRepository _repository = SalesRepository();
+
   SalesBloc() : super(SalesInitial()) {
     on<FetchSalesDashboard>((event, emit) async {
       emit(SalesLoading());
       try {
-        final dashboardData = await BranchSalesService.fetchDashboard(
-          branchId: event.branchId,
+        final dashboardData = await _repository.fetchSalesDashboard(
+          branchId: event.branchId.toString(),
         );
-        final dispatches = await BranchSalesService.fetchDispatches();
-        final salesOrders = await BranchSalesService.fetchSalesOrders();
+
+        // Fetch dispatches and sales orders
+        // Note: Repository should have methods for these, if not we'll use dashboardData
+        final dispatches = dashboardData['active_dispatches'] ?? [];
+        final salesOrders = dashboardData['recent_orders'] ?? [];
 
         emit(
           SalesDashboardLoaded(
-            dashboardData: dashboardData ?? {},
+            dashboardData: dashboardData,
             dispatches: dispatches,
             salesOrders: salesOrders,
           ),
@@ -29,11 +34,11 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
     on<CreateNewSaleEvent>((event, emit) async {
       emit(SalesLoading());
       try {
-        final success = await BranchSalesService.createSale(event.saleData);
-        if (success) {
+        final response = await _repository.createSale(event.saleData);
+        if (response["error"] == null) {
           emit(SalesSuccess(message: "Sale created successfully"));
         } else {
-          emit(SalesError("Failed to create sale"));
+          emit(SalesError(response["error"]));
         }
       } catch (e) {
         emit(SalesError(e.toString()));

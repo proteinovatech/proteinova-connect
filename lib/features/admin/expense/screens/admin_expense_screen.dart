@@ -4,7 +4,6 @@ import 'package:proteinova_connect/features/admin/skeletonloader/admin_expense_m
 
 import '../data/expense_repository.dart';
 import '../models/branch_expense_dashboard_model.dart';
-import '../models/expense_model.dart';
 import '../widgets/expense_category_item.dart';
 import '../widgets/expense_summary_card.dart';
 import '../widgets/expense_table_header.dart';

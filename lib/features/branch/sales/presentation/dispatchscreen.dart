@@ -3,7 +3,8 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/dispatchcard2.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/dispatchcard3.dart';
-import 'package:proteinova_connect/services/sales_service.dart';
+
+import '../data/repository/sales_repository.dart';
 
 class Dispatchscreen extends StatefulWidget {
   const Dispatchscreen({super.key});
@@ -17,6 +18,7 @@ class _DispatchscreenState extends State<Dispatchscreen> {
   List<dynamic> dispatches = [];
   bool isLoading = true;
   String? error;
+  final SalesRepository _repository = SalesRepository();
 
   @override
   void initState() {
@@ -30,9 +32,12 @@ class _DispatchscreenState extends State<Dispatchscreen> {
       error = null;
     });
     try {
-      final data = await SalesService.fetchDispatches();
+      // For now using the dashboard API to get dispatches if needed,
+      // or a specific dispatch API if we add it to the repository.
+      // The React code doesn't show a specific dispatch API, it uses getSales.
+      final data = await _repository.fetchSalesDashboard();
       setState(() {
-        dispatches = data;
+        dispatches = data["recent_orders"] ?? [];
         isLoading = false;
       });
     } catch (e) {
@@ -50,10 +55,7 @@ class _DispatchscreenState extends State<Dispatchscreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Image.asset(
-          "assets/erplogo.png",
-          height: 40,
-        ),
+        title: Image.asset("assets/erplogo.png", height: 40),
         actions: const [
           Icon(Icons.search_outlined, color: Colors.black),
           SizedBox(width: 10),
@@ -62,11 +64,7 @@ class _DispatchscreenState extends State<Dispatchscreen> {
           CircleAvatar(
             radius: 18,
             backgroundColor: Color(0xffe0e0e0),
-            child: Icon(
-              Icons.person,
-              size: 20,
-              color: Color(0xffffffff),
-            ),
+            child: Icon(Icons.person, size: 20, color: Color(0xffffffff)),
           ),
           SizedBox(width: 10),
         ],
@@ -74,65 +72,73 @@ class _DispatchscreenState extends State<Dispatchscreen> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : error != null
-              ? Center(
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Error: $error"),
+                  ElevatedButton(
+                    onPressed: _fetchDispatches,
+                    child: const Text("Retry"),
+                  ),
+                ],
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _fetchDispatches,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Error: $error"),
-                      ElevatedButton(
-                        onPressed: _fetchDispatches,
-                        child: const Text("Retry"),
-                      ),
+                      SizedBox(height: size.height * 0.02),
+                      _buildStatsRows(),
+                      SizedBox(height: size.height * 0.05),
+                      _buildDispatchListHeader(),
+                      SizedBox(height: size.height * 0.02),
+                      dispatches.isEmpty
+                          ? const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(40),
+                                child: Text("No Active Dispatches Found"),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: dispatches.length,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemBuilder: (context, index) {
+                                final item = dispatches[index];
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 15),
+                                  child: DispatchCard3(
+                                    id: "DS-${item["dispatch_id"] ?? item["id"]}",
+                                    status:
+                                        item["status"]?.toString() ?? "Pending",
+                                    branch:
+                                        item["destination"]?.toString() ??
+                                        "N/A",
+                                    date:
+                                        item["dispatch_date"]?.toString() ??
+                                        "N/A",
+                                    totalQty:
+                                        "${item["total_trays"] ?? 0} Trays",
+                                    vehicleDriver:
+                                        item["vehicle_driver"]?.toString() ??
+                                        "N/A",
+                                    showFullActions: true,
+                                  ),
+                                );
+                              },
+                            ),
+                      const SizedBox(height: 30),
                     ],
                   ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _fetchDispatches,
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: size.height * 0.02),
-                          _buildStatsRows(),
-                          SizedBox(height: size.height * 0.05),
-                          _buildDispatchListHeader(),
-                          SizedBox(height: size.height * 0.02),
-                          dispatches.isEmpty
-                              ? const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(40),
-                                    child: Text("No Active Dispatches Found"),
-                                  ),
-                                )
-                              : ListView.builder(
-                                  itemCount: dispatches.length,
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemBuilder: (context, index) {
-                                    final item = dispatches[index];
-                                    return Padding(
-                                      padding: const EdgeInsets.only(bottom: 15),
-                                      child: DispatchCard3(
-                                        id: "DS-${item["dispatch_id"] ?? item["id"]}",
-                                        status: item["status"]?.toString() ?? "Pending",
-                                        branch: item["destination"]?.toString() ?? "N/A",
-                                        date: item["dispatch_date"]?.toString() ?? "N/A",
-                                        totalQty: "${item["total_trays"] ?? 0} Trays",
-                                        vehicleDriver: item["vehicle_driver"]?.toString() ?? "N/A",
-                                        showFullActions: true,
-                                      ),
-                                    );
-                                  },
-                                ),
-                          const SizedBox(height: 30),
-                        ],
-                      ),
-                    ),
-                  ),
                 ),
+              ),
+            ),
     );
   }
 
@@ -198,10 +204,7 @@ class _DispatchscreenState extends State<Dispatchscreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          "Active dispatches",
-          style: AppTextStyles.headingText22,
-        ),
+        const Text("Active dispatches", style: AppTextStyles.headingText22),
         Row(
           children: [
             _buildActionIcon(Icons.search),
@@ -221,11 +224,7 @@ class _DispatchscreenState extends State<Dispatchscreen> {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey.shade200),
       ),
-      child: Icon(
-        icon,
-        color: Colors.grey,
-        size: 20,
-      ),
+      child: Icon(icon, color: Colors.grey, size: 20),
     );
   }
 }

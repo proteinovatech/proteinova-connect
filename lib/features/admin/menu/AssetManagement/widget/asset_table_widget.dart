@@ -303,7 +303,7 @@ class _AssetActionSheetState extends State<_AssetActionSheet> {
     }
     setState(() => _isLoading = true);
     try {
-      await _repository.updateAssetStatus(widget.asset.id!, newStatus);
+      await _repository.updateAssetStatus(widget.asset.id, newStatus);
       if (mounted) {
         Navigator.pop(context);
         widget.onStatusChanged?.call();

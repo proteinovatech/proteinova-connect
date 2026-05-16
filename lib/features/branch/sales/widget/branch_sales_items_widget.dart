@@ -97,98 +97,72 @@ class _BranchSalesItemsWidgetState extends State<BranchSalesItemsWidget> {
             child: const Row(
               children: [
                 SizedBox(
-                  width: 18,
-
+                  width: 12,
                   child: Text(
                     "#",
-
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
                   ),
                 ),
-
-                SizedBox(width: 6),
-
+                SizedBox(width: 4),
                 Expanded(
-                  flex: 4,
-
+                  flex: 3,
                   child: Text(
                     "PRODUCT",
-
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
                   ),
                 ),
-
-                SizedBox(width: 6),
-
+                SizedBox(width: 4),
                 SizedBox(
-                  width: 42,
-
+                  width: 35,
+                  child: Center(
+                    child: Text(
+                      "TRAYS",
+                      style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 4),
+                SizedBox(
+                  width: 35,
                   child: Center(
                     child: Text(
                       "DOZEN",
-
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
-
-                SizedBox(width: 8),
-
+                SizedBox(width: 4),
                 SizedBox(
-                  width: 28,
-
+                  width: 20,
                   child: Center(
                     child: Text(
                       "EGGS",
-
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
-
-                SizedBox(width: 10),
-
+                SizedBox(width: 4),
                 SizedBox(
-                  width: 36,
-
+                  width: 35,
                   child: Center(
                     child: Text(
                       "RATE",
-
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
-
-                SizedBox(width: 10),
-
+                SizedBox(width: 4),
                 SizedBox(
                   width: 40,
-
                   child: Center(
                     child: Text(
                       "TOTAL",
-
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
-
-                SizedBox(width: 8),
-
-                Icon(Icons.delete_outline, size: 16),
+                SizedBox(width: 4),
+                Icon(Icons.delete_outline, size: 14),
               ],
             ),
           ),
@@ -231,8 +205,7 @@ class _BranchSalesItemsWidgetState extends State<BranchSalesItemsWidget> {
 
                     bool productMatched = false;
 
-                    int totalEggs = 0;
-                    int totalDozens = 0;
+                    int totalTrays = 0;
 
                     /// LOOP SALES ITEMS
                     for (int i = 0; i < widget.salesItemCount; i++) {
@@ -254,14 +227,13 @@ class _BranchSalesItemsWidgetState extends State<BranchSalesItemsWidget> {
                       if (productName.contains(offerCategory)) {
                         productMatched = true;
 
-                        totalEggs += eggs;
-                        totalDozens += (eggs ~/ 12);
+                        totalTrays += (eggs ~/ 30);
                       }
                     }
 
                     /// OFFER APPLY
                     final bool eligible = offer["offer_type"] == "buy_x_get_y"
-                        ? totalDozens >=
+                        ? totalTrays >=
                               (int.tryParse(
                                     (offer["buy_qty"] ?? offer["buyTrays"] ?? 0)
                                         .toString(),
@@ -353,7 +325,7 @@ class _BranchSalesItemsWidgetState extends State<BranchSalesItemsWidget> {
                                 const SizedBox(height: 6),
 
                                 Text(
-                                  "Entered Dozens : $totalDozens",
+                                  "Entered Trays : $totalTrays",
                                   style: TextStyle(color: Colors.grey.shade700),
                                 ),
                               ],

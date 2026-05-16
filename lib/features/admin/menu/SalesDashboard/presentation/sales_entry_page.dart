@@ -36,7 +36,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
   String selectedWarehouseName = "";
 
-  List<String> selectedProducts = ["Select Product"];
+  List<String> selectedProducts = [];
   final List<TextEditingController> dozenControllers = [];
   final SalesRemoteDatasource datasource = SalesRemoteDatasource();
 
@@ -625,29 +625,40 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
                       print("USED STOCK => $selectedEggsMap");
 
-                      /// ADD NEW ROW
+                      /// ADD OR UPDATE ROW
                       setState(() {
-                        salesItemCount++;
+                        final existingIndex = selectedProducts.indexOf(productName);
 
-                        selectedProducts.add(productName);
+                        if (existingIndex != -1) {
+                          /// UPDATE EXISTING ROW
+                          final int currentDozen = int.tryParse(dozenList[existingIndex].toString()) ?? 0;
+                          final int nextDozen = currentDozen + 1;
+                          
+                          dozenList[existingIndex] = nextDozen;
+                          eggsList[existingIndex] = nextDozen * 12;
 
-                        dozenList.add(1);
+                          final double rate = double.tryParse(rateList[existingIndex].toString()) ?? 0;
+                          totalList[existingIndex] = (rate * (nextDozen * 12)).toStringAsFixed(2);
 
-                        eggsList.add(12);
+                          dozenControllers[existingIndex].text = nextDozen.toString();
+                        } else {
+                          /// ADD NEW ROW
+                          salesItemCount++;
+                          selectedProducts.add(productName);
+                          dozenList.add(1);
+                          eggsList.add(12);
 
-                        final double trayPrice = _toNum(
-                          product['per_tray_price'] ?? product['price'] ?? 0,
-                        ).toDouble();
+                          final double trayPrice = _toNum(
+                            product['per_tray_price'] ?? product['price'] ?? 0,
+                          ).toDouble();
 
-                        final double eggRate = trayPrice > 0
-                            ? trayPrice / 30
-                            : 0;
+                          final double eggRate = trayPrice > 0 ? trayPrice / 30 : 0;
 
-                        rateList.add(eggRate.toStringAsFixed(2));
+                          rateList.add(eggRate.toStringAsFixed(2));
+                          totalList.add((eggRate * 12).toStringAsFixed(2));
 
-                        totalList.add((eggRate * 12).toStringAsFixed(2));
-
-                        dozenControllers.add(TextEditingController(text: "1"));
+                          dozenControllers.add(TextEditingController(text: "1"));
+                        }
 
                         salesItems = List.generate(
                           salesItemCount,

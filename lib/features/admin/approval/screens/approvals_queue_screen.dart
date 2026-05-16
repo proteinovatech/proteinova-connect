@@ -9,7 +9,6 @@ import '../models/approval_model.dart';
 import '../widgets/approval_empty_widget.dart';
 import '../widgets/approval_filter_dropdown.dart';
 import '../widgets/approval_search_field.dart';
-import '../widgets/approval_table_header.dart';
 import '../widgets/approval_table_row.dart';
 import 'dart:async';
 
@@ -168,6 +167,7 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
         );
       }).toList();
 
+      if (!mounted) return;
       setState(() {
         approvals = mapped;
         filteredApprovals = mapped;

@@ -70,24 +70,24 @@ class _IncomingStockState extends State<IncomingStock> {
     }
   }
 
-  Future<void> _markArrival(int dispatchId) async {
-    try {
-      // Using branchId 1 as default
-      await _repository.markArrival(1, dispatchId);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Arrival marked successfully")),
-        );
-      }
-      _fetchData();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Error: $e")));
-      }
-    }
-  }
+  // Future<void> _markArrival(int dispatchId) async {
+  //   try {
+  //     // Using branchId 1 as default
+  //     await _repository.markArrival(1, dispatchId);
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text("Arrival marked successfully")),
+  //       );
+  //     }
+  //     _fetchData();
+  //   } catch (e) {
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(
+  //         context,
+  //       ).showSnackBar(SnackBar(content: Text("Error: $e")));
+  //     }
+  //   }
+  // }
 
   List<PurchaseModel> get _filteredPurchases {
     List<PurchaseModel> list = purchases;
@@ -118,8 +118,8 @@ class _IncomingStockState extends State<IncomingStock> {
         list = list
             .where(
               (p) =>
-                  p.purchaseStatus.toUpperCase() == "PURCHASED" &&
-                  p.movementStatus.toUpperCase() == "RECEIVED",
+                  p.status.toUpperCase() == "ARRIVAL" ||
+                  p.status.toUpperCase() == "READY_FOR_UNLOADING",
             )
             .toList();
       } else if (selectedStatus == "In Transit") {
@@ -177,8 +177,8 @@ class _IncomingStockState extends State<IncomingStock> {
     return purchases
         .where(
           (p) =>
-              p.purchaseStatus.toUpperCase() == "PURCHASED" &&
-              p.movementStatus.toUpperCase() == "RECEIVED",
+              p.status.toUpperCase() == "ARRIVAL" ||
+              p.status.toUpperCase() == "READY_FOR_UNLOADING",
         )
         .length;
   }
@@ -260,10 +260,7 @@ class _IncomingStockState extends State<IncomingStock> {
                                   type: p.productName,
                                   status: p.status,
                                   isReceive:
-                                      p.purchaseStatus.toUpperCase() ==
-                                          "PURCHASED" &&
-                                      p.movementStatus.toUpperCase() ==
-                                          "RECEIVED",
+                                      p.status.toUpperCase() != "RECEIVED",
                                   onReceive: () {
                                     Navigator.pop(context);
                                     _receiveStock(p.id);
@@ -462,8 +459,9 @@ class _IncomingStockState extends State<IncomingStock> {
                     _showShipmentModal(
                       "Ready for Unloading",
                       purchases.where((p) {
-                        return p.purchaseStatus.toUpperCase() == "PURCHASED" &&
-                            p.movementStatus.toUpperCase() == "RECEIVED";
+                        final status = p.status.toUpperCase();
+                        return status == "ARRIVAL" ||
+                            status == "READY_FOR_UNLOADING";
                       }).toList(),
                     );
                   },
@@ -671,16 +669,16 @@ class _IncomingStockState extends State<IncomingStock> {
                               ),
                             ),
 
-                            // Expanded(
-                            //   flex: 1,
-                            //   child: Text(
-                            //     "ACTION",
-                            //     style: TextStyle(
-                            //       fontWeight: FontWeight.bold,
-                            //       fontSize: 11,
-                            //     ),
-                            //   ),
-                            // ),
+                            Expanded(
+                              flex: 1,
+                              child: Text(
+                                "ACTION",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
 
@@ -697,10 +695,9 @@ class _IncomingStockState extends State<IncomingStock> {
                             type: purchase.productName,
                             status: purchase.status,
                             isReceive:
-                                purchase.purchaseStatus.toUpperCase() ==
-                                    "PURCHASED" &&
-                                purchase.movementStatus.toUpperCase() ==
-                                    "RECEIVED",
+                                purchase.status.toUpperCase() ==
+                                    "READY FOR UNLOADING" ||
+                                purchase.status.toUpperCase() == "ARRIVAL",
                             onReceive: () => _receiveStock(purchase.id),
                           ),
                         ),
