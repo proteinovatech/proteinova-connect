@@ -232,6 +232,45 @@ class SalesRemoteDatasource {
   }
 
   // ──────────────────────────────────────────────
+  // GET /api/offers  →  getOffers
+  // ──────────────────────────────────────────────
+  Future<Map<String, dynamic>> getOffers() async {
+    final response = await http.get(Uri.parse("$baseUrl/api/offers"));
+
+    print("OFFERS STATUS => ${response.statusCode}");
+    print("OFFERS BODY => ${response.body}");
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception("Failed to load offers : ${response.statusCode}");
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // POST /api/customers  →  createCustomer
+  // ──────────────────────────────────────────────
+  Future<Map<String, dynamic>> createCustomer({
+    required String name,
+    required String number,
+  }) async {
+    final response = await http.post(
+      Uri.parse("$baseUrl/api/customers"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"name": name, "number": number}),
+    );
+
+    print("CREATE CUSTOMER RESPONSE => ${response.body}");
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return data;
+    } else {
+      throw Exception(data["error"] ?? "Failed to create customer");
+    }
+  }
+
+  // ──────────────────────────────────────────────
   // GET /api/branch/dashboard  →  getWarehouseList (legacy)
   // ──────────────────────────────────────────────
   Future<Map<String, dynamic>> getWarehouseList() async {

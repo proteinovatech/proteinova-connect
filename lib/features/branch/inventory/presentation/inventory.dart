@@ -8,7 +8,6 @@ import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/widget/activityitem.dart';
 import 'package:proteinova_connect/features/branch/inventory/presentation/receivestock.dart';
 import 'package:proteinova_connect/features/branch/inventory/widget/order_shipmentcard.dart';
-import 'package:proteinova_connect/features/branch/inventory/widget/shipment_filter_row.dart';
 import 'package:proteinova_connect/features/branch/inventory/widget/shipmentcard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,7 +19,6 @@ class Inventory extends StatefulWidget {
 }
 
 class _InventoryState extends State<Inventory> {
-
   bool isLoading = true;
 
   Map<String, dynamic>? inventoryData;
@@ -142,8 +140,7 @@ final response = await http.get(
                             child: Icon(
                               Icons.person,
                               size: 20,
-                              color:
-                                  AppColors.background,
+                              color: AppColors.background,
                             ),
                           ),
                         ],
@@ -234,12 +231,8 @@ final response = await http.get(
                     shipments.isEmpty
                         ? const Center(
                             child: Padding(
-                              padding:
-                                  EdgeInsets.all(
-                                      20),
-                              child: Text(
-                                "No Shipments Found",
-                              ),
+                              padding: EdgeInsets.all(20),
+                              child: Text("No Shipments Found"),
                             ),
                           )
                         : ListView.builder(
@@ -421,11 +414,8 @@ final response = await http.put(
                                           Colors
                                               .grey,
                                       child: Icon(
-                                        Icons
-                                            .person,
-                                        color:
-                                            Colors
-                                                .white,
+                                        Icons.person,
+                                        color: Colors.white,
                                       ),
                                     ),
                                     title:

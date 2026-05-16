@@ -55,6 +55,7 @@ class OfferModel {
   final int buyTrays;
   final double discountValue;
   final String offerType;
+  bool applied;
 
   OfferModel({
     required this.id,
@@ -63,6 +64,7 @@ class OfferModel {
     required this.buyTrays,
     required this.discountValue,
     required this.offerType,
+    this.applied = false,
   });
 
   factory OfferModel.fromJson(Map<String, dynamic> json) {

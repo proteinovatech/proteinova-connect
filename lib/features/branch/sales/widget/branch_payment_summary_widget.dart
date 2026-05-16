@@ -11,7 +11,8 @@ class BranchPaymentSummaryWidget extends StatefulWidget {
   final Widget Function({
     required String hint,
     TextEditingController? controller,
-  }) buildTextField;
+  })
+  buildTextField;
 
   final Widget Function(String, String, {bool red, bool bold}) summaryRow;
 
@@ -97,8 +98,8 @@ class _PaymentSummaryWidgetState extends State<BranchPaymentSummaryWidget> {
                 widget.selectedPaymentMethod == "Cash"
                     ? "Cash Received"
                     : widget.selectedPaymentMethod == "UPI"
-                        ? "UPI Amount"
-                        : "Card Amount",
+                    ? "UPI Amount"
+                    : "Card Amount",
               ),
               const SizedBox(height: 8),
               widget.buildTextField(

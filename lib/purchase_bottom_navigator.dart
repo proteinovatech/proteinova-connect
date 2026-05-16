@@ -8,7 +8,6 @@ import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart
 import 'package:proteinova_connect/features/purchase/supplier/supplier_screen.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/presentation/purchase_dashboard.dart';
 
-import 'package:shared_preferences/shared_preferences.dart';
 
 class PurchaseBottomNavigator extends StatefulWidget {
   const PurchaseBottomNavigator({super.key});

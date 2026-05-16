@@ -156,6 +156,34 @@ class BranchSalesRemoteDatasource {
   }
 
   // ──────────────────────────────────────────────
+  // POST /api/customers
+  // ──────────────────────────────────────────────
+  Future<Map<String, dynamic>> createCustomer({
+    required String name,
+    required String number,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/api/customers"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"name": name, "phone": number}),
+      );
+
+      final data = jsonDecode(response.body);
+      print("CREATE CUSTOMER RESPONSE => $data");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return data;
+      } else {
+        throw Exception(data["error"] ?? "Failed to create customer");
+      }
+    } catch (e) {
+      print("CREATE CUSTOMER ERROR => $e");
+      rethrow;
+    }
+  }
+
+  // ──────────────────────────────────────────────
   // GET SALES ENTRY
   // ──────────────────────────────────────────────
   Future<Map<String, dynamic>> getSalesEntry({

@@ -5,8 +5,9 @@ import 'package:proteinova_connect/features/branch/daily_closing/data/model/dail
 
 class DailyClosingRepository {
   Future<DailyClosingModel> fetchDailyClosing(int branchId, String date) async {
+    // React calls: /api/branch/daily-closing/dashboard/${branchId}
     final response = await http.get(
-      Uri.parse(ApiConstants.dailyClosingDashboard(branchId, date)),
+      Uri.parse("${ApiConstants.baseUrl}/api/branch/daily-closing/dashboard/$branchId"),
       headers: {
         "Accept": "application/json",
       },
@@ -20,17 +21,15 @@ class DailyClosingRepository {
     }
   }
 
-  Future<Map<String, dynamic>> closeDay(int branchId, String date) async {
+  Future<Map<String, dynamic>> closeDay(int branchId, Map<String, dynamic> payload) async {
+    // React calls: POST /api/branch/daily-closing/${branch_id}
     final response = await http.post(
-      Uri.parse(ApiConstants.dailyClosingSubmit),
+      Uri.parse("${ApiConstants.baseUrl}/api/branch/daily-closing/$branchId"),
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
       },
-      body: jsonEncode({
-        "branch_id": branchId,
-        "closing_date": date,
-      }),
+      body: jsonEncode(payload),
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {

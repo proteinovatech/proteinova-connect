@@ -24,10 +24,13 @@ class _ReceivestockState extends State<Receivestock> {
   bool isTrayExpanded = true;
   bool isReceivedExpanded = true;
   bool isLoading = true;
+  bool isSubmitting = false;
 
   Map<String, dynamic> receiveInfo = {};
   Map<String, dynamic> summary = {};
   List receivedItems = [];
+  Map<String, int> damagedTrays = {};
+  TextEditingController notesController = TextEditingController();
 
   @override
   void initState() {
@@ -73,9 +76,10 @@ class _ReceivestockState extends State<Receivestock> {
       isLoading = false;
     });
 
-    print("ERROR : $e");
+      print("ERROR : $e");
+    }
   }
-}
+
   @override
   Widget build(BuildContext context) {
 
@@ -173,6 +177,31 @@ class _ReceivestockState extends State<Receivestock> {
                 ),
               ],
             ),
+            if (receiveInfo["status"] != "ARRIVAL" && receiveInfo["status"] != "DELIVERED")
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: ElevatedButton(
+                  onPressed: handleArrival,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    minimumSize: const Size(0, 30),
+                  ),
+                  child: const Text("Mark Arrival", style: TextStyle(color: Colors.white, fontSize: 12)),
+                ),
+              )
+            else if (receiveInfo["status"] == "ARRIVAL")
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade700,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text("Arrived", style: TextStyle(color: Colors.white, fontSize: 12)),
+                ),
+              ),
 
             Text(
 
@@ -673,10 +702,16 @@ class _ReceivestockState extends State<Receivestock> {
                 "${item["eggs"] ?? 0}",
 
             damagedEggs:
-                "${item["damaged_eggs"] ?? 0}",
+                "${damagedTrays[item["product"]] ?? 0}",
 
             goodEggs:
-                "${item["good_eggs"] ?? item["eggs"] ?? 0}",
+                "${(item["eggs"] ?? 0) - (damagedTrays[item["product"]] ?? 0)}",
+
+            onChanged: (val) {
+              setState(() {
+                damagedTrays[item["product"]] = int.tryParse(val) ?? 0;
+              });
+            },
           );
         },
       ).toList(),
@@ -798,6 +833,28 @@ class _ReceivestockState extends State<Receivestock> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Notes",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: notesController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        hintText: "Enter any additional notes...",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -839,7 +896,9 @@ class _ReceivestockState extends State<Receivestock> {
                     ),
 
                     child: Text(
+
                       "Cancel",
+
                       style: AppTextStyles
                           .bodyText14dark,
                     ),
@@ -847,23 +906,32 @@ class _ReceivestockState extends State<Receivestock> {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
+
                   child: Container(
+
                     padding:
                         const EdgeInsets
                             .symmetric(
                       vertical: 14,
                     ),
+
                     alignment:
                         Alignment.center,
+
                     decoration:
                         BoxDecoration(
+
                       color: Colors.orange,
+
                       borderRadius:
                           BorderRadius.circular(
                               8),
                     ),
+
                     child: const Text(
+
                       "Confirm Receive",
+
                       style: AppTextStyles
                           .bodyText14dark,
                     ),

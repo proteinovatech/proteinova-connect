@@ -44,49 +44,23 @@ class _BranchDashboardState extends State<BranchDashboard> {
     try {
       final result = await repository.fetchDashboardData();
 
-      setState(() {
-        dashboardModel = result;
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          dashboardModel = result;
+          isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
 
       print("ERROR : $e");
     }
   }
 
-  List<BarChartGroupData> _barData() {
-    if (dashboardModel == null) return [];
-    List<BarChartGroupData> groups = [];
-
-    for (int i = 0; i < dashboardModel!.dailySalesVolume.length; i++) {
-      final item = dashboardModel!.dailySalesVolume[i];
-
-      groups.add(
-        BarChartGroupData(
-          x: i,
-          barRods: [
-            BarChartRodData(
-              toY: item.retailSalesUnits.toDouble(),
-              color: Colors.orange,
-              width: 8,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            BarChartRodData(
-              toY: item.wholesaleSalesUnits.toDouble(),
-              color: Colors.blue,
-              width: 8,
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return groups;
-  }
 
   @override
   Widget build(BuildContext context) {

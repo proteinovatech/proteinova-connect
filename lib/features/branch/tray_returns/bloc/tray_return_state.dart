@@ -8,7 +8,8 @@ class TrayReturnLoading extends TrayReturnState {}
 
 class TrayReturnLoaded extends TrayReturnState {
   final TrayReturnModel model;
-  TrayReturnLoaded(this.model);
+  final List<dynamic> warehouses;
+  TrayReturnLoaded(this.model, {this.warehouses = const []});
 }
 
 class TrayReturnError extends TrayReturnState {

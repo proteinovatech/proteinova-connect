@@ -10,12 +10,26 @@ class TrayReturnBloc extends Bloc<TrayReturnEvent, TrayReturnState> {
 
   TrayReturnBloc({required this.repository}) : super(TrayReturnInitial()) {
     on<FetchTrayReturnData>((event, emit) async {
+      final List<dynamic> currentWarehouses = state is TrayReturnLoaded ? (state as TrayReturnLoaded).warehouses : [];
       emit(TrayReturnLoading());
       try {
         final model = await repository.fetchTrayReturnData(event.branchId, event.date);
-        emit(TrayReturnLoaded(model));
+        emit(TrayReturnLoaded(model, warehouses: currentWarehouses));
       } catch (e) {
         emit(TrayReturnError(e.toString()));
+      }
+    });
+
+    on<FetchWarehouses>((event, emit) async {
+      try {
+        final warehouses = await repository.fetchWarehouses();
+        if (state is TrayReturnLoaded) {
+          emit(TrayReturnLoaded((state as TrayReturnLoaded).model, warehouses: warehouses));
+        } else if (state is TrayReturnLoading) {
+           // Wait or store? For now, we'll just emit Loaded if we can't wait
+        }
+      } catch (e) {
+        // Silently fail
       }
     });
 

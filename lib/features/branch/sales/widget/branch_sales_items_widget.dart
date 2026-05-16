@@ -231,7 +231,6 @@ class _BranchSalesItemsWidgetState extends State<BranchSalesItemsWidget> {
 
                     bool productMatched = false;
 
-                    int totalEggs = 0;
                     int totalTrays = 0;
 
                     /// LOOP SALES ITEMS
@@ -254,7 +253,6 @@ class _BranchSalesItemsWidgetState extends State<BranchSalesItemsWidget> {
                       if (productName.contains(offerCategory)) {
                         productMatched = true;
 
-                        totalEggs += eggs;
                         totalTrays += (eggs ~/ 30);
                       }
                     }

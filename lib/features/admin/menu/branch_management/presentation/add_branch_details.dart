@@ -21,6 +21,7 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
   final branchCodeController = TextEditingController();
   final addressController = TextEditingController();
   final cityController = TextEditingController();
+  final regionController = TextEditingController();
   final zipController = TextEditingController();
   final contactController = TextEditingController();
   final emailController = TextEditingController();
@@ -41,9 +42,9 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
       if (!mounted) return;
 
       setState(() {
-        statuses = data.statuses ?? [];
-        regions = data.regions ?? [];
-        managers = data.managers ?? [];
+        statuses = data.statuses;
+        regions = data.regions;
+        managers = data.managers;
 
         isLoading = false;
       });
@@ -79,7 +80,7 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
           widget.branch!.maxStockCapacity?.toString() ?? "";
       notesController.text = widget.branch!.additionalNotes ?? "";
       selectedStatus = widget.branch!.status;
-      selectedRegion = widget.branch!.region;
+      regionController.text = widget.branch!.region;
       selectedManager = widget.branch!.branchManagerId?.toString();
     }
 
@@ -250,50 +251,24 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                                     SizedBox(height: getHeight(context, 6)),
 
                                     Container(
-                                      width: double.infinity,
-
                                       padding: EdgeInsets.symmetric(
-                                        horizontal: getWidth(context, 12),
+                                        horizontal: getWidth(context, 10),
                                       ),
 
                                       decoration: BoxDecoration(
+                                        color: AppColors.background,
                                         border: Border.all(
-                                          color: Colors.grey.shade300,
+                                          color: AppColors.border,
                                         ),
-
-                                        borderRadius: BorderRadius.circular(10),
+                                        borderRadius: BorderRadius.circular(5),
                                       ),
 
-                                      child: DropdownButtonHideUnderline(
-                                        child: DropdownButton<String>(
-                                          isExpanded: true,
-
-                                          value:
-                                              regions.contains(selectedRegion)
-                                              ? selectedRegion
-                                              : null,
-
-                                          hint: Text(
-                                            "Select Region",
-                                            style: AppTextStyles.bodyText14,
-                                          ),
-
-                                          items: regions
-                                              .map<DropdownMenuItem<String>>((
-                                                region,
-                                              ) {
-                                                return DropdownMenuItem<String>(
-                                                  value: region,
-                                                  child: Text(region),
-                                                );
-                                              })
-                                              .toList(),
-
-                                          onChanged: (value) {
-                                            setState(() {
-                                              selectedRegion = value;
-                                            });
-                                          },
+                                      child: TextField(
+                                        controller: regionController,
+                                        style: AppTextStyles.formInputs15,
+                                        decoration: const InputDecoration(
+                                          hintText: "Enter Region",
+                                          border: InputBorder.none,
                                         ),
                                       ),
                                     ),
@@ -802,7 +777,7 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
                               final body = {
                                 "branch_name": branchNameController.text,
                                 "branch_code": branchCodeController.text,
-                                "region": selectedRegion,
+                                "region": regionController.text,
                                 "status": selectedStatus,
                                 "address_line1": addressController.text,
                                 "city": cityController.text,

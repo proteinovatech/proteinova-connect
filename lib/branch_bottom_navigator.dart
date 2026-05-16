@@ -2,15 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
-import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch/addexpense/presentation/expense_management/presentation/expense_management.dart';
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
-import 'package:proteinova_connect/features/branch/branch_details/presentation/branch_details.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/presentation/daily_closing.dart';
 import 'package:proteinova_connect/features/branch/inventory/presentation/inventory.dart';
-import 'package:proteinova_connect/features/branch/inventory/presentation/receivestock.dart';
 import 'package:proteinova_connect/features/branch/sales/presentation/sales.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
 import 'features/branch/branch_dashboard/presentation/branch_dashboard.dart';
@@ -227,16 +224,16 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
   }
 }
 
-Widget _sectionTitle(String title) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    child: Text(
-      title,
-      style: const TextStyle(
-        color: Colors.grey,
-        fontSize: 12,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  );
-}
+// Widget _sectionTitle(String title) {
+//   return Padding(
+//     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+//     child: Text(
+//       title,
+//       style: const TextStyle(
+//         color: Colors.grey,
+//         fontSize: 12,
+//         fontWeight: FontWeight.bold,
+//       ),
+//     ),
+//   );
+// }

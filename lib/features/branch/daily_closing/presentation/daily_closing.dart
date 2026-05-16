@@ -6,13 +6,7 @@ import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/bloc/daily_closing_bloc.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/data/model/daily_closing_model.dart';
-import 'package:proteinova_connect/features/branch/daily_closing/widget/checkitem.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/widget/daily_closing_skeleton.dart';
-import 'package:proteinova_connect/features/branch/daily_closing/widget/infobox.dart';
-import 'package:proteinova_connect/features/branch/daily_closing/widget/summary_block.dart';
-import 'package:proteinova_connect/features/branch/daily_closing/widget/summary_item.dart';
-import 'package:proteinova_connect/features/branch/daily_closing/widget/summary_row.dart';
-import 'package:proteinova_connect/features/branch/sales/widget/buildrow.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DailyClosing extends StatefulWidget {
@@ -23,9 +17,11 @@ class DailyClosing extends StatefulWidget {
 }
 
 class _DailyClosingState extends State<DailyClosing> {
-  bool isExpanded = true;
   int? branchId;
-  String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+  final TextEditingController _notesController = TextEditingController();
+  final TextEditingController _countedCashController = TextEditingController();
+
+  Map<String, bool> checklist = {'sales': false, 'cash': false, 'stock': false};
 
   @override
   void initState() {
@@ -33,342 +29,163 @@ class _DailyClosingState extends State<DailyClosing> {
     _loadBranchIdAndFetch();
   }
 
+  @override
+  void dispose() {
+    _notesController.dispose();
+    _countedCashController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadBranchIdAndFetch() async {
     final prefs = await SharedPreferences.getInstance();
     branchId = prefs.getInt("branch_id");
     if (branchId != null) {
-      context.read<DailyClosingBloc>().add(
-        FetchDailyClosingData(branchId: branchId!, date: currentDate),
-      );
+      _fetchData();
     }
+  }
+
+  void _fetchData() {
+    context.read<DailyClosingBloc>().add(
+      FetchDailyClosingData(
+        branchId: branchId!,
+        date: DateFormat('yyyy-MM-dd').format(DateTime.now()),
+      ),
+    );
+  }
+
+  bool get isChecklistComplete =>
+      checklist['sales']! && checklist['cash']! && checklist['stock']!;
+
+  void _toggleChecklist(String key, String status) {
+    if (status == "CLOSED") return;
+    setState(() {
+      checklist[key] = !checklist[key]!;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final Size size = MediaQuery.of(context).size;
+    final size = MediaQuery.of(context).size;
 
     return BlocListener<DailyClosingBloc, DailyClosingState>(
       listener: (context, state) {
         if (state is DailyClosingSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: AppColors.green),
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.green,
+            ),
           );
+          _fetchData();
         } else if (state is DailyClosingError) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor:AppColors.redAccent),
+            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
           );
+        } else if (state is DailyClosingLoaded) {
+          _notesController.text = state.model.notes;
+          _countedCashController.text = state.model.cashSummary.counted
+              .toString();
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: const Color(0xFFF8FAFC),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: Text("Daily Closing", style: AppTextStyles.headingText22),
+          centerTitle: false,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.verified_user_outlined,
+                    size: 18,
+                    color: AppColors.amber600,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    "Branch",
+                    style: TextStyle(
+                      color: AppColors.amber600,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         body: BlocBuilder<DailyClosingBloc, DailyClosingState>(
           builder: (context, state) {
             if (state is DailyClosingLoading) {
-              return const Center(child: DailyClosingSkeleton());
-            }
-
-            if (state is DailyClosingError && branchId == null) {
-              return Center(child: Text("Error: ${state.message}"));
+              return const DailyClosingSkeleton();
             }
 
             DailyClosingModel? data;
             if (state is DailyClosingLoaded) {
               data = state.model;
-            } else if (state is DailyClosingSubmitting || state is DailyClosingSuccess) {
-              // Keep showing previous data if available
+            } else if (state is DailyClosingSubmitting ||
+                state is DailyClosingSuccess) {
+              // Logic to keep data visible during submission could be added here
             }
 
             if (data == null) {
-              return const Center(child: Text("No data available"));
+              return const Center(child: Text("Failed to load data."));
             }
 
-            double grandTotal = data.openingTrays.toDouble() + 
-                                data.receivedTrays.toDouble() + 
-                                data.sales.total - 
-                                data.expenses.total;
+            final isClosed = data.status == "CLOSED";
+            final systemClosing = data.cashSummary.closing;
+            final countedCash =
+                double.tryParse(_countedCashController.text) ?? 0;
+            final difference = countedCash - systemClosing;
 
-            return Padding(
-              padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: size.height * 0.07),
-                    Text("Daily Closing", style: AppTextStyles.headingText22),
-                    SizedBox(height: size.height * 0.01),
-                    Text(
-                      "Verify all details before closing the day. Once closed, entries cannot be edited",
-                      style: AppTextStyles.bodyText14,
-                    ),
-                    SizedBox(height: size.height * 0.01),
-                    const Divider(),
-                    SizedBox(height: size.height * 0.01),
-                    
-                    // Stock Summary
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
-                        color: Colors.white,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text("Stock Summary", style: AppTextStyles.headingText20),
-                              IconButton(
-                                icon: Icon(
-                                  isExpanded
-                                      ? Icons.keyboard_arrow_up
-                                      : Icons.keyboard_arrow_down,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    isExpanded = !isExpanded;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                          if (isExpanded) ...[
-                            SizedBox(height: size.height * 0.02),
-                            _buildStockSection(size, "Eggs (With trays)", data.openingTrays, data.receivedTrays, data.soldTrays, data.closingTrays),
-                            SizedBox(height: size.height * 0.02),
-                            _buildStockSection(size, "Paper Trays (With Eggs)", data.openingTrays, data.receivedTrays, data.soldTrays, data.closingTrays),
-                            SizedBox(height: size.height * 0.02),
-                            _buildStockSection(size, "Empty Trays", data.openingTrays, data.receivedTrays, data.soldTrays, data.closingTrays),
-                            SizedBox(height: size.height * 0.02),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text("Total", style: AppTextStyles.headingText22),
-                                Container(
-                                  height: 35,
-                                  width: 70,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.background,
-                                    border: Border.all(color: AppColors.border2),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      "${data.closingTrays}",
-                                      style: AppTextStyles.headingText20,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    
-                    SizedBox(height: size.height * 0.02),
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Action Bar
+                  _buildActionBar(data),
+                  const SizedBox(height: 16),
 
-                    // Sales & Expense Summary
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey.shade300),
-                        color: AppColors.background,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("Sales Summary", style: AppTextStyles.headingText20),
-                          SizedBox(height: size.height * 0.01),
-                          Row(
-                            children: [
-                              Expanded(child: infoBox("₹${data.sales.total}", "Total Sales")),
-                              const SizedBox(width: 10),
-                              Expanded(child: infoBox("₹${data.sales.cash}", "Cash Sales")),
-                              const SizedBox(width: 10),
-                              Expanded(child: infoBox("₹${data.sales.upi}", "UPI Sales")),
-                            ],
-                          ),
-                          SizedBox(height: size.height * 0.01),
-                          const Divider(),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Expense Summary", style: AppTextStyles.headingText20),
-                                const SizedBox(height: 12),
-                                Row(
-                                  children: [
-                                    Expanded(child: infoBox("₹${data.expenses.total}", "Total")),
-                                    const SizedBox(width: 10),
-                                    Expanded(child: infoBox("₹${data.expenses.cash}", "Cash")),
-                                    const SizedBox(width: 10),
-                                    Expanded(child: infoBox("₹${data.expenses.upi}", "UPI")),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  // Stock Summary
+                  _buildStockSummary(data),
+                  const SizedBox(height: 16),
 
-                    SizedBox(height: size.height * 0.02),
+                  // Cash Summary
+                  _buildCashSummary(data, isClosed, difference),
+                  const SizedBox(height: 16),
 
-                    // Cash & Online Transaction Summary
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
-                        color: Colors.white,
-                      ),
-                      child: Column(
-                        children: [
-                          SummaryBlock(
-                            heading: "Cash Summary",
-                            items: [
-                              SummaryItem("Opening Cash", "₹${data.sales.cash}"), // Placeholder logic from original file
-                              SummaryItem("Added Cash", "₹${data.sales.cash}"),
-                              SummaryItem("Cash Sales", "₹${data.sales.cash}"),
-                              SummaryItem("Expenses", "₹${data.expenses.cash}"),
-                              SummaryItem("Closing Cash", "₹${data.sales.cash}"),
-                              SummaryItem("Difference", "₹0.00"),
-                            ],
-                          ),
-                          SizedBox(height: size.height * 0.01),
-                          SummaryBlock(
-                            heading: "Online Transaction Summary",
-                            items: [
-                              SummaryItem("UPI Sales", "₹${data.sales.upi}"),
-                              SummaryItem("Expenses(UPI)", "₹${data.expenses.upi}"),
-                              SummaryItem("Closing UPI", "₹${data.sales.upi}"),
-                              SummaryItem("Card Sales", "₹${data.sales.card}"),
-                              SummaryItem("Expenses(Card)", "₹${data.expenses.card}"),
-                              SummaryItem("Online Sales", "₹${data.sales.online}"),
-                              SummaryItem("Total Collection", "₹${data.sales.total}"),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+                  // Online Summary
+                  _buildOnlineSummary(data),
+                  const SizedBox(height: 16),
 
-                    SizedBox(height: size.height * 0.01),
+                  // Sales & Expense Summary
+                  _buildSalesExpenseSummary(data),
+                  const SizedBox(height: 16),
 
-                    // Closing Stock Value
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: Column(
-                        children: [
-                          Text("Closing Stock Value (Estimated)", style: AppTextStyles.headingText20),
-                          SizedBox(height: size.height * 0.02),
-                          buildSummaryRow("Opening Trays", "${data.openingTrays}"),
-                          buildSummaryRow("Received Trays", "${data.receivedTrays}"),
-                          buildSummaryRow("Sold Trays", "${data.soldTrays}"),
-                          buildSummaryRow("Closing Trays", "${data.closingTrays}"),
-                          const Divider(),
-                          buildSummaryRow("Total Stock Value", "${data.closingTrays}", isBold: true),
-                        ],
-                      ),
-                    ),
+                  // Closing Stock Value
+                  _buildClosingStockValue(data),
+                  const SizedBox(height: 16),
 
-                    SizedBox(height: size.height * 0.02),
+                  // Notes & Checklist
+                  _buildNotesChecklist(data, isClosed),
+                  const SizedBox(height: 16),
 
-                    // Today's summary
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
-                        color: Colors.white,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("Today's summary", style: AppTextStyles.headingText20),
-                          SizedBox(height: size.height * 0.01),
-                          summaryRow("Opening Stock Value", "₹${data.openingTrays}"), // Or use actual value if available
-                          summaryRow("Stock Received Value", "₹${data.receivedTrays}"),
-                          summaryRow("Total Sales", "₹${data.sales.total}"),
-                          SizedBox(height: size.height * 0.01),
-                          const Divider(),
-                          summaryRow("Total Expenses", "₹${data.expenses.total}"),
-                          SizedBox(height: size.height * 0.01),
-                          const Divider(),
-                          summaryRow("Grand Total", "₹${grandTotal.toInt()}"),
-                        ],
-                      ),
-                    ),
+                  // Today's Summary
+                  _buildTodaysSummary(data),
+                  const SizedBox(height: 24),
 
-                    SizedBox(height: size.height * 0.01),
-
-                    // Checklist
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
-                        color: Colors.white,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("Checklist", style: AppTextStyles.headingText20),
-                          SizedBox(height: size.height * 0.02),
-                          CheckItem(text: "Verified All Sales Entries"),
-                          CheckItem(text: "Counted Physical Cash"),
-                          CheckItem(text: "Checked Stock level"),
-                        ],
-                      ),
-                    ),
-
-                    SizedBox(height: size.height * 0.02),
-
-                    // Action Buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Container(
-                          height: 45,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.border2),
-                          ),
-                          child: Text("Save as Draft", style: AppTextStyles.containerText),
-                        ),
-                        SizedBox(width: size.width * 0.02),
-                        GestureDetector(
-                          onTap: () => _showCloseDayDialog(context),
-                          child: Container(
-                            height: 45,
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.yellow,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppColors.border2),
-                            ),
-                            alignment: Alignment.center,
-                            child: state is DailyClosingSubmitting
-                                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                                : Text("Close Day", style: AppTextStyles.containerText),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: size.height * 0.02),
-                  ],
-                ),
+                  // Footer Actions
+                  _buildFooterActions(
+                    data,
+                    isClosed,
+                    state is DailyClosingSubmitting,
+                  ),
+                  const SizedBox(height: 32),
+                ],
               ),
             );
           },
@@ -377,87 +194,610 @@ class _DailyClosingState extends State<DailyClosing> {
     );
   }
 
-  Widget _buildStockSection(Size size, String title, int opening, int received, int sold, int closing) {
+  Widget _buildActionBar(DailyClosingModel data) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
         color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(title, style: AppTextStyles.bodyText14dark),
-          SizedBox(height: size.height * 0.02),
-          Row(
-            children: [
-              Expanded(child: stockItem("$opening", "Opening Stock")),
-              SizedBox(width:getWidth(context, 10)),
-              Expanded(child: stockItem("$received", "Received")),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Branch",
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                Text(
+                  data.branchName,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
           ),
-          SizedBox(height: size.height * 0.02),
-          Row(
-            children: [
-              Expanded(child: stockItem("$sold", "Sold")),
-              SizedBox(width: getWidth(context, 10)),
-              Expanded(child: stockItem("$closing", "Closing")),
-            ],
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: data.status == "CLOSED"
+                  ? Colors.green.shade50
+                  : Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 4,
+                  backgroundColor: data.status == "CLOSED"
+                      ? Colors.green
+                      : Colors.orange,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  "Status: ${data.status}",
+                  style: TextStyle(
+                    color: data.status == "CLOSED"
+                        ? Colors.green
+                        : Colors.orange,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  void _showCloseDayDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text("Confirm"),
-          content: const Text("Are you sure you want to close the day? This action cannot be undone."),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text("No"),
+  Widget _buildStockSummary(DailyClosingModel data) {
+    return _buildCard(
+      title: "Stock Summary",
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+          columnSpacing: 20,
+          horizontalMargin: 0,
+          headingRowHeight: 40,
+          columns: const [
+            DataColumn(
+              label: Text(
+                "Item",
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                if (branchId != null) {
-                  context.read<DailyClosingBloc>().add(
-                    SubmitDailyClosing(branchId: branchId!, date: currentDate),
-                  );
-                }
-              },
-              child: const Text("Yes"),
+            DataColumn(
+              label: Text(
+                "Opening",
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+            ),
+            DataColumn(
+              label: Text(
+                "Received",
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+            ),
+            DataColumn(
+              label: Text(
+                "Sold",
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+            ),
+            DataColumn(
+              label: Text(
+                "Closing",
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
-        );
-      },
+          rows: [
+            _buildStockRow(
+              "Trays",
+              data.stockSummary.totalOpening,
+              data.stockSummary.totalReceived,
+              data.stockSummary.totalSold,
+              data.stockSummary.totalClosing,
+            ),
+            _buildStockRow(
+              "Eggs",
+              data.stockSummary.totalOpeningEggs,
+              data.stockSummary.totalReceivedEggs,
+              data.stockSummary.totalSoldEggs,
+              data.stockSummary.totalClosingEggs,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget stockItem(String value, String label) {
+  DataRow _buildStockRow(String item, num op, num rec, num sold, num cls) {
+    return DataRow(
+      cells: [
+        DataCell(Text(item, style: const TextStyle(fontSize: 12))),
+        DataCell(
+          Text(op.toStringAsFixed(1), style: const TextStyle(fontSize: 12)),
+        ),
+        DataCell(
+          Text(rec.toStringAsFixed(1), style: const TextStyle(fontSize: 12)),
+        ),
+        DataCell(
+          Text(sold.toStringAsFixed(1), style: const TextStyle(fontSize: 12)),
+        ),
+        DataCell(
+          Text(cls.toStringAsFixed(1), style: const TextStyle(fontSize: 12)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCashSummary(
+    DailyClosingModel data,
+    bool isClosed,
+    double difference,
+  ) {
+    return _buildCard(
+      title: "Cash Summary",
+      child: Column(
+        children: [
+          _buildSummaryItem(
+            "Cash Sales",
+            "₹${data.salesSummary.cash.toStringAsFixed(2)}",
+          ),
+          _buildSummaryItem(
+            "Closing Cash (System)",
+            "₹${data.cashSummary.closing.toStringAsFixed(2)}",
+          ),
+          _buildSummaryItem(
+            "Expenses (Cash)",
+            "₹${data.expenseSummary.cash.toStringAsFixed(2)}",
+          ),
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Closing Cash (Counted)",
+                  style: TextStyle(fontSize: 14),
+                ),
+                SizedBox(
+                  width: 120,
+                  height: 35,
+                  child: TextField(
+                    controller: _countedCashController,
+                    keyboardType: TextInputType.number,
+                    enabled: !isClosed,
+                    textAlign: TextAlign.right,
+                    onChanged: (v) => setState(() {}),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    decoration: InputDecoration(
+                      prefixText: "₹ ",
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      filled: isClosed,
+                      fillColor: Colors.grey.shade100,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _buildSummaryItem(
+            "Difference",
+            "₹${difference.toStringAsFixed(2)}",
+            valueColor: difference == 0 ? Colors.green : Colors.red,
+            isBold: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOnlineSummary(DailyClosingModel data) {
+    return _buildCard(
+      title: "Online Transaction Summary",
+      child: Column(
+        children: [
+          _buildSummaryItem(
+            "Expenses (UPI)",
+            "-₹${data.onlineSummary.upi.expense.toStringAsFixed(2)}",
+          ),
+          _buildSummaryItem(
+            "Closing UPI",
+            "₹${data.onlineSummary.upi.closing.toStringAsFixed(2)}",
+          ),
+          const SizedBox(height: 8),
+          _buildSummaryItem(
+            "Card Sales",
+            "₹${data.onlineSummary.card.sales.toStringAsFixed(2)}",
+          ),
+          _buildSummaryItem(
+            "Expenses (Card)",
+            "-₹${data.onlineSummary.card.expense.toStringAsFixed(2)}",
+          ),
+          _buildSummaryItem(
+            "Closing Card",
+            "₹${data.onlineSummary.card.closing.toStringAsFixed(2)}",
+          ),
+          const Divider(),
+          _buildSummaryItem(
+            "Total Collection",
+            "₹${data.onlineSummary.totalCollection.toStringAsFixed(2)}",
+            isBold: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSalesExpenseSummary(DailyClosingModel data) {
     return Column(
       children: [
-        Text(label, style: const TextStyle(fontSize: 12)),
-        Container(
-          height: getHeight(context, 50),
-          width: double.infinity,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade300),
+        _buildCard(
+          title: "Sales Summary",
+          child: Row(
+            children: [
+              Expanded(child: _buildStatBox("Total", data.salesSummary.total)),
+              const SizedBox(width: 8),
+              Expanded(child: _buildStatBox("Cash", data.salesSummary.cash)),
+              const SizedBox(width: 8),
+              Expanded(child: _buildStatBox("UPI", data.salesSummary.upi)),
+            ],
           ),
-          child: Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        _buildCard(
+          title: "Expense Summary",
+          child: Row(
+            children: [
+              Expanded(
+                child: _buildStatBox(
+                  "Total",
+                  data.expenseSummary.total,
+                  color: Colors.red.shade700,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildStatBox(
+                  "Cash",
+                  data.expenseSummary.cash,
+                  color: Colors.red.shade700,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildStatBox(
+                  "UPI",
+                  data.expenseSummary.upi,
+                  color: Colors.red.shade700,
+                ),
+              ),
+            ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildClosingStockValue(DailyClosingModel data) {
+    return _buildCard(
+      title: "Closing Stock Value (Estimated)",
+      child: Column(
+        children: [
+          _buildSummaryItem(
+            "Eggs (with trays)",
+            "₹${data.closingStockValue.eggs.toStringAsFixed(2)}",
+          ),
+          _buildSummaryItem(
+            "Plastic Trays",
+            "₹${data.closingStockValue.plastic.toStringAsFixed(2)}",
+          ),
+          _buildSummaryItem(
+            "Paper Trays",
+            "₹${data.closingStockValue.paper.toStringAsFixed(2)}",
+          ),
+          _buildSummaryItem(
+            "Empty Trays",
+            "₹${data.closingStockValue.empty.toStringAsFixed(2)}",
+          ),
+          const Divider(),
+          _buildSummaryItem(
+            "Total Stock Value",
+            "₹${data.closingStockValue.total.toStringAsFixed(2)}",
+            isBold: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotesChecklist(DailyClosingModel data, bool isClosed) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 3,
+          child: _buildCard(
+            title: "Notes",
+            child: TextField(
+              controller: _notesController,
+              maxLines: 4,
+              enabled: !isClosed,
+              decoration: InputDecoration(
+                hintText: "Add notes...",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          flex: 2,
+          child: _buildCard(
+            title: "Checklist",
+            child: Column(
+              children: [
+                _buildCheckItem("Sales verified", "sales", isClosed),
+                _buildCheckItem("Cash counted", "cash", isClosed),
+                _buildCheckItem("Stock checked", "stock", isClosed),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCheckItem(String text, String key, bool isClosed) {
+    final isChecked = checklist[key]! || isClosed;
+    return GestureDetector(
+      onTap: () => _toggleChecklist(key, isClosed ? "CLOSED" : "PENDING"),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            Icon(
+              isChecked ? Icons.check_box : Icons.check_box_outline_blank,
+              color: isChecked ? Colors.blue : Colors.grey,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Expanded(child: Text(text, style: const TextStyle(fontSize: 11))),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTodaysSummary(DailyClosingModel data) {
+    return _buildCard(
+      title: "Today's Summary",
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _buildFormulaItem(
+              "Opening Stock",
+              data.todaysSummary.openingStockValue,
+            ),
+            _buildOperator("+"),
+            _buildFormulaItem(
+              "Stock Received",
+              data.todaysSummary.receivedStockValue,
+            ),
+            _buildOperator("+"),
+            _buildFormulaItem("Total Sales", data.todaysSummary.totalSales),
+            _buildOperator("-"),
+            _buildFormulaItem(
+              "Total Expenses",
+              data.todaysSummary.totalExpenses,
+            ),
+            _buildOperator("="),
+            _buildFormulaItem(
+              "Final Value",
+              data.todaysSummary.finalValue,
+              isResult: true,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFormulaItem(String label, num value, {bool isResult = false}) {
+    return Column(
+      children: [
+        Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+        const SizedBox(height: 4),
+        Text(
+          "₹${value.toStringAsFixed(0)}",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: isResult ? 16 : 14,
+            color: isResult ? Colors.blue : Colors.black,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOperator(String op) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Text(
+        op,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.grey,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFooterActions(
+    DailyClosingModel data,
+    bool isClosed,
+    bool isSubmitting,
+  ) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton(
+            onPressed: isClosed || isSubmitting ? null : () => _submit("DRAFT"),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text("Save as Draft"),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: isClosed || isSubmitting || !isChecklistComplete
+                ? null
+                : () => _submit("CLOSED"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: isSubmitting
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Text(
+                    "Close Day",
+                    style: TextStyle(color: Colors.white),
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _submit(String status) {
+    if (branchId == null) return;
+    context.read<DailyClosingBloc>().add(
+      SubmitDailyClosing(
+        branchId: branchId!,
+        status: status,
+        notes: _notesController.text,
+        countedCash: double.tryParse(_countedCashController.text) ?? 0,
+      ),
+    );
+  }
+
+  Widget _buildCard({required String title, required Widget child}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+          const SizedBox(height: 12),
+          child,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryItem(
+    String label,
+    String value, {
+    Color? valueColor,
+    bool isBold = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
+              color: valueColor ?? const Color(0xFF1E293B),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatBox(String label, num value, {Color? color}) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+          const SizedBox(height: 4),
+          Text(
+            "₹${value.toStringAsFixed(0)}",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

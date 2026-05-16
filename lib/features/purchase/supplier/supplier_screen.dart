@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/supplier_request_model.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/services/supplier_service.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_bloc.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_event.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_state.dart';
 
 import 'package:proteinova_connect/features/purchase/supplier/add_supplier_screen.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/editbutton.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/statusbadge.dart';
 import 'package:proteinova_connect/features/purchase/supplier/widget/supplier_shimmer.dart';
 
@@ -18,65 +19,24 @@ class SuppliersScreen extends StatefulWidget {
 }
 
 class _SuppliersScreenState extends State<SuppliersScreen> {
-  List<SupplierRequestModel> suppliers = [];
-  List<SupplierRequestModel> filteredSuppliers = [];
-
-bool isLoading = true;
+ final TextEditingController searchController =
+    TextEditingController(); 
 @override
-void initState() {
-  super.initState();
-  fetchSuppliers();
+void didChangeDependencies() {
+  super.didChangeDependencies();
+
+  context.read<SupplierBloc>().add(
+        FetchSuppliers(),
+      );
 }
 
-Future<void> fetchSuppliers() async {
-  try {
-    final List<SupplierRequestModel> data =
-    await SupplierService().getSuppliers();
-       print(data);
-    print(data.length);
-    setState(() {
-      suppliers = data;
-      filteredSuppliers = data;
-      isLoading = false;
-    });
-  } catch (e) {
-    setState(() {
-      isLoading = false;
-    });
-  }
-}
-void filterSuppliers(String query) {
 
-  if (query.isEmpty) {
 
-    setState(() {
-      filteredSuppliers = suppliers;
-    });
 
-  } else {
+ 
 
-    setState(() {
-      filteredSuppliers = suppliers.where((supplier) {
-
-        return supplier.supplierCompanyName
-                .toLowerCase()
-                .contains(query.toLowerCase()) ||
-
-            supplier.supplierName
-                .toLowerCase()
-                .contains(query.toLowerCase()) ||
-
-            supplier.phoneNumber
-                .toLowerCase()
-                .contains(query.toLowerCase());
-
-      }).toList();
-    });
-  }
-}
   @override
   Widget build(BuildContext context) {
-    final Size size = MediaQuery.of(context).size;
     return Scaffold(
       
       appBar: AppBar(
@@ -130,7 +90,9 @@ void filterSuppliers(String query) {
   );
 
   if (result == true) {
-    fetchSuppliers();
+    context.read<SupplierBloc>().add(
+      FetchSuppliers(),
+    );
   }
 },
                 style: ElevatedButton.styleFrom(
@@ -155,7 +117,9 @@ void filterSuppliers(String query) {
       backgroundColor:AppColors.background,
       body: RefreshIndicator(
          onRefresh: () async {
-   await fetchSuppliers();
+  context.read<SupplierBloc>().add(
+  FetchSuppliers(),
+);
   },
         child: SafeArea(
           child: SingleChildScrollView(
@@ -183,7 +147,11 @@ void filterSuppliers(String query) {
                             SizedBox(width: 10),
                            Expanded(
   child: TextField(
-  onChanged: filterSuppliers,
+  onChanged: (value) {
+  context.read<SupplierBloc>().add(
+        SearchSupplierEvent(value),
+      );
+},
 
   decoration: InputDecoration(
     hintText: "Filter Supplier...",
@@ -226,52 +194,73 @@ void filterSuppliers(String query) {
                       // ),
                     ],
                   ),
-                 isLoading
-    ? const SupplierShimmer()
-    : ListView.builder(
+                BlocBuilder<SupplierBloc, SupplierState>(
+  builder: (context, state) {
+
+    if (state is SupplierLoading) {
+      return const SupplierShimmer();
+    }
+
+    if (state is SupplierError) {
+      return Center(
+        child: Text(state.message),
+      );
+    }
+
+    if (state is SupplierLoaded) {
+
+      final suppliers = state.suppliers;
+
+      return ListView.builder(
         shrinkWrap: true,
         physics:
             const NeverScrollableScrollPhysics(),
-        itemCount: filteredSuppliers.length,
+        itemCount: suppliers.length,
         itemBuilder: (context, index) {
-          final supplier = filteredSuppliers[index];
+
+          final supplier = suppliers[index];
 
           return PurchaseCards(
-  status: supplier.status,
+            status: supplier.status,
 
-  statusColor:
-      supplier.status == "ACTIVE"
-          ? Colors.green
-          : Colors.grey,
+            statusColor:
+                supplier.status == "ACTIVE"
+                    ? Colors.green
+                    : Colors.grey,
 
-  textColor: Colors.white,
+            textColor: Colors.white,
 
-  supplier:
-      supplier.supplierCompanyName,
+            supplier:
+                supplier.companyName,
 
-  orderId:
-      "ID-${index + 1}",
+            orderId:
+                "ID-${index + 1}",
 
-  dateTime:
-      supplier.supplierLocation,
+            dateTime:
+                supplier.location,
 
-  bottomId:
-      supplier.email,
+            bottomId:
+                supplier.email,
 
-  items:
-      "Supplier Details",
+            items:
+                "Supplier Details",
 
-  itemboxes:
-      supplier.status,
+            itemboxes:
+                supplier.status,
 
-  contactperson:
-      supplier.supplierName,
+            contactperson:
+                supplier.supplierName,
 
-  contactnumber:
-      supplier.phoneNumber,
-);
+            contactnumber:
+                supplier.phoneNumber,
+          );
         },
-      ),
+      );
+    }
+
+    return const SizedBox();
+  },
+),
                 ],
               ),
             ),

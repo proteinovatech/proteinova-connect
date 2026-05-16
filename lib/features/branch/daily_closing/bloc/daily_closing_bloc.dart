@@ -22,8 +22,14 @@ class DailyClosingBloc extends Bloc<DailyClosingEvent, DailyClosingState> {
     on<SubmitDailyClosing>((event, emit) async {
       emit(DailyClosingSubmitting());
       try {
-        final response = await repository.closeDay(event.branchId, event.date);
-        emit(DailyClosingSuccess(response['message'] ?? "Day closed successfully"));
+        final payload = {
+          "status": event.status,
+          "notes": event.notes,
+          "counted_cash": event.countedCash,
+          "login_user_id": 1 // Default as per React code
+        };
+        final response = await repository.closeDay(event.branchId, payload);
+        emit(DailyClosingSuccess(response['message'] ?? "Action completed successfully"));
       } catch (e) {
         emit(DailyClosingError(e.toString()));
       }

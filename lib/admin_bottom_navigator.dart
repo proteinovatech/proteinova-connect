@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
@@ -15,21 +16,10 @@ import 'package:proteinova_connect/features/admin/menu/SalesDashboard/presentati
 import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
 import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
-import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
-import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
 import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
 import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
-import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
-import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
-import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
-import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
-import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
 
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
-
-import 'package:proteinova_connect/features/branch/branch_details/presentation/branch_details.dart';
-
-import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
 
 class AdminBottomNavigator extends StatefulWidget {
   const AdminBottomNavigator({super.key});
@@ -249,7 +239,7 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   //   "Report",
                   //   AdminReportDashboardScreen(),
                   // ),
-                  // _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
+                  _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
                   // _menuTile(Icons.money, "Expenses", ExpenseManagement()),
                   const SizedBox(height: 20),
                   Divider(),

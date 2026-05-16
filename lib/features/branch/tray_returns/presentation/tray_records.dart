@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
+import 'package:proteinova_connect/features/branch/sales/data/datasource/branch_sales_remote_datasource.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/bloc/tray_return_bloc.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/widget/buildfield1.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/widget/conditionbox.dart';
@@ -25,8 +26,15 @@ class _TrayRecordsState extends State<TrayRecords> {
   final TextEditingController _returnToController = TextEditingController();
   final TextEditingController _trayTypeController = TextEditingController();
   final TextEditingController _qtyController = TextEditingController();
+  final TextEditingController _numberController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _remarksController = TextEditingController();
 
-  int selectedIndex = -1;
+  String _selectedSettlementType = "CREDIT";
+  String? _customerStatus; // 'found', 'not_found', null
+  List<String> _warehouses = [];
+
+  int selectedIndex = 0;
   String fileName = "Choose File";
   int? branchId;
 
@@ -40,6 +48,33 @@ class _TrayRecordsState extends State<TrayRecords> {
   Future<void> _loadBranchId() async {
     final prefs = await SharedPreferences.getInstance();
     branchId = prefs.getInt("branch_id");
+    context.read<TrayReturnBloc>().add(FetchWarehouses());
+
+    setState(() {
+      _returnFromController.text = "Customer";
+      _trayTypeController.text = "Plastic Tray";
+    });
+  }
+
+  Future<void> _lookupCustomer(String number) async {
+    if (number.length < 10) {
+      setState(() => _customerStatus = null);
+      return;
+    }
+    try {
+      final ds = BranchSalesRemoteDatasource();
+      final customer = await ds.findCustomerByNumber(number: number);
+      if (customer != null) {
+        setState(() {
+          _nameController.text = customer['name'] ?? "";
+          _customerStatus = 'found';
+        });
+      } else {
+        setState(() => _customerStatus = 'not_found');
+      }
+    } catch (e) {
+      setState(() => _customerStatus = 'not_found');
+    }
   }
 
   Future<void> pickFile() async {
@@ -87,11 +122,15 @@ class _TrayRecordsState extends State<TrayRecords> {
       "branch_id": branchId,
       "return_from_type": _returnFromController.text,
       "return_from_name": _nameController.text,
+      "return_from_number": _numberController.text,
       "return_date": _dateController.text,
       "return_to": _returnToController.text,
       "tray_type": _trayTypeController.text,
       "quantity": int.tryParse(_qtyController.text) ?? 0,
       "condition": condition.toUpperCase(),
+      "amount": double.tryParse(_amountController.text) ?? 0,
+      "settlement_type": _selectedSettlementType,
+      "remarks": _remarksController.text,
     };
 
     context.read<TrayReturnBloc>().add(SubmitTrayReturn(data: data));
@@ -146,7 +185,7 @@ class _TrayRecordsState extends State<TrayRecords> {
                 buildDropdownField(
                   "Return from :",
                   "Select Type",
-                  ["Customer", "Branch", "Vendor"],
+                  ["Customer", "Branch", "Supplier"],
                   value: _returnFromController.text,
                   onChanged: (val) {
                     if (val != null)
@@ -155,8 +194,31 @@ class _TrayRecordsState extends State<TrayRecords> {
                 ),
                 SizedBox(height: size.height * 0.02),
                 buildRowField(
+                  "Number :",
+                  "Enter phone number",
+                  controller: _numberController,
+                  onChanged: (val) => _lookupCustomer(val),
+                ),
+                if (_customerStatus != null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 130, bottom: 10),
+                    child: Text(
+                      _customerStatus == 'found'
+                          ? "✓ Customer found"
+                          : "+ New Customer",
+                      style: TextStyle(
+                        color: _customerStatus == 'found'
+                            ? Colors.green
+                            : Colors.orange,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                SizedBox(height: size.height * 0.02),
+                buildRowField(
                   "Name :",
-                  "Valley farm",
+                  "Customer/Branch Name",
                   controller: _nameController,
                 ),
                 SizedBox(height: size.height * 0.02),
@@ -182,21 +244,47 @@ class _TrayRecordsState extends State<TrayRecords> {
                   },
                 ),
                 SizedBox(height: size.height * 0.02),
-                buildDropdownField(
-                  "Return to :",
-                  "Select Destination",
-                  ["Warehouse", "Branch", "Factory"],
-                  value: _returnToController.text,
-                  onChanged: (val) {
-                    if (val != null)
-                      setState(() => _returnToController.text = val);
+                BlocBuilder<TrayReturnBloc, TrayReturnState>(
+                  builder: (context, state) {
+                    List<String> warehouses = [];
+                    if (state is TrayReturnLoaded) {
+                      warehouses = state.warehouses
+                          .map((w) => w['warehouse_name'].toString())
+                          .toSet()
+                          .toList();
+                      if (_returnToController.text.isEmpty &&
+                          warehouses.isNotEmpty) {
+                        _returnToController.text = warehouses.first;
+                      }
+                    }
+
+                    // Fallback to avoid crash if value is not in list
+                    if (warehouses.isEmpty) {
+                      warehouses = _returnToController.text.isEmpty
+                          ? ["Loading..."]
+                          : [_returnToController.text];
+                    } else if (_returnToController.text.isNotEmpty &&
+                        !warehouses.contains(_returnToController.text)) {
+                      warehouses.insert(0, _returnToController.text);
+                    }
+
+                    return buildDropdownField(
+                      "Return to :",
+                      "Select Destination",
+                      warehouses,
+                      value: _returnToController.text,
+                      onChanged: (val) {
+                        if (val != null)
+                          setState(() => _returnToController.text = val);
+                      },
+                    );
                   },
                 ),
                 SizedBox(height: size.height * 0.02),
                 buildDropdownField(
                   "Tray type :",
                   "Select Tray",
-                  ["Egg Tray", "Meat Tray", "Plastic Tray", "Paper Tray"],
+                  ["Plastic Tray", "Paper Tray"],
                   value: _trayTypeController.text,
                   onChanged: (val) {
                     if (val != null)
@@ -206,8 +294,31 @@ class _TrayRecordsState extends State<TrayRecords> {
                 SizedBox(height: size.height * 0.02),
                 buildRowField(
                   "Quantity :",
-                  "50 trays",
+                  "Enter trays count",
                   controller: _qtyController,
+                ),
+                SizedBox(height: size.height * 0.02),
+                buildDropdownField(
+                  "Settlement :",
+                  "Select Settlement",
+                  ["CREDIT", "REFUND"],
+                  value: _selectedSettlementType,
+                  onChanged: (val) {
+                    if (val != null)
+                      setState(() => _selectedSettlementType = val);
+                  },
+                ),
+                SizedBox(height: size.height * 0.02),
+                buildRowField(
+                  "Amount (₹) :",
+                  "0",
+                  controller: _amountController,
+                ),
+                SizedBox(height: size.height * 0.02),
+                buildRowField(
+                  "Remarks :",
+                  "Optional",
+                  controller: _remarksController,
                 ),
                 SizedBox(height: size.height * 0.03),
                 Column(
@@ -217,77 +328,83 @@ class _TrayRecordsState extends State<TrayRecords> {
                     SizedBox(height: size.height * 0.02),
                     Row(
                       children: [
-                        Expanded(child: conditionBox(
-                          index: 0,
-                          selectedIndex: selectedIndex,
-                          onTap: () => setState(() => selectedIndex = 0),
-                          icon: Icons.check_circle,
-                          text: "Good",
-                          color: Colors.green,
-                        )),
+                        Expanded(
+                          child: conditionBox(
+                            index: 0,
+                            selectedIndex: selectedIndex,
+                            onTap: () => setState(() => selectedIndex = 0),
+                            icon: Icons.check_circle,
+                            text: "Good",
+                            color: Colors.green,
+                          ),
+                        ),
                         SizedBox(width: getWidth(context, 10)),
-                        Expanded(child: conditionBox(
-                          index: 1,
-                          selectedIndex: selectedIndex,
-                          onTap: () => setState(() => selectedIndex = 1),
-                          icon: Icons.cancel,
-                          text: "Damaged",
-                          color: Colors.red,
-                        )),
-                         SizedBox(width:getWidth(context, 10)),
-                        Expanded(child: conditionBox(
-                          index: 2,
-                          selectedIndex: selectedIndex,
-                          onTap: () => setState(() => selectedIndex = 2),
-                          icon: Icons.delete,
-                          text: "Scrap",
-                          color: Colors.orange,
-                        )),
+                        Expanded(
+                          child: conditionBox(
+                            index: 1,
+                            selectedIndex: selectedIndex,
+                            onTap: () => setState(() => selectedIndex = 1),
+                            icon: Icons.cancel,
+                            text: "Damaged",
+                            color: Colors.red,
+                          ),
+                        ),
+                        SizedBox(width: getWidth(context, 10)),
+                        Expanded(
+                          child: conditionBox(
+                            index: 2,
+                            selectedIndex: selectedIndex,
+                            onTap: () => setState(() => selectedIndex = 2),
+                            icon: Icons.delete,
+                            text: "Scrap",
+                            color: Colors.orange,
+                          ),
+                        ),
                       ],
                     ),
                   ],
                 ),
-                SizedBox(height: size.height * 0.02),
-                Row(
-                  children: [
-                    Text("Attachment", style: AppTextStyles.headingText22),
-                    Text("(Optional)", style: AppTextStyles.bodyText16),
-                  ],
-                ),
-                SizedBox(height: size.height * 0.01),
-                InkWell(
-                  onTap: pickFile,
-                  child: Container(
-                    height: 100,
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.upload_file),
-                            SizedBox(width:getWidth(context, 8)),
-                            Flexible(child: Text(fileName, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis)),
-                          ],
-                        ),
-                        const Text(
-                          "PDF, JPG, PNG (Max 5MB)",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                // SizedBox(height: size.height * 0.02),
+                // Row(
+                //   children: [
+                //     Text("Attachment", style: AppTextStyles.headingText22),
+                //     Text("(Optional)", style: AppTextStyles.bodyText16),
+                //   ],
+                // ),
+                // SizedBox(height: size.height * 0.01),
+                // InkWell(
+                //   onTap: pickFile,
+                //   child: Container(
+                //     height: 100,
+                //     width: double.infinity,
+                //     padding: const EdgeInsets.symmetric(
+                //       horizontal: 12,
+                //       vertical: 8,
+                //     ),
+                //     decoration: BoxDecoration(
+                //       border: Border.all(color: Colors.grey),
+                //       borderRadius: BorderRadius.circular(8),
+                //     ),
+                //     child: Column(
+                //       mainAxisAlignment: MainAxisAlignment.center,
+                //       children: [
+                //         Row(
+                //           mainAxisAlignment: MainAxisAlignment.center,
+                //           children: [
+                //             const Icon(Icons.upload_file),
+                //             SizedBox(width:getWidth(context, 8)),
+                //             Flexible(child: Text(fileName, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis)),
+                //           ],
+                //         ),
+                //         const Text(
+                //           "PDF, JPG, PNG (Max 5MB)",
+                //           textAlign: TextAlign.center,
+                //           style: TextStyle(color: Colors.grey, fontSize: 12),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
                 SizedBox(height: size.height * 0.02),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -306,7 +423,10 @@ class _TrayRecordsState extends State<TrayRecords> {
                       },
                       child: Container(
                         height: getHeight(context, 45),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
@@ -315,7 +435,7 @@ class _TrayRecordsState extends State<TrayRecords> {
                         child: Row(
                           children: [
                             const Icon(Icons.refresh, size: 18),
-                             SizedBox(width:getWidth(context, 6)),
+                            SizedBox(width: getWidth(context, 6)),
                             Text("Reset", style: AppTextStyles.containerText),
                           ],
                         ),
@@ -349,7 +469,10 @@ class _TrayRecordsState extends State<TrayRecords> {
                       },
                       child: Container(
                         height: getHeight(context, 45),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.yellow,
                           borderRadius: BorderRadius.circular(12),
@@ -358,11 +481,17 @@ class _TrayRecordsState extends State<TrayRecords> {
                         child: Row(
                           children: [
                             const Icon(Icons.save, size: 18),
-                             SizedBox(width:getWidth(context, 6)),
+                            SizedBox(width: getWidth(context, 6)),
                             BlocBuilder<TrayReturnBloc, TrayReturnState>(
                               builder: (context, state) {
                                 if (state is TrayReturnSubmitting) {
-                                  return SizedBox(height: getHeight(context, 18), width: getWidth(context, 18), child: CircularProgressIndicator(strokeWidth: 2));
+                                  return SizedBox(
+                                    height: getHeight(context, 18),
+                                    width: getWidth(context, 18),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  );
                                 }
                                 return Text(
                                   "Save Returns",

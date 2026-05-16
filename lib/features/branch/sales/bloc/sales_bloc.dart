@@ -11,7 +11,7 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
       emit(SalesLoading());
       try {
         final dashboardData = await _repository.fetchSalesDashboard(
-          branchId: event.branchId?.toString(),
+          branchId: event.branchId.toString(),
         );
 
         // Fetch dispatches and sales orders

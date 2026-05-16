@@ -8,6 +8,7 @@ Widget buildRowField(
   TextEditingController? controller,
   bool readOnly = false,
   VoidCallback? onTap,
+  ValueChanged<String>? onChanged,
 }) {
   return Row(
     children: [
@@ -32,6 +33,7 @@ Widget buildRowField(
             controller: controller,
             readOnly: readOnly,
             onTap: onTap,
+            onChanged: onChanged,
             decoration: InputDecoration(
               hintText: hint,
               border: InputBorder.none,
