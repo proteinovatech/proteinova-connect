@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
+import 'package:proteinova_connect/core/services/sales_receipt_service.dart';
 import 'package:proteinova_connect/features/branch/sales/data/datasource/branch_sales_remote_datasource.dart';
-import 'package:proteinova_connect/features/branch/sales/widget/branch_payment_summary_widget.dart';
-import 'package:proteinova_connect/features/branch/sales/widget/branch_product_selection_widget.dart';
-import 'package:proteinova_connect/features/branch/sales/widget/branch_sales_items_widget.dart';
+import 'package:proteinova_connect/features/branch/sales/data/model/sales_entry_model.dart';
+import 'package:proteinova_connect/features/branch/sales/data/model/sales_item_model.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/sales_entry_skeleton.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+class SaleTray {
+  String trayType;
+  int qty;
+  SaleTray({this.trayType = "without tray", this.qty = 0});
+}
 
 class SalesEntryPage extends StatefulWidget {
   const SalesEntryPage({super.key});
@@ -18,56 +24,40 @@ class SalesEntryPage extends StatefulWidget {
 }
 
 class _SalesEntryPageState extends State<SalesEntryPage> {
-  String selectedCategory = "All Categories";
-  String selectedPaymentMethod = "Cash";
-
-  double offerDiscount = 0;
-  bool customerFound = false;
-  int salesItemCount = 0;
-  List trayList = [];
-  List dozenList = [];
-
-  List eggsList = [];
-
-  List rateList = [];
-  List offersList = [];
-  List totalList = [];
-  List productList = [];
-  List<Map<String, dynamic>> salesItems = [];
-  String selectedWarehouse = "";
-
-  List<String> warehouseList = [];
-
-  List<String> selectedProducts = [];
-  final List<TextEditingController> trayControllers = [];
-  final List<TextEditingController> dozenControllers = [];
-  final BranchSalesRemoteDatasource datasource = BranchSalesRemoteDatasource();
-  Map<String, dynamic> salesEntryData = {};
-
+  // --- State Variables ---
+  String salesHappen = "In_warehouse";
+  Map<String, dynamic>? headerData;
+  List<ProductDetail> products = [];
+  List<OfferModel> offers = [];
+  List<SalesItem> salesItems = [SalesItem()];
+  List<SaleTray> saleTrays = [SaleTray()];
+  
   bool isLoading = true;
-  TextEditingController amountController = TextEditingController();
-  TextEditingController debtController = TextEditingController();
-  TextEditingController customerNumberController = TextEditingController();
+  bool isSubmitting = false;
+  String? customerStatus; // 'found', 'not_found', null
+  
+  String selectedPaymentMethod = "CASH";
+  String selectedUpiApp = "";
+  String otherUpiDetails = "";
+  
+  final TextEditingController customerNumberController = TextEditingController();
+  final TextEditingController customerNameController = TextEditingController();
+  final TextEditingController cashReceivedController = TextEditingController();
+  final TextEditingController debtController = TextEditingController();
+  final TextEditingController notesController = TextEditingController();
+  final TextEditingController dateController = TextEditingController();
+  final TextEditingController searchController = TextEditingController();
 
-  TextEditingController customerNameController = TextEditingController();
-
-  TextEditingController dateController = TextEditingController();
-  TextEditingController searchController = TextEditingController();
-
-  List filteredProducts = [];
-  List<int> appliedOfferIndices = [];
-
+  final BranchSalesRemoteDatasource datasource = BranchSalesRemoteDatasource();
+  List<ProductDetail> filteredProducts = [];
   int loginUserId = 0;
   int branchId = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadUserData().then((_) {
-      getSalesEntry();
-      getWarehouseList();
-    });
-    fetchOffers();
+    dateController.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    _loadUserData().then((_) => _fetchInitialData());
   }
 
   Future<void> _loadUserData() async {
@@ -78,1369 +68,380 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     });
   }
 
-  Future<void> getSalesEntry({String? warehouse}) async {
+  Future<void> _fetchInitialData() async {
     try {
-      print("API CALL STARTED FOR WAREHOUSE: $warehouse");
-      final response = await datasource.getSalesEntry(
-        loginUserId: loginUserId,
-        branchName: warehouse,
-      );
-      print("FULL API RESPONSE =>");
-      print(response);
-
-      setState(() {
-        salesEntryData = response;
-        customerNumberController.text =
-            response['customer_number']?.toString() ?? "";
-        customerNameController.text =
-            response['customer_name']?.toString() ?? "";
-        dateController.text = response['sales_date']?.toString() ?? "";
-        productList = response['product_details'] ?? [];
-        trayList = response['tray_list'] ?? response['dozen_list'] ?? [];
-        dozenList = response['dozen_list_actual'] ?? [];
-        eggsList = response['eggs_list'] ?? [];
-        rateList = response['rate_list'] ?? [];
-        totalList = response['total_list'] ?? [];
-        _ensureRowCapacity(_maxRowCount());
-        productList = response['product_details'] ?? [];
-        filteredProducts = productList;
-        isLoading = false;
-      });
-    } catch (e) {
-      print("API ERROR =>");
-      print(e.toString());
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  void setTodayDate() {
-    final now = DateTime.now();
-
-    final formattedDate =
-        "${now.day.toString().padLeft(2, '0')}-"
-        "${now.month.toString().padLeft(2, '0')}-"
-        "${now.year}";
-
-    dateController.text = formattedDate;
-  }
-
-  Future<void> getWarehouseList() async {
-    try {
+      if (mounted) setState(() => isLoading = true);
       final response = await datasource.getSalesEntry(loginUserId: loginUserId);
-
-      print("WAREHOUSE RESPONSE =>");
-
-      print(response);
-
-      /// API FIELD
-      List warehouseData = response["warehouse_list"] ?? [];
-
-      print("WAREHOUSE DATA =>");
-
-      print(warehouseData);
-
-      setState(() {
-        warehouseList.clear();
-
-        warehouseList.addAll(warehouseData.map((e) => e.toString()));
-
-        print("WAREHOUSE LIST =>");
-
-        print(warehouseList);
-
-        if (warehouseList.isNotEmpty) {
-          selectedWarehouse = warehouseList.first;
-
-          print(
-            "SELECTED WAREHOUSE => "
-            "$selectedWarehouse",
-          );
-        }
-      });
-    } catch (e) {
-      print("WAREHOUSE ERROR => $e");
-    }
-  }
-
-  //offer
-  Future<void> fetchOffers() async {
-    try {
-      final response = await datasource.getOffers();
-
-      setState(() {
-        offersList = response.where((e) => e["status"] == "active").toList();
-      });
-
-      print("OFFERS => $offersList");
-    } catch (e) {
-      print("OFFERS ERROR => $e");
-    }
-  }
-
-  //customer number search
-  Future<void> fetchCustomerByNumber(String number) async {
-    try {
-      final customer = await datasource.findCustomerByNumber(number: number);
-
-      if (customer != null) {
-        customerNameController.text = customer["name"]?.toString() ?? "";
-
-        customerFound = true;
-      } else {
-        customerNameController.clear();
-
-        customerFound = false;
-      }
-
-      setState(() {});
-    } catch (e) {
-      customerFound = false;
-
-      print("CUSTOMER FETCH ERROR => $e");
-    }
-  }
-
-  void searchProducts(String value) {
-    setState(() {
-      if (value.isEmpty) {
-        filteredProducts = productList;
-      } else {
-        filteredProducts = productList.where((product) {
-          final String productName = product['product_name']
-              .toString()
-              .toLowerCase();
-          return productName.contains(value.toLowerCase());
-        }).toList();
-      }
-    });
-  }
-
-  void calculateOfferDiscount() {
-    double discount = 0;
-
-    final List offers = offersList;
-
-    for (final offer in offers) {
-      final String offerCategory =
-          offer["category"]?.toString().toLowerCase() ?? "";
-
-      bool matched = false;
-
-      int totalEggs = 0;
-
-      double matchedTotal = 0;
-
-      for (final item in salesItems) {
-        final String productName = item["product_name"]
-            .toString()
-            .toLowerCase();
-
-        if (productName.contains(offerCategory)) {
-          matched = true;
-
-          totalEggs += int.tryParse(item["eggs"].toString()) ?? 0;
-
-          matchedTotal += double.tryParse(item["total"].toString()) ?? 0;
-        }
-      }
-
-      /// BUY X GET Y (Logic from React)
-      if (offer["offer_type"] == "buy_x_get_y") {
-        final int buyTrays = int.tryParse((offer["buyTrays"] ?? offer["buy_qty"] ?? 0).toString()) ?? 0;
-        final int buyEggsThreshold = buyTrays * 30;
-        final int freeEggsPerSet = 30; // Default 1 tray free as per React snippet
-
-        if (totalEggs >= buyEggsThreshold && buyEggsThreshold > 0) {
-          final int sets = totalEggs ~/ buyEggsThreshold;
-          final double ratePerEgg = totalEggs == 0 ? 0 : matchedTotal / totalEggs;
-          discount += (sets * freeEggsPerSet) * ratePerEgg;
-        }
-      }
-      /// FLAT DISCOUNT
-      else {
-        if (matched) {
-          discount += double.tryParse(offer["amount"].toString()) ?? 0;
-        }
-      }
-    }
-
-    setState(() {
-      offerDiscount = discount;
-    });
-  }
-
-  Future<void> _recalculateRowFromApi(int index) async {
-    final String selectedProduct = selectedProducts[index];
-    final String trayText = trayControllers[index].text.trim();
-    final String dozenText = dozenControllers[index].text.trim();
-    
-    final int trayValue = int.tryParse(trayText) ?? 0;
-    
-    // Custom D.E Logic: 1.1 = 13 eggs, 1.10 = 22 eggs
-    int inputDozens = 0;
-    int inputEggs = 0;
-    if (dozenText.contains('.')) {
-      final parts = dozenText.split('.');
-      inputDozens = int.tryParse(parts[0]) ?? 0;
-      if (parts.length > 1 && parts[1].isNotEmpty) {
-        inputEggs = int.tryParse(parts[1]) ?? 0;
-      }
-    } else {
-      inputDozens = int.tryParse(dozenText) ?? 0;
-    }
-    
-    int currentTotalEggs = (trayValue * 30) + (inputDozens * 12) + inputEggs;
-    
-    // Auto-convert to trays if eggs reach 30
-    int normalizedTrays = currentTotalEggs ~/ 30;
-    int remainingEggs = currentTotalEggs % 30;
-    int finalDozens = remainingEggs ~/ 12;
-    int finalEggs = remainingEggs % 12;
-
-    setState(() {
-      trayList[index] = normalizedTrays;
-      dozenList[index] = finalDozens + (finalEggs / 100.0); // Storing as D.E internal
-      eggsList[index] = currentTotalEggs;
+      final model = SalesEntryModel.fromJson(response);
       
-      // Update UI controllers for "auto show"
-      String newTrayStr = normalizedTrays.toString();
-      String newDozenStr = finalEggs > 0 
-          ? "$finalDozens.$finalEggs" 
-          : finalDozens.toString();
-
-      if (trayControllers[index].text != newTrayStr) {
-        trayControllers[index].text = newTrayStr;
+      if (mounted) {
+        setState(() {
+          headerData = model.header;
+          salesHappen = model.header['sales_happen'] ?? "In_warehouse";
+          products = model.productDetails;
+          offers = model.offers;
+          filteredProducts = products;
+          isLoading = false;
+        });
       }
-      if (dozenControllers[index].text != newDozenStr && !dozenText.endsWith('.')) {
-        dozenControllers[index].text = newDozenStr;
+    } catch (e) {
+      debugPrint("Error fetching sales data: $e");
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  // --- Calculations ---
+  double get subtotal => salesItems.fold(0.0, (sum, item) => sum + item.total);
+
+  double get totalDiscount {
+    double discount = 0;
+    for (var offer in offers) {
+      if (!offer.applied) continue;
+
+      final matchingItems = salesItems.where((item) =>
+        item.eggCategoryGrade.trim().toLowerCase() == offer.category.trim().toLowerCase() ||
+        offer.category.trim().toLowerCase() == "all products"
+      ).toList();
+
+      if (matchingItems.isEmpty) continue;
+
+      if (offer.offerType == 'buy_x_get_y') {
+        final int totalEggs = matchingItems.fold(0, (sum, item) => sum + item.eggs);
+        final int buyQtyThreshold = offer.buyTrays * 30;
+        if (totalEggs >= buyQtyThreshold && buyQtyThreshold > 0) {
+          final int freeEggsCount = (totalEggs ~/ buyQtyThreshold) * 30;
+          discount += double.parse((freeEggsCount * matchingItems.first.price).toStringAsFixed(2));
+        }
+      } else if (offer.offerType == 'percentage') {
+        final double matchedTotal = matchingItems.fold(0.0, (sum, item) => sum + item.total);
+        discount += (matchedTotal * offer.discountValue) / 100;
+      } else if (offer.offerType == 'fixed') {
+        discount += offer.discountValue;
+      }
+    }
+    return double.parse(discount.toStringAsFixed(2));
+  }
+
+  double get totalAmount => subtotal - totalDiscount;
+  double get credit => totalAmount - (double.tryParse(cashReceivedController.text) ?? 0);
+
+  // --- Actions ---
+  void addItem() {
+    setState(() => salesItems.add(SalesItem()));
+  }
+
+  void removeItem(int index) {
+    setState(() {
+      salesItems.removeAt(index);
+      if (salesItems.isEmpty) salesItems.add(SalesItem());
+    });
+  }
+
+  void updateItem(int index, String field, dynamic value) {
+    setState(() {
+      final item = salesItems[index];
+      if (field == 'product') {
+        final product = products.firstWhere((p) => p.productName == value);
+        item.eggCategoryGrade = product.productName;
+        item.price = product.perTrayPrice / 30;
+        item.calculateEggs();
+      } else if (field == 'dozen') {
+        item.dozen = double.tryParse(value.toString()) ?? 0;
+        item.calculateEggs();
+      } else if (field == 'trays') {
+        item.trays = int.tryParse(value.toString()) ?? 0;
+        item.calculateEggs();
       }
     });
-    
-    if (selectedProduct == "Select Product" || currentTotalEggs <= 0) {
-      setState(() {
-        eggsList[index] = 0;
-        rateList[index] = 0;
-        totalList[index] = 0;
-      });
+  }
+
+  void addProductFromCard(ProductDetail product) {
+    setState(() {
+      final existingIndex = salesItems.indexWhere((i) => i.eggCategoryGrade == product.productName);
+      if (existingIndex != -1) {
+        salesItems[existingIndex].trays += 1;
+        salesItems[existingIndex].calculateEggs();
+      } else {
+        if (salesItems.length == 1 && salesItems[0].eggCategoryGrade == "") {
+          salesItems[0] = SalesItem(
+            eggCategoryGrade: product.productName,
+            price: product.perTrayPrice / 30,
+            trays: 1,
+          )..calculateEggs();
+        } else {
+          salesItems.add(SalesItem(
+            eggCategoryGrade: product.productName,
+            price: product.perTrayPrice / 30,
+            trays: 1,
+          )..calculateEggs());
+        }
+      }
+    });
+  }
+
+  Future<void> lookupCustomer(String number) async {
+    if (number.length < 10) return;
+    try {
+      final res = await datasource.getCustomerByNumber(number);
+      if (res != null && res['customer'] != null) {
+        setState(() {
+          customerNameController.text = res['customer']['name'] ?? "";
+          customerStatus = 'found';
+        });
+      } else {
+        setState(() => customerStatus = 'not_found');
+      }
+    } catch (e) {
+      setState(() => customerStatus = 'not_found');
+    }
+  }
+
+  void toggleOffer(int offerId) {
+    setState(() {
+      final index = offers.indexWhere((o) => o.id == offerId);
+      if (index != -1) {
+        offers[index].applied = !offers[index].applied;
+      }
+    });
+  }
+
+  Future<void> handlePayment() async {
+    final cName = customerNameController.text.trim();
+    final cNumber = customerNumberController.text.trim();
+
+    if (cName.isEmpty && cNumber.isEmpty) {
+      _showError("Please enter Customer Name or Number");
       return;
     }
+
+    final validItems = salesItems.where((i) => i.eggCategoryGrade.isNotEmpty).toList();
+    if (validItems.isEmpty) {
+      _showError("Please add at least one product");
+      return;
+    }
+
+    setState(() => isSubmitting = true);
     try {
-      /// API REFRESH
-      final List latestProducts = productList;
-      final Map<String, dynamic>? product = _findProductByName(
-        latestProducts,
-        selectedProduct,
-      );
-      if (product == null) {
-        return;
+      final payload = {
+        "login_user_id": loginUserId.toString(),
+        "sales_happen": salesHappen,
+        "customer_name": cName.isEmpty ? "Unknown Customer" : cName,
+        "customer_number": cNumber.isEmpty ? "N/A" : cNumber,
+        "customer_debit": double.tryParse(debtController.text) ?? 0,
+        "dispatch_date": dateController.text,
+        "payment_method": selectedPaymentMethod,
+        "cash_received": double.tryParse(cashReceivedController.text) ?? 0,
+        "upi_app": selectedPaymentMethod == "UPI" ? (selectedUpiApp.isEmpty ? "Other" : selectedUpiApp) : null,
+        "other_upi_details": selectedPaymentMethod == "UPI" ? otherUpiDetails : null,
+        "total_amount": totalAmount,
+        "offer_discount": totalDiscount,
+        "applied_offers": offers.where((o) => o.applied).map((o) => o.name).toList(),
+        "sold_to": "Retail",
+        "notes": notesController.text,
+        "items": validItems.map((i) => {
+          "egg_category_grade": i.eggCategoryGrade,
+          "dozen": i.dozen,
+          "eggs": i.eggs,
+          "trays": (i.eggs / 30).ceil(),
+          "total": i.total
+        }).toList(),
+        "sale_trays": saleTrays.where((t) => t.qty > 0).map((t) => {"tray_type": t.trayType, "qty": t.qty}).toList(),
+        "branch_id": branchId,
+      };
+
+      if (customerStatus == 'not_found' && cNumber.isNotEmpty) {
+        await datasource.createCustomer(name: cName.isEmpty ? "Unknown Customer" : cName, number: cNumber);
       }
 
-      /// 1 tray = 30 eggs
-      final int eggsPerTray = 30;
-
-      final int computedEggs = currentTotalEggs;
-
-      /// RATE
-      final double productRate = _extractRateFromProduct(product, eggsPerTray);
-
-      /// TOTAL
-      final double total = computedEggs * productRate;
-      double finalTotal = total;
-
-      for (final offer in offersList) {
-        final String offerProduct = offer["product_name"]
-            .toString()
-            .toLowerCase();
-
-        final String currentProduct = selectedProduct.toLowerCase();
-
-        if (offerProduct == currentProduct) {
-          /// PERCENTAGE
-          if (offer["offer_type"] == "percentage") {
-            double discount =
-                double.tryParse(offer["discount_value"].toString()) ?? 0;
-
-            finalTotal = total - ((total * discount) / 100);
-          }
-          /// FLAT
-          else if (offer["offer_type"] == "flat") {
-            double discount =
-                double.tryParse(offer["discount_value"].toString()) ?? 0;
-
-            finalTotal = (total - discount).clamp(0, total);
-          }
-          /// BUY X GET Y (Logic from React)
-          else if (offer["offer_type"] == "buy_x_get_y") {
-            int buyTrays = int.tryParse((offer["buyTrays"] ?? offer["buy_qty"] ?? 0).toString()) ?? 0;
-            int buyEggsThreshold = buyTrays * 30;
-            int freeEggsPerSet = 30;
-
-            if (computedEggs >= buyEggsThreshold && buyEggsThreshold > 0) {
-              int sets = computedEggs ~/ buyEggsThreshold;
-              double freeAmount = (sets * freeEggsPerSet) * productRate;
-              finalTotal = (total - freeAmount).clamp(0, total);
-            }
-          }
-        }
-      }
-      setState(() {
-        productList = latestProducts;
-        if (searchController.text.isEmpty) {
-          filteredProducts = productList;
-        } else {
-          final String query = searchController.text.toLowerCase();
-          filteredProducts = productList.where((product) {
-            final String productName =
-                product['product_name']?.toString().toLowerCase() ?? '';
-            return productName.contains(query);
-          }).toList();
-        }
-
-        eggsList[index] = computedEggs;
-
-        rateList[index] = productRate.toStringAsFixed(2);
-
-        totalList[index] = finalTotal.toStringAsFixed(2);
-
-        /// SALES ITEMS UPDATE
-        salesItems = List.generate(salesItemCount, (i) {
-          return {
-            "product_name": selectedProducts[i],
-            "trays": trayList[i],
-            "dozen": dozenList[i],
-            "eggs": eggsList[i],
-            "rate": rateList[i],
-            "total": totalList[i],
-          };
-        });
-        calculateOfferDiscount();
-        
-        // Sync payment amount
-        if (amountController.text.isEmpty || amountController.text == "0") {
-           amountController.text = _grandTotalValue();
-        }
-
-        print("salesItems => ");
-        print(salesItems);
-      });
+      final res = await datasource.createSale(body: payload);
+      setState(() => isSubmitting = false);
+      
+      final saleId = res['sale']?['id'] ?? res['id'] ?? res['sale_id'] ?? 'N/A';
+      final isPending = res['status'] == "PENDING_REVIEW" || res['approval_id'] != null;
+      
+      _showSuccessPopup(saleId, isPending, validItems);
     } catch (e) {
-      print("ROW CALC API ERROR => ${e.toString()}");
+      setState(() => isSubmitting = false);
+      _showError(e.toString());
     }
   }
 
+  void _showError(String msg) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.all(40),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 80, height: 80,
+                decoration: const BoxDecoration(color: Color(0xFFFEF2F2), shape: BoxShape.circle),
+                child: const Icon(Icons.close, color: Color(0xFFEF4444), size: 40),
+              ),
+              const SizedBox(height: 24),
+              const Text("Sale Failed", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Color(0xFF1E293B))),
+              const SizedBox(height: 12),
+              Text(msg, textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFF64748B), fontSize: 16)),
+              const SizedBox(height: 32),
+              SizedBox(width: double.infinity, height: 50, child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1E293B), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                child: const Text("Try Again", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSuccessPopup(dynamic saleId, bool isPending, List<SalesItem> finalItems) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _SuccessDialog(
+        saleId: saleId.toString(),
+        amount: totalAmount,
+        isPending: isPending,
+        customerName: customerNameController.text,
+        customerNumber: customerNumberController.text,
+        date: dateController.text,
+        items: finalItems,
+        discount: totalDiscount,
+        subtotal: subtotal,
+        paymentMethod: selectedPaymentMethod,
+        onNextSale: () {
+          Navigator.pop(context);
+          setState(() {
+            salesItems = [SalesItem()];
+            saleTrays = [SaleTray()];
+            customerNameController.clear();
+            customerNumberController.clear();
+            cashReceivedController.clear();
+            debtController.clear();
+            notesController.clear();
+            customerStatus = null;
+            for (var o in offers) {
+              o.applied = false;
+            }
+          });
+        },
+        onDashboard: () {
+          Navigator.pop(context);
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
+
+  // --- UI Builders ---
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xffF5F6FA),
-        body: Center(child: SalesEntrySkeleton()),
-      );
-    }
+    if (isLoading) return const Scaffold(body: SalesEntrySkeleton());
+
     return Scaffold(
-      backgroundColor: const Color(0xffF5F6FA),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        scrolledUnderElevation: 0,
-        elevation: 0,
-        centerTitle: false,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-        ),
-        titleSpacing: 0,
-        title: const Text("Sales Entry", style: AppTextStyles.headingText22),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// TITLE
-            Text(
-              "Log new sales transactions to automatically update branch inventory.",
-              style: AppTextStyles.bodyText14,
-            ),
-            SizedBox(height: getHeight(context, 20)),
-
-            // buildWarehouseDropdown(),
-            SizedBox(height: getHeight(context, 20)),
-
-            /// TRANSACTION DETAILS
-            buildCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Transaction Details",
-                    style: AppTextStyles.headingText22,
-                  ),
-                  SizedBox(height: getHeight(context, 20)),
-
-                  /// CUSTOMER NUMBER
-                  buildLabel("Customer Number"),
-
-                  SizedBox(height: getHeight(context, 8)),
-
-                  buildTextField(
-                    hint: "Enter customer number",
-
-                    controller: customerNumberController,
-
-                    keyboardType: TextInputType.number,
-
-                    maxLength: 10,
-
-                    onChanged: (value) async {
-                      print("NUMBER => $value");
-
-                      if (value.length == 10) {
-                        await fetchCustomerByNumber(value);
-                      }
-                    },
-                  ),
-                  SizedBox(height: getHeight(context, 18)),
-
-                  /// CUSTOMER NAME
-                  buildLabel("Customer Name"),
-                  SizedBox(height: getHeight(context, 8)),
-                  TextField(
-                    controller: customerNameController,
-
-                    readOnly: customerFound,
-
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
-                    ],
-
-                    decoration: InputDecoration(
-                      hintText: "Enter customer name",
-
-                      filled: true,
-
-                      fillColor: Colors.white,
-
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 14,
-                        horizontal: 14,
-                      ),
-
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
+      backgroundColor: const Color(0xFFF1F5F9),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            bool isWide = constraints.maxWidth > 900;
+            return Column(
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Column(
+                      children: [
+                        _buildTodayStatsRow(),
+                        const SizedBox(height: 16),
+                        if (isWide) 
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(flex: 1, child: Column(children: [
+                                _buildTransactionDetailsCard(),
+                                const SizedBox(height: 16),
+                                _buildProductSelectionCard(),
+                              ])),
+                              const SizedBox(width: 16),
+                              Expanded(flex: 1, child: Column(children: [
+                                _buildSalesItemsCard(),
+                                const SizedBox(height: 16),
+                                _buildTrayTypesCard(),
+                                const SizedBox(height: 16),
+                                _buildOffersCard(),
+                                const SizedBox(height: 16),
+                                _buildPaymentAndSummaryGrid(),
+                              ])),
+                            ],
+                          )
+                        else
+                          Column(
+                            children: [
+                              _buildTransactionDetailsCard(),
+                              const SizedBox(height: 16),
+                              _buildProductSelectionCard(),
+                              const SizedBox(height: 16),
+                              _buildSalesItemsCard(),
+                              const SizedBox(height: 16),
+                              _buildTrayTypesCard(),
+                              const SizedBox(height: 16),
+                              _buildOffersCard(),
+                              const SizedBox(height: 16),
+                              _buildPaymentAndSummaryGrid(),
+                            ],
+                          ),
+                        const SizedBox(height: 40),
+                      ],
                     ),
                   ),
-                  SizedBox(height: getHeight(context, 18)),
-
-                  /// SALES DATE
-                  buildLabel("Sales Date"),
-
-                  SizedBox(height: getHeight(context, 8)),
-
-                  buildDateField(),
-                ],
-              ),
-            ),
-
-            SizedBox(height: getHeight(context, 18)),
-
-            /// PRODUCT SELECTION
-            BranchProductSelectionWidget(
-              searchController: searchController,
-              filteredProducts: filteredProducts,
-              buildDropdown: buildDropdown(),
-              onSearch: (value) {
-                searchProducts(value);
-              },
-              toNum: _toNum,
-              onProductTap: (productName) async {
-                /// CHECK EXISTING PRODUCT
-                int existingIndex = selectedProducts.indexWhere(
-                  (e) => e.toLowerCase() == productName.toLowerCase(),
-                );
-
-                /// PRODUCT ALREADY EXISTS
-                if (existingIndex != -1) {
-                  final productIndex = productList.indexWhere(
-                    (e) =>
-                        e["product_name"].toString().toLowerCase() ==
-                        productName.toLowerCase(),
-                  );
-
-                  if (productIndex != -1) {
-                    int currentStock =
-                        int.tryParse(
-                          productList[productIndex]["stock_eggs"].toString(),
-                        ) ??
-                        0;
-
-                    if (currentStock < 30) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Out of Stock")),
-                      );
-
-                      return;
-                    }
-                  }
-
-                  int currentTray =
-                      int.tryParse(trayControllers[existingIndex].text) ?? 0;
-
-                  currentTray += 1;
-
-                  trayControllers[existingIndex].text = currentTray
-                      .toString();
-
-                  trayList[existingIndex] = currentTray;
-
-                  await _recalculateRowFromApi(existingIndex);
-
-                  return;
-                }
-
-                /// NEW PRODUCT
-                final productIndex = productList.indexWhere(
-                  (e) =>
-                      e["product_name"].toString().toLowerCase() ==
-                      productName.toLowerCase(),
-                );
-
-                if (productIndex != -1) {
-                  int currentStock =
-                      int.tryParse(
-                        productList[productIndex]["stock_eggs"].toString(),
-                      ) ??
-                      0;
-
-                  if (currentStock < 30) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Out of Stock")),
-                    );
-                    return;
-                  }
-
-                  setState(() {
-                    salesItemCount++;
-
-                    _ensureRowCapacity(salesItemCount);
-
-                    final int rowIndex = salesItemCount - 1;
-
-                    selectedProducts[rowIndex] = productName;
-
-                    trayControllers[rowIndex].text = "1";
-                    dozenControllers[rowIndex].text = "0";
-
-                    trayList[rowIndex] = 1;
-                    dozenList[rowIndex] = 0;
-                  });
-
-                  await _recalculateRowFromApi(salesItemCount - 1);
-                }
-              },
-              selectedEggsMap: {
-                for (var item in salesItems)
-                  item["product_name"].toString():
-                      int.tryParse(item["eggs"].toString()) ?? 0,
-              },
-            ),
-            SizedBox(height: getHeight(context, 18)),
-
-            /// SALES ITEMS
-            BranchSalesItemsWidget(
-              salesItemCount: salesItemCount,
-
-              offers: offersList,
-
-              onAdd: () {
-                setState(() {
-                  salesItemCount++;
-                  selectedProducts.add("Select Product");
-                  _ensureRowCapacity(salesItemCount);
-                });
-              },
-
-              salesItemRow: (index) => salesItemRow(index),
-              salesItems: salesItems,
-              onOffersApplied: (List<int> appliedIndices) {
-                double totalDiscount = 0;
-                appliedOfferIndices = appliedIndices;
-                for (int idx in appliedIndices) {
-                  if (idx < offersList.length) {
-                    final offer = offersList[idx];
-                    final String offerCategory =
-                        offer["category"]?.toString().toLowerCase() ?? "";
-
-                    int totalEggs = 0;
-                    double matchedTotal = 0;
-
-                    for (final item in salesItems) {
-                      final String productName = item["product_name"]
-                          .toString()
-                          .toLowerCase();
-
-                      if (productName.contains(offerCategory)) {
-                        totalEggs += int.tryParse(item["eggs"].toString()) ?? 0;
-                        matchedTotal +=
-                            double.tryParse(item["total"].toString()) ?? 0;
-                      }
-                    }
-
-                    if (offer["offer_type"] == "buy_x_get_y") {
-                      int buyQty =
-                          int.tryParse(
-                            (offer["buy_qty"] ?? offer["buyTrays"] ?? 0)
-                                .toString(),
-                          ) ??
-                          0;
-                      int getQty =
-                          int.tryParse(
-                            (offer["getTrays"] ?? offer["get_quantity"] ?? 1)
-                                .toString(),
-                          ) ??
-                          1;
-
-                      if (totalEggs >= (buyQty * 12)) {
-                        final double ratePerEgg = totalEggs == 0
-                            ? 0
-                            : matchedTotal / totalEggs;
-                        totalDiscount += (getQty * 12) * ratePerEgg;
-                      }
-                    } else {
-                      totalDiscount +=
-                          double.tryParse(
-                            (offer["discount_value"] ?? offer["amount"] ?? 0)
-                                .toString(),
-                          ) ??
-                          0;
-                    }
-                  }
-                }
-                setState(() {
-                  offerDiscount = totalDiscount;
-                });
-              },
-            ),
-
-            SizedBox(height: getHeight(context, 18)),
-
-            /// PAYMENT METHOD
-            BranchPaymentSummaryWidget(
-              selectedPaymentMethod: selectedPaymentMethod,
-              paymentTab: paymentTab,
-              buildLabel: buildLabel,
-
-              selectedEggsMap: {
-                for (var item in salesItems)
-                  item["product_name"].toString():
-                      int.tryParse(item["eggs"].toString()) ?? 0,
-              },
-
-              amountController: amountController,
-
-              debtController: debtController,
-
-              buildTextField: buildTextField,
-
-              summaryRow: summaryRow,
-              itemTrayCount: _itemTrayCount(),
-              itemTotal: _itemTotal(),
-              offerDiscount: _offerDiscountValue(),
-              grandTotal: _grandTotalValue(),
-
-              onSubmit: () async {
-                final body = {
-                  "login_user_id": loginUserId,
-
-                  "branch_id": branchId,
-                  "type": "SALE",
-                  "customer_number": customerNumberController.text.trim(),
-
-                  "customer_name": customerNameController.text.trim(),
-
-                  "dispatch_date": (() {
-                    try {
-                      final parts = dateController.text.split("-");
-                      if (parts.length == 3) {
-                        return "${parts[2]}-${parts[1]}-${parts[0]}";
-                      }
-                    } catch (_) {}
-                    return DateTime.now().toIso8601String().split("T").first;
-                  })(),
-
-                  "payment_method": selectedPaymentMethod.toUpperCase(),
-
-                  "customer_debit": double.tryParse(debtController.text) ?? 0,
-
-                  "cash_received":
-                      double.tryParse(amountController.text) ??
-                      double.tryParse(_grandTotalValue()) ??
-                      0.0,
-
-                  "upi_app": null,
-
-                  "other_upi_details": null,
-
-                  "total_amount": double.tryParse(_grandTotalValue()) ?? 0,
-
-                  "offer_discount": double.tryParse(_offerDiscountValue()) ?? 0,
-
-                  "applied_offers": appliedOfferIndices
-                      .map((i) => offersList[i]["id"])
-                      .toList(),
-
-                  "sold_to": "Retail",
-
-                  "notes": "",
-
-                  "items": salesItems
-                      .where(
-                        (e) =>
-                            e["product_name"] != "Select Product" &&
-                            e["eggs"] != 0,
-                      )
-                      .map(
-                        (e) => {
-                          "egg_category_grade": e["product_name"],
-                          "trays": e["trays"],
-                          "dozen": e["dozen"],
-                          "eggs": e["eggs"],
-                          "total": e["total"],
-                        },
-                      )
-                      .toList(),
-                };
-
-                print("CREATE SALE BODY =>");
-                print(body);
-
-                try {
-                  final response = await datasource.createSale(body: body);
-
-                  print("CREATE SALE RESPONSE =>");
-                  print(response);
-                  if (context.mounted) {
-                    final String status =
-                        response["status"]?.toString().toUpperCase() ?? "";
-
-                    /// PENDING APPROVAL
-                    if (status == "PENDING_REVIEW") {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            "Payment Received. Sale sent for admin approval.",
-                          ),
-                          backgroundColor: Colors.orange,
-                        ),
-                      );
-                      Navigator.pop(context);
-                    }
-                    /// APPROVED DIRECTLY
-                    else if (status == "APPROVED" || status == "SUCCESS") {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Sale Completed Successfully"),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                      Navigator.pop(context);
-                    }
-                    /// REJECTED
-                    else if (status == "REJECTED") {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Sale Rejected"),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                    /// DEFAULT
-                    else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            response["message"]?.toString() ?? "Sale Saved",
-                          ),
-                        ),
-                      );
-                    }
-                  }
-                } catch (e) {
-                  print("CREATE SALE ERROR =>");
-                  print(e);
-
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text("Failed : $e")));
-                  }
-                }
-              },
-            ),
-
-            SizedBox(height: getHeight(context, 30)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// CREATE THIS WIDGET
-  /// DROPDOWN UI
-
-  Widget buildWarehouseDropdown() {
-    return Center(
-      child: Container(
-        width: getWidth(context, 150),
-        height: getHeight(context, 40),
-
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-
-        decoration: BoxDecoration(
-          color: AppColors.background,
-
-          borderRadius: BorderRadius.circular(12),
-
-          border: Border.all(color: AppColors.border),
-        ),
-
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            /// IMPORTANT
-            value: warehouseList.contains(selectedWarehouse)
-                ? selectedWarehouse
-                : null,
-
-            hint: const Text("Select Warehouse"),
-
-            isExpanded: true,
-
-            icon: const Icon(
-              Icons.arrow_drop_down,
-
-              color: AppColors.dark,
-
-              size: 20,
-            ),
-
-            style: AppTextStyles.bodyText14dark,
-            dropdownColor: Colors.white,
-
-            items: warehouseList.map((String warehouse) {
-              return DropdownMenuItem<String>(
-                value: warehouse,
-
-                child: Text(warehouse, overflow: TextOverflow.ellipsis),
-              );
-            }).toList(),
-
-            onChanged: (String? value) {
-              print("SELECTED => $value");
-
-              if (value != null) {
-                setState(() {
-                  selectedWarehouse = value;
-                  isLoading = true;
-                });
-                getSalesEntry(warehouse: value);
-              }
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget buildDateField() {
-    return Container(
-      height: getHeight(context, 55),
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-
-        border: Border.all(color: AppColors.border),
-      ),
-
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: dateController,
-
-              readOnly: true,
-
-              decoration: const InputDecoration(
-                hintText: "Enter Date",
-
-                border: InputBorder.none,
-              ),
-            ),
-          ),
-
-          GestureDetector(
-            onTap: () async {
-              DateTime? pickedDate = await showDatePicker(
-                context: context,
-
-                initialDate: DateTime.now(),
-
-                firstDate: DateTime(2020),
-
-                lastDate: DateTime(2100),
-              );
-
-              if (pickedDate != null) {
-                String formattedDate =
-                    "${pickedDate.day.toString().padLeft(2, '0')}-"
-                    "${pickedDate.month.toString().padLeft(2, '0')}-"
-                    "${pickedDate.year}";
-
-                setState(() {
-                  dateController.text = formattedDate;
-                });
-              }
-            },
-
-            child: const Icon(Icons.calendar_today, size: 20),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// COMMON CARD
-  Widget buildCard({required Widget child}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(20),
-
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 10,
-            color: Colors.black.withOpacity(0.03),
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-
-      child: child,
-    );
-  }
-
-  /// LABEL
-  Widget buildLabel(String text) {
-    return Text(text, style: AppTextStyles.buttonText16);
-  }
-
-  /// TEXT FIELD
-  Widget buildTextField({
-    required String hint,
-
-    IconData? icon,
-
-    TextEditingController? controller,
-
-    Function(String)? onChanged,
-
-    TextInputType? keyboardType,
-
-    int? maxLength,
-
-    bool textOnly = false,
-  }) {
-    return TextField(
-      controller: controller,
-
-      onChanged: onChanged,
-
-      keyboardType: keyboardType,
-
-      maxLength: maxLength,
-
-      inputFormatters: textOnly
-          ? [FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]'))]
-          : null,
-
-      decoration: InputDecoration(
-        hintText: hint,
-
-        counterText: "",
-
-        prefixIcon: icon != null ? Icon(icon) : null,
-
-        filled: true,
-
-        fillColor: Colors.white,
-
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 14,
-          horizontal: 14,
-        ),
-
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-
-          borderSide: const BorderSide(color: Colors.blue),
-        ),
-      ),
-    );
-  }
-
-  Widget buildDropdown() {
-    final List<String> dropdownItems = [
-      "All Categories",
-
-      ...{
-        ...productList.map((product) {
-          return product['product_name']?.toString() ?? "";
-        }),
-      },
-    ].toList();
-
-    return Container(
-      height: 55,
-
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: dropdownItems.contains(selectedCategory)
-              ? selectedCategory
-              : "All Categories",
-
-          isExpanded: true,
-
-          icon: const Icon(Icons.keyboard_arrow_down),
-
-          style: AppTextStyles.bodyText16,
-
-          items: dropdownItems.map((String item) {
-            return DropdownMenuItem<String>(
-              value: item,
-
-              child: Text(item, overflow: TextOverflow.ellipsis),
-            );
-          }).toList(),
-
-          onChanged: (value) {
-            setState(() {
-              selectedCategory = value!;
-
-              /// ALL PRODUCTS
-              if (value == "All Categories") {
-                filteredProducts = productList;
-              } else {
-                /// FILTER PRODUCT
-                filteredProducts = productList.where((product) {
-                  return product['product_name'].toString().toLowerCase() ==
-                      value.toLowerCase();
-                }).toList();
-              }
-            });
-          },
-        ),
-      ),
-    );
-  }
-
-  /// SALES ITEM ROW
-  Widget salesItemRow(int no) {
-    _ensureRowCapacity(no);
-    final List<String> dropdownItems = _productDropdownItems();
-    final String currentValue = dropdownItems.contains(selectedProducts[no - 1])
-        ? selectedProducts[no - 1]
-        : "Select Product";
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-
-        children: [
-          /// NUMBER
-          SizedBox(
-            width: getWidth(context, 10),
-            child: Text(
-              "$no",
-              textAlign: TextAlign.center,
-              style: AppTextStyles.bodyText12dark,
-            ),
-          ),
-
-          SizedBox(width: getWidth(context, 4)),
-
-          /// PRODUCT
-          Expanded(
-            flex: 3,
-
-            child: Container(
-              height: getHeight(context, 38),
-
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: currentValue,
-
-                  isExpanded: true,
-
-                  icon: const Icon(Icons.keyboard_arrow_down, size: 16),
-
-                  style: AppTextStyles.bodyText10dark,
-
-                  items: dropdownItems.map((String item) {
-                    return DropdownMenuItem<String>(
-                      value: item,
-
-                      child: Text(item, overflow: TextOverflow.ellipsis),
-                    );
-                  }).toList(),
-
-                  onChanged: (value) async {
-                    setState(() {
-                      selectedProducts[no - 1] = value!;
-                    });
-
-                    await _recalculateRowFromApi(no - 1);
-                  },
                 ),
-              ),
-            ),
-          ),
-
-          SizedBox(width: getWidth(context, 4)),
-
-          /// TRAYS
-          Container(
-            width: getWidth(context, 35),
-            height: getHeight(context, 38),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: TextField(
-              controller: trayControllers[no - 1],
-              keyboardType: TextInputType.number,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 11),
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(vertical: 10),
-              ),
-              onChanged: (_) async {
-                await _recalculateRowFromApi(no - 1);
-              },
-            ),
-          ),
-
-          SizedBox(width: getWidth(context, 4)),
-
-          /// DOZEN
-          Container(
-            width: getWidth(context, 35),
-            height: getHeight(context, 38),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: TextField(
-              controller: dozenControllers[no - 1],
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 11),
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(vertical: 10),
-              ),
-              onChanged: (_) async {
-                await _recalculateRowFromApi(no - 1);
-              },
-            ),
-          ),
-
-          SizedBox(width: getWidth(context, 4)),
-
-          /// EGGS
-          SizedBox(
-            width: getWidth(context, 20),
-            child: Text(
-              eggsList.length >= no ? eggsList[no - 1].toString() : "0",
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 11),
-            ),
-          ),
-
-          SizedBox(width: getWidth(context, 4)),
-
-          /// RATE
-          SizedBox(
-            width: getWidth(context, 35),
-            child: Text(
-              "₹${rateList.length >= no ? rateList[no - 1] : 0}",
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 10),
-            ),
-          ),
-
-          SizedBox(width: getWidth(context, 4)),
-
-          /// TOTAL
-          SizedBox(
-            width: getWidth(context, 40),
-            child: Text(
-              "₹${totalList.length >= no ? totalList[no - 1] : 0}",
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.green,
-                fontWeight: FontWeight.bold,
-                fontSize: 10,
-              ),
-            ),
-          ),
-
-          SizedBox(width: getWidth(context, 4)),
-
-          /// DELETE
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                int index = no - 1;
-
-                if (selectedProducts.length > index) {
-                  selectedProducts.removeAt(index);
-                }
-
-                if (trayControllers.length > index) {
-                  trayControllers[index].dispose();
-                  trayControllers.removeAt(index);
-                }
-
-                if (dozenControllers.length > index) {
-                  dozenControllers[index].dispose();
-                  dozenControllers.removeAt(index);
-                }
-
-                if (trayList.length > index) {
-                  trayList.removeAt(index);
-                }
-
-                if (dozenList.length > index) {
-                  dozenList.removeAt(index);
-                }
-
-                if (eggsList.length > index) {
-                  eggsList.removeAt(index);
-                }
-
-                if (rateList.length > index) {
-                  rateList.removeAt(index);
-                }
-
-                if (totalList.length > index) {
-                  totalList.removeAt(index);
-                }
-
-                if (salesItemCount > 0) {
-                  salesItemCount--;
-                }
-              });
-            },
-
-            child: const Icon(
-              Icons.delete_outline,
-              size: 18,
-              color: Colors.red,
-            ),
-          ),
-        ],
+              ],
+            );
+          }
+        ),
       ),
     );
   }
 
-  /// PAYMENT TAB
-  Widget paymentTab(String title) {
-    bool isSelected = selectedPaymentMethod == title;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedPaymentMethod = title;
-        });
-      },
-
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      color: Colors.white,
       child: Column(
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              color: isSelected ? Colors.blue : Colors.black,
-
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios, size: 20),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  Text(
+                    "${salesHappen.replaceAll('_', ' ')} / ",
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                  const Text(
+                    "Sales Entry",
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                ],
+              ),
+              const Icon(Icons.notifications_none, color: Colors.grey),
+            ],
           ),
-
-          SizedBox(height: getHeight(context, 8)),
-
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-
-            height: getHeight(context, 3),
-            width: getWidth(context, 30),
-
-            decoration: BoxDecoration(
-              color: isSelected ? Colors.blue : Colors.transparent,
-
-              borderRadius: BorderRadius.circular(20),
+          const Divider(),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              headerData?['title'] ?? "Sales Entry",
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.black),
             ),
           ),
         ],
@@ -1448,218 +449,647 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     );
   }
 
-  /// SUMMARY ROW
-  Widget summaryRow(
-    String title,
-    String value, {
-    bool red = false,
-    bool bold = false,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
+  Widget _buildTodayStatsRow() {
+    final stats = headerData?['today_sales'] ?? {};
+    return Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 10,
+      runSpacing: 10,
       children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: bold ? FontWeight.bold : FontWeight.w500,
-          ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("Today: ", style: TextStyle(color: Colors.grey, fontSize: 14)),
+            Text("${stats['count'] ?? 0} Sales", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            const Text(" | Total: ", style: TextStyle(color: Colors.grey, fontSize: 14)),
+            Text("₹${(stats['amount'] ?? 0).toString()}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+          ],
         ),
-
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 18,
-            color: red ? Colors.red : Colors.black,
-
-            fontWeight: FontWeight.bold,
+        ElevatedButton.icon(
+          onPressed: () {},
+          icon: const Icon(Icons.list, size: 16),
+          label: const Text("View Today's Sales", style: TextStyle(fontSize: 12)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.blue,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            side: BorderSide(color: Colors.blue.withOpacity(0.3)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
       ],
     );
   }
 
-  List<String> _productDropdownItems() {
-    final Set<String> apiProducts = productList
-        .map((product) {
-          if (product is Map<String, dynamic>) {
-            return (product["product_name"] ??
-                    product["name"] ??
-                    product["product"] ??
-                    "")
-                .toString()
-                .trim();
+  Widget _buildTransactionDetailsCard() {
+    return _buildCard(
+      title: "Transaction Details",
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _buildInput(
+                  "Customer Name",
+                  customerNameController,
+                  hint: "Enter customer name",
+                ),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: _buildInput(
+                  "Customer Number",
+                  customerNumberController,
+                  hint: "9876543210",
+                  keyboardType: TextInputType.phone,
+                  onChanged: lookupCustomer,
+                  suffix: customerStatus == 'found' 
+                    ? const Icon(Icons.check_circle, color: Colors.green, size: 18)
+                    : customerStatus == 'not_found' 
+                      ? const Icon(Icons.person_add, color: Colors.orange, size: 18)
+                      : null,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 15),
+          _buildInput(
+            "Sales Date",
+            dateController,
+            readOnly: true,
+            onTap: () async {
+              final date = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime(2000),
+                lastDate: DateTime.now(),
+              );
+              if (date != null) {
+                dateController.text = DateFormat('yyyy-MM-dd').format(date);
+              }
+            },
+            suffix: const Icon(Icons.calendar_today, size: 18, color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductSelectionCard() {
+    return _buildCard(
+      title: "Product Selection",
+      child: Column(
+        children: [
+          TextField(
+            controller: searchController,
+            onChanged: (v) {
+              setState(() {
+                filteredProducts = products.where((p) => p.productName.toLowerCase().contains(v.toLowerCase())).toList();
+              });
+            },
+            decoration: InputDecoration(
+              hintText: "Search product by name",
+              prefixIcon: const Icon(Icons.search),
+              filled: true,
+              fillColor: Colors.grey.shade50,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade200)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade200)),
+              contentPadding: const EdgeInsets.symmetric(vertical: 0),
+            ),
+          ),
+          const SizedBox(height: 15),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: filteredProducts.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 1.6,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+            ),
+            itemBuilder: (context, index) {
+              final p = filteredProducts[index];
+              final isOutOfStock = p.stockEggs <= 0;
+              return InkWell(
+                onTap: isOutOfStock ? null : () => addProductFromCard(p),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(p.productName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 6),
+                      Text("₹${(p.perTrayPrice / 30).toStringAsFixed(2)} / Egg", style: const TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 2),
+                      Text("Stock: ${p.stockEggs} Eggs", style: TextStyle(fontSize: 11, color: isOutOfStock ? Colors.red : Colors.green, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSalesItemsCard() {
+    return _buildCard(
+      title: "Sales Items",
+      trailing: InkWell(
+        onTap: addItem,
+        child: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(color: const Color(0xFF2563EB), borderRadius: BorderRadius.circular(8)),
+          child: const Icon(Icons.add, color: Colors.white, size: 20),
+        ),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+            color: Colors.grey.shade100,
+            child: Row(
+              children: const [
+                Expanded(flex: 3, child: Text("Product", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold))),
+                Expanded(flex: 2, child: Text("Dozen", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
+                Expanded(flex: 2, child: Text("Trays", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
+                Expanded(flex: 1, child: Text("Eggs", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
+                Expanded(flex: 2, child: Text("Total", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
+                SizedBox(width: 30),
+              ],
+            ),
+          ),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: salesItems.length,
+            itemBuilder: (context, index) {
+              final item = salesItems[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  children: [
+                    Expanded(flex: 3, child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(8)),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: item.eggCategoryGrade.isEmpty ? null : item.eggCategoryGrade,
+                          isExpanded: true,
+                          hint: const Text("Select Product", style: TextStyle(fontSize: 11)),
+                          items: products.map((p) => DropdownMenuItem(value: p.productName, child: Text(p.productName, style: const TextStyle(fontSize: 11)))).toList(),
+                          onChanged: (v) => updateItem(index, 'product', v),
+                        ),
+                      ),
+                    )),
+                    const SizedBox(width: 4),
+                    Expanded(flex: 2, child: _buildStepper(item.dozen, (v) => updateItem(index, 'dozen', v), isDozen: true)),
+                    const SizedBox(width: 4),
+                    Expanded(flex: 2, child: _buildStepper(item.trays.toDouble(), (v) => updateItem(index, 'trays', v.toInt()))),
+                    const SizedBox(width: 4),
+                    Expanded(flex: 1, child: Text("${item.eggs}", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500), textAlign: TextAlign.center)),
+                    Expanded(flex: 2, child: Text("₹${item.total.toStringAsFixed(1)}", style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF16A34A), fontSize: 11), textAlign: TextAlign.right)),
+                    const SizedBox(width: 4),
+                    InkWell(onTap: () => removeItem(index), child: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 20)),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrayTypesCard() {
+    return _buildCard(
+      title: "Tray Types Used",
+      trailing: ElevatedButton.icon(
+        onPressed: () => setState(() => saleTrays.add(SaleTray())),
+        icon: const Icon(Icons.add, size: 14),
+        label: const Text("Add Tray", style: TextStyle(fontSize: 12)),
+        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2563EB), foregroundColor: Colors.white, elevation: 0, padding: const EdgeInsets.symmetric(horizontal: 10)),
+      ),
+      child: Column(
+        children: saleTrays.asMap().entries.map((entry) {
+          int idx = entry.key;
+          SaleTray tray = entry.value;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              children: [
+                Expanded(flex: 3, child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(8)),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: tray.trayType,
+                      isExpanded: true,
+                      items: ["without tray", "Empty paper tray", "Empty plastic tray", "Plastic tray (With egg)", "Paper tray (with egg)"]
+                        .map((t) => DropdownMenuItem(value: t, child: Text(t, style: const TextStyle(fontSize: 12)))).toList(),
+                      onChanged: (v) => setState(() => tray.trayType = v!),
+                    ),
+                  ),
+                )),
+                const SizedBox(width: 10),
+                Expanded(flex: 2, child: _buildStepper(tray.qty.toDouble(), (v) => setState(() => tray.qty = v.toInt()))),
+                if (saleTrays.length > 1) ...[
+                  const SizedBox(width: 10),
+                  InkWell(onTap: () => setState(() => saleTrays.removeAt(idx)), child: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 20)),
+                ],
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildOffersCard() {
+    return _buildCard(
+      title: "Available Offers",
+      child: Column(
+        children: offers.map((o) {
+          final isAllProducts = o.category.toLowerCase() == 'all products';
+          final matchingItem = salesItems.any((item) => isAllProducts ? item.eggCategoryGrade.isNotEmpty : item.eggCategoryGrade.toLowerCase() == o.category.toLowerCase());
+          
+          bool isEligible = false;
+          String message = "";
+          if (o.offerType == 'buy_x_get_y') {
+            final totalEggs = salesItems.where((i) => isAllProducts ? i.eggCategoryGrade.isNotEmpty : i.eggCategoryGrade.toLowerCase() == o.category.toLowerCase())
+              .fold(0, (sum, i) => sum + i.eggs);
+            isEligible = totalEggs >= (o.buyTrays * 30);
+            message = "Need ${o.buyTrays} trays";
+          } else {
+            isEligible = matchingItem;
+            message = isAllProducts ? "Add any product" : "Add product";
           }
-          return product.toString().trim();
-        })
-        .where((name) => name.isNotEmpty)
-        .toSet();
 
-    return ["Select Product", ...apiProducts];
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(15),
+            decoration: BoxDecoration(
+              color: o.applied ? Colors.green.shade50 : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: o.applied ? Colors.green : Colors.grey.shade200),
+            ),
+            child: Row(
+              children: [
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(o.name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: Color(0xFF1E293B))),
+                  Text(o.category, style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500)),
+                ])),
+                const SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: isEligible ? () => toggleOffer(o.id) : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: o.applied ? const Color(0xFF16A34A) : const Color(0xFF2563EB),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (o.applied) const Icon(Icons.check, size: 14),
+                      if (o.applied) const SizedBox(width: 4),
+                      Text(o.applied ? "Applied" : (isEligible ? "Apply" : message), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
   }
 
-  int _maxRowCount() {
-    final List<int> lengths = [
-      selectedProducts.length,
-      dozenList.length,
-      eggsList.length,
-      rateList.length,
-      totalList.length,
-      salesItemCount,
-    ];
-    lengths.sort();
-    return lengths.isEmpty ? 0 : lengths.last;
+  Widget _buildPaymentAndSummaryGrid() {
+    return Column(
+      children: [
+        _buildCard(
+          title: "Payment Method",
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Sidebar-like payment selector
+                Container(
+                  width: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      _sidebarMethodBtn("CASH"),
+                      _sidebarMethodBtn("UPI"),
+                      _sidebarMethodBtn("CARD"),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 15),
+                // Payment content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (selectedPaymentMethod == "UPI") ...[
+                        const Text("Select UPI App", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF374151))),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: ["Google Pay", "PhonePe", "Paytm"].map((app) => ChoiceChip(
+                            label: Text(app, style: TextStyle(fontSize: 11, color: selectedUpiApp == app ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
+                            selected: selectedUpiApp == app,
+                            onSelected: (v) => setState(() => selectedUpiApp = app),
+                            selectedColor: const Color(0xFF2563EB),
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: selectedUpiApp == app ? const Color(0xFF2563EB) : Colors.grey.shade300)),
+                          )).toList(),
+                        ),
+                        const SizedBox(height: 15),
+                        _buildInput("Other UPI Details (Optional)", TextEditingController(text: otherUpiDetails), onChanged: (v) => otherUpiDetails = v),
+                        const SizedBox(height: 15),
+                      ],
+                      if (selectedPaymentMethod == "CASH") ...[
+                        _buildInput("Customer Debt (Optional)", debtController, keyboardType: TextInputType.number, hint: "0"),
+                        const SizedBox(height: 15),
+                      ],
+                      _buildInput(
+                        "Enter Amount Received", 
+                        cashReceivedController, 
+                        keyboardType: TextInputType.number, 
+                        hint: "0.00",
+                        prefix: const Padding(padding: EdgeInsets.only(top: 10), child: Text("₹", style: TextStyle(fontWeight: FontWeight.bold))),
+                        onChanged: (v) => setState(() {}),
+                      ),
+                      const SizedBox(height: 15),
+                      _buildInput("Notes", notesController, hint: "Add internal notes"),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildCard(
+          title: "Bill Summary",
+          child: Column(
+            children: [
+              _summaryRow("Subtotal", "₹${subtotal.toStringAsFixed(2)}"),
+              _summaryRow("Discount", "-₹${totalDiscount.toStringAsFixed(2)}", color: const Color(0xFFEF4444)),
+              const Divider(height: 40),
+              _summaryRow("Total", "₹${totalAmount.toStringAsFixed(2)}", isBold: true),
+              const SizedBox(height: 25),
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton(
+                  onPressed: isSubmitting ? null : handlePayment,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1E293B), 
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    elevation: 4,
+                  ),
+                  child: isSubmitting 
+                    ? const CircularProgressIndicator(color: Colors.white) 
+                    : const Text("Complete Sale", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
-  void _ensureRowCapacity(int count) {
-    while (selectedProducts.length < count) {
-      selectedProducts.add("Select Product");
-    }
-    while (trayList.length < count) {
-      trayList.add(0);
-    }
-    while (dozenList.length < count) {
-      dozenList.add(0);
-    }
-    while (eggsList.length < count) {
-      eggsList.add(0);
-    }
-    while (rateList.length < count) {
-      rateList.add(0);
-    }
-    while (totalList.length < count) {
-      totalList.add(0);
-    }
-    while (trayControllers.length < count) {
-      trayControllers.add(TextEditingController(text: "0"));
-    }
-    while (dozenControllers.length < count) {
-      dozenControllers.add(TextEditingController(text: "0"));
-    }
-
-    for (int i = 0; i < count; i++) {
-      final String trayVal = trayList[i].toString();
-      final String dozenVal = dozenList[i].toString();
-      if (trayControllers[i].text != trayVal) {
-        trayControllers[i].text = trayVal;
-      }
-      if (dozenControllers[i].text != dozenVal) {
-        dozenControllers[i].text = dozenVal;
-      }
-    }
-
-    if (salesItemCount < count) {
-      salesItemCount = count;
-    }
+  Widget _sidebarMethodBtn(String method) {
+    bool active = selectedPaymentMethod == method;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => selectedPaymentMethod = method),
+        child: Container(
+          width: double.infinity,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: active ? const Color(0xFF2563EB) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            method, 
+            style: TextStyle(
+              color: active ? Colors.white : Colors.grey.shade700, 
+              fontWeight: FontWeight.w900,
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
-  Map<String, dynamic>? _findProductByName(List products, String name) {
-    for (final dynamic product in products) {
-      if (product is Map<String, dynamic>) {
-        final String productName =
-            (product["product_name"] ??
-                    product["name"] ??
-                    product["product"] ??
-                    "")
-                .toString()
-                .trim();
-        if (productName.toLowerCase() == name.toLowerCase()) {
-          return product;
-        }
-      }
-    }
-    return null;
+  Widget _buildStepper(double value, Function(double) onChanged, {bool isDozen = false}) {
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300), 
+        borderRadius: BorderRadius.circular(8), 
+        color: Colors.white,
+      ),
+      child: Row(
+        children: [
+          InkWell(
+            onTap: () { if (value > 0) onChanged(value - (isDozen ? 0.5 : 1)); }, 
+            child: Container(width: 24, alignment: Alignment.center, child: const Icon(Icons.remove, size: 12)),
+          ),
+          Expanded(child: Text(isDozen ? value.toStringAsFixed(1) : value.toInt().toString(), textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12))),
+          InkWell(
+            onTap: () => onChanged(value + (isDozen ? 0.5 : 1)), 
+            child: Container(width: 24, alignment: Alignment.center, child: const Icon(Icons.add, size: 12)),
+          ),
+        ],
+      ),
+    );
   }
 
-  num _toNum(dynamic value) {
-    if (value is num) {
-      return value;
-    }
-    return num.tryParse(value.toString()) ?? 0;
+  Widget _buildCard({required String title, required Widget child, Widget? trailing}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white, 
+        borderRadius: BorderRadius.circular(24), 
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17, color: Color(0xFF1E293B))),
+          if (trailing != null) trailing,
+        ]),
+        const SizedBox(height: 20),
+        child,
+      ]),
+    );
   }
 
-  double _extractRateFromProduct(
-    Map<String, dynamic>? product,
-    int eggsPerTray,
-  ) {
-    if (product == null) {
-      return 0;
-    }
-
-    final List<dynamic> directRateKeys = [
-      product['per_egg_price'],
-      product['rate_per_egg'],
-      product['rate'],
-      product['price'],
-      product['egg_rate'],
-      product['perEggRate'],
-      product['per_egg_rate'],
-    ];
-
-    for (final dynamic value in directRateKeys) {
-      final double parsed = _toNum(value).toDouble();
-      if (parsed > 0) {
-        return parsed;
-      }
-    }
-
-    final double perTrayRate = _toNum(
-      product['per_tray_price'] ??
-          product['tray_price'] ??
-          product['perDozenPrice'],
-    ).toDouble();
-    if (perTrayRate > 0 && eggsPerTray > 0) {
-      return perTrayRate / eggsPerTray;
-    }
-
-    return 0;
+  Widget _buildInput(String label, TextEditingController controller, {String? hint, Function(String)? onChanged, TextInputType? keyboardType, Widget? suffix, Widget? prefix, bool readOnly = false, VoidCallback? onTap}) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.w800)),
+      const SizedBox(height: 8),
+      TextField(
+        controller: controller,
+        onChanged: onChanged,
+        keyboardType: keyboardType,
+        readOnly: readOnly,
+        onTap: onTap,
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+        decoration: InputDecoration(
+          hintText: hint,
+          suffixIcon: suffix,
+          prefixIcon: prefix,
+          filled: true,
+          fillColor: const Color(0xFFF8FAFC),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ),
+      ),
+    ]);
   }
 
-  String _formatMoney(num value) {
-    if (value % 1 == 0) {
-      return value.toInt().toString();
-    }
-    return value.toStringAsFixed(2);
+  Widget _summaryRow(String label, String value, {Color? color, bool isBold = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Text(label, style: TextStyle(fontWeight: isBold ? FontWeight.w900 : FontWeight.w600, fontSize: isBold ? 18 : 15, color: isBold ? const Color(0xFF1E293B) : const Color(0xFF64748B))),
+        Text(value, style: TextStyle(fontWeight: FontWeight.w900, color: color ?? (isBold ? const Color(0xFF1E293B) : const Color(0xFF1E293B)), fontSize: isBold ? 22 : 16)),
+      ]),
+    );
   }
+}
 
-  num _sumNumericList(List data) {
-    return data.fold<num>(0, (sum, item) {
-      final num? value = num.tryParse(item.toString());
-      return sum + (value ?? 0);
-    });
-  }
+class _SuccessDialog extends StatelessWidget {
+  final String saleId;
+  final double amount;
+  final bool isPending;
+  final String customerName;
+  final String customerNumber;
+  final String date;
+  final List<SalesItem> items;
+  final double discount;
+  final double subtotal;
+  final String paymentMethod;
+  final VoidCallback onNextSale;
+  final VoidCallback onDashboard;
 
-  String _itemTrayCount() {
-    final num trays = _sumNumericList(dozenList);
-    return _formatMoney(trays);
-  }
-
-  String _itemTotal() {
-    final num total = _sumNumericList(totalList);
-    return _formatMoney(total);
-  }
-
-  String _offerDiscountValue() {
-    final num discount = num.tryParse(offerDiscount.toString()) ?? 0;
-    return _formatMoney(discount);
-  }
-
-  String _grandTotalValue() {
-    final num grandTotal =
-        _sumNumericList(totalList) -
-        (num.tryParse(offerDiscount.toString()) ?? 0);
-    return _formatMoney(grandTotal < 0 ? 0 : grandTotal);
-  }
+  const _SuccessDialog({
+    required this.saleId, 
+    required this.amount, 
+    required this.isPending, 
+    required this.customerName,
+    required this.customerNumber,
+    required this.date,
+    required this.items,
+    required this.discount,
+    required this.subtotal,
+    required this.paymentMethod,
+    required this.onNextSale, 
+    required this.onDashboard,
+  });
 
   @override
-  void dispose() {
-    customerNumberController.dispose();
-    customerNameController.dispose();
-    dateController.dispose();
-    for (final controller in dozenControllers) {
-      controller.dispose();
-    }
-    super.dispose();
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(25),
+              decoration: BoxDecoration(color: isPending ? const Color(0xFFFFF7ED) : const Color(0xFFF0FDF4), shape: BoxShape.circle),
+              child: Icon(isPending ? Icons.timer_outlined : Icons.check_circle_outline, size: 70, color: isPending ? const Color(0xFFF97316) : const Color(0xFF22C55E)),
+            ),
+            const SizedBox(height: 24),
+            Text(isPending ? "Approval Requested" : "Payment Successful!", textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFF1E293B))),
+            const SizedBox(height: 12),
+            Text(isPending ? "This sale exceeds egg limits and requires admin approval." : "Your transaction has been recorded successfully.", textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFF64748B), fontSize: 15, fontWeight: FontWeight.w500)),
+            const SizedBox(height: 32),
+            _infoBox(isPending ? "Request ID:" : "Sale ID:", "#$saleId", isPending ? "REQ" : "S"),
+            _infoBox("Amount Paid:", "₹${amount.toStringAsFixed(2)}", "INR"),
+            const SizedBox(height: 32),
+            if (!isPending) Row(children: [
+              Expanded(child: _actionBtn(Icons.file_download_outlined, "PDF", () async {
+                await SalesReceiptService.generateAndPrintReceipt(
+                  saleId: saleId, customerName: customerName, customerNumber: customerNumber, date: date,
+                  items: items, subtotal: subtotal, discount: discount, total: amount, paymentMethod: paymentMethod, isThermal: false,
+                );
+              })),
+              const SizedBox(width: 15),
+              Expanded(child: _actionBtn(Icons.print_outlined, "Print", () async {
+                await SalesReceiptService.generateAndPrintReceipt(
+                  saleId: saleId, customerName: customerName, customerNumber: customerNumber, date: date,
+                  items: items, subtotal: subtotal, discount: discount, total: amount, paymentMethod: paymentMethod, isThermal: true,
+                );
+              })),
+            ]),
+            const SizedBox(height: 24),
+            SizedBox(width: double.infinity, height: 55, child: ElevatedButton(
+              onPressed: onNextSale, 
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1E293B), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), elevation: 4),
+              child: const Text("Next Sale", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)))),
+            const SizedBox(height: 8),
+            TextButton(onPressed: onDashboard, child: const Text("Back to Dashboard", style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w800))),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _infoBox(String label, String value, String tag) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(15), border: Border.all(color: Colors.grey.shade200)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w800, fontSize: 14)),
+          Row(children: [
+            Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: const Color(0xFFDBEAFE), borderRadius: BorderRadius.circular(6)), child: Text(tag, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF2563EB)))),
+            const SizedBox(width: 10),
+            Text(value, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17, color: Color(0xFF1E293B))),
+          ]),
+        ],
+      ),
+    );
+  }
+
+  Widget _actionBtn(IconData icon, String label, VoidCallback onTap) {
+    return OutlinedButton.icon(
+      onPressed: onTap, 
+      icon: Icon(icon, size: 20), 
+      label: Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
+      style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF1E293B), side: const BorderSide(color: Color(0xFFE2E8F0), width: 2), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), padding: const EdgeInsets.symmetric(vertical: 12)),
+    );
   }
 }

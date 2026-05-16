@@ -119,7 +119,7 @@ class _IncomingStockState extends State<IncomingStock> {
             .where(
               (p) =>
                   p.status.toUpperCase() == "ARRIVAL" ||
-                  p.status.toUpperCase() == "READY_FOR_UNLOADING",
+                  p.status.toUpperCase() == "PURCHASED",
             )
             .toList();
       } else if (selectedStatus == "In Transit") {
@@ -460,8 +460,7 @@ class _IncomingStockState extends State<IncomingStock> {
                       "Ready for Unloading",
                       purchases.where((p) {
                         final status = p.status.toUpperCase();
-                        return status == "ARRIVAL" ||
-                            status == "READY_FOR_UNLOADING";
+                        return status == "ARRIVAL" || status == "PURCHASED";
                       }).toList(),
                     );
                   },
@@ -695,8 +694,7 @@ class _IncomingStockState extends State<IncomingStock> {
                             type: purchase.productName,
                             status: purchase.status,
                             isReceive:
-                                purchase.status.toUpperCase() ==
-                                    "READY FOR UNLOADING" ||
+                                purchase.status.toUpperCase() == "PURCHASED" ||
                                 purchase.status.toUpperCase() == "ARRIVAL",
                             onReceive: () => _receiveStock(purchase.id),
                           ),

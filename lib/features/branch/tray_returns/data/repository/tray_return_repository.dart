@@ -4,9 +4,36 @@ import 'package:proteinova_connect/core/network/api_constants.dart';
 import '../model/tray_return_model.dart';
 
 class TrayReturnRepository {
-  Future<TrayReturnModel> fetchTrayReturnData(int branchId, String date) async {
+  Future<TrayReturnModel> fetchTrayReturnData(int branchId, String? date) async {
+    final queryParams = {
+      "branch_id": branchId.toString(),
+      "limit": "50",
+      if (date != null && date.isNotEmpty) "date": date,
+    };
+    
+    final uri = Uri.parse("${ApiConstants.baseUrl}/api/admin/tray-returns").replace(queryParameters: queryParams);
+    print("TrayReturn API Request: $uri");
+    
     final response = await http.get(
-      Uri.parse(ApiConstants.trayReturnDashboard(branchId, date)),
+      uri,
+      headers: {
+        "Accept": "application/json",
+      },
+    );
+
+    print("TrayReturn API Response: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final decodedData = jsonDecode(response.body);
+      return TrayReturnModel.fromJson(decodedData);
+    } else {
+      throw Exception("Failed to load tray return data: ${response.body}");
+    }
+  }
+
+  Future<List<dynamic>> fetchWarehouses() async {
+    final response = await http.get(
+      Uri.parse("${ApiConstants.baseUrl}/api/warehouses"),
       headers: {
         "Accept": "application/json",
       },
@@ -14,9 +41,9 @@ class TrayReturnRepository {
 
     if (response.statusCode == 200) {
       final decodedData = jsonDecode(response.body);
-      return TrayReturnModel.fromJson(decodedData);
+      return decodedData["data"] ?? [];
     } else {
-      throw Exception("Failed to load tray return data: ${response.body}");
+      throw Exception("Failed to load warehouses: ${response.body}");
     }
   }
 

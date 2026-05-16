@@ -97,72 +97,98 @@ class _BranchSalesItemsWidgetState extends State<BranchSalesItemsWidget> {
             child: const Row(
               children: [
                 SizedBox(
-                  width: 12,
+                  width: 18,
+
                   child: Text(
                     "#",
-                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
+
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
                   ),
                 ),
-                SizedBox(width: 4),
+
+                SizedBox(width: 6),
+
                 Expanded(
-                  flex: 3,
+                  flex: 4,
+
                   child: Text(
                     "PRODUCT",
-                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
+
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
                   ),
                 ),
-                SizedBox(width: 4),
+
+                SizedBox(width: 6),
+
                 SizedBox(
-                  width: 35,
+                  width: 42,
+
                   child: Center(
                     child: Text(
                       "TRAYS",
-                      style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
+
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-                SizedBox(width: 4),
+
+                SizedBox(width: 8),
+
                 SizedBox(
-                  width: 35,
-                  child: Center(
-                    child: Text(
-                      "DOZEN",
-                      style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 4),
-                SizedBox(
-                  width: 20,
+                  width: 28,
+
                   child: Center(
                     child: Text(
                       "EGGS",
-                      style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
+
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-                SizedBox(width: 4),
+
+                SizedBox(width: 10),
+
                 SizedBox(
-                  width: 35,
+                  width: 36,
+
                   child: Center(
                     child: Text(
                       "RATE",
-                      style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
+
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-                SizedBox(width: 4),
+
+                SizedBox(width: 10),
+
                 SizedBox(
                   width: 40,
+
                   child: Center(
                     child: Text(
                       "TOTAL",
-                      style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
+
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-                SizedBox(width: 4),
-                Icon(Icons.delete_outline, size: 14),
+
+                SizedBox(width: 8),
+
+                Icon(Icons.delete_outline, size: 16),
               ],
             ),
           ),

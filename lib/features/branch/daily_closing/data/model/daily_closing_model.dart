@@ -1,77 +1,201 @@
 class DailyClosingModel {
-  final int openingTrays;
-  final int receivedTrays;
-  final int soldTrays;
-  final int closingTrays;
-  final SalesSummary sales;
-  final ExpenseSummary expenses;
+  final String status;
+  final String branchName;
+  final StockSummaryData stockSummary;
+  final CashSummaryData cashSummary;
+  final OnlineSummaryData onlineSummary;
+  final SummarySection salesSummary;
+  final SummarySection expenseSummary;
+  final ClosingStockValue closingStockValue;
+  final TodaysSummary todaysSummary;
+  final String notes;
 
   DailyClosingModel({
-    required this.openingTrays,
-    required this.receivedTrays,
-    required this.soldTrays,
-    required this.closingTrays,
-    required this.sales,
-    required this.expenses,
+    required this.status,
+    required this.branchName,
+    required this.stockSummary,
+    required this.cashSummary,
+    required this.onlineSummary,
+    required this.salesSummary,
+    required this.expenseSummary,
+    required this.closingStockValue,
+    required this.todaysSummary,
+    required this.notes,
   });
 
   factory DailyClosingModel.fromJson(Map<String, dynamic> json) {
     return DailyClosingModel(
-      openingTrays: json['opening_trays'] ?? 0,
-      receivedTrays: json['received_trays'] ?? 0,
-      soldTrays: json['sold_trays'] ?? 0,
-      closingTrays: json['closing_trays'] ?? 0,
-      sales: SalesSummary.fromJson(json['sales'] ?? {}),
-      expenses: ExpenseSummary.fromJson(json['expenses'] ?? {}),
+      status: json['status'] ?? "PENDING",
+      branchName: json['branch_name'] ?? "",
+      stockSummary: StockSummaryData.fromJson(json['stock_summary'] ?? {}),
+      cashSummary: CashSummaryData.fromJson(json['cash_summary'] ?? {}),
+      onlineSummary: OnlineSummaryData.fromJson(json['online_summary'] ?? {}),
+      salesSummary: SummarySection.fromJson(json['sales_summary'] ?? {}),
+      expenseSummary: SummarySection.fromJson(json['expense_summary'] ?? {}),
+      closingStockValue: ClosingStockValue.fromJson(json['closing_stock_value'] ?? {}),
+      todaysSummary: TodaysSummary.fromJson(json['todays_summary'] ?? {}),
+      notes: json['notes'] ?? "",
     );
   }
 }
 
-class SalesSummary {
-  final double total;
-  final double cash;
-  final double upi;
-  final double card;
-  final double online;
+class StockSummaryData {
+  final num totalOpening;
+  final num totalReceived;
+  final num totalSold;
+  final num totalClosing;
+  final num totalOpeningEggs;
+  final num totalReceivedEggs;
+  final num totalSoldEggs;
+  final num totalClosingEggs;
 
-  SalesSummary({
-    required this.total,
-    required this.cash,
-    required this.upi,
-    required this.card,
-    required this.online,
+  StockSummaryData({
+    required this.totalOpening,
+    required this.totalReceived,
+    required this.totalSold,
+    required this.totalClosing,
+    required this.totalOpeningEggs,
+    required this.totalReceivedEggs,
+    required this.totalSoldEggs,
+    required this.totalClosingEggs,
   });
 
-  factory SalesSummary.fromJson(Map<String, dynamic> json) {
-    return SalesSummary(
-      total: double.tryParse(json['total']?.toString() ?? '0') ?? 0.0,
-      cash: double.tryParse(json['cash']?.toString() ?? '0') ?? 0.0,
-      upi: double.tryParse(json['upi']?.toString() ?? '0') ?? 0.0,
-      card: double.tryParse(json['card']?.toString() ?? '0') ?? 0.0,
-      online: double.tryParse(json['online']?.toString() ?? '0') ?? 0.0,
+  factory StockSummaryData.fromJson(Map<String, dynamic> json) {
+    return StockSummaryData(
+      totalOpening: json['total_opening'] ?? 0,
+      totalReceived: json['total_received'] ?? 0,
+      totalSold: json['total_sold'] ?? 0,
+      totalClosing: json['total_closing'] ?? 0,
+      totalOpeningEggs: json['total_opening_eggs'] ?? 0,
+      totalReceivedEggs: json['total_received_eggs'] ?? 0,
+      totalSoldEggs: json['total_sold_eggs'] ?? 0,
+      totalClosingEggs: json['total_closing_eggs'] ?? 0,
     );
   }
 }
 
-class ExpenseSummary {
-  final double total;
-  final double cash;
-  final double upi;
-  final double card;
+class CashSummaryData {
+  final num closing;
+  final num counted;
 
-  ExpenseSummary({
+  CashSummaryData({required this.closing, required this.counted});
+
+  factory CashSummaryData.fromJson(Map<String, dynamic> json) {
+    return CashSummaryData(
+      closing: json['closing'] ?? 0,
+      counted: json['counted'] ?? 0,
+    );
+  }
+}
+
+class OnlineSummaryData {
+  final OnlineSubSection upi;
+  final OnlineSubSection card;
+  final num totalCollection;
+
+  OnlineSummaryData({
+    required this.upi,
+    required this.card,
+    required this.totalCollection,
+  });
+
+  factory OnlineSummaryData.fromJson(Map<String, dynamic> json) {
+    return OnlineSummaryData(
+      upi: OnlineSubSection.fromJson(json['upi'] ?? {}),
+      card: OnlineSubSection.fromJson(json['card'] ?? {}),
+      totalCollection: json['total_collection'] ?? 0,
+    );
+  }
+}
+
+class OnlineSubSection {
+  final num sales;
+  final num expense;
+  final num closing;
+
+  OnlineSubSection({
+    required this.sales,
+    required this.expense,
+    required this.closing,
+  });
+
+  factory OnlineSubSection.fromJson(Map<String, dynamic> json) {
+    return OnlineSubSection(
+      sales: json['sales'] ?? 0,
+      expense: json['expense'] ?? 0,
+      closing: json['closing'] ?? 0,
+    );
+  }
+}
+
+class SummarySection {
+  final num total;
+  final num cash;
+  final num upi;
+
+  SummarySection({
     required this.total,
     required this.cash,
     required this.upi,
-    required this.card,
   });
 
-  factory ExpenseSummary.fromJson(Map<String, dynamic> json) {
-    return ExpenseSummary(
-      total: double.tryParse(json['total']?.toString() ?? '0') ?? 0.0,
-      cash: double.tryParse(json['cash']?.toString() ?? '0') ?? 0.0,
-      upi: double.tryParse(json['upi']?.toString() ?? '0') ?? 0.0,
-      card: double.tryParse(json['card']?.toString() ?? '0') ?? 0.0,
+  factory SummarySection.fromJson(Map<String, dynamic> json) {
+    return SummarySection(
+      total: json['total'] ?? 0,
+      cash: json['cash'] ?? 0,
+      upi: json['upi'] ?? 0,
+    );
+  }
+}
+
+class ClosingStockValue {
+  final num eggs;
+  final num plastic;
+  final num paper;
+  final num empty;
+  final num total;
+
+  ClosingStockValue({
+    required this.eggs,
+    required this.plastic,
+    required this.paper,
+    required this.empty,
+    required this.total,
+  });
+
+  factory ClosingStockValue.fromJson(Map<String, dynamic> json) {
+    return ClosingStockValue(
+      eggs: json['eggs'] ?? 0,
+      plastic: json['plastic'] ?? 0,
+      paper: json['paper'] ?? 0,
+      empty: json['empty'] ?? 0,
+      total: json['total'] ?? 0,
+    );
+  }
+}
+
+class TodaysSummary {
+  final num openingStockValue;
+  final num receivedStockValue;
+  final num totalSales;
+  final num totalExpenses;
+  final num finalValue;
+
+  TodaysSummary({
+    required this.openingStockValue,
+    required this.receivedStockValue,
+    required this.totalSales,
+    required this.totalExpenses,
+    required this.finalValue,
+  });
+
+  factory TodaysSummary.fromJson(Map<String, dynamic> json) {
+    return TodaysSummary(
+      openingStockValue: json['opening_stock_value'] ?? 0,
+      receivedStockValue: json['received_stock_value'] ?? 0,
+      totalSales: json['total_sales'] ?? 0,
+      totalExpenses: json['total_expenses'] ?? 0,
+      finalValue: json['final_value'] ?? 0,
     );
   }
 }

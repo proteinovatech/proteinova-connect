@@ -11,7 +11,14 @@ class FetchDailyClosingData extends DailyClosingEvent {
 
 class SubmitDailyClosing extends DailyClosingEvent {
   final int branchId;
-  final String date;
+  final String status;
+  final String notes;
+  final double countedCash;
 
-  SubmitDailyClosing({required this.branchId, required this.date});
+  SubmitDailyClosing({
+    required this.branchId,
+    required this.status,
+    required this.notes,
+    required this.countedCash,
+  });
 }

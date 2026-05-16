@@ -146,8 +146,8 @@ class _InventoryState extends State<Inventory> {
 
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        double cardWidth = constraints.maxWidth > 800 
-                            ? (constraints.maxWidth - 20) / 3 
+                        double cardWidth = constraints.maxWidth > 800
+                            ? (constraints.maxWidth - 20) / 3
                             : (constraints.maxWidth - 10) / 2;
                         return Wrap(
                           spacing: 10,
@@ -157,7 +157,8 @@ class _InventoryState extends State<Inventory> {
                               width: cardWidth,
                               child: ShipmentCard(
                                 title: "EXPECTED TODAY",
-                                count: "${cards["expected_today"] ?? 0} Shipments",
+                                count:
+                                    "${cards["expected_today"] ?? 0} Shipments",
                                 subtitle: "Today's expected deliveries",
                                 icon: Icons.event,
                               ),
@@ -166,7 +167,8 @@ class _InventoryState extends State<Inventory> {
                               width: cardWidth,
                               child: ShipmentCard(
                                 title: "READY FOR UNLOADING",
-                                count: "${cards["ready_for_unloading"] ?? 0} Shipments",
+                                count:
+                                    "${cards["ready_for_unloading"] ?? 0} Shipments",
                                 subtitle: "Requires immediate action",
                                 icon: Icons.local_shipping_outlined,
                               ),
@@ -175,7 +177,8 @@ class _InventoryState extends State<Inventory> {
                               width: cardWidth,
                               child: ShipmentCard(
                                 title: "TOTAL IN TRANSIT",
-                                count: "${cards["total_eggs_in_transit"] ?? 0} Eggs",
+                                count:
+                                    "${cards["total_eggs_in_transit"] ?? 0} Eggs",
                                 subtitle: "Stock currently moving",
                                 icon: Icons.send_outlined,
                               ),
@@ -184,14 +187,15 @@ class _InventoryState extends State<Inventory> {
                               width: cardWidth,
                               child: ShipmentCard(
                                 title: "DELAYED IN TRANSIT",
-                                count: "${cards["delayed_in_transit"] ?? 0} Shipments",
+                                count:
+                                    "${cards["delayed_in_transit"] ?? 0} Shipments",
                                 subtitle: "Current transit delays",
                                 icon: Icons.warning_amber_rounded,
                               ),
                             ),
                           ],
                         );
-                      }
+                      },
                     ),
                     SizedBox(height: size.height * 0.02),
 

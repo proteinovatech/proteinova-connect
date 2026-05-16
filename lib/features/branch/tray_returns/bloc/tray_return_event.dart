@@ -4,10 +4,12 @@ abstract class TrayReturnEvent {}
 
 class FetchTrayReturnData extends TrayReturnEvent {
   final int branchId;
-  final String date;
+  final String? date;
 
-  FetchTrayReturnData({required this.branchId, required this.date});
+  FetchTrayReturnData({required this.branchId, this.date});
 }
+
+class FetchWarehouses extends TrayReturnEvent {}
 
 class SubmitTrayReturn extends TrayReturnEvent {
   final Map<String, dynamic> data;

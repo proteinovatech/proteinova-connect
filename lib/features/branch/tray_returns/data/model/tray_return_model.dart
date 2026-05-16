@@ -28,7 +28,10 @@ class TrayReturnModel {
         json["refund_credit_summary"] ?? {},
       ),
 
-      data: (json["data"] as List? ?? [])
+      data: (json["data"] is List
+              ? json["data"] as List
+              : (json["data"] is Map ? json["data"]["records"] as List? : null) ??
+                  [])
           .map(
             (e) => TrayData.fromJson(e),
           )

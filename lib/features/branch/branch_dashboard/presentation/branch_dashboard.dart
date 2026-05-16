@@ -44,14 +44,18 @@ class _BranchDashboardState extends State<BranchDashboard> {
     try {
       final result = await repository.fetchDashboardData();
 
-      setState(() {
-        dashboardModel = result;
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          dashboardModel = result;
+          isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
 
       print("ERROR : $e");
     }
