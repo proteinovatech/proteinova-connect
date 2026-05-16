@@ -246,19 +246,16 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         }
       }
 
-      /// BUY X GET Y
+      /// BUY X GET Y (Logic from React)
       if (offer["offer_type"] == "buy_x_get_y") {
-        final int buyQty = int.tryParse((offer["buy_qty"] ?? offer["buyTrays"] ?? 0).toString()) ?? 0;
-        final int freeQty = int.tryParse((offer["free_qty"] ?? offer["getTrays"] ?? 1).toString()) ?? 1;
-        
-        // 1 unit here usually means trays (30 eggs)
-        final int thresholdEggs = (buyQty + freeQty) * 30;
-        final int freeEggs = freeQty * 30;
+        final int buyTrays = int.tryParse((offer["buyTrays"] ?? offer["buy_qty"] ?? 0).toString()) ?? 0;
+        final int buyEggsThreshold = buyTrays * 30;
+        final int freeEggsPerSet = 30; // Default 1 tray free as per React snippet
 
-        if (totalEggs >= thresholdEggs && thresholdEggs > 0) {
-          final int sets = totalEggs ~/ thresholdEggs;
+        if (totalEggs >= buyEggsThreshold && buyEggsThreshold > 0) {
+          final int sets = totalEggs ~/ buyEggsThreshold;
           final double ratePerEgg = totalEggs == 0 ? 0 : matchedTotal / totalEggs;
-          discount += (sets * freeEggs) * ratePerEgg;
+          discount += (sets * freeEggsPerSet) * ratePerEgg;
         }
       }
       /// FLAT DISCOUNT
@@ -281,44 +278,44 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     
     final int trayValue = int.tryParse(trayText) ?? 0;
     
-    // Custom logic: 1.1 means 1 dozen and 1 egg. 0.1 means 1 egg.
-    double totalDozenInput = double.tryParse(dozenText) ?? 0;
-    int inputDozens = totalDozenInput.floor();
-    // Extract eggs from decimal part (e.g., .1 -> 1, .11 -> 11)
+    // Custom D.E Logic: 1.1 = 13 eggs, 1.10 = 22 eggs
+    int inputDozens = 0;
     int inputEggs = 0;
     if (dozenText.contains('.')) {
-      String decimalPart = dozenText.split('.')[1];
-      inputEggs = int.tryParse(decimalPart) ?? 0;
+      final parts = dozenText.split('.');
+      inputDozens = int.tryParse(parts[0]) ?? 0;
+      if (parts.length > 1 && parts[1].isNotEmpty) {
+        inputEggs = int.tryParse(parts[1]) ?? 0;
+      }
+    } else {
+      inputDozens = int.tryParse(dozenText) ?? 0;
     }
     
     int currentTotalEggs = (trayValue * 30) + (inputDozens * 12) + inputEggs;
     
-    // Auto-convert to trays: 30 eggs = 1 tray
+    // Auto-convert to trays if eggs reach 30
     int normalizedTrays = currentTotalEggs ~/ 30;
     int remainingEggs = currentTotalEggs % 30;
-    int normalizedDozens = remainingEggs ~/ 12;
-    int finalRemainingEggs = remainingEggs % 12;
-    
-    // Update state with normalized values
+    int finalDozens = remainingEggs ~/ 12;
+    int finalEggs = remainingEggs % 12;
+
     setState(() {
       trayList[index] = normalizedTrays;
-      // To show as D.E where E is single eggs
-      dozenList[index] = normalizedDozens + (finalRemainingEggs / 100.0); // Using /100 to avoid .1 becoming .10 unexpectedly if we parse later
+      dozenList[index] = finalDozens + (finalEggs / 100.0); // Storing as D.E internal
+      eggsList[index] = currentTotalEggs;
       
-      // Update controllers to "auto show" the conversion
+      // Update UI controllers for "auto show"
       String newTrayStr = normalizedTrays.toString();
-      String newDozenStr = finalRemainingEggs > 0 
-          ? "$normalizedDozens.$finalRemainingEggs" 
-          : normalizedDozens.toString();
-          
+      String newDozenStr = finalEggs > 0 
+          ? "$finalDozens.$finalEggs" 
+          : finalDozens.toString();
+
       if (trayControllers[index].text != newTrayStr) {
         trayControllers[index].text = newTrayStr;
       }
       if (dozenControllers[index].text != newDozenStr && !dozenText.endsWith('.')) {
         dozenControllers[index].text = newDozenStr;
       }
-      
-      eggsList[index] = currentTotalEggs;
     });
     
     if (selectedProduct == "Select Product" || currentTotalEggs <= 0) {
@@ -374,16 +371,15 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
             finalTotal = (total - discount).clamp(0, total);
           }
-          /// BUY X GET Y
+          /// BUY X GET Y (Logic from React)
           else if (offer["offer_type"] == "buy_x_get_y") {
-            int buyQty = int.tryParse((offer["buy_qty"] ?? offer["buyTrays"] ?? 0).toString()) ?? 0;
-            int freeQty = int.tryParse((offer["free_qty"] ?? offer["getTrays"] ?? 1).toString()) ?? 1;
+            int buyTrays = int.tryParse((offer["buyTrays"] ?? offer["buy_qty"] ?? 0).toString()) ?? 0;
+            int buyEggsThreshold = buyTrays * 30;
+            int freeEggsPerSet = 30;
 
-            final int thresholdEggs = (buyQty + freeQty) * 30;
-
-            if (computedEggs >= thresholdEggs && thresholdEggs > 0) {
-              final int sets = computedEggs ~/ thresholdEggs;
-              final double freeAmount = (sets * freeQty * 30) * productRate;
+            if (computedEggs >= buyEggsThreshold && buyEggsThreshold > 0) {
+              int sets = computedEggs ~/ buyEggsThreshold;
+              double freeAmount = (sets * freeEggsPerSet) * productRate;
               finalTotal = (total - freeAmount).clamp(0, total);
             }
           }

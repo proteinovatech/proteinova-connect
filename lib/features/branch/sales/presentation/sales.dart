@@ -60,11 +60,16 @@ class _SalesState extends State<Sales> {
       return Colors.green;
     }
 
-    // Rejected: Red
-    if (s == "rejected") {
+    // Rejected/Cancelled: Red
+    if (s == "rejected" || s == "cancelled") {
       return Colors.red;
     }
 
+    // Transit/Loading: Blue/Light Blue
+    if (s == "delivered" || s == "in transit") {
+      return Colors.blue;
+    }
+    
     return Colors.grey;
   }
 
@@ -222,24 +227,24 @@ class _SalesState extends State<Sales> {
           children: [
             Expanded(
               child: DashboardCard(
-                title: "Sales Today",
-                value: "₹${totalSales["today"] ?? "0"}",
-                percent: "${totalSales["pct"] ?? "0"}%",
-                subtitle: "Vs yesterday",
+                title: "Total Sales",
+                value: "₹${totalSales["value"] ?? "0"}",
+                percent: "LIFETIME",
+                subtitle: "Revenue total",
                 icon: Icons.currency_rupee,
-                iconBg: AppColors.containerColor,
-                iconColor: AppColors.blueAccent,
+                iconBg: const Color(0xfffffbeb),
+                iconColor: const Color(0xffd97706),
               ),
             ),
             SizedBox(width: getWidth(context, 10)),
             Expanded(
               child: DashboardCard2(
-                title: "Orders Today",
-                value: totalOrders["today"]?.toString() ?? "0",
-                subtitle: "Total: ${totalOrders["value"] ?? 0}",
+                title: "Total Orders",
+                value: totalOrders["value"]?.toString() ?? "0",
+                subtitle: "Transactions lifetime",
                 icon: Icons.shopping_bag_outlined,
-                iconBg: AppColors.containerColor,
-                iconColor: AppColors.blueAccent,
+                iconBg: const Color(0xfff1f6ff),
+                iconColor: const Color(0xff2563eb),
               ),
             ),
           ],
@@ -249,24 +254,24 @@ class _SalesState extends State<Sales> {
           children: [
             Expanded(
               child: DashboardCard2(
-                title: "Total Eggs Sold",
+                title: "Eggs Sold (Today)",
                 value: totalEggs["value"]?.toString() ?? "0",
-                subtitle: "Current Period",
+                subtitle: "Today's volume",
                 icon: Icons.egg_outlined,
-                iconBg: AppColors.containerColor,
-                iconColor: AppColors.blueAccent,
+                iconBg: const Color(0xffeff6ff),
+                iconColor: const Color(0xff3b82f6),
               ),
             ),
             SizedBox(width: getWidth(context, 10)),
             Expanded(
               child: DashboardCard(
-                title: "Monthly Revenue",
-                value: "₹${totalSales["value"] ?? "0"}",
-                percent: "MTD",
-                subtitle: "Current Month",
-                icon: Icons.analytics_outlined,
-                iconBg: AppColors.containerColor,
-                iconColor: AppColors.blueAccent,
+                title: "Today's Sales",
+                value: "₹${totalSales["today"] ?? "0"}",
+                percent: "TODAY",
+                subtitle: "Transactions recorded",
+                icon: Icons.trending_up,
+                iconBg: const Color(0xfff0fdf4),
+                iconColor: const Color(0xff16a34a),
               ),
             ),
           ],
