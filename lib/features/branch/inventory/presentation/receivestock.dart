@@ -11,6 +11,7 @@ import 'package:proteinova_connect/features/branch/sales/widget/buildrow.dart';
 
 class Receivestock extends StatefulWidget {
   final dispatchid;
+  
   const Receivestock({super.key, this.dispatchid});
 
   @override
@@ -852,44 +853,30 @@ class _ReceivestockState extends State<Receivestock> {
                     ),
 
                     child: Text(
-
                       "Cancel",
-
                       style: AppTextStyles
                           .bodyText14dark,
                     ),
                   ),
                 ),
-
                 const SizedBox(width: 10),
-
                 Expanded(
-
                   child: Container(
-
                     padding:
                         const EdgeInsets
                             .symmetric(
                       vertical: 14,
                     ),
-
                     alignment:
                         Alignment.center,
-
                     decoration:
                         BoxDecoration(
-
                       color: Colors.orange,
-
                       borderRadius:
-                          BorderRadius.circular(
-                              8),
+                          BorderRadius.circular(8),
                     ),
-
                     child: const Text(
-
                       "Confirm Receive",
-
                       style: AppTextStyles
                           .bodyText14dark,
                     ),
