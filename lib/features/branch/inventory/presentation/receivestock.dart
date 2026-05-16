@@ -8,10 +8,10 @@ import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch/inventory/widget/receiveditem.dart';
 import 'package:proteinova_connect/features/branch/inventory/widget/traydetailcard.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/buildrow.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Receivestock extends StatefulWidget {
   final dispatchid;
-  
   const Receivestock({super.key, this.dispatchid});
 
   @override
@@ -36,60 +36,46 @@ class _ReceivestockState extends State<Receivestock> {
   }
 
   Future<void> fetchReceiveStock() async {
+  try {
 
-    try {
+    final prefs = await SharedPreferences.getInstance();
 
-      final response = await http.get(
+    int branchId = prefs.getInt("branch_id") ?? 0;
 
-        Uri.parse(
-          "${ApiConstants.baseUrl}/api/branch/incoming-stock/1/dispatch/${widget.dispatchid}",
-        ),
-
-        headers: {
-          "Accept": "application/json",
-        },
-      );
-
-      if (response.statusCode == 200) {
-
-        final data =
-            jsonDecode(response.body);
-
-        setState(() {
-
-          receiveInfo =
-              data["receive_info"] ?? {};
-
-          summary =
-              data["summary"] ?? {};
-
-          receivedItems =
-              data["received_items"] ?? [];
-
-          isLoading = false;
-        });
-
-      } else {
-
-        setState(() {
-          isLoading = false;
-        });
-
-        print(
-          "Status Code : ${response.statusCode}",
-        );
-      }
-
-    } catch (e) {
+    final response = await http.get(
+      Uri.parse(
+        "${ApiConstants.baseUrl}/api/branch/incoming-stock/$branchId/dispatch/${widget.dispatchid}",
+      ),
+      headers: {
+        "Accept": "application/json",
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        receiveInfo = data["receive_info"] ?? {};
+        summary = data["summary"] ?? {};
+        receivedItems = data["received_items"] ?? [];
+        isLoading = false;
+      });
+    } else {
 
       setState(() {
         isLoading = false;
       });
 
-      print("ERROR : $e");
+      print("Status Code : ${response.statusCode}");
     }
-  }
 
+  } catch (e) {
+
+    setState(() {
+      isLoading = false;
+    });
+
+    print("ERROR : $e");
+  }
+}
   @override
   Widget build(BuildContext context) {
 
@@ -873,7 +859,8 @@ class _ReceivestockState extends State<Receivestock> {
                         BoxDecoration(
                       color: Colors.orange,
                       borderRadius:
-                          BorderRadius.circular(8),
+                          BorderRadius.circular(
+                              8),
                     ),
                     child: const Text(
                       "Confirm Receive",
