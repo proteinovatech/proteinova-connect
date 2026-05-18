@@ -27,6 +27,7 @@ class PurchaseDashboard extends StatefulWidget {
 
 class _PurchaseDashboardState extends State<PurchaseDashboard> {
   
+ // ignore: unused_field
  static bool _hasLoadedOnce = false;
 String? loadingPurchaseId;
   

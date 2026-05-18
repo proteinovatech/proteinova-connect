@@ -39,6 +39,7 @@ class BranchProductSelectionWidget extends StatelessWidget {
           BoxShadow(
             blurRadius: 10,
 
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.03),
 
             offset: const Offset(0, 4),
@@ -267,6 +268,7 @@ class BranchProductSelectionWidget extends StatelessWidget {
 
                             boxShadow: [
                               BoxShadow(
+                                // ignore: deprecated_member_use
                                 color: Colors.black.withOpacity(0.05),
 
                                 blurRadius: 10,

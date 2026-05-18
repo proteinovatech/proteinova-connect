@@ -53,6 +53,7 @@ class _DashboardCardState extends State<DashboardCard> {
         duration: const Duration(milliseconds: 120),
 
         transform: isPressed
+            // ignore: deprecated_member_use
             ? (Matrix4.identity()..scale(0.97))
             : Matrix4.identity(),
 
@@ -65,6 +66,7 @@ class _DashboardCardState extends State<DashboardCard> {
 
           border: Border.all(
             color: isPressed
+                // ignore: deprecated_member_use
                 ? widget.iconColor.withOpacity(0.3)
                 : Colors.grey.shade200,
             width: 1,
@@ -72,6 +74,7 @@ class _DashboardCardState extends State<DashboardCard> {
 
           boxShadow: [
             BoxShadow(
+              // ignore: deprecated_member_use
               color: Colors.black.withOpacity(0.09),
               blurRadius: 12,
               spreadRadius: 1,
@@ -106,6 +109,7 @@ class _DashboardCardState extends State<DashboardCard> {
                   padding: const EdgeInsets.all(4),
 
                   decoration: BoxDecoration(
+                    // ignore: deprecated_member_use
                     color: widget.iconColor.withOpacity(0.10),
                     borderRadius: BorderRadius.circular(8),
                   ),

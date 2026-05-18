@@ -45,6 +45,7 @@ class _BranchDetailsState extends State<BranchDetails> {
     borderRadius: BorderRadius.circular(12),
     boxShadow: [
       BoxShadow(
+        // ignore: deprecated_member_use
         color: Colors.grey.withOpacity(0.1),
         blurRadius: 8,
         spreadRadius: 2,

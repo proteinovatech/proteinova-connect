@@ -875,6 +875,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
         boxShadow: [
           BoxShadow(
             blurRadius: 10,
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(.04),
             offset: const Offset(0, 4),
           ),

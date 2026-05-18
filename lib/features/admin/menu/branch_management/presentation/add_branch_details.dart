@@ -139,6 +139,7 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
 
                         boxShadow: [
                           BoxShadow(
+                            // ignore: deprecated_member_use
                             color: Colors.black.withOpacity(0.09),
                             blurRadius: 12,
                             spreadRadius: 1,
@@ -350,6 +351,7 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
 
                         boxShadow: [
                           BoxShadow(
+                            // ignore: deprecated_member_use
                             color: Colors.black.withOpacity(0.09),
                             blurRadius: 12,
                             spreadRadius: 1,
@@ -589,6 +591,7 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
 
                         boxShadow: [
                           BoxShadow(
+                            // ignore: deprecated_member_use
                             color: Colors.black.withOpacity(0.09),
                             blurRadius: 12,
                             spreadRadius: 1,

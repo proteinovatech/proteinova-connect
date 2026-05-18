@@ -270,6 +270,7 @@ void didChangeDependencies() {
     );
   }
 
+  // ignore: unused_element
   Widget _buildSupplierRow({
     required String supplier,
     required String id,
@@ -341,7 +342,9 @@ void didChangeDependencies() {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: isActive
+                    // ignore: deprecated_member_use
                     ? Colors.green.withOpacity(0.1)
+                    // ignore: deprecated_member_use
                     : Colors.grey.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(30),
               ),

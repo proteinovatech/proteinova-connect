@@ -187,6 +187,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
       
                             DropdownButtonFormField<String>(
               isExpanded: true,
+              // ignore: deprecated_member_use
               value: status,
       
               style: const TextStyle(

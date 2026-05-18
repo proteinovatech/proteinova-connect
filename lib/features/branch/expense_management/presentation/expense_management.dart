@@ -165,7 +165,7 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text("Recent Expenses", style: AppTextStyles.headingText20),
-                      Text("View All", style: AppTextStyles.blueText2),
+                     
                     ],
                   ),
 

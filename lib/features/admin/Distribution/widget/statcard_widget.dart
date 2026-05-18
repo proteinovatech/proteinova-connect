@@ -54,6 +54,7 @@ Widget statCard({
         boxShadow: [
           BoxShadow(
             blurRadius: 10,
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.10),
             offset: const Offset(0, 4),
           ),
@@ -69,6 +70,7 @@ Widget statCard({
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
+                  // ignore: deprecated_member_use
                   color: iconColor.withOpacity(0.10),
                   borderRadius: BorderRadius.circular(14),
                 ),

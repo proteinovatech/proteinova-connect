@@ -49,6 +49,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
+                          // ignore: deprecated_member_use
                           Colors.white.withOpacity(0.1),
                           Colors.white,
                         ],

@@ -528,6 +528,7 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
                               growth: e["growth"].toString(),
                               icon: getIcon(e["icon"]?.toString() ?? ""),
                               iconColor: iconColor,
+                              // ignore: deprecated_member_use
                               iconBg: iconColor.withOpacity(0.1),
                               growthColor:
                                   e["growth"].toString().contains("-") &&
@@ -744,6 +745,7 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
 
                               dividerThickness: 0.6,
 
+                              // ignore: deprecated_member_use
                               headingRowColor: MaterialStateProperty.all(
                                 const Color(0xffF8FAFC),
                               ),
@@ -1186,6 +1188,7 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
 
             decoration: BoxDecoration(
+              // ignore: deprecated_member_use
               color: statusColor.withOpacity(0.15),
 
               borderRadius: BorderRadius.circular(30),
@@ -1233,6 +1236,7 @@ class ExpenseStatCard extends StatelessWidget {
         border: Border.all(color: const Color(0xffE5E7EB)),
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),

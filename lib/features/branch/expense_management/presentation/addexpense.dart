@@ -173,6 +173,7 @@ class _AddexpenseState extends State<Addexpense> {
                 Text("Expense Category*", style: AppTextStyles.headingText20),
                 SizedBox(height: size.height * 0.01),
                 DropdownButtonFormField<String>(
+                  // ignore: deprecated_member_use
                   value: selectedCategory,
                   hint: const Text("Select Category"),
                   decoration: InputDecoration(
@@ -215,6 +216,7 @@ class _AddexpenseState extends State<Addexpense> {
                           decoration: BoxDecoration(
                             border: Border.all(color: selectedPayment == "CASH" ? Colors.blue : AppColors.border2),
                             borderRadius: BorderRadius.circular(8),
+                            // ignore: deprecated_member_use
                             color: selectedPayment == "CASH" ? Colors.blue.withOpacity(0.1) : Colors.transparent,
                           ),
                           child: const Row(
@@ -237,6 +239,7 @@ class _AddexpenseState extends State<Addexpense> {
                           decoration: BoxDecoration(
                             border: Border.all(color: selectedPayment == "UPI" ? Colors.blue : Colors.grey),
                             borderRadius: BorderRadius.circular(8),
+                            // ignore: deprecated_member_use
                             color: selectedPayment == "UPI" ? Colors.blue.withOpacity(0.1) : Colors.transparent,
                           ),
                           child: Row(
@@ -259,6 +262,7 @@ class _AddexpenseState extends State<Addexpense> {
                           decoration: BoxDecoration(
                             border: Border.all(color: selectedPayment == "BANK" ? Colors.blue : Colors.grey),
                             borderRadius: BorderRadius.circular(8),
+                            // ignore: deprecated_member_use
                             color: selectedPayment == "BANK" ? Colors.blue.withOpacity(0.1) : Colors.transparent,
                           ),
                           child: Row(
@@ -386,7 +390,7 @@ class _AddexpenseState extends State<Addexpense> {
                               height:getHeight(context, 45),
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                color: Colors.blueAccent,
+                                color:AppColors.amber600,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: isSubmitting

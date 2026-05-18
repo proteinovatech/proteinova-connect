@@ -163,6 +163,7 @@ class SalesRow extends StatelessWidget {
                   ),
 
                   decoration: BoxDecoration(
+                    // ignore: deprecated_member_use
                     color: paid ? Colors.green : Colors.red.withOpacity(.1),
 
                     borderRadius: BorderRadius.circular(30),
