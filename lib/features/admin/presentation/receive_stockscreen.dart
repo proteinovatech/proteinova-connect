@@ -110,486 +110,86 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
     }
 
     final items = purchase?['items'] ?? [];
+    final totalTrays = (items as List).fold<int>(0, (sum, item) => sum + (int.tryParse(item['trays'].toString()) ?? 0));
+    final totalEggs = items.fold<int>(0, (sum, item) => sum + ((int.tryParse(item['trays'].toString()) ?? 0) * (int.tryParse(item['capacity'].toString()) ?? 30)));
 
-    final totalEggs = (items as List).fold<int>(0, (int sum, dynamic item) {
-      final trays = int.tryParse(item['trays'].toString()) ?? 0;
-
-      final capacity = int.tryParse(item['capacity'].toString()) ?? 30;
-
-      return sum + (trays * capacity);
-    });
-
-    final totalTrays = (items).fold<int>(0, (int sum, dynamic item) {
-      return sum + (int.tryParse(item['trays'].toString()) ?? 0);
-    });
-
-    final expenses = purchase?['expenses'] ?? [];
-
-    final double itemsTotal = (items).fold<double>(0, (
-      double sum,
-      dynamic item,
-    ) {
-      final double trays = double.tryParse(item['trays'].toString()) ?? 0;
-      final double capacity =
-          double.tryParse(item['capacity'].toString()) ?? 30;
-      final double price =
-          double.tryParse(item['per_egg_price'].toString()) ?? 0;
+    final double itemsTotal = items.fold<double>(0, (sum, item) {
+      final trays = double.tryParse(item['trays'].toString()) ?? 0;
+      final capacity = double.tryParse(item['capacity'].toString()) ?? 30;
+      final price = double.tryParse(item['per_egg_price'].toString()) ?? 0;
       return sum + (trays * capacity * price);
     });
 
-    final double transportCharge = (expenses as List)
-        .where((e) => e['expense_type'] == "TRANSPORT")
-        .fold<double>(
-          0,
-          (double sum, dynamic e) =>
-              sum + (double.tryParse(e['amount'].toString()) ?? 0),
-        );
-
-    final double otherCharge = (expenses)
-        .where((e) => e['expense_type'] != "TRANSPORT")
-        .fold<double>(
-          0,
-          (double sum, dynamic e) =>
-              sum + (double.tryParse(e['amount'].toString()) ?? 0),
-        );
-
-    final double totalAmount = itemsTotal + transportCharge + otherCharge;
-
-    final traySummary = (items).fold<Map<String, int>>({}, (map, item) {
-      final type = item['tray_type']?.toString() ?? "Other";
-      final trays = int.tryParse(item['trays'].toString()) ?? 0;
-      map[type] = (map[type] ?? 0) + trays;
-      return map;
-    });
+    final expenses = purchase?['expenses'] ?? [];
+    final double otherCharge = (expenses as List).fold<double>(0, (sum, e) => sum + (double.tryParse(e['amount'].toString()) ?? 0));
+    final double totalAmount = itemsTotal + otherCharge;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
-
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-        ),
-        title: const Text(
-          "Receive Stock",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-      ),
-
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(14),
+      backgroundColor: const Color(0xffF8F8F8),
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// HEADER
-            Row(
-              children: [
-                Text(
-                  "PO-${purchase?['id']}",
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(width: 10),
-
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.green,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    "Ready for Unload",
-                    style: TextStyle(color: Colors.white, fontSize: 12),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 10),
-
-            Text(
-              "Manage and receive incoming shipments from suppliers to update inventory",
-              style: TextStyle(color: Colors.grey.shade700),
-            ),
-
-            const SizedBox(height: 18),
-
-            /// RECEIVED INFO
-            _buildCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Received Info",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _infoItem("Receive No.", "${purchase?['id']}"),
-                      ),
-
-                      Expanded(
-                        child: _infoItem(
-                          "Purchase Date",
-                          purchase?['created_at'] ?? "",
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _infoItem(
-                          "Vehicle No.",
-                          purchase?['vehicle_number'] ?? "",
-                        ),
-                      ),
-
-                      Expanded(
-                        child: _infoItem(
-                          "Driver Name",
-                          purchase?['driver_name'] ?? "",
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  _infoItem("Broker Name", purchase?['broker_name'] ?? "N/A"),
-
-                  const SizedBox(height: 18),
-
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF3F4F6),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "From Supplier",
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        Text(
-                          purchase?['supplier_company_name']?.toString() ??
-                              "N/A",
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 14),
-
-            /// RECEIVED ITEMS
-            _buildCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Received Items",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  ListView.builder(
-                    itemCount: items.length,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      final item = items[index];
-
-                      final trays = int.tryParse(item['trays'].toString()) ?? 0;
-
-                      final capacity =
-                          int.tryParse(item['capacity'].toString()) ?? 30;
-
-                      final eggs = trays * capacity;
-
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 14),
-                        child: Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
+            _buildHeader(),
+            const Divider(height: 1),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildPageHeader(),
+                    const SizedBox(height: 30),
+                    
+                    /// INFO GRID
+                    LayoutBuilder(builder: (context, constraints) {
+                      final isWide = constraints.maxWidth > 900;
+                      return Column(
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _row(
-                                "Product",
-                                item['egg_category_grade']?.toString() ?? "N/A",
-                              ),
-
-                              _row(
-                                "Tray Type",
-                                item['tray_type']?.toString() ?? "N/A",
-                              ),
-
-                              _row("Trays", trays.toString()),
-
-                              _row(
-                                "Price/Egg",
-                                "₹${item['per_egg_price']?.toString() ?? "0"}",
-                              ),
-
-                              _row("Eggs", eggs.toString()),
-
-                              _row(
-                                "Total Price",
-                                "₹${(eggs * (double.tryParse(item['per_egg_price']?.toString() ?? "0") ?? 0)).toStringAsFixed(0)}",
-                              ),
+                              Expanded(flex: isWide ? 1 : 1, child: _buildInfoCard()),
+                              if (isWide) const SizedBox(width: 20),
+                              if (isWide) Expanded(flex: 2, child: _buildItemsCard(items, itemsTotal, totalTrays, totalEggs)),
+                              if (isWide) const SizedBox(width: 20),
+                              if (isWide) Expanded(flex: 1, child: _buildSummaryCard(totalTrays, totalEggs, items)),
                             ],
                           ),
-                        ),
+                          if (!isWide) ...[
+                            const SizedBox(height: 20),
+                            _buildItemsCard(items, itemsTotal, totalTrays, totalEggs),
+                            const SizedBox(height: 20),
+                            _buildSummaryCard(totalTrays, totalEggs, items),
+                          ]
+                        ],
                       );
-                    },
-                  ),
-                ],
-              ),
-            ),
+                    }),
 
-            const SizedBox(height: 14),
+                    const SizedBox(height: 30),
 
-            /// SUMMARY
-            _buildCard(
-              child: Column(
-                children: [
-                  _summaryRow("Total Trays", totalTrays.toString()),
-
-                  _summaryRow("Total Eggs", totalEggs.toString()),
-
-                  ...traySummary.entries
-                      .map((e) => _summaryRow(e.key, e.value.toString()))
-                      .toList(),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 14),
-
-            /// TRAY DETAILS
-            _buildCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Tray Details",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  ListView.builder(
-                    itemCount: trayDetails.length,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      final detail = trayDetails[index];
-
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 14),
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          children: [
-                            _row(
-                              "Product",
-                              detail['product']?.toString() ?? "N/A",
-                            ),
-
-                            _row(
-                              "Tray Type",
-                              detail['trayType']?.toString() ?? "N/A",
-                            ),
-
-                            const SizedBox(height: 14),
-
-                            TextField(
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(
-                                labelText: "Received Eggs",
-                                border: OutlineInputBorder(),
-                              ),
-                              controller: TextEditingController(
-                                text: detail['received'].toString(),
-                              ),
-                              onChanged: (v) {
-                                _updateTray(
-                                  index,
-                                  "received",
-                                  int.tryParse(v) ?? 0,
-                                );
-                              },
-                            ),
-
-                            const SizedBox(height: 14),
-
-                            TextField(
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(
-                                labelText: "Damaged Eggs",
-                                border: OutlineInputBorder(),
-                              ),
-                              controller: TextEditingController(
-                                text: detail['damaged'].toString(),
-                              ),
-                              onChanged: (v) {
-                                _updateTray(
-                                  index,
-                                  "damaged",
-                                  int.tryParse(v) ?? 0,
-                                );
-                              },
-                            ),
-
-                            const SizedBox(height: 14),
-
-                            TextField(
-                              readOnly: true,
-                              decoration: const InputDecoration(
-                                labelText: "Good Eggs",
-                                border: OutlineInputBorder(),
-                              ),
-                              controller: TextEditingController(
-                                text: detail['good'].toString(),
-                              ),
-                            ),
-                          ],
-                        ),
+                    /// TRAY DETAILS & BILL SUMMARY
+                    LayoutBuilder(builder: (context, constraints) {
+                      final isWide = constraints.maxWidth > 900;
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(flex: 2, child: _buildTrayDetailsCard()),
+                          const SizedBox(width: 20),
+                          if (isWide) Expanded(flex: 1, child: _buildBillSummaryCard(items.length, itemsTotal, otherCharge, totalAmount)),
+                        ],
                       );
-                    },
-                  ),
+                    }),
+                    
+                    if (MediaQuery.of(context).size.width <= 900) ...[
+                      const SizedBox(height: 20),
+                      _buildBillSummaryCard(items.length, itemsTotal, otherCharge, totalAmount),
+                    ],
 
-                  const SizedBox(height: 10),
-
-                  const Text(
-                    "Damage trays will not be added to your usable stock.",
-                    style: TextStyle(
-                      color: Colors.orange,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 14),
-
-            /// BILL SUMMARY
-            _buildCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Bill Summary",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                  const SizedBox(height: 16),
-                  _summaryRow(
-                    "Items (${(items).length})",
-                    "₹${itemsTotal.toStringAsFixed(0)}",
-                  ),
-                  _summaryRow(
-                    "Transport Charge",
-                    "₹${transportCharge.toStringAsFixed(0)}",
-                  ),
-                  _summaryRow(
-                    "Other Charge",
-                    "₹${otherCharge.toStringAsFixed(0)}",
-                  ),
-                  const Divider(thickness: 1, color: Colors.black),
-                  _summaryRow(
-                    "Total Amount",
-                    "₹${totalAmount.toStringAsFixed(0)}",
-                    isNet: true,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 14),
-
-            /// NOTES
-            _buildCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Notes",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      hintText: "Enter any additional notes...",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 14),
-
-            /// BUTTONS
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text("Cancel"),
-                  ),
+                    const SizedBox(height: 30),
+                    _buildNotesAndActions(),
+                  ],
                 ),
-
-                const SizedBox(width: 14),
-
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFACC15),
-                      foregroundColor: Colors.black,
-                    ),
-                    onPressed: isSubmitting ? null : _confirmReceive,
-                    child: isSubmitting
-                        ? const CircularProgressIndicator()
-                        : const Text("Confirm Receive"),
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
         ),
@@ -597,69 +197,467 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
     );
   }
 
-  Widget _buildCard({required Widget child}) {
+  Widget _buildHeader() {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      color: Colors.white,
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          ),
+          const SizedBox(width: 8),
+          const Text("Settings", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          const SizedBox(width: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(color: const Color(0xffFEF3C7), borderRadius: BorderRadius.circular(12)),
+            child: const Row(
+              children: [
+                Icon(Icons.verified_user, size: 16, color: Colors.amber),
+                const SizedBox(width: 6),
+                const Text("Role: Admin", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              ],
+            ),
+          ),
+        ],
       ),
-      child: child,
     );
   }
 
-  Widget _infoItem(String title, String value) {
+  Widget _buildPageHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-
-        const SizedBox(height: 6),
-
-        Text(value),
+        Row(
+          children: [
+            Text("Receive Stock: ", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text("PO-${purchase?['id']}", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.normal)),
+            const SizedBox(width: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(color: const Color(0xff16A34A), borderRadius: BorderRadius.circular(8)),
+              child: const Text("Ready for Unload", style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Text("Manage and receive incoming shipments from suppliers to update inventory", style: TextStyle(color: Color(0xff6B7280), fontSize: 16)),
       ],
     );
   }
 
-  Widget _row(String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildInfoCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xffE5E7EB))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-
-          Text(value),
+          const Text("Received Info", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Divider(height: 40),
+          _infoRow("Receive No.", "${purchase?['id']}"),
+          _infoRow("Purchase Date", purchase?['created_at']?.split('T').first ?? "N/A"),
+          _infoRow("Vehicle No.", purchase?['vehicle_number'] ?? "N/A"),
+          _infoRow("Driver Name", purchase?['driver_name'] ?? "N/A"),
+          _infoRow("Broker Name", purchase?['broker_name'] ?? "N/A"),
+          const SizedBox(height: 20),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: const Color(0xffF9FAFB), borderRadius: BorderRadius.circular(12)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("From Supplier", style: TextStyle(fontSize: 12, color: Color(0xff6B7280), fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text(purchase?['supplier_company_name'] ?? "N/A", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _summaryRow(String title, String value, {bool isNet = false}) {
+  Widget _infoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontWeight: isNet ? FontWeight.bold : FontWeight.normal,
-              fontSize: isNet ? 16 : 14,
-              color: isNet ? Colors.black : Colors.grey.shade700,
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: isNet ? 16 : 14,
-              color: Colors.black,
+          Text(label, style: const TextStyle(fontSize: 12, color: Color(0xff6B7280), fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildItemsCard(List items, double itemsTotal, int totalTrays, int totalEggs) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xffE5E7EB))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Received Items", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Divider(height: 40),
+          ...items.asMap().entries.map((entry) {
+            final idx = entry.key;
+            final item = entry.value;
+            final trays = int.tryParse(item['trays'].toString()) ?? 0;
+            final capacity = int.tryParse(item['capacity'].toString()) ?? 30;
+            final eggs = trays * capacity;
+            final price = double.tryParse(item['per_egg_price'].toString()) ?? 0;
+            final totalPrice = eggs * price;
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xffF9FAFB),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xffE5E7EB)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(item['egg_category_grade'] ?? "N/A", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(color: const Color(0xffE0E7FF), borderRadius: BorderRadius.circular(6)),
+                        child: Text(item['tray_type'] ?? "N/A", style: const TextStyle(color: Color(0xff4338CA), fontSize: 11, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("Trays", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                          Text("$trays", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text("Eggs", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                          Text("$eggs", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          const Text("Price/Egg", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                          Text("₹${price.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Total Price", style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text("₹${totalPrice.toStringAsFixed(0)}", style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xff16A34A), fontSize: 16)),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: const Color(0xffFEF9C3), borderRadius: BorderRadius.circular(12)),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Grand Total", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text("$totalTrays Trays / $totalEggs Eggs", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black54)),
+                    Text("₹${itemsTotal.toStringAsFixed(0)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black)),
+                  ],
+                ),
+              ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSummaryCard(int totalTrays, int totalEggs, List items) {
+    final trayTypeSummary = <String, int>{};
+    for (var item in items) {
+      final type = item['tray_type'] ?? "Other";
+      final count = int.tryParse(item['trays'].toString()) ?? 0;
+      trayTypeSummary[type] = (trayTypeSummary[type] ?? 0) + count;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xffE5E7EB))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Summary", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Icon(Icons.description_outlined, color: Color(0xff6B7280)),
+            ],
+          ),
+          const Divider(height: 40),
+          _summaryRow("Total Trays", "$totalTrays"),
+          _summaryRow("Total Eggs", "$totalEggs"),
+          ...trayTypeSummary.entries.map((e) => _summaryRow(e.key, "${e.value}")).toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _summaryRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 14, color: Color(0xff6B7280))),
+          Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrayDetailsCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xffE5E7EB))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Tray Details", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 20),
+          ...trayDetails.asMap().entries.map((entry) {
+            final idx = entry.key;
+            final detail = entry.value;
+            return Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xffF9FAFB),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xffE5E7EB)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(detail['product'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xffE0E7FF),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(detail['trayType'], style: const TextStyle(color: Color(0xff4338CA), fontSize: 12, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Received", style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 6),
+                            TextField(
+                              keyboardType: TextInputType.number,
+                              textAlign: TextAlign.center,
+                              decoration: InputDecoration(
+                                isDense: true,
+                                contentPadding: const EdgeInsets.all(10),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                                filled: true,
+                                fillColor: Colors.white,
+                              ),
+                              controller: TextEditingController(text: detail['received'].toString())..selection = TextSelection.collapsed(offset: detail['received'].toString().length),
+                              onChanged: (v) => _updateTray(idx, "received", int.tryParse(v) ?? 0),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Damaged", style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 6),
+                            TextField(
+                              keyboardType: TextInputType.number,
+                              textAlign: TextAlign.center,
+                              decoration: InputDecoration(
+                                isDense: true,
+                                contentPadding: const EdgeInsets.all(10),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                                filled: true,
+                                fillColor: Colors.white,
+                              ),
+                              controller: TextEditingController(text: detail['damaged'].toString())..selection = TextSelection.collapsed(offset: detail['damaged'].toString().length),
+                              onChanged: (v) => _updateTray(idx, "damaged", int.tryParse(v) ?? 0),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Good", style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 6),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 11),
+                              decoration: BoxDecoration(color: const Color(0xffDCFCE7), borderRadius: BorderRadius.circular(8)),
+                              child: Text("${detail['good']}", textAlign: TextAlign.center, style: const TextStyle(color: Color(0xff166534), fontWeight: FontWeight.bold, fontSize: 15)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: "Add notes...",
+                      hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.all(12),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                    onChanged: (v) => _updateTray(idx, "notes", v),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+          const SizedBox(height: 20),
+          const Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.info_outline, size: 16, color: Colors.orange),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text("Damage trays will not be added to your usable stock.", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 13)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBillSummaryCard(int itemCount, double itemsTotal, double otherCharge, double totalAmount) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xffE5E7EB))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Bill Summary", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Divider(height: 40),
+          _summaryRow("Items ($itemCount)", "₹${itemsTotal.toStringAsFixed(0)}"),
+          _summaryRow("Other Charge", "₹${otherCharge.toStringAsFixed(0)}"),
+          const Divider(height: 40, color: Colors.black),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Total Amount", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text("₹${totalAmount.toStringAsFixed(0)}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotesAndActions() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("Notes", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 12),
+        TextField(
+          maxLines: 4,
+          decoration: InputDecoration(
+            hintText: "Enter any additional notes...",
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xffE5E7EB))),
+          ),
+        ),
+        const SizedBox(height: 30),
+        Row(
+          children: [
+            Expanded(
+              flex: 1,
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text("Cancel", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              flex: 1,
+              child: ElevatedButton(
+                onPressed: isSubmitting ? null : _confirmReceive,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xffFEF3C7),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: isSubmitting 
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.verified_user_outlined, size: 20),
+                        SizedBox(width: 8),
+                        Text("Confirm Receive", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      ],
+                    ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

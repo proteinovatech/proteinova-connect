@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "986270588185",
+    "project_id": "proteinova",
+    "storage_bucket": "proteinova.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:986270588185:android:23d7ab1729ada2072bf988",
+        "android_client_info": {
+          "package_name": "com.example.proteinova_connect"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQRAtYMFyUVEljGdcbwoMc9pTIwwxDv_M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

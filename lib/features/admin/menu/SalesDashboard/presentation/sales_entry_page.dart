@@ -391,6 +391,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         discount: totalDiscount,
         subtotal: subtotal,
         paymentMethod: selectedPaymentMethod,
+        branchName: soldLocation,
         onNextSale: () {
           Navigator.pop(context);
           setState(() {
@@ -447,7 +448,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                               ])),
                               const SizedBox(width: 16),
                               Expanded(flex: 1, child: Column(children: [
-                                _buildSalesItemsCard(),
+                                _buildSalesItemsCard(isWide),
                                 const SizedBox(height: 16),
                                 _buildTrayTypesCard(),
                                 const SizedBox(height: 16),
@@ -464,7 +465,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                               const SizedBox(height: 16),
                               _buildProductSelectionCard(),
                               const SizedBox(height: 16),
-                              _buildSalesItemsCard(),
+                              _buildSalesItemsCard(isWide),
                               const SizedBox(height: 16),
                               _buildTrayTypesCard(),
                               const SizedBox(height: 16),
@@ -682,7 +683,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     );
   }
 
-  Widget _buildSalesItemsCard() {
+  Widget _buildSalesItemsCard(bool isWide) {
     return _buildCard(
       title: "Sales Items",
       trailing: InkWell(
@@ -695,55 +696,121 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       ),
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
-            color: Colors.grey.shade100,
-            child: Row(
-              children: const [
-                Expanded(flex: 3, child: Text("Product", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold))),
-                Expanded(flex: 2, child: Text("Dozen", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                Expanded(flex: 2, child: Text("Trays", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                Expanded(flex: 1, child: Text("Eggs", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                Expanded(flex: 2, child: Text("Total", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
-                SizedBox(width: 30),
-              ],
+          if (isWide)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+              color: Colors.grey.shade100,
+              child: Row(
+                children: const [
+                  Expanded(flex: 3, child: Text("Product", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold))),
+                  Expanded(flex: 2, child: Text("Dozen", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
+                  Expanded(flex: 2, child: Text("Trays", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
+                  Expanded(flex: 1, child: Text("Eggs", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
+                  Expanded(flex: 2, child: Text("Total", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
+                  SizedBox(width: 30),
+                ],
+              ),
             ),
-          ),
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: salesItems.length,
             itemBuilder: (context, index) {
               final item = salesItems[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Row(
-                  children: [
-                    Expanded(flex: 3, child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5),
-                      decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(8)),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: item.eggCategoryGrade.isEmpty ? null : item.eggCategoryGrade,
-                          isExpanded: true,
-                          hint: const Text("Select", style: TextStyle(fontSize: 11)),
-                          items: products.map((p) => DropdownMenuItem(value: p.productName, child: Text(p.productName, style: const TextStyle(fontSize: 11)))).toList(),
-                          onChanged: (v) => updateItem(index, 'product', v),
+              if (isWide) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Row(
+                    children: [
+                      Expanded(flex: 3, child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                        decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(8)),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: item.eggCategoryGrade.isEmpty ? null : item.eggCategoryGrade,
+                            isExpanded: true,
+                            hint: const Text("Select", style: TextStyle(fontSize: 11)),
+                            items: products.map((p) => DropdownMenuItem(value: p.productName, child: Text(p.productName, style: const TextStyle(fontSize: 11)))).toList(),
+                            onChanged: (v) => updateItem(index, 'product', v),
+                          ),
                         ),
+                      )),
+                      const SizedBox(width: 4),
+                      Expanded(flex: 2, child: _buildStepper(item.dozen, (v) => updateItem(index, 'dozen', v), isDozen: true)),
+                      const SizedBox(width: 4),
+                      Expanded(flex: 2, child: _buildStepper(item.trays.toDouble(), (v) => updateItem(index, 'trays', v.toInt()))),
+                      const SizedBox(width: 4),
+                      Expanded(flex: 1, child: Text("${item.eggs}", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500), textAlign: TextAlign.center)),
+                      Expanded(flex: 2, child: Text("₹${item.total.toStringAsFixed(1)}", style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF16A34A), fontSize: 11), textAlign: TextAlign.right)),
+                      const SizedBox(width: 4),
+                      InkWell(onTap: () => removeItem(index), child: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 20)),
+                    ],
+                  ),
+                );
+              } else {
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            decoration: BoxDecoration(color: Colors.white, border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(8)),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: item.eggCategoryGrade.isEmpty ? null : item.eggCategoryGrade,
+                                isExpanded: true,
+                                hint: const Text("Select Product", style: TextStyle(fontSize: 13)),
+                                items: products.map((p) => DropdownMenuItem(value: p.productName, child: Text(p.productName, style: const TextStyle(fontSize: 13)))).toList(),
+                                onChanged: (v) => updateItem(index, 'product', v),
+                              ),
+                            ),
+                          )),
+                          const SizedBox(width: 10),
+                          InkWell(onTap: () => removeItem(index), child: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 24)),
+                        ],
                       ),
-                    )),
-                    const SizedBox(width: 4),
-                    Expanded(flex: 2, child: _buildStepper(item.dozen, (v) => updateItem(index, 'dozen', v), isDozen: true)),
-                    const SizedBox(width: 4),
-                    Expanded(flex: 2, child: _buildStepper(item.trays.toDouble(), (v) => updateItem(index, 'trays', v.toInt()))),
-                    const SizedBox(width: 4),
-                    Expanded(flex: 1, child: Text("${item.eggs}", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500), textAlign: TextAlign.center)),
-                    Expanded(flex: 2, child: Text("₹${item.total.toStringAsFixed(1)}", style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF16A34A), fontSize: 11), textAlign: TextAlign.right)),
-                    const SizedBox(width: 4),
-                    InkWell(onTap: () => removeItem(index), child: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 20)),
-                  ],
-                ),
-              );
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("Dozen", style: TextStyle(fontSize: 11, color: Colors.grey)),
+                              const SizedBox(height: 4),
+                              _buildStepper(item.dozen, (v) => updateItem(index, 'dozen', v), isDozen: true),
+                            ],
+                          )),
+                          const SizedBox(width: 8),
+                          Expanded(child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("Trays", style: TextStyle(fontSize: 11, color: Colors.grey)),
+                              const SizedBox(height: 4),
+                              _buildStepper(item.trays.toDouble(), (v) => updateItem(index, 'trays', v.toInt())),
+                            ],
+                          )),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Total Eggs: ${item.eggs}", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                          Text("Total: ₹${item.total.toStringAsFixed(1)}", style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF16A34A), fontSize: 14)),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              }
             },
           ),
         ],
@@ -1016,6 +1083,7 @@ class _SuccessDialog extends StatelessWidget {
   final double discount;
   final double subtotal;
   final String paymentMethod;
+  final String branchName;
   final VoidCallback onNextSale;
   final VoidCallback onDashboard;
 
@@ -1030,6 +1098,7 @@ class _SuccessDialog extends StatelessWidget {
     required this.discount,
     required this.subtotal,
     required this.paymentMethod,
+    required this.branchName,
     required this.onNextSale, 
     required this.onDashboard,
   });
@@ -1061,6 +1130,7 @@ class _SuccessDialog extends StatelessWidget {
                 await SalesReceiptService.generateAndPrintReceipt(
                   saleId: saleId, customerName: customerName, customerNumber: customerNumber, date: date,
                   items: items, subtotal: subtotal, discount: discount, total: amount, paymentMethod: paymentMethod, isThermal: false,
+                  branchName: branchName,
                 );
               })),
               const SizedBox(width: 10),
@@ -1068,6 +1138,7 @@ class _SuccessDialog extends StatelessWidget {
                 await SalesReceiptService.generateAndPrintReceipt(
                   saleId: saleId, customerName: customerName, customerNumber: customerNumber, date: date,
                   items: items, subtotal: subtotal, discount: discount, total: amount, paymentMethod: paymentMethod, isThermal: true,
+                  branchName: branchName,
                 );
               })),
             ]),

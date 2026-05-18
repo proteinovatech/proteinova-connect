@@ -71,7 +71,7 @@ class _RoleTextFieldState extends State<RoleTextField> {
             fillColor: widget.enabled ? Colors.white : Colors.grey.shade100,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 18,
-              vertical: 18,
+              vertical: 14,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),

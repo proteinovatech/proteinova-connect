@@ -15,7 +15,7 @@ class PaymentSummaryWidget extends StatefulWidget {
   })
   buildTextField;
 
-  final Widget Function(String, String, {bool red, bool bold}) summaryRow;
+  final Widget Function(String, String, {bool? red, bool? bold}) summaryRow;
 
   final String itemTrayCount;
   final String itemTotal;
@@ -161,7 +161,7 @@ class _PaymentSummaryWidgetState extends State<PaymentSummaryWidget> {
               if (discountValue > 0) const Divider(height: 30),
 
               widget.summaryRow(
-                "Total Total",
+                "Grand Total",
                 "₹ ${widget.grandTotal}",
                 bold: true,
               ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/profile_screen.dart';
-import 'package:proteinova_connect/features/admin/settings/screens/role_permission_screen.dart';
+import 'package:proteinova_connect/features/admin/settings/screens/staff_management_screen.dart';
 
 import '../widgets/settings_option_tile.dart';
 
@@ -24,7 +24,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   void onRolePermissionTap() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const RolePermissionScreen()),
+      MaterialPageRoute(builder: (_) => const StaffManagementScreen()),
     );
   }
 

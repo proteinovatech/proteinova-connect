@@ -8,66 +8,71 @@ Widget buildOverviewCard({
   required IconData icon,
   required Color iconBg,
   Color iconColor = Colors.black,
+  VoidCallback? onTap,
 }) {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(14),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.08),
-          blurRadius: 8,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade700,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 6),
-
-              Text(
-                subtitle,
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-              ),
-            ],
+  return InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(14),
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
-        ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
 
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: iconBg,
-            borderRadius: BorderRadius.circular(10),
+                const SizedBox(height: 8),
+
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                Text(
+                  subtitle,
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                ),
+              ],
+            ),
           ),
-          child: Icon(icon, color: iconColor, size: 18),
-        ),
-      ],
+
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconBg,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 18),
+          ),
+        ],
+      ),
     ),
   );
 }
@@ -105,6 +110,40 @@ Widget buildFilterBox({
   );
 }
 
+/// TABLE HEADER
+Widget buildTableHeader() {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    decoration: const BoxDecoration(
+      color: Color(0xffF9FAFB),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+    ),
+    child: Row(
+      children: [
+        _headerCell("Purchase Record", 3),
+        _headerCell("Supplier Details", 3),
+        _headerCell("Product & Quantity", 3),
+        _headerCell("Status", 3),
+      ],
+    ),
+  );
+}
+
+Widget _headerCell(String text, int flex) {
+  return Expanded(
+    flex: flex,
+    child: Text(
+      text,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 12,
+        color: Color(0xff4B5563),
+      ),
+    ),
+  );
+}
+
 /// TABLE ROW
 Widget buildTableRow({
   required String po,
@@ -118,9 +157,9 @@ Widget buildTableRow({
   VoidCallback? onReceive,
 }) {
   return Container(
-    padding: const EdgeInsets.symmetric(vertical: 12),
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     decoration: BoxDecoration(
-      border: Border(top: BorderSide(color: Colors.grey.shade300)),
+      border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
     ),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,18 +175,13 @@ Widget buildTableRow({
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
+                  color: Color(0xff111827),
                 ),
               ),
-
-              const SizedBox(height: 6),
-
+              const SizedBox(height: 4),
               Text(
                 date,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey.shade700,
-                  height: 1.4,
-                ),
+                style: const TextStyle(fontSize: 11, color: Color(0xff6B7280)),
               ),
             ],
           ),
@@ -164,14 +198,13 @@ Widget buildTableRow({
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
+                  color: Color(0xff111827),
                 ),
               ),
-
-              const SizedBox(height: 6),
-
+              const SizedBox(height: 4),
               Text(
                 location,
-                style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+                style: const TextStyle(fontSize: 11, color: Color(0xff6B7280)),
               ),
             ],
           ),
@@ -188,14 +221,13 @@ Widget buildTableRow({
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
+                  color: Color(0xff111827),
                 ),
               ),
-
-              const SizedBox(height: 6),
-
+              const SizedBox(height: 4),
               Text(
                 type,
-                style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+                style: const TextStyle(fontSize: 11, color: Color(0xff6B7280)),
               ),
             ],
           ),
@@ -203,7 +235,7 @@ Widget buildTableRow({
 
         /// STATUS
         Expanded(
-          flex: 2,
+          flex: 3,
           child: Align(
             alignment: Alignment.centerLeft,
             child: isReceive
@@ -212,47 +244,56 @@ Widget buildTableRow({
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
-                        vertical: 8,
+                        vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFD600),
-                        borderRadius: BorderRadius.circular(8),
+                        color: const Color(0xffFEF3C7),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Text(
                         "Receive Stock",
-                        textAlign: TextAlign.center,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 11,
+                          fontSize: 10,
+                          color: Color(0xff92400E),
                         ),
                       ),
                     ),
                   )
-                : Text(
-                    status.replaceAll('_', ' ').toUpperCase(),
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                  ),
-          ),
-        ),
-
-        /// ACTION
-        Expanded(
-          flex: 1,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: const [
-              Icon(Icons.edit, size: 14),
-
-              SizedBox(width: 4),
-
-              Text(
-                "Edit",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-              ),
-            ],
+                : _buildStatusChip(status),
           ),
         ),
       ],
+    ),
+  );
+}
+
+Widget _buildStatusChip(String status) {
+  Color bgColor = const Color(0xffF3F4F6);
+  Color textColor = const Color(0xff374151);
+  String label = status.toUpperCase();
+
+  if (label == "RECEIVED") {
+    bgColor = const Color(0xffDCFCE7);
+    textColor = const Color(0xff166534);
+  } else if (label == "ARRIVAL" || label == "PURCHASED") {
+    bgColor = const Color(0xffDBEAFE);
+    textColor = const Color(0xff1E40AF);
+  }
+
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: bgColor,
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: Text(
+      label.replaceAll('_', ' '),
+      style: TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 10,
+        color: textColor,
+      ),
     ),
   );
 }

@@ -394,12 +394,12 @@ class _DailyClosingState extends State<DailyClosing> {
               ],
             ),
           ),
-          _buildSummaryItem(
-            "Difference",
-            "₹${difference.toStringAsFixed(2)}",
-            valueColor: difference == 0 ? Colors.green : Colors.red,
-            isBold: true,
-          ),
+          // _buildSummaryItem(
+          //   "Difference",
+          //   "₹${difference.toStringAsFixed(2)}",
+          //   valueColor: difference == 0 ? Colors.green : Colors.red,
+          //   isBold: true,
+          // ),
         ],
       ),
     );

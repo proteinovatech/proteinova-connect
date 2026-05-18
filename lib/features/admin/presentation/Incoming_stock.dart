@@ -56,18 +56,10 @@ class _IncomingStockState extends State<IncomingStock> {
   }
 
   Future<void> _receiveStock(int dispatchId) async {
-    try {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => ReceiveStockScreen(id: dispatchId)),
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Error: $e")));
-      }
-    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ReceiveStockScreen(id: dispatchId)),
+    ).then((_) => _fetchData());
   }
 
   // Future<void> _markArrival(int dispatchId) async {
@@ -201,78 +193,193 @@ class _IncomingStockState extends State<IncomingStock> {
       backgroundColor: Colors.transparent,
       builder: (context) {
         return Container(
-          height: MediaQuery.of(context).size.height * 0.75,
+          height: MediaQuery.of(context).size.height * 0.85,
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 60,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 12),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                const SizedBox(height: 20),
-                Row(
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 10),
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "$title Details",
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "$title Details",
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xff0F172A),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          "View comprehensive shipment data for this category",
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xff64748B),
+                          ),
+                        ),
+                      ],
                     ),
                     IconButton(
                       onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close),
+                      icon: const Icon(Icons.close, color: Color(0xff64748B)),
                     ),
                   ],
                 ),
-                const Divider(),
-                const SizedBox(height: 10),
-                Expanded(
-                  child: filteredPurchases.isEmpty
-                      ? const Center(child: Text("No shipments found"))
-                      : SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: SizedBox(
-                            width: 650,
-                            child: ListView.builder(
-                              itemCount: filteredPurchases.length,
-                              itemBuilder: (context, index) {
-                                final p = filteredPurchases[index];
-                                return buildTableRow(
-                                  po: p.poNumber,
-                                  date: _formatDate(p.createdAt),
-                                  supplier: p.supplierName,
-                                  location: p.location,
-                                  quantity: "${p.totalQuantity} Eggs",
-                                  type: p.productName,
-                                  status: p.status,
-                                  isReceive:
-                                      p.status.toUpperCase() != "RECEIVED",
-                                  onReceive: () {
-                                    Navigator.pop(context);
-                                    _receiveStock(p.id);
-                                  },
-                                );
-                              },
-                            ),
-                          ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: filteredPurchases.isEmpty
+                    ? const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
+                            SizedBox(height: 16),
+                            Text("No shipments found", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey)),
+                            SizedBox(height: 8),
+                            Text("There are currently no records for this specific category.", style: TextStyle(color: Colors.grey)),
+                          ],
                         ),
-                ),
-              ],
-            ),
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(24),
+                        itemCount: filteredPurchases.length,
+                        separatorBuilder: (context, index) => const Divider(height: 32),
+                        itemBuilder: (context, index) {
+                          final p = filteredPurchases[index];
+                          return InkWell(
+                            onTap: () {
+                              Navigator.pop(context);
+                              _receiveStock(p.id);
+                            },
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xffF1F5F9),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    "PO-${p.id}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                      color: Color(0xff475569),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  flex: 3,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        p.supplierName,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: Color(0xff0F172A),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        p.location.isEmpty ? "Location N/A" : p.location,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xff94A3B8),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 3,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        p.productName,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                          color: Color(0xff334155),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      const Text(
+                                        "Standard quality eggs",
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Color(0xff94A3B8),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 2,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        p.totalQuantity.toString(),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                          color: Color(0xff0F172A),
+                                        ),
+                                      ),
+                                      const Text(
+                                        "Total Eggs",
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Color(0xff94A3B8),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      p.arrivalDate.split('T').first,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13,
+                                        color: Color(0xff475569),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
           ),
         );
       },
@@ -396,20 +503,32 @@ class _IncomingStockState extends State<IncomingStock> {
                 /// TOP BAR
                 Row(
                   children: [
-                    InkWell(
-                      onTap: () => Navigator.pop(context),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        size: 22,
-                        color: Color(0xff111827),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                    ),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        "Inventory Overview",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: 14),
-                    const Text(
-                      "Incoming Stock Queue",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                    const SizedBox(width: 16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(color: const Color(0xffFEF3C7), borderRadius: BorderRadius.circular(12)),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.verified_user, size: 16, color: Colors.amber),
+                          SizedBox(width: 6),
+                          Text("Role: Admin", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                        ],
                       ),
                     ),
                   ],
@@ -429,32 +548,32 @@ class _IncomingStockState extends State<IncomingStock> {
                 const SizedBox(height: 16),
 
                 /// CARDS
-                GestureDetector(
+                buildOverviewCard(
+                  title: "Expected Today",
+                  value: "$_expectedTodayShipments Shipments",
+                  subtitle: "Totaling $_expectedTodayEggs eggs",
+                  icon: Icons.calendar_today_outlined,
+                  iconBg: const Color(0xFFF1F6FF),
+                  iconColor: Colors.black,
                   onTap: () {
                     final today = DateTime.now().toLocal();
-                    final todayStr =
-                        "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+                    final todayStr = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
                     _showShipmentModal(
                       "Expected Today",
-                      purchases
-                          .where(
-                            (p) => p.arrivalDate.split('T').first == todayStr,
-                          )
-                          .toList(),
+                      purchases.where((p) => p.arrivalDate.split('T').first == todayStr).toList(),
                     );
                   },
-                  child: buildOverviewCard(
-                    title: "Expected Today",
-                    value: "$_expectedTodayShipments Shipments",
-                    subtitle: "Totaling $_expectedTodayEggs eggs",
-                    icon: Icons.event_available_outlined,
-                    iconBg: const Color(0xFFF2F2F2),
-                  ),
                 ),
 
                 const SizedBox(height: 14),
 
-                GestureDetector(
+                buildOverviewCard(
+                  title: "Ready for Unloading",
+                  value: "$_readyForUnloadingShipments Shipments",
+                  subtitle: "Requires immediate actions",
+                  icon: Icons.local_shipping_outlined,
+                  iconBg: const Color(0xff16A34A),
+                  iconColor: Colors.white,
                   onTap: () {
                     _showShipmentModal(
                       "Ready for Unloading",
@@ -464,23 +583,20 @@ class _IncomingStockState extends State<IncomingStock> {
                       }).toList(),
                     );
                   },
-                  child: buildOverviewCard(
-                    title: "Ready for Unloading",
-                    value: "$_readyForUnloadingShipments Shipments",
-                    subtitle: "Requires immediate actions",
-                    icon: Icons.local_shipping_outlined,
-                    iconBg: Colors.green,
-                    iconColor: Colors.white,
-                  ),
                 ),
 
                 const SizedBox(height: 14),
 
-                GestureDetector(
+                buildOverviewCard(
+                  title: "Upcoming Shipments",
+                  value: "$_upcomingShipments Shipments",
+                  subtitle: "Next scheduled deliveries",
+                  icon: Icons.send_outlined,
+                  iconBg: const Color(0xff0B74FF),
+                  iconColor: Colors.white,
                   onTap: () {
                     final today = DateTime.now().toLocal();
-                    final todayStr =
-                        "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+                    final todayStr = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
                     _showShipmentModal(
                       "Upcoming Shipments",
                       purchases.where((p) {
@@ -490,14 +606,6 @@ class _IncomingStockState extends State<IncomingStock> {
                       }).toList(),
                     );
                   },
-                  child: buildOverviewCard(
-                    title: "Upcoming Shipments",
-                    value: "$_upcomingShipments Shipments",
-                    subtitle: "Next scheduled deliveries",
-                    icon: Icons.send_outlined,
-                    iconBg: Colors.blue,
-                    iconColor: Colors.white,
-                  ),
                 ),
 
                 const SizedBox(height: 16),
@@ -605,110 +713,47 @@ class _IncomingStockState extends State<IncomingStock> {
 
                 const SizedBox(height: 16),
 
-                /// TABLE HEADER
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Container(
-                    width: 650,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 14,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Column(
-                      children: [
-                        /// HEADER
-                        const Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              flex: 3,
-                              child: Text(
-                                "PURCHASE RECORD",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ),
-
-                            Expanded(
-                              flex: 3,
-                              child: Text(
-                                "SUPPLIER DETAILS",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ),
-
-                            Expanded(
-                              flex: 3,
-                              child: Text(
-                                "PRODUCT & QUANTITY",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ),
-
-                            Expanded(
-                              flex: 2,
-                              child: Text(
-                                "STATUS",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ),
-
-                            Expanded(
-                              flex: 1,
-                              child: Text(
-                                "ACTION",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ),
-                          ],
+                /// TABLE
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      buildTableHeader(),
+                      if (isLoading)
+                        const Padding(
+                          padding: EdgeInsets.all(40.0),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      else if (_filteredPurchases.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.all(40.0),
+                          child: Center(child: Text("No records found")),
+                        )
+                      else
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: _filteredPurchases.length,
+                          itemBuilder: (context, index) {
+                            final p = _filteredPurchases[index];
+                            return buildTableRow(
+                              po: "PO-${p.id}",
+                              date: _formatDate(p.createdAt),
+                              supplier: p.supplierName,
+                              location: p.location.isEmpty ? "N/A" : p.location,
+                              quantity: "${p.totalQuantity} Eggs",
+                              type: p.productName,
+                              status: p.status,
+                              isReceive: p.status.toUpperCase() != "RECEIVED",
+                              onReceive: () => _receiveStock(p.id),
+                            );
+                          },
                         ),
-
-                        const SizedBox(height: 10),
-
-                        /// ROWS
-                        ..._filteredPurchases.map(
-                          (purchase) => buildTableRow(
-                            po: purchase.poNumber,
-                            date: _formatDate(purchase.createdAt),
-                            supplier: purchase.supplierName,
-                            location: purchase.location,
-                            quantity: "${purchase.totalQuantity} Eggs",
-                            type: purchase.productName,
-                            status: purchase.status,
-                            isReceive:
-                                purchase.status.toUpperCase() == "PURCHASED" ||
-                                purchase.status.toUpperCase() == "ARRIVAL",
-                            onReceive: () => _receiveStock(purchase.id),
-                          ),
-                        ),
-
-                        if (_filteredPurchases.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.all(20),
-                            child: Text(
-                              "No records found matching your search",
-                            ),
-                          ),
-                      ],
-                    ),
+                    ],
                   ),
                 ),
               ],

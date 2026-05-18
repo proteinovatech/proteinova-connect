@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/services/notification_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
@@ -29,6 +30,13 @@ class AdminBottomNavigator extends StatefulWidget {
 }
 
 class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize admin notifications (request permissions & subscribe to topic)
+    NotificationService.setupAdminNotifications();
+  }
+
   void _handleLogout() {
     showDialog(
       context: context,

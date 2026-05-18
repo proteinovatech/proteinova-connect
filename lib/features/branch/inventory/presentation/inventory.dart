@@ -102,25 +102,25 @@ class _InventoryState extends State<Inventory> {
                     children: [
                       Image.asset("assets/erplogo.png", height: 40, width: 130),
 
-                      Row(
-                        children: [
-                          const Icon(Icons.notifications_outlined),
+                      // Row(
+                      //   children: [
+                      //     const Icon(Icons.notifications_outlined),
 
-                          SizedBox(width: size.width * 0.02),
+                      //     SizedBox(width: size.width * 0.02),
 
-                          CircleAvatar(
-                            radius: 18,
+                      //     CircleAvatar(
+                      //       radius: 18,
 
-                            backgroundColor: Colors.grey.shade300,
+                      //       backgroundColor: Colors.grey.shade300,
 
-                            child: Icon(
-                              Icons.person,
-                              size: 20,
-                              color: AppColors.background,
-                            ),
-                          ),
-                        ],
-                      ),
+                      //       child: Icon(
+                      //         Icons.person,
+                      //         size: 20,
+                      //         color: AppColors.background,
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
                     ],
                   ),
                 ],
