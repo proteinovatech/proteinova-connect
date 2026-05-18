@@ -86,9 +86,10 @@ class _DailyClosingState extends State<DailyClosing> {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
+        backgroundColor:AppColors.background,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.background1,
+          scrolledUnderElevation: 0,
           elevation: 0,
           title: Text("Daily Closing", style: AppTextStyles.headingText22),
           centerTitle: false,
@@ -217,37 +218,40 @@ class _DailyClosingState extends State<DailyClosing> {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: data.status == "CLOSED"
-                  ? Colors.green.shade50
-                  : Colors.orange.shade50,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 4,
-                  backgroundColor: data.status == "CLOSED"
-                      ? Colors.green
-                      : Colors.orange,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  "Status: ${data.status}",
-                  style: TextStyle(
-                    color: data.status == "CLOSED"
-                        ? Colors.green
-                        : Colors.orange,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        Container(
+  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+  decoration: BoxDecoration(
+    color: data.status == "OPEN"
+        ? Colors.green.shade50
+        : Colors.red.shade50,
+    borderRadius: BorderRadius.circular(20),
+  ),
+  child: Row(
+    children: [
+      CircleAvatar(
+        radius: 4,
+        backgroundColor:
+            data.status == "OPEN"
+                ? Colors.green
+                : Colors.red,
+      ),
+
+      const SizedBox(width: 8),
+
+      Text(
+        "Status: ${data.status}",
+        style: TextStyle(
+          color:
+              data.status == "OPEN"
+                  ? Colors.green
+                  : Colors.red,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ],
+  ),
+) ],
       ),
     );
   }

@@ -166,7 +166,7 @@ class _InventoryState extends State<Inventory> {
                             SizedBox(
                               width: cardWidth,
                               child: ShipmentCard(
-                                title: "READY FOR UNLOADING",
+                                title: "READY FOR\n UNLOADING",
                                 count:
                                     "${cards["ready_for_unloading"] ?? 0} Shipments",
                                 subtitle: "Requires immediate action",

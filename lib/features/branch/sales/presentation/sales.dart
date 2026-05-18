@@ -67,9 +67,10 @@ class _SalesState extends State<Sales> {
       create: (context) =>
           SalesBloc()..add(FetchSalesDashboard(branchId: branchId)),
       child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
-        appBar: AppBar(
-          backgroundColor: Colors.white,
+        backgroundColor:AppColors.background,
+                appBar: AppBar(
+          backgroundColor: AppColors.background1,
+          scrolledUnderElevation: 0,
           elevation: 0,
           title: Text("Sales Overview", style: AppTextStyles.headingText22),
           actions: [
@@ -165,7 +166,7 @@ class _SalesState extends State<Sales> {
             Text(
               "$branchName Overview",
               style: const TextStyle(
-                fontSize: 20,
+                fontSize: 19,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1E293B),
               ),
@@ -201,7 +202,7 @@ class _SalesState extends State<Sales> {
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.amber600,
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),

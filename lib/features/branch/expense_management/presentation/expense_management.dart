@@ -188,6 +188,7 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
                       itemBuilder: (context, index) {
                         final item = expenses[index];
                         return Card(
+                          color: AppColors.background,
                           margin: const EdgeInsets.only(bottom: 10),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           child: Padding(

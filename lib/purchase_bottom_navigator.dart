@@ -120,96 +120,96 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
                         child: Column(
                           children: [
                             /// PROFILE CARD
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(20),
+                            // Container(
+                            //   width: double.infinity,
+                            //   padding: const EdgeInsets.all(20),
 
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(18),
+                            //   decoration: BoxDecoration(
+                            //     color: Colors.white,
+                            //     borderRadius: BorderRadius.circular(18),
 
-                                border: Border.all(color: Colors.grey.shade200),
-                              ),
+                            //     border: Border.all(color: Colors.grey.shade200),
+                            //   ),
 
-                              child: Column(
-                                children: [
-                                  Container(
-                                    height: 100,
-                                    width: 100,
+                            //   child: Column(
+                            //     children: [
+                            //       Container(
+                            //         height: 100,
+                            //         width: 100,
 
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xfffacc15),
+                            //         decoration: BoxDecoration(
+                            //           color: const Color(0xfffacc15),
 
-                                      borderRadius: BorderRadius.circular(100),
-                                    ),
+                            //           borderRadius: BorderRadius.circular(100),
+                            //         ),
 
-                                    child: const Icon(
-                                      Icons.person,
-                                      size: 55,
-                                      color: Colors.black,
-                                    ),
-                                  ),
+                            //         child: const Icon(
+                            //           Icons.person,
+                            //           size: 55,
+                            //           color: Colors.black,
+                            //         ),
+                            //       ),
 
-                                  const SizedBox(height: 16),
+                            //       const SizedBox(height: 16),
 
-                                  const Text(
-                                    "ABIN Raj",
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                            //       const Text(
+                            //         "ABIN Raj",
+                            //         style: TextStyle(
+                            //           fontSize: 24,
+                            //           fontWeight: FontWeight.bold,
+                            //         ),
+                            //       ),
 
-                                  const SizedBox(height: 5),
+                            //       const SizedBox(height: 5),
 
-                                  Text(
-                                    "Branch Manager",
-                                    style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontSize: 15,
-                                    ),
-                                  ),
+                            //       Text(
+                            //         "Branch Manager",
+                            //         style: TextStyle(
+                            //           color: Colors.grey.shade600,
+                            //           fontSize: 15,
+                            //         ),
+                            //       ),
 
-                                  const SizedBox(height: 24),
+                            //       const SizedBox(height: 24),
 
-                                  Divider(color: Colors.grey.shade200),
+                            //       Divider(color: Colors.grey.shade200),
 
-                                  const SizedBox(height: 20),
+                            //       const SizedBox(height: 20),
 
-                                  _buildProfileTile(
-                                    icon: Icons.email_outlined,
-                                    title: "Email",
-                                    value: "abinraj@proteinova.com",
-                                  ),
+                            //       _buildProfileTile(
+                            //         icon: Icons.email_outlined,
+                            //         title: "Email",
+                            //         value: "abinraj@proteinova.com",
+                            //       ),
 
-                                  const SizedBox(height: 18),
+                            //       const SizedBox(height: 18),
 
-                                  _buildProfileTile(
-                                    icon: Icons.phone_outlined,
-                                    title: "Phone",
-                                    value: "+91 9876543210",
-                                  ),
+                            //       _buildProfileTile(
+                            //         icon: Icons.phone_outlined,
+                            //         title: "Phone",
+                            //         value: "+91 9876543210",
+                            //       ),
 
-                                  const SizedBox(height: 18),
+                            //       const SizedBox(height: 18),
 
-                                  _buildProfileTile(
-                                    icon: Icons.location_on_outlined,
-                                    title: "Location",
-                                    value: "Tamil Nadu, India",
-                                  ),
+                            //       _buildProfileTile(
+                            //         icon: Icons.location_on_outlined,
+                            //         title: "Location",
+                            //         value: "Tamil Nadu, India",
+                            //       ),
 
-                                  const SizedBox(height: 18),
+                            //       const SizedBox(height: 18),
 
-                                  _buildProfileTile(
-                                    icon: Icons.badge_outlined,
-                                    title: "Employee ID",
-                                    value: "EMP-1024",
-                                  ),
-                                ],
-                              ),
-                            ),
+                            //       _buildProfileTile(
+                            //         icon: Icons.badge_outlined,
+                            //         title: "Employee ID",
+                            //         value: "EMP-1024",
+                            //       ),
+                            //     ],
+                            //   ),
+                            // ),
 
-                            const SizedBox(height: 20),
+                            // const SizedBox(height: 20),
 
                             /// SETTINGS
                             Container(
@@ -225,25 +225,25 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
 
                               child: Column(
                                 children: [
-                                  _buildSettingTile(
-                                    icon: Icons.lock_outline,
-                                    title: "Change Password",
-                                  ),
+                                  // _buildSettingTile(
+                                  //   icon: Icons.lock_outline,
+                                  //   title: "Change Password",
+                                  // ),
 
-                                  Divider(color: Colors.grey.shade200),
+                                  // Divider(color: Colors.grey.shade200),
 
-                                  _buildSettingTile(
-                                    icon: Icons.notifications_none,
-                                    title: "Notifications",
-                                  ),
+                                  // _buildSettingTile(
+                                  //   icon: Icons.notifications_none,
+                                  //   title: "Notifications",
+                                  // ),
 
-                                  Divider(color: Colors.grey.shade200),
+                                  // Divider(color: Colors.grey.shade200),
 
                                   // _buildSettingTile(
                                   //   icon: Icons.language,
                                   //   title: "Language",
                                   // ),
-                                  Divider(color: Colors.grey.shade200),
+                                  // Divider(color: Colors.grey.shade200),
 
                                   _buildSettingTile(
                                     icon: Icons.logout,
@@ -276,6 +276,7 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
                         ),
                       ),
                     ),
+                  
                   ],
                 ),
               ),

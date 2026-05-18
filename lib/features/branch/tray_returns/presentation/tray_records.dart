@@ -169,7 +169,8 @@ class _TrayRecordsState extends State<TrayRecords> {
       child: Scaffold(
         backgroundColor: AppColors.background1,
         appBar: AppBar(
-          elevation: 0,
+          scrolledUnderElevation: 0,
+          backgroundColor: AppColors.background1,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
             onPressed: () => Navigator.pop(context),
