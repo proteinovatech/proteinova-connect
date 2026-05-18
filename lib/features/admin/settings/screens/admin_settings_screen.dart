@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/profile_screen.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/staff_management_screen.dart';
 
@@ -31,7 +32,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffF8F8F8),
+      backgroundColor:AppColors.background,
 
       body: SafeArea(
         child: Padding(

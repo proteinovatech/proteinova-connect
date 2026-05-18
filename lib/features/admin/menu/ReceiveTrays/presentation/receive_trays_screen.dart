@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/services/tray_receive_service.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_expense_management_skeleton_loader.dart';
@@ -49,9 +50,9 @@ class _ReceiveTraysScreenState extends State<ReceiveTraysScreen> {
     final isSmall = width < 380;
 
     return Scaffold(
-      backgroundColor: const Color(0xffF6F7FB),
+      backgroundColor:AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xffF6F7FB),
+        backgroundColor:AppColors.background,
         elevation: 0,
         scrolledUnderElevation: 0,
 

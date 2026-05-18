@@ -176,56 +176,125 @@ class _BranchManagementState extends State<BranchManagement> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Branch Directory",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                  LayoutBuilder(
+  builder: (context, constraints) {
+    if (constraints.maxWidth < 700) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Branch Directory",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
 
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AddBranchDetails(),
-                            ),
-                          );
-                        },
+          const SizedBox(height: 12),
 
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
-                          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddBranchDetails(),
+                ),
+              );
+            },
 
-                          decoration: BoxDecoration(
-                            color: AppColors.amber600,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 10,
+              ),
 
-                          child:  Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.add, size: 18, color: Colors.black),
+              decoration: BoxDecoration(
+                color: AppColors.amber600,
+                borderRadius: BorderRadius.circular(12),
+              ),
 
-                              SizedBox(width: 6),
-
-                              Text(
-                                "Add New Branch",
-                                style: TextStyle(fontWeight: FontWeight.w600),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.add,
+                    size: 18,
+                    color: Colors.black,
                   ),
 
+                  SizedBox(width: 6),
+
+                  Text(
+                    "Add New Branch",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          "Branch Directory",
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AddBranchDetails(),
+              ),
+            );
+          },
+
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 10,
+            ),
+
+            decoration: BoxDecoration(
+              color: AppColors.amber600,
+              borderRadius: BorderRadius.circular(12),
+            ),
+
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.add,
+                  size: 18,
+                  color: Colors.black,
+                ),
+
+                SizedBox(width: 6),
+
+                Text(
+                  "Add New Branch",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  },
+),
                   const SizedBox(height: 20),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12),

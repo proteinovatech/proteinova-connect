@@ -424,7 +424,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     if (isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -510,7 +510,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                   ),
                 ],
               ),
-              const Icon(Icons.notifications_none, color: Colors.grey),
+              // const Icon(Icons.notifications_none, color: Colors.grey),
             ],
           ),
           const Divider(),

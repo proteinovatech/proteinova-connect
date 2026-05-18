@@ -135,18 +135,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
         title: Text("Dashboard Overview", style: AppTextStyles.headingText22),
 
-        actions: [
-          IconButton(
-            onPressed: () {
-              // notification action
-            },
-            icon: const Icon(
-              Icons.notifications_outlined,
-              color: Colors.black, // change if needed
-              size: 30,
-            ),
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     onPressed: () {
+        //       // notification action
+        //     },
+        //     icon: const Icon(
+        //       Icons.notifications_outlined,
+        //       color: Colors.black, // change if needed
+        //       size: 30,
+        //     ),
+        //   ),
+        // ],
       ),
 
       body: isLoading || isRefreshing

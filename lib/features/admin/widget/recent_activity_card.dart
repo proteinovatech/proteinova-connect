@@ -39,11 +39,11 @@ class RecentActivityCard extends StatelessWidget {
             children: [
               const Text("Recent Activity", style: AppTextStyles.headingText16),
 
-              TextButton(
-                onPressed: () {},
+              // TextButton(
+              //   onPressed: () {},
 
-                child: Text("View All", style: AppTextStyles.blueText13),
-              ),
+              //   child: Text("View All", style: AppTextStyles.blueText13),
+              // ),
             ],
           ),
 

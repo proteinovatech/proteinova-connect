@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
@@ -254,7 +255,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
     final isWide = size.width > 1000;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: AppColors.background,
       // backgroundColor: AppColors.white,
 
       appBar: AppBar(
@@ -282,7 +283,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
+            // _buildHeader(),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
@@ -505,6 +506,10 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                   _driverPhoneController,
                   hint: "9876543210",
                   keyboardType: TextInputType.phone,
+                  inputFormatters: [
+    FilteringTextInputFormatter.digitsOnly,
+    LengthLimitingTextInputFormatter(10),
+  ],
                 ),
               ),
             ],
@@ -973,47 +978,76 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
   }
 
   Widget _buildTextField(
-    String label,
-    TextEditingController controller, {
-    String? hint,
-    bool uppercase = false,
-    TextInputType? keyboardType,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+  String label,
+  TextEditingController controller, {
+  String? hint,
+  bool uppercase = false,
+  TextInputType? keyboardType,
+  List<TextInputFormatter>? inputFormatters,
+  int? maxLength,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
         ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          keyboardType: keyboardType,
-          onChanged: (val) {
-            if (uppercase) controller.text = val.toUpperCase();
-            setState(() {});
-          },
-          decoration: InputDecoration(
-            hintText: hint,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 12,
+      ),
+
+      const SizedBox(height: 8),
+
+      TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+
+        maxLength: maxLength,
+
+        inputFormatters: inputFormatters,
+
+        onChanged: (val) {
+          if (uppercase) {
+            controller.value = TextEditingValue(
+              text: val.toUpperCase(),
+              selection: TextSelection.collapsed(
+                offset: val.length,
+              ),
+            );
+          }
+
+          setState(() {});
+        },
+
+        decoration: InputDecoration(
+          counterText: "",
+
+          hintText: hint,
+
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(
+              color: Colors.grey.shade300,
             ),
           ),
-        ),
-      ],
-    );
-  }
 
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(
+              color: Colors.grey.shade300,
+            ),
+          ),
+
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
+          ),
+        ),
+      ),
+    ],
+  );
+}
   Widget _buildTableDropdown(String value, Function(String?) onChanged) {
     final categories = [
       "White large",

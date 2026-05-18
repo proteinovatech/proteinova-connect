@@ -1000,7 +1000,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
 
   Widget dropdownField() {
     return Container(
-      height: getHeight(context, 20),
+      height: getHeight(context, 43),
       padding: EdgeInsets.symmetric(horizontal: getWidth(context, 16)),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),

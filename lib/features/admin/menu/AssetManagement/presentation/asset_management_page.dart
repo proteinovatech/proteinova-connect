@@ -207,21 +207,21 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
             ),
           ],
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Container(
-              width: getWidth(context, 44),
-              height: getHeight(context, 44),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-              child: const Icon(Icons.search, color: Colors.black, size: 22),
-            ),
-          ),
-        ],
+        // actions: [
+        //   Padding(
+        //     padding: const EdgeInsets.only(right: 16),
+        //     child: Container(
+        //       width: getWidth(context, 44),
+        //       height: getHeight(context, 44),
+        //       decoration: BoxDecoration(
+        //         color: Colors.white,
+        //         borderRadius: BorderRadius.circular(14),
+        //         border: Border.all(color: Colors.grey.shade300),
+        //       ),
+        //       child: const Icon(Icons.search, color: Colors.black, size: 22),
+        //     ),
+        //   ),
+        // ],
       ),
 
       body: isLoading
