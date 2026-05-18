@@ -48,15 +48,20 @@ final TextEditingController unloadingController=TextEditingController();
 final TextEditingController transportController=TextEditingController();
 final TextEditingController miscController=TextEditingController();
 void calculateSummary() {
+  // ignore: unused_local_variable
   final quantity = double.tryParse(quantityController.text) ?? 0;
+  // ignore: unused_local_variable
   final rate = double.tryParse(rateController.text) ?? 0;
 
+  // ignore: unused_local_variable
   final loading = 500;   // later connect from controller
+  // ignore: unused_local_variable
   final unloading = 300;
+  // ignore: unused_local_variable
   final transport = 1000;
+  // ignore: unused_local_variable
   final misc = 200;
 
-  final totalCost = (quantity * rate) + loading + unloading + transport + misc;
 
   setState(() {
     // You can store this in a variable if needed

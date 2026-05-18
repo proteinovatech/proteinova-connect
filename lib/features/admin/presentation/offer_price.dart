@@ -203,6 +203,7 @@ class _OfferPriceState extends State<OfferPrice> {
                                   borderRadius: BorderRadius.circular(24),
                                   boxShadow: [
                                     BoxShadow(
+                                      // ignore: deprecated_member_use
                                       color: Colors.black.withOpacity(.04),
                                       blurRadius: 10,
                                       offset: const Offset(0, 4),

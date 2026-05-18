@@ -265,6 +265,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     if (number.length < 10) return;
     try {
       final res = await datasource.getCustomerByNumber(number);
+      // ignore: unnecessary_null_comparison
       if (res != null && res['customer'] != null) {
         setState(() {
           customerNameController.text = res['customer']['name'] ?? "";

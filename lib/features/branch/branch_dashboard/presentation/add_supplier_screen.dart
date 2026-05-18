@@ -165,6 +165,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                           ),
                           const SizedBox(height: 8),
                           DropdownButtonFormField<String>(
+                            // ignore: deprecated_member_use
                             value: _selectedRegion,
                             decoration: InputDecoration(
                               contentPadding: const EdgeInsets.symmetric(
@@ -221,6 +222,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                           ),
                           const SizedBox(height: 8),
                           DropdownButtonFormField<String>(
+                            // ignore: deprecated_member_use
                             value: _selectedStatus,
                             decoration: InputDecoration(
                               contentPadding: const EdgeInsets.symmetric(

@@ -11,16 +11,14 @@ class ExpenseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
+   
     return Column(
       children: [
-        /// Top Row
-        Row(
+              Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(item.date, style: const TextStyle(fontSize: 12)),
-    
-            Container(
+                Container(
               padding: const EdgeInsets.symmetric(
                   horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
@@ -39,9 +37,7 @@ class ExpenseCard extends StatelessWidget {
         ),
     
         const SizedBox(height: 8),
-    
-        /// Middle Row
-        Row(
+            Row(
           children: [
             Container(
               padding: const EdgeInsets.all(6),
@@ -52,8 +48,7 @@ class ExpenseCard extends StatelessWidget {
               child: Icon(item.icon, size: 16),
             ),
             const SizedBox(width: 8),
-    
-            Expanded(
+                Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -87,7 +82,7 @@ class ExpenseCard extends StatelessWidget {
               ),
             ),
           ),
-               
+             
           ],
         ),
         Divider()

@@ -363,6 +363,7 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
                               growth: e["growth"].toString(),
                               icon: getIcon(e["icon"]?.toString() ?? ""),
                               iconColor: iconColor,
+                              // ignore: deprecated_member_use
                               iconBg: iconColor.withOpacity(0.1),
                               growthColor: e["growth"].toString().contains("-") && e["growth"].toString() != "-" ? Colors.red : Colors.green,
                             );
@@ -937,6 +938,7 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
 
             decoration: BoxDecoration(
+              // ignore: deprecated_member_use
               color: color.withOpacity(0.15),
 
               borderRadius: BorderRadius.circular(30),
@@ -984,6 +986,7 @@ class SalesStatCard extends StatelessWidget {
         border: Border.all(color: const Color(0xffE5E7EB)),
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),

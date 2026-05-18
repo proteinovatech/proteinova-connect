@@ -33,6 +33,7 @@ class DamagedBottomSheet extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
+                    // ignore: deprecated_member_use
                     color: Colors.red.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -166,6 +167,7 @@ class DamagedBottomSheet extends StatelessWidget {
         vertical: getHeight(context, 4),
       ),
       decoration: BoxDecoration(
+        // ignore: deprecated_member_use
         color: Colors.red.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),

@@ -81,14 +81,6 @@ class _TrayReturnState extends State<TrayReturn> {
                 totalReturnedThisMonth: 0,
                 goodTrays: 0,
               );
-          final refundSummary =
-              model?.refundCreditSummary ??
-              RefundCreditSummary(
-                totalRefund: 0,
-                pendingRefund: 0,
-                totalCredit: 0,
-                pendingCredit: 0,
-              );
           final dataList = model?.data ?? [];
 
           return Padding(
@@ -335,6 +327,7 @@ class _TrayReturnState extends State<TrayReturn> {
                     scrollDirection: Axis.horizontal,
                     child: DataTable(
                       columnSpacing: 20,
+                      // ignore: deprecated_member_use
                       headingRowColor: MaterialStateProperty.all(
                         Colors.grey.shade100,
                       ),
@@ -572,6 +565,7 @@ class _TrayReturnState extends State<TrayReturn> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
+        // ignore: deprecated_member_use
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color),

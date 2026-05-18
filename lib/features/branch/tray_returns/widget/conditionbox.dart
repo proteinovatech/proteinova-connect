@@ -15,6 +15,7 @@ Widget conditionBox({
     child: Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
+        // ignore: deprecated_member_use
         color: isSelected ? color.withOpacity(0.1) : Colors.grey.shade200,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(

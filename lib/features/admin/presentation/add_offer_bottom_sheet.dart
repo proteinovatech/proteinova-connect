@@ -392,6 +392,7 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                       Switch(
                         value: isActive,
                         onChanged: (val) => setState(() => isActive = val),
+                        // ignore: deprecated_member_use
                         activeColor: const Color(0xff2563EB),
                       ),
                       const Text(

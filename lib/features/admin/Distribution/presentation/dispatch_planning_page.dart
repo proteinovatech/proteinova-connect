@@ -409,7 +409,6 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                             controller: _arrivalDateController,
                             icon: Icons.calendar_today,
                             onTap: () async {
-                              final DateTime today = DateTime.now();
 
                               final picked = await showDatePicker(
                                 context: context,
@@ -960,6 +959,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                             child: Container(
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
+                                // ignore: deprecated_member_use
                                 color: Colors.green.withOpacity(0.08),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(color: AppColors.green),
@@ -1131,6 +1131,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
         boxShadow: [
           BoxShadow(
             blurRadius: 10,
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.09),
             offset: const Offset(0, 4),
           ),

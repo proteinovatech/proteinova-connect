@@ -194,6 +194,7 @@ class _AddSupplierPopupState extends State<AddSupplierPopup> {
       
             DropdownButtonFormField<String>(
               isExpanded: true,
+              // ignore: deprecated_member_use
               value: status,
       
               style: const TextStyle(

@@ -20,6 +20,7 @@ class RecentActivityCard extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.09),
             blurRadius: 12,
             spreadRadius: 1,

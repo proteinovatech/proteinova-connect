@@ -26,6 +26,7 @@ class AssetTableWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
+              // ignore: deprecated_member_use
               color: Colors.black.withOpacity(0.09),
               blurRadius: 12,
               spreadRadius: 1,
@@ -215,6 +216,7 @@ class AssetTableWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
+        // ignore: deprecated_member_use
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),
@@ -380,8 +382,10 @@ class _AssetActionSheetState extends State<_AssetActionSheet> {
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
+                      // ignore: deprecated_member_use
                       color: isCurrent ? color : color.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(14),
+                      // ignore: deprecated_member_use
                       border: Border.all(color: color.withOpacity(0.4)),
                     ),
                     child: Text(

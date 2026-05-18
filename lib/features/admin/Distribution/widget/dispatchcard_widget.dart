@@ -47,6 +47,7 @@ Widget dispatchCard({
         BoxShadow(
 
           color:
+              // ignore: deprecated_member_use
               Colors.black.withOpacity(0.04),
 
           blurRadius: 10,
@@ -76,6 +77,7 @@ Widget dispatchCard({
               decoration: BoxDecoration(
 
                 color:
+                    // ignore: deprecated_member_use
                     Colors.blue.withOpacity(
                   0.10,
                 ),
@@ -159,6 +161,7 @@ Container(
   decoration: BoxDecoration(
 
     color:
+        // ignore: deprecated_member_use
         Colors.orange.withOpacity(
       0.10,
     ),
@@ -261,6 +264,7 @@ Container(
               decoration: BoxDecoration(
 
                 color:
+                    // ignore: deprecated_member_use
                     statusColor.withOpacity(
                   0.12,
                 ),
@@ -354,6 +358,7 @@ Container(
                           color:
                               locationOpen
                                   ? Colors.blue
+                                      // ignore: deprecated_member_use
                                       .withOpacity(
                                       0.12,
                                     )
@@ -433,6 +438,7 @@ Container(
                               vehicleOpen
                                   ? Colors
                                       .orange
+                                      // ignore: deprecated_member_use
                                       .withOpacity(
                                       0.12,
                                     )

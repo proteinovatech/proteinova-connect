@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
-import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/settings/data/services/settings_service.dart';
 import '../widgets/role_textfield.dart';
 
@@ -443,6 +441,7 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
                             ),
                             const SizedBox(height: 12),
                             DropdownButtonFormField<String>(
+                              // ignore: deprecated_member_use
                               value: selectedRole,
                               items: (formOptions['roles'] as List)
                                   .map(
@@ -478,6 +477,7 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
                               ),
                               const SizedBox(height: 12),
                               DropdownButtonFormField<String>(
+                                // ignore: deprecated_member_use
                                 value: selectedBranch,
                                 items: (formOptions['branches'] as List)
                                     .map(
@@ -518,6 +518,7 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
                               ),
                               const SizedBox(height: 12),
                               DropdownButtonFormField<String>(
+                                // ignore: deprecated_member_use
                                 value: selectedWarehouse,
                                 items: (formOptions['warehouses'] as List)
                                     .map(

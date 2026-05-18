@@ -30,8 +30,10 @@ Widget trayCard({
   return Container(
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
+      // ignore: deprecated_member_use
       color: iconColor.withOpacity(0.04),
       borderRadius: BorderRadius.circular(18),
+      // ignore: deprecated_member_use
       border: Border.all(color: iconColor.withOpacity(0.15)),
     ),
     child: Column(
@@ -74,6 +76,7 @@ Widget trayCard({
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
+                // ignore: deprecated_member_use
                 color: Colors.orange.withOpacity(0.10),
                 borderRadius: BorderRadius.circular(30),
               ),

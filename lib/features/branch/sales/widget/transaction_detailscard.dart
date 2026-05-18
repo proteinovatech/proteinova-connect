@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:proteinova_connect/core/config/api_config.dart';
@@ -662,6 +661,7 @@ class _TransactionDetailscardState extends State<TransactionDetailscard> {
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
+                      // ignore: deprecated_member_use
                       color: AppColors.containerColor.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(color: AppColors.containerColor2),
@@ -1279,10 +1279,12 @@ class _TransactionDetailscardState extends State<TransactionDetailscard> {
         padding: const EdgeInsets.symmetric(vertical: 12),
 
         decoration: BoxDecoration(
+          // ignore: deprecated_member_use
           color: color.withOpacity(0.1),
 
           borderRadius: BorderRadius.circular(10),
 
+          // ignore: deprecated_member_use
           border: Border.all(color: color.withOpacity(0.3)),
         ),
 

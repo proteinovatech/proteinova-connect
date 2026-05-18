@@ -16,6 +16,7 @@ class ActionsRequiredCard extends StatelessWidget {
 
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.09),
             blurRadius: 12,
             spreadRadius: 1,
@@ -115,6 +116,7 @@ class ActionsRequiredCard extends StatelessWidget {
                     height: getHeight(context, 38),
                     width: getWidth(context, 38),
                     decoration: BoxDecoration(
+                      // ignore: deprecated_member_use
                       color: lineColor.withOpacity(0.12),
                       shape: BoxShape.circle,
                     ),

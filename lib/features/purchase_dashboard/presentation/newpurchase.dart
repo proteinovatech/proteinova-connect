@@ -41,6 +41,7 @@ class _NewpurchaseState extends State<Newpurchase> {
     final transport = 1000;
     final misc = 200;
 
+    // ignore: unused_local_variable
     final totalCost =
         (quantity * rate) + loading + unloading + transport + misc;
 

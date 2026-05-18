@@ -85,6 +85,7 @@ void calculateSummary() {
   final transport = 1000;
   final misc = 200;
 
+  // ignore: unused_local_variable
   final totalCost = (quantity * rate) + loading + unloading + transport + misc;
 
   setState(() {
@@ -121,6 +122,7 @@ void _refresh() {
   @override
   Widget build(BuildContext context) {
      final purchase = widget.purchase;
+     // ignore: unused_local_variable
      final bool isPaymentValid =
     selectedPaymentMethod.isNotEmpty &&
     amountController.text.trim().isNotEmpty &&

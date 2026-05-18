@@ -16,6 +16,7 @@ Widget buildOverviewCard({
       borderRadius: BorderRadius.circular(14),
       boxShadow: [
         BoxShadow(
+          // ignore: deprecated_member_use
           color: Colors.grey.withOpacity(0.08),
           blurRadius: 8,
           offset: const Offset(0, 4),

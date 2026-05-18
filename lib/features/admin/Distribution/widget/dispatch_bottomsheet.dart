@@ -352,6 +352,7 @@ Widget dispatchBottomSheet(
                               vertical: 7,
                             ),
                             decoration: BoxDecoration(
+                              // ignore: deprecated_member_use
                               color: getStatusColor(status).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(30),
                             ),

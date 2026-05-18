@@ -109,6 +109,7 @@ class _InfoCardsState extends State<InfoCards> {
                 width: 46,
 
                 decoration: BoxDecoration(
+                  // ignore: deprecated_member_use
                   color: widget.iconColor.withOpacity(.12),
 
                   borderRadius: BorderRadius.circular(12),

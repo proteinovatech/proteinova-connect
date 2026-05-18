@@ -269,6 +269,7 @@ void didChangeDependencies() {
     );
   }
 
+  // ignore: unused_element
   Widget _buildSupplierRow({
     required String supplier,
     required String id,
