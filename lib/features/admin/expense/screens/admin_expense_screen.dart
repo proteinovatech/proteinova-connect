@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_expense_management_skeleton_loader.dart';
 
@@ -150,7 +151,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffF7F7F7),
+      backgroundColor:AppColors.lightGrey,
       body: isLoading
           ? const AdminExpenseManagementSkeletonLoader()
           : RefreshIndicator(
@@ -193,7 +194,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                               vertical: getHeight(context, 10),
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xffFEF3C7),
+                              color: AppColors.amber100,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Row(
@@ -332,7 +333,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             amount:
                                 "₹${dashboardData?.cards.totalExpensesMtd.toStringAsFixed(2) ?? "0.00"}",
                             icon: Icons.currency_rupee,
-                            iconBg: const Color(0xffDBEAFE),
+                            iconBg: AppColors.blue100,
 
                             onTap: () {
                               showExpenseDetailsBottomSheet(
@@ -348,7 +349,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             amount:
                                 "₹${dashboardData?.cards.salaryPayroll.toStringAsFixed(2) ?? "0.00"}",
                             icon: Icons.person_outline,
-                            iconBg: const Color(0xffDBEAFE),
+                            iconBg: AppColors.blue100,
                             onTap: () {
                               showExpenseDetailsBottomSheet("Salary / Payroll");
                             },
@@ -365,7 +366,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             amount:
                                 "₹${dashboardData?.cards.rentFacilities.toStringAsFixed(2) ?? "0.00"}",
                             icon: Icons.apartment,
-                            iconBg: const Color(0xffEDE9FE),
+                            iconBg:AppColors.violet100,
                             onTap: () {
                               showExpenseDetailsBottomSheet("Rent");
                             },
@@ -378,7 +379,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             amount:
                                 "₹${dashboardData?.cards.transportFuel.toStringAsFixed(2) ?? "0.00"}",
                             icon: Icons.local_shipping_outlined,
-                            iconBg: const Color(0xffDCFCE7),
+                            iconBg: AppColors.green100,
                             onTap: () {
                               showExpenseDetailsBottomSheet("Transport");
                             },
@@ -395,7 +396,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             amount:
                                 "₹${_getCategoryAmount("ELECTRICITY").toStringAsFixed(2)}",
                             icon: Icons.bolt,
-                            iconBg: const Color(0xffFEF3C7),
+                            iconBg: AppColors.amber100,
                             onTap: () {
                               showExpenseDetailsBottomSheet("Electricity");
                             },
@@ -408,7 +409,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             amount:
                                 "₹${_getCategoryAmount("MISCELLANEOUS").toStringAsFixed(2)}",
                             icon: Icons.more_horiz,
-                            iconBg: const Color(0xffF3F4F6),
+                            iconBg: AppColors.lightGrey,
                             onTap: () {
                               showExpenseDetailsBottomSheet("Miscellaneous");
                             },
@@ -425,7 +426,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             amount:
                                 "₹${_getCategoryAmount("MAINTENANCE").toStringAsFixed(2)}",
                             icon: Icons.build,
-                            iconBg: const Color(0xffFECACA),
+                            iconBg: AppColors.red100,
                             onTap: () {
                               showExpenseDetailsBottomSheet("Maintenance");
                             },
@@ -438,7 +439,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             amount:
                                 "₹${_getCategoryAmount("OTHER_EXPENSES").toStringAsFixed(2)}",
                             icon: Icons.groups,
-                            iconBg: const Color(0xffCCFBF1),
+                            iconBg: AppColors.teal100,
                             onTap: () {
                               showExpenseDetailsBottomSheet("Other_Expenses");
                             },
@@ -724,9 +725,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                     height: getHeight(context, 48),
                                     child: ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(
-                                          0xffFACC15,
-                                        ),
+                                        backgroundColor:AppColors.amber600,
                                         foregroundColor: Colors.black,
                                         elevation: 0,
                                         shape: RoundedRectangleBorder(
@@ -797,8 +796,8 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                     title: "Rent",
                                     icon: Icons.apartment,
                                     bgColor: selectedCategory == "Rent"
-                                        ? Colors.blue.shade100
-                                        : const Color(0xffEDE9FE),
+                                        ? AppColors.blue100
+                                        : AppColors.violet100,
                                   ),
                                 ),
 
@@ -810,8 +809,8 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                     title: "Salary",
                                     icon: Icons.person_outline,
                                     bgColor: selectedCategory == "Salary"
-                                        ? Colors.blue.shade100
-                                        : const Color(0xffDBEAFE),
+                                        ? AppColors.blue100
+                                        : AppColors.blue100,
                                   ),
                                 ),
 
@@ -823,8 +822,8 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                     title: "Electricity",
                                     icon: Icons.bolt,
                                     bgColor: selectedCategory == "Electricity"
-                                        ? Colors.blue.shade100
-                                        : const Color(0xffFEF3C7),
+                                        ? AppColors.blue100
+                                        : AppColors.amber100,
                                   ),
                                 ),
 
@@ -836,8 +835,8 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                     title: "Miscellaneous",
                                     icon: Icons.more_horiz,
                                     bgColor: selectedCategory == "Miscellaneous"
-                                        ? Colors.blue.shade100
-                                        : const Color(0xffF3F4F6),
+                                        ? AppColors.blue100
+                                        : AppColors.lightGrey,
                                   ),
                                 ),
 
@@ -849,8 +848,8 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                     title: "Transport",
                                     icon: Icons.local_shipping_outlined,
                                     bgColor: selectedCategory == "Transport"
-                                        ? Colors.blue.shade100
-                                        : const Color(0xffDCFCE7),
+                                        ? AppColors.blue100
+                                        : AppColors.green100,
                                   ),
                                 ),
 
@@ -862,8 +861,8 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                     title: "Packing",
                                     icon: Icons.inventory_2,
                                     bgColor: selectedCategory == "Packing"
-                                        ? Colors.blue.shade100
-                                        : const Color(0xffE9D5FF),
+                                        ? AppColors.blue100
+                                        : AppColors.violet100,
                                   ),
                                 ),
 
@@ -875,8 +874,8 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                     title: "Maintenance",
                                     icon: Icons.build,
                                     bgColor: selectedCategory == "Maintenance"
-                                        ? Colors.blue.shade100
-                                        : const Color(0xffFECACA),
+                                        ? AppColors.blue100
+                                        : AppColors.red100,
                                   ),
                                 ),
 
@@ -889,8 +888,8 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                     icon: Icons.groups,
                                     bgColor:
                                         selectedCategory == "Other Expenses"
-                                        ? Colors.blue.shade100
-                                        : const Color(0xffCCFBF1),
+                                        ? AppColors.blue100
+                                        : AppColors.teal100,
                                   ),
                                 ),
                               ],

@@ -9,8 +9,9 @@ import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/mod
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/purchase_repository.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/supplier_repository.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/purchase/purchase_bloc.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/presentation/newpurchase.dart';
+import 'package:proteinova_connect/features/purchase_dashboard/presentation/newpurchase.dart';
 import 'package:proteinova_connect/purchase_bottom_navigator.dart';
+// import 'package:proteinova_connect/features/purchase/purchase_dashboard/presentation/newpurchase.dart';
 import 'package:proteinova_connect/features/purchase/orders/widget/purchase_summarycard.dart';
 
 class PurchaseSuccessScreen extends StatefulWidget {
@@ -110,7 +111,7 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                       Navigator.push(context, MaterialPageRoute(builder: 
-              (context)=>Newpurchase(isEdit: false,purchaseData: null,)));
+              (context)=>Newpurchase()));
                    
                   },
                   style: ElevatedButton.styleFrom(

@@ -270,7 +270,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
 
       appBar: AppBar(
         backgroundColor: AppColors.white,
-        surfaceTintColor: Colors.white,
+        surfaceTintColor: AppColors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
 
@@ -334,7 +334,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(14),
                                   border: Border.all(
-                                    color: Colors.grey.shade300,
+                                    color: AppColors.light,
                                   ),
                                 ),
                                 child: DropdownButtonHideUnderline(
@@ -515,9 +515,10 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                               vertical: getHeight(context, 8),
                             ),
                             decoration: BoxDecoration(
+                              color:AppColors.amber600,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: const Color(0xffE8C400),
+                                color:AppColors.amber600,
                               ),
                             ),
                             child: Row(
@@ -586,7 +587,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                       ],
                     ),
                     SizedBox(height: getHeight(context, 12)),
-                    Divider(color: Colors.grey.shade300, thickness: 1),
+                    Divider(color: AppColors.border, thickness: 1),
                     SizedBox(height: getHeight(context, 4)),
                     ListView.separated(
                       shrinkWrap: true,
@@ -608,7 +609,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: Colors.grey.shade300,
+                                    color: AppColors.border,
                                   ),
                                 ),
                                 child: DropdownButtonHideUnderline(
@@ -638,8 +639,8 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                           style: TextStyle(
                                             fontSize: 11,
                                             color: count > 0
-                                                ? Colors.green
-                                                : Colors.red,
+                                                ? AppColors.green
+                                                : AppColors.redAccent,
                                             fontWeight: count > 0
                                                 ? FontWeight.bold
                                                 : FontWeight.normal,
@@ -664,8 +665,8 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                     color: (item['available_eggs'] ?? 0) >= 30
-                                        ? Colors.green
-                                        : Colors.red,
+                                         ? AppColors.green
+                                         : AppColors.redAccent,
                                   ),
                                 ),
                               ),
@@ -712,7 +713,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: Colors.grey.shade300,
+                                    color: AppColors.border,
                                   ),
                                 ),
                                 child: TextField(
@@ -751,7 +752,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                 },
                                 child: const Icon(
                                   Icons.delete_outline,
-                                  color: Colors.red,
+                                  color: AppColors.redAccent,
                                 ),
                               ),
                             ),
@@ -760,7 +761,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                       },
                     ),
                     SizedBox(height: getHeight(context, 12)),
-                    Divider(color: Colors.grey.shade300, thickness: 1),
+                    Divider(color: AppColors.border, thickness: 1),
                     SizedBox(height: getHeight(context, 10)),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -803,10 +804,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                     const SizedBox(height: 6),
                     Text(
                       "Specify additional empty trays being dispatched along with the product",
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
-                        fontSize: 13,
-                      ),
+                      style: AppTextStyles.bodyText13
                     ),
                     SizedBox(height: getHeight(context, 20)),
 
@@ -816,7 +814,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                         children: [
                           Expanded(
                             child: trayCard(
-                              iconColor: Colors.blue,
+                              iconColor: AppColors.blue,
                               title: "Plastic Trays",
                               subtitle: "(Empty)",
                               desc:
@@ -829,7 +827,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                           SizedBox(width: getWidth(context, 12)),
                           Expanded(
                             child: trayCard(
-                              iconColor: Colors.orange,
+                              iconColor:AppColors.orange,
                               title: "Paper Trays",
                               subtitle: "(Empty)",
                               desc: "Paper pulp trays used for transport",
@@ -861,9 +859,9 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(color: Colors.blue.shade100),
                           ),
-                          child: const Icon(
+                          child:  Icon(
                             Icons.description,
-                            color: Colors.blue,
+                            color: AppColors.blue,
                             size: 20,
                           ),
                         ),
@@ -909,7 +907,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                             child: Container(
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: Colors.grey.shade50,
+                                color: AppColors.border,
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Row(
@@ -918,13 +916,13 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                   Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: Colors.grey.withOpacity(0.08),
+                                      color:  AppColors.border,
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Icon(
                                       Icons.shield_outlined,
                                       size: 20,
-                                      color: Colors.grey.shade600,
+                                      color:  AppColors.border,
                                     ),
                                   ),
                                   SizedBox(width: getWidth(context, 10)),
@@ -964,7 +962,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                               decoration: BoxDecoration(
                                 color: Colors.green.withOpacity(0.08),
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.green),
+                                border: Border.all(color: AppColors.green),
                               ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -974,7 +972,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                     children: [
                                       const Icon(
                                         Icons.check_circle,
-                                        color: Colors.green,
+                                        color: AppColors.green,
                                         size: 20,
                                       ),
                                       SizedBox(width: getWidth(context, 8)),
@@ -983,7 +981,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                           "Overall Dispatch",
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
-                                            color: Colors.green,
+                                            color: AppColors.green,
                                             fontSize: 14,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -1030,17 +1028,14 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                       height: 110,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade300),
+                        border: Border.all(color: AppColors.border),
                       ),
                       child: TextField(
                         controller: _notesController,
                         maxLines: 4,
-                        decoration: const InputDecoration(
+                        decoration:  InputDecoration(
                           hintText: "Enter any additional notes...",
-                          hintStyle: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 13,
-                          ),
+                          hintStyle: AppTextStyles.bodyText13,
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.all(14),
                         ),
@@ -1061,20 +1056,17 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                       child: Container(
                         height: getHeight(context, 58),
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
+                          color: AppColors.border,
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                            color: Colors.grey.shade300,
+                            color: AppColors.border,
                             width: 1.2,
                           ),
                         ),
                         child: const Center(
                           child: Text(
                             "Cancel",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: AppTextStyles.bodyText14dark
                           ),
                         ),
                       ),
@@ -1087,7 +1079,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                       child: Container(
                         height: getHeight(context, 58),
                         decoration: BoxDecoration(
-                          color: const Color(0xffFFD600),
+                          color: AppColors.amber600,
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Center(
@@ -1098,7 +1090,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
 
                                   child: const CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: Colors.black,
+                                    color: AppColors.dark,
                                   ),
                                 )
                               : const Text(
@@ -1132,7 +1124,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
       padding: const EdgeInsets.all(16),
 
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
 
         borderRadius: BorderRadius.circular(22),
 
@@ -1158,7 +1150,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
           width: 26,
 
           decoration: const BoxDecoration(
-            color: Color(0xffFFD600),
+            color:AppColors.amber600,
             shape: BoxShape.circle,
           ),
 
@@ -1214,7 +1206,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
 
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color:AppColors.border),
             ),
 
             child: Row(

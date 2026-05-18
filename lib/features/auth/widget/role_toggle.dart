@@ -4,8 +4,8 @@ import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 
 class RoleToggle extends StatefulWidget {
   final Function(String)? onChanged; // to send value to parent
-
-  const RoleToggle({super.key, this.onChanged});
+  final String initialValue;
+  const RoleToggle({super.key, this.onChanged,required this.initialValue});
 
   @override
   State<RoleToggle> createState() => _RoleToggleState();
@@ -20,14 +20,14 @@ class _RoleToggleState extends State<RoleToggle> {
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.containerColor,
+        color: AppColors.amber600,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          _buildTab("Purchase", 0),
+          _buildTab("Admin", 0),
           _buildTab("Branch", 1),
-          _buildTab("Admin", 2),
+          _buildTab("Purchase", 2),
         ],
       ),
     );
@@ -54,7 +54,7 @@ class _RoleToggleState extends State<RoleToggle> {
           decoration: BoxDecoration(
             color: isSelected
                 ? AppColors.cardBackground
-                : AppColors.containerColor,
+                : AppColors.amber600,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Center(

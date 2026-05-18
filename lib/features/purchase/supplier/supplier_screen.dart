@@ -224,9 +224,8 @@ void didChangeDependencies() {
             status: supplier.status,
 
             statusColor:
-                supplier.status == "ACTIVE"
-                    ? Colors.green
-                    : Colors.grey,
+                 AppColors.green,
+                    
 
             textColor: Colors.white,
 
@@ -337,25 +336,26 @@ void didChangeDependencies() {
 
           /// STATUS
           Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: isActive
-                    ? Colors.green.withOpacity(0.1)
-                    : Colors.grey.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: Text(
-                isActive ? "Active" : "Inactive",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: isActive ? Colors.green : Colors.grey.shade700,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
+  child: Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 12,
+      vertical: 6,
+    ),
+    decoration: BoxDecoration(
+      color: Colors.green.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(30),
+    ),
+    child: const Text(
+      "Active",
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        color: Colors.green,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  ),
+),
 
           /// ACTIONS
           SizedBox(

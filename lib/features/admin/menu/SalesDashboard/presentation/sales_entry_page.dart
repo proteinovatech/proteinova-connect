@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/data/datasource/sales_remote_datasource.dart';
 import 'package:proteinova_connect/features/branch/sales/data/model/sales_entry_model.dart';
 import 'package:proteinova_connect/features/branch/sales/data/model/sales_item_model.dart';
@@ -689,7 +690,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         onTap: addItem,
         child: Container(
           padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(color: const Color(0xFF2563EB), borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(color: AppColors.amber600, borderRadius: BorderRadius.circular(8)),
           child: const Icon(Icons.add, color: Colors.white, size: 20),
         ),
       ),
@@ -758,7 +759,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         onPressed: () => setState(() => saleTrays.add(SaleTray())),
         icon: const Icon(Icons.add, size: 14),
         label: const Text("Add Tray", style: TextStyle(fontSize: 12)),
-        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2563EB), foregroundColor: Colors.white, elevation: 0, padding: const EdgeInsets.symmetric(horizontal: 10)),
+        style: ElevatedButton.styleFrom(backgroundColor: AppColors.amber600, foregroundColor: Colors.white, elevation: 0, padding: const EdgeInsets.symmetric(horizontal: 10)),
       ),
       child: Column(
         children: saleTrays.asMap().entries.map((entry) {
@@ -880,9 +881,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                         height: 40,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: selectedPaymentMethod == m ? const Color(0xFF2563EB) : Colors.white,
+                          color: selectedPaymentMethod == m ?AppColors.amber600 : Colors.white,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: selectedPaymentMethod == m ? const Color(0xFF2563EB) : Colors.grey.shade300),
+                          border: Border.all(color: selectedPaymentMethod == m ? AppColors.amber600 : Colors.grey.shade300),
                         ),
                         child: Text(m, style: TextStyle(color: selectedPaymentMethod == m ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 12)),
                       ),
@@ -915,7 +916,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 child: ElevatedButton(
                   onPressed: isSubmitting ? null : handlePayment,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1E293B), 
+                    backgroundColor: AppColors.green, 
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                   ),
                   child: isSubmitting 
@@ -1074,7 +1075,7 @@ class _SuccessDialog extends StatelessWidget {
             const SizedBox(height: 20),
             SizedBox(width: double.infinity, height: 50, child: ElevatedButton(
               onPressed: onNextSale, 
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1E293B), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.amber600, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
               child: const Text("Next Sale Entry", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)))),
             TextButton(onPressed: onDashboard, child: const Text("Back to Dashboard", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold))),
           ],
@@ -1098,7 +1099,7 @@ class _SuccessDialog extends StatelessWidget {
       onPressed: onTap, 
       icon: Icon(icon, size: 18), 
       label: Text(label, style: const TextStyle(fontSize: 12)),
-      style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF1E293B), side: BorderSide(color: Colors.grey.shade300), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+      style: OutlinedButton.styleFrom(foregroundColor: AppColors.amber600, side: BorderSide(color: Colors.grey.shade300), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
     );
   }
 }

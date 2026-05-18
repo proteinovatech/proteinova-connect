@@ -132,7 +132,7 @@ class _DistributionPageState extends State<DistributionPage> {
                   vertical: getHeight(context, 10),
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.amber500,
+                  color: AppColors.amber600,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(

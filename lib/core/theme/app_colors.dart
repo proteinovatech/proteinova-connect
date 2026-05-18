@@ -9,18 +9,22 @@ class AppColors {
   static const Color green = Colors.green;
   static const Color white = Colors.white;
   static const Color blue = Colors.blue;
-
+  static const Color teal100 = Color(0xffCCFBF1);
+  static const Color red100 = const Color(0xffFECACA);
+  static const Color blue100 = Color(0xffDBEAFE);
+  static const Color violet100 = Color(0xffEDE9FE);
+  static const Color green100 = Color(0xffDCFCE7);
   static const Color amber50 = Color.fromARGB(255, 252, 252, 173);
-  static const Color amber100 = Color.fromARGB(255, 243, 218, 183);
+ static const Color amber100 = Color(0xffFEF3C7);
   static const Color amber200 = Color.fromARGB(255, 224, 178, 135);
   static const Color amber300 = Color.fromARGB(255, 233, 188, 172);
   static const Color amber400 = Color.fromARGB(255, 243, 234, 103);
   static const Color amber500 = Color.fromARGB(255, 243, 225, 62);
-  static const Color amber600 = Colors.amber;
+  static const Color amber600 = Color(0xFFFFC107);
 
   static const Color dark = Color(0xFF1C1C1C);
   static const Color softBlack = Color.fromARGB(255, 228, 225, 225);
-
+   static const Color lightGrey = Color(0xffF7F7F7);
   static const Color textPrimary = Color(0xFF1C1C1C);
   static const Color textSecondary = Color(0xFF6D6D6D);
   static const Color textLight = Color(0xFFFFFFFF);
