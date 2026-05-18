@@ -39,7 +39,7 @@ class ShipmentCard extends StatelessWidget {
                 title,
                 style: AppTextStyles.bodyText12semibold
               ),               
-                             Icon(icon, size: 20, color: AppColors.dark),
+                             Icon(icon, size: 18, color: AppColors.dark),
             ],
           ),
           SizedBox(height: size.height*0.01),
