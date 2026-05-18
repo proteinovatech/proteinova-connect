@@ -786,7 +786,6 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
           child: const Icon(Icons.add, color: Colors.white, size: 20),
         ),
       ),
-<<<<<<< HEAD
       child: Column(
         children: [
           if (isWide)
@@ -1131,68 +1130,8 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 );
               }
             },
-=======
-      child: SingleChildScrollView(
-         scrollDirection: Axis.horizontal,
-        child: SizedBox(
-          width: 600,
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
-                color: Colors.grey.shade100,
-                child: Row(
-                  children: const [
-                    Expanded(flex: 3, child: Text("Product", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold))),
-                    Expanded(flex: 2, child: Text("Dozen", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    Expanded(flex: 2, child: Text("Trays", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    Expanded(flex: 1, child: Text("Eggs", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    Expanded(flex: 2, child: Text("Total", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
-                    SizedBox(width: 30),
-                  ],
-                ),
-              ),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: salesItems.length,
-                itemBuilder: (context, index) {
-                  final item = salesItems[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: Row(
-                      children: [
-                        Expanded(flex: 3, child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 5),
-                          decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(8)),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: item.eggCategoryGrade.isEmpty ? null : item.eggCategoryGrade,
-                              isExpanded: true,
-                              hint: const Text("Select Product", style: TextStyle(fontSize: 11)),
-                              items: products.map((p) => DropdownMenuItem(value: p.productName, child: Text(p.productName, style: const TextStyle(fontSize: 11)))).toList(),
-                              onChanged: (v) => updateItem(index, 'product', v),
-                            ),
-                          ),
-                        )),
-                        const SizedBox(width: 4),
-                        Expanded(flex: 2, child: _buildStepper(item.dozen, (v) => updateItem(index, 'dozen', v), isDozen: true)),
-                        const SizedBox(width: 4),
-                        Expanded(flex: 2, child: _buildStepper(item.trays.toDouble(), (v) => updateItem(index, 'trays', v.toInt()))),
-                        const SizedBox(width: 4),
-                        Expanded(flex: 1, child: Text("${item.eggs}", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500), textAlign: TextAlign.center)),
-                        Expanded(flex: 2, child: Text("₹${item.total.toStringAsFixed(1)}", style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF16A34A), fontSize: 11), textAlign: TextAlign.right)),
-                        const SizedBox(width: 4),
-                        InkWell(onTap: () => removeItem(index), child: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 20)),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ],
->>>>>>> c14a7fc04e3a7c011afb5259477d72267e330570
           ),
-        ),
+        ],
       ),
     );
   }
@@ -1528,15 +1467,8 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 child: ElevatedButton(
                   onPressed: isSubmitting ? null : handlePayment,
                   style: ElevatedButton.styleFrom(
-<<<<<<< HEAD
-                    backgroundColor: const Color(0xFF1E293B),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-=======
                     backgroundColor:AppColors.blueAccent,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
->>>>>>> c14a7fc04e3a7c011afb5259477d72267e330570
                     elevation: 4,
                   ),
                   child: isSubmitting
@@ -1639,7 +1571,6 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.grey.shade200),
-<<<<<<< HEAD
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
@@ -1668,10 +1599,8 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
           const SizedBox(height: 20),
           child,
         ],
-=======
         // ignore: deprecated_member_use
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
->>>>>>> c14a7fc04e3a7c011afb5259477d72267e330570
+        // boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
       ),
     );
   }

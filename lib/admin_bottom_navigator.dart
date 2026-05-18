@@ -198,11 +198,7 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                 children: [
                   const SizedBox(height: 16),
 
-                  _menuTile(
-                    Icons.agriculture,
-                    "SalesDashboard",
-                    SalesDashboardPage(),
-                  ),
+                  _menuTile(Icons.agriculture, "Sales", SalesDashboardPage()),
 
                   _menuTile(
                     Icons.store,
@@ -231,7 +227,7 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
 
                   _menuTile(
                     Icons.warehouse_outlined,
-                    "AdminInventory",
+                    "Inventory",
                     AdminInventory(),
                   ),
                   // _menuTile(
@@ -241,7 +237,11 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   // ),
                   _menuTile(Icons.inventory, "Incoming Stock", IncomingStock()),
 
-                  _menuTile(Icons.sell_outlined, "Offer Price", OfferPrice()),
+                  _menuTile(
+                    Icons.sell_outlined,
+                    "Offers & Prices",
+                    OfferPrice(),
+                  ),
                   // _menuTile(
                   //   Icons.report,
                   //   "Report",

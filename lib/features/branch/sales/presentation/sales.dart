@@ -189,7 +189,6 @@ class _SalesState extends State<Sales> {
                 ),
               ],
             ),
-<<<<<<< HEAD
           ],
         ),
         ElevatedButton.icon(
@@ -197,10 +196,6 @@ class _SalesState extends State<Sales> {
             context,
             MaterialPageRoute(builder: (_) => const SalesEntryPage()),
           ).then((_) => loadBranchData()),
-=======
-              ElevatedButton.icon(
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SalesEntryPage())).then((_) => loadBranchData()),
->>>>>>> c14a7fc04e3a7c011afb5259477d72267e330570
           icon: const Icon(Icons.add, size: 20),
           label: const Text("New Entry"),
           style: ElevatedButton.styleFrom(
@@ -212,9 +207,6 @@ class _SalesState extends State<Sales> {
             ),
             elevation: 0,
           ),
-        ),
-      
-          ],
         ),
       ],
     );
@@ -279,7 +271,6 @@ class _SalesState extends State<Sales> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFF1F5F9)),
-<<<<<<< HEAD
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
@@ -287,10 +278,6 @@ class _SalesState extends State<Sales> {
             offset: const Offset(0, 4),
           ),
         ],
-=======
-        // ignore: deprecated_member_use
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
->>>>>>> c14a7fc04e3a7c011afb5259477d72267e330570
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -422,7 +409,6 @@ class _SalesState extends State<Sales> {
             Container(
               width: 44,
               height: 44,
-<<<<<<< HEAD
               decoration: BoxDecoration(
                 color: statusColor.withOpacity(0.1),
                 shape: BoxShape.circle,
@@ -432,11 +418,6 @@ class _SalesState extends State<Sales> {
                 color: statusColor,
                 size: 20,
               ),
-=======
-              // ignore: deprecated_member_use
-              decoration: BoxDecoration(color: statusColor.withOpacity(0.1), shape: BoxShape.circle),
-              child: Icon(Icons.receipt_long_outlined, color: statusColor, size: 20),
->>>>>>> c14a7fc04e3a7c011afb5259477d72267e330570
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -492,15 +473,10 @@ class _SalesState extends State<Sales> {
   Widget _statusBadge(String status, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-<<<<<<< HEAD
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
       ),
-=======
-      // ignore: deprecated_member_use
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
->>>>>>> c14a7fc04e3a7c011afb5259477d72267e330570
       child: Text(
         status.toUpperCase(),
         style: TextStyle(
