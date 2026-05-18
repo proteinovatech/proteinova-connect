@@ -172,6 +172,7 @@ final List<String> categoryList = [
                 Text("Expense Category*", style: AppTextStyles.headingText20),
                 SizedBox(height: size.height * 0.01),
                 DropdownButtonFormField<String>(
+                  // ignore: deprecated_member_use
                   value: selectedCategory,
                   hint: const Text("Select Category"),
                   decoration: InputDecoration(
@@ -214,6 +215,7 @@ final List<String> categoryList = [
                           decoration: BoxDecoration(
                             border: Border.all(color: selectedPayment == "CASH" ? Colors.blue : AppColors.border2),
                             borderRadius: BorderRadius.circular(8),
+                            // ignore: deprecated_member_use
                             color: selectedPayment == "CASH" ? Colors.blue.withOpacity(0.1) : Colors.transparent,
                           ),
                           child: const Row(
@@ -236,6 +238,7 @@ final List<String> categoryList = [
                           decoration: BoxDecoration(
                             border: Border.all(color: selectedPayment == "UPI" ? Colors.blue : Colors.grey),
                             borderRadius: BorderRadius.circular(8),
+                            // ignore: deprecated_member_use
                             color: selectedPayment == "UPI" ? Colors.blue.withOpacity(0.1) : Colors.transparent,
                           ),
                           child: const Row(
@@ -258,6 +261,7 @@ final List<String> categoryList = [
                           decoration: BoxDecoration(
                             border: Border.all(color: selectedPayment == "BANK" ? Colors.blue : Colors.grey),
                             borderRadius: BorderRadius.circular(8),
+                            // ignore: deprecated_member_use
                             color: selectedPayment == "CARD" ? Colors.blue.withOpacity(0.1) : Colors.transparent,
                           ),
                           child: const Row(

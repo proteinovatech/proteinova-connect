@@ -72,6 +72,7 @@ void calculateSummary() {
   final transport = 1000;
   final misc = 200;
 
+  // ignore: unused_local_variable
   final totalCost = (quantity * rate) + loading + unloading + transport + misc;
 
   setState(() {
@@ -114,6 +115,7 @@ location = data['warehouse_location'] ?? '';
   List<ProductInput> editProducts = [];
  
   int totalTrays = 0;
+// ignore: unused_local_variable
 int totalEggs = 0;
 double totalItemCost = 0;
   for (var item in items) {
@@ -230,6 +232,7 @@ List<ProductInput> products = [ProductInput(),];
 
   @override
   Widget build(BuildContext context) {
+    // ignore: unused_local_variable
     final Size size=MediaQuery.of(context).size;
     final productSummaries = products
     .map((p) => ProductSummary(

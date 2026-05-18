@@ -27,6 +27,7 @@ class PurchaseDashboard extends StatefulWidget {
 
 class _PurchaseDashboardState extends State<PurchaseDashboard> {
   
+ // ignore: unused_field
  static bool _hasLoadedOnce = false;
 String? loadingPurchaseId;
   
@@ -72,7 +73,7 @@ String? loadingPurchaseId;
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(state.message!),
-                        backgroundColor: Colors.green,
+                        backgroundColor:AppColors.green,
                       ),
                     );
                   }
@@ -263,7 +264,7 @@ String? loadingPurchaseId;
           const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [

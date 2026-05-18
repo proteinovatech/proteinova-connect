@@ -59,6 +59,7 @@ class _PaymentSummaryWidgetState extends State<BranchPaymentSummaryWidget> {
         boxShadow: [
           BoxShadow(
             blurRadius: 10,
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.03),
             offset: const Offset(0, 4),
           ),

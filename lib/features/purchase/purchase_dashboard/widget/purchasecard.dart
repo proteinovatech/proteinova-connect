@@ -114,7 +114,7 @@ class PurchaseCard extends StatelessWidget {
             : Colors.blue,
         textColor: Colors.white,
         onPressed: movementStatus == "RECEIVED"
-            ? null
+            ? () {}
             : onArrivalTap,
       )
             ],

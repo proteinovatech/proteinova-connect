@@ -29,6 +29,7 @@ class InventoryCard extends StatelessWidget {
 
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.05),
             blurRadius: 6,
             offset: const Offset(0, 2),
@@ -53,6 +54,7 @@ class InventoryCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
+                  // ignore: deprecated_member_use
                   color: iconColor.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),

@@ -132,7 +132,7 @@ class _DistributionPageState extends State<DistributionPage> {
                   vertical: getHeight(context, 10),
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.amber500,
+                  color: AppColors.amber600,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(
@@ -229,6 +229,7 @@ class _DistributionPageState extends State<DistributionPage> {
                         boxShadow: [
                           BoxShadow(
                             blurRadius: 10,
+                            // ignore: deprecated_member_use
                             color: AppColors.textPrimary.withOpacity(0.09),
                             offset: const Offset(0, 4),
                           ),

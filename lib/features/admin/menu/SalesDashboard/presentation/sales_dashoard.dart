@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/theme/app_colors.dart';
+import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/data/datasource/sales_remote_datasource.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/presentation/sales_entry_page.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/sales_row.dart';
@@ -109,12 +111,12 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:  Colors.white,
+      backgroundColor: AppColors.white,
 
       /// APP BAR
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white, // IMPORTANT
+        backgroundColor: AppColors.white,
+        surfaceTintColor:AppColors.white, // IMPORTANT
         elevation: 0,
         scrolledUnderElevation: 0, // IMPORTANT
 
@@ -122,7 +124,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColors.dark),
         ),
 
         titleSpacing: 0,
@@ -131,13 +133,9 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
+            Text(
               "Sales Dashboard",
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppTextStyles.headingText20
             ),
 
             const SizedBox(height: 8),
@@ -195,7 +193,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                       width: double.infinity,
 
                       decoration: BoxDecoration(
-                        color: const Color(0xffFFD600),
+                        color: AppColors.amber600,
                         borderRadius: BorderRadius.circular(14),
                       ),
 
@@ -235,7 +233,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                               "₹ ${salesData['cards']?['total_sales']?['value'] ?? salesData['cards']?['sales_today']?['amount'] ?? 0}",
                           icon: Icons.layers_outlined,
 
-                          iconColor: Colors.blue,
+                          iconColor:AppColors.blue,
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -250,7 +248,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
 
                           icon: Icons.receipt_long_outlined,
 
-                          iconColor: Colors.green,
+                          iconColor: AppColors.green,
                         ),
                       ),
 
@@ -266,7 +264,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
 
                           icon: Icons.egg_outlined,
 
-                          iconColor: Colors.orange,
+                          iconColor: AppColors.orange,
                         ),
                       ),
                     ],
@@ -274,16 +272,16 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                   const SizedBox(height: 18),
 
                   /// TITLE
-                  const Text(
+                   Text(
                     "Recent Sales",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: AppTextStyles.headingText20,
                   ),
 
                   const SizedBox(height: 2),
 
                   Text(
                     "Review and manage your latest branch sales and customer orders",
-                    style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
+                    style: AppTextStyles.bodyText12,
                   ),
 
                   const SizedBox(height: 10),
@@ -796,7 +794,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                               width: 38,
 
                               decoration: BoxDecoration(
-                                color: const Color(0xff14213D),
+                                color: AppColors.amber600,
                                 borderRadius: BorderRadius.circular(10),
                               ),
 
@@ -875,6 +873,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
         boxShadow: [
           BoxShadow(
             blurRadius: 10,
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(.04),
             offset: const Offset(0, 4),
           ),

@@ -254,7 +254,34 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
     final isWide = size.width > 1000;
 
     return Scaffold(
+<<<<<<< HEAD
       backgroundColor: const Color(0xFFF1F5F9),
+=======
+      backgroundColor: AppColors.white,
+
+      appBar: AppBar(
+        backgroundColor: AppColors.white,
+        surfaceTintColor: AppColors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+        ),
+
+        titleSpacing: 0,
+
+        title: const Text(
+          "Dispatch Planning",
+          style: AppTextStyles.headingText21,
+        ),
+      ),
+
+>>>>>>> c14a7fc04e3a7c011afb5259477d72267e330570
       body: SafeArea(
         child: Column(
           children: [
@@ -265,6 +292,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+<<<<<<< HEAD
                     _buildPageTitle(),
                     if (_errorMessage != null) _buildErrorBanner(),
                     const SizedBox(height: 20),
@@ -275,6 +303,216 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                           Expanded(
                             flex: 7,
                             child: Column(
+=======
+                    sectionTitle("1", "Shop & Dispatch Info"),
+                    SizedBox(height: getHeight(context, 18)),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Select Shop *",
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                              SizedBox(height: getHeight(context, 8)),
+                              Container(
+                                height: getHeight(context, 54),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getWidth(context, 14),
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: AppColors.light,
+                                  ),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<int>(
+                                    value: _selectedBranchId,
+                                    isExpanded: true,
+                                    hint: Text(
+                                      "Select Branch",
+                                      style: AppTextStyles.bodyText12,
+                                    ),
+                                    items: _branches
+                                        .map(
+                                          (b) => DropdownMenuItem<int>(
+                                            value: b['id'],
+                                            child: Text(
+                                              b['branch_name'] ?? "",
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                    onChanged: (val) =>
+                                        setState(() => _selectedBranchId = val),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: getWidth(context, 12)),
+                        Expanded(
+                          child: buildField(
+                            label: "Dispatch Date *",
+                            context,
+                            hint: "YYYY-MM-DD",
+                            controller: _dispatchDateController,
+                            icon: Icons.calendar_today,
+                            onTap: () async {
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime.now().subtract(
+                                  const Duration(days: 7),
+                                ),
+                                lastDate: DateTime.now().add(
+                                  const Duration(days: 30),
+                                ),
+                              );
+                              if (picked != null) {
+                                setState(
+                                  () => _dispatchDateController.text = picked
+                                      .toString()
+                                      .split(' ')
+                                      .first,
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: getHeight(context, 16)),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: buildField(
+                            label: "Expected Arrival Date *",
+                            context,
+                            hint: "YYYY-MM-DD",
+                            controller: _arrivalDateController,
+                            icon: Icons.calendar_today,
+                            onTap: () async {
+
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now().add(
+                                  const Duration(days: 1),
+                                ),
+                                firstDate: DateTime.now(),
+                                lastDate: DateTime.now().add(
+                                  const Duration(days: 30),
+                                ),
+                              );
+
+                              if (picked != null) {
+                                setState(
+                                  () => _arrivalDateController.text = picked
+                                      .toString()
+                                      .split(' ')
+                                      .first,
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                        SizedBox(width: getWidth(context, 12)),
+                        Expanded(
+                          child: buildField(
+                            label: "Vehicle No. *",
+                            context,
+                            hint: "TN 32 B 2134",
+                            controller: _vehicleNoController,
+
+                            /// CAPITAL + NUMBER ONLY
+                            inputFormatters: [
+                              UpperCaseTextFormatter(),
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[A-Z0-9 ]'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: getHeight(context, 16)),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: buildField(
+                            label: "Driver Name *",
+                            context,
+                            hint: "John Doe",
+                            controller: _driverNameController,
+
+                            /// ONLY LETTERS + DOT + SPACE
+                            inputFormatters: [
+                              NameCapitalFormatter(),
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[A-Za-z ]'),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        SizedBox(width: getWidth(context, 12)),
+
+                        Expanded(
+                          child: buildField(
+                            label: "Driver Number *",
+                            context,
+                            hint: "9876543210",
+                            controller: _driverNumberController,
+                            keyboardType: TextInputType.phone,
+
+                            /// ONLY NUMBERS
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+
+                              LengthLimitingTextInputFormatter(10),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: getHeight(context, 18)),
+
+              /// ITEMS TO DISPATCH
+              buildCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(child: sectionTitle("2", "Items to Dispatch")),
+                        GestureDetector(
+                          onTap: _addItem,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: getWidth(context, 12),
+                              vertical: getHeight(context, 8),
+                            ),
+                            decoration: BoxDecoration(
+                              color:AppColors.amber600,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color:AppColors.amber600,
+                              ),
+                            ),
+                            child: Row(
+>>>>>>> c14a7fc04e3a7c011afb5259477d72267e330570
                               children: [
                                 _buildDispatchInfoCard(),
                                 const SizedBox(height: 20),
@@ -284,6 +522,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                               ],
                             ),
                           ),
+<<<<<<< HEAD
                           const SizedBox(width: 20),
                           Expanded(
                             flex: 3,
@@ -313,6 +552,475 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                           _buildOverallDispatchCard(),
                           const SizedBox(height: 20),
                           _buildNotesSection(),
+=======
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: getHeight(context, 20)),
+                    const Row(
+                      children: [
+                        Expanded(
+                          flex: 4,
+                          child: Text(
+                            "Product",
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            "Available\n(Trays)",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            "Eggs\n(Entry)",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Text(
+                            "Action",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: getHeight(context, 12)),
+                    Divider(color: AppColors.border, thickness: 1),
+                    SizedBox(height: getHeight(context, 4)),
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _dispatchItems.length,
+                      separatorBuilder: (_, __) =>
+                          SizedBox(height: getHeight(context, 12)),
+                      itemBuilder: (context, index) {
+                        final item = _dispatchItems[index];
+                        return Row(
+                          children: [
+                            Expanded(
+                              flex: 4,
+                              child: Container(
+                                height: getHeight(context, 42),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getWidth(context, 10),
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: AppColors.border,
+                                  ),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    value: item['category'],
+                                    isExpanded: true,
+                                    hint: const Text(
+                                      "Category",
+                                      style: TextStyle(fontSize: 11),
+                                    ),
+                                    items: _productCategories.map((cat) {
+                                      final stock = _availableStock.firstWhere(
+                                        (s) =>
+                                            s['category']
+                                                .toString()
+                                                .toLowerCase() ==
+                                            cat.toLowerCase(),
+                                        orElse: () => {'total_eggs': 0},
+                                      );
+                                      final int count =
+                                          stock['total_eggs'] ?? 0;
+
+                                      return DropdownMenuItem<String>(
+                                        value: cat,
+                                        child: Text(
+                                          "$cat (${count})",
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: count > 0
+                                                ? AppColors.green
+                                                : AppColors.redAccent,
+                                            fontWeight: count > 0
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (val) =>
+                                        _updateItem(index, category: val),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: getWidth(context, 8)),
+                            Expanded(
+                              flex: 2,
+                              child: Center(
+                                child: Text(
+                                  "${(item['available_eggs'] / 30).floor()} T",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: (item['available_eggs'] ?? 0) >= 30
+                                         ? AppColors.green
+                                         : AppColors.redAccent,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: getWidth(context, 8)),
+                            Expanded(
+                              flex: 2,
+                              child: Container(
+                                height: getHeight(context, 42),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                                child: TextField(
+                                  textAlign: TextAlign.center,
+                                  keyboardType: TextInputType.number,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: "0",
+                                  ),
+                                  controller: TextEditingController(
+                                    text: item['eggs_to_dispatch'].toString(),
+                                  )..selection = TextSelection.collapsed(
+                                      offset: item['eggs_to_dispatch'].toString().length,
+                                    ),
+                                  onChanged: (val) => _updateItem(
+                                    index,
+                                    eggs: int.tryParse(val) ?? 0,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: getWidth(context, 8)),
+                            Expanded(
+                              flex: 2,
+                              child: Container(
+                                height: getHeight(context, 42),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: AppColors.border,
+                                  ),
+                                ),
+                                child: TextField(
+                                  textAlign: TextAlign.center,
+                                  keyboardType: TextInputType.number,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: "0",
+                                  ),
+                                  controller: TextEditingController(
+                                    text: item['trays_to_dispatch'].toString(),
+                                  )..selection = TextSelection.collapsed(
+                                      offset: item['trays_to_dispatch'].toString().length,
+                                    ),
+                                  onChanged: (val) => _updateItem(
+                                    index,
+                                    trays: int.tryParse(val) ?? 0,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: getWidth(context, 8)),
+                            Expanded(
+                              flex: 1,
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (_dispatchItems.length > 1) {
+                                    setState(() {
+                                      _dispatchItems.removeAt(index);
+                                    });
+                                  }
+                                },
+                                child: const Icon(
+                                  Icons.delete_outline,
+                                  color: AppColors.redAccent,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                    SizedBox(height: getHeight(context, 12)),
+                    Divider(color: AppColors.border, thickness: 1),
+                    SizedBox(height: getHeight(context, 10)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Total",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          "$_totalEggs Eggs",
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          "$_totalProductTrays Trays",
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: getHeight(context, 18)),
+
+              /// EMPTY TRAY DISPATCH
+              buildCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    sectionTitle("3", "Empty Tray Dispatch"),
+                    const SizedBox(height: 6),
+                    Text(
+                      "Specify additional empty trays being dispatched along with the product",
+                      style: AppTextStyles.bodyText13
+                    ),
+                    SizedBox(height: getHeight(context, 20)),
+
+                    IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: trayCard(
+                              iconColor: AppColors.blue,
+                              title: "Plastic Trays",
+                              subtitle: "(Empty)",
+                              desc:
+                                  "Durable plastic trays used for return purposes",
+                              extra: "",
+                              controller: _plasticTraysController,
+                              onChanged: () => setState(() {}),
+                            ),
+                          ),
+                          SizedBox(width: getWidth(context, 12)),
+                          Expanded(
+                            child: trayCard(
+                              iconColor:AppColors.orange,
+                              title: "Paper Trays",
+                              subtitle: "(Empty)",
+                              desc: "Paper pulp trays used for transport",
+                              extra: "Non - Returnable",
+                              controller: _paperTraysController,
+                              onChanged: () => setState(() {}),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: getHeight(context, 18)),
+
+              /// DISPATCH SUMMARY
+              buildCard(
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        sectionTitle("4", "Dispatch Summary"),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.blue.shade100),
+                          ),
+                          child:  Icon(
+                            Icons.description,
+                            color: AppColors.blue,
+                            size: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: getHeight(context, 20)),
+                    summaryRow(
+                      "Total Products",
+                      "${_dispatchItems.where((i) => i['category'] != null).length} Types",
+                    ),
+                    summaryRow("Total Eggs", "$_totalEggs"),
+                    summaryRow("Product Trays", "$_totalProductTrays"),
+                    summaryRow(
+                      "Plastic Trays (Empty Returnable)",
+                      "$_emptyPlasticTrays",
+                    ),
+                    summaryRow(
+                      "Paper Trays (Empty Non-Returnable)",
+                      "$_emptyPaperTrays",
+                    ),
+                    summaryRow(
+                      "Grand Total Trays (Prod + Empty)",
+                      "$_grandTotalTrays",
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: getHeight(context, 18)),
+
+              /// OVERALL DISPATCH
+              buildCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    sectionTitle("5", "Overall Dispatch"),
+                    SizedBox(height: getHeight(context, 18)),
+                    IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: AppColors.border,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color:  AppColors.border,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      Icons.shield_outlined,
+                                      size: 20,
+                                      color:  AppColors.border,
+                                    ),
+                                  ),
+                                  SizedBox(width: getWidth(context, 10)),
+                                  Expanded(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          "Plastic trays are returnable",
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        SizedBox(height: getHeight(context, 8)),
+                                        const Text(
+                                          "Paper trays are non - returnable",
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: getWidth(context, 12)),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                // ignore: deprecated_member_use
+                                color: Colors.green.withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: AppColors.green),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.check_circle,
+                                        color: AppColors.green,
+                                        size: 20,
+                                      ),
+                                      SizedBox(width: getWidth(context, 8)),
+                                      const Expanded(
+                                        child: Text(
+                                          "Overall Dispatch",
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: AppColors.green,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: getHeight(context, 12)),
+                                  Text(
+                                    "$_grandTotalTrays Trays $_totalEggs Eggs",
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+>>>>>>> c14a7fc04e3a7c011afb5259477d72267e330570
                         ],
                       ),
                     const SizedBox(height: 40),
@@ -320,8 +1028,114 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                   ],
                 ),
               ),
+<<<<<<< HEAD
             ),
           ],
+=======
+
+              SizedBox(height: getHeight(context, 18)),
+
+              /// NOTES
+              buildCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Notes",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: getHeight(context, 18)),
+                    Container(
+                      width: double.infinity,
+                      height: 110,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: TextField(
+                        controller: _notesController,
+                        maxLines: 4,
+                        decoration:  InputDecoration(
+                          hintText: "Enter any additional notes...",
+                          hintStyle: AppTextStyles.bodyText13,
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.all(14),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: getHeight(context, 24)),
+
+              /// BUTTONS
+              Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        height: getHeight(context, 58),
+                        decoration: BoxDecoration(
+                          color: AppColors.border,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: AppColors.border,
+                            width: 1.2,
+                          ),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            "Cancel",
+                            style: AppTextStyles.bodyText14dark
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: getWidth(context, 14)),
+                  Expanded(
+                    child: InkWell(
+                      onTap: _isSaving ? null : _submitDispatch,
+                      child: Container(
+                        height: getHeight(context, 58),
+                        decoration: BoxDecoration(
+                          color: AppColors.amber600,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Center(
+                          child: _isSaving
+                              ? SizedBox(
+                                  height: getHeight(context, 20),
+                                  width: getWidth(context, 20),
+
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.dark,
+                                  ),
+                                )
+                              : const Text(
+                                  "Dispatch Now",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              SizedBox(height: getHeight(context, 30)),
+            ],
+          ),
+>>>>>>> c14a7fc04e3a7c011afb5259477d72267e330570
         ),
       ),
     );
@@ -329,6 +1143,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
 
   Widget _buildHeader() {
     return Container(
+<<<<<<< HEAD
       color: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       child: Row(
@@ -341,16 +1156,59 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
           const Text(
             "Dispatch Planning",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+=======
+      width: double.infinity,
+
+      padding: const EdgeInsets.all(16),
+
+      decoration: BoxDecoration(
+        color: AppColors.white,
+
+        borderRadius: BorderRadius.circular(22),
+
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 10,
+            // ignore: deprecated_member_use
+            color: Colors.black.withOpacity(0.09),
+            offset: const Offset(0, 4),
+>>>>>>> c14a7fc04e3a7c011afb5259477d72267e330570
           ),
         ],
       ),
     );
   }
 
+<<<<<<< HEAD
   Widget _buildPageTitle() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: const [
+=======
+  /// SECTION TITLE
+  static Widget sectionTitle(String number, String title) {
+    return Row(
+      children: [
+        Container(
+          height: 26,
+          width: 26,
+
+          decoration: const BoxDecoration(
+            color:AppColors.amber600,
+            shape: BoxShape.circle,
+          ),
+
+          child: Center(
+            child: Text(
+              number,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 10),
+
+>>>>>>> c14a7fc04e3a7c011afb5259477d72267e330570
         Text(
           "New Dispatch",
           style: TextStyle(fontSize: 32, fontWeight: FontWeight.w600),
@@ -490,6 +1348,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
     );
   }
 
+<<<<<<< HEAD
   Widget _buildItemsCard() {
     return _buildCard(
       title: "",
@@ -499,6 +1358,26 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+=======
+        SizedBox(height: getHeight(context, 8)),
+
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+
+          child: Container(
+            height: getHeight(context, 48),
+
+            padding: EdgeInsets.symmetric(horizontal: getWidth(context, 14)),
+
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+
+              border: Border.all(color:AppColors.border),
+            ),
+
+            child: Row(
+>>>>>>> c14a7fc04e3a7c011afb5259477d72267e330570
               children: [
                 Container(
                   width: 28,

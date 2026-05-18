@@ -291,7 +291,7 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                                                 : getWidth(context, 160),
                                             height: getHeight(context, 52),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xff071A52),
+                                              color: AppColors.amber600,
 
                                               borderRadius:
                                                   BorderRadius.circular(16),

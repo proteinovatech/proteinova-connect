@@ -32,6 +32,7 @@ class _TrayRecordsState extends State<TrayRecords> {
 
   String _selectedSettlementType = "CREDIT";
   String? _customerStatus; // 'found', 'not_found', null
+  // ignore: unused_field
   List<String> _warehouses = [];
 
   int selectedIndex = 0;
@@ -474,7 +475,7 @@ class _TrayRecordsState extends State<TrayRecords> {
                           vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.yellow,
+                          color:AppColors.amber600,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: AppColors.border2),
                         ),

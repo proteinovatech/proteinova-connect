@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/features/admin/widget/add_offer_widget.dart';
 import 'package:proteinova_connect/services/offer_service.dart';
 
@@ -391,6 +392,7 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                       Switch(
                         value: isActive,
                         onChanged: (val) => setState(() => isActive = val),
+                        // ignore: deprecated_member_use
                         activeColor: const Color(0xff2563EB),
                       ),
                       const Text(
@@ -474,9 +476,7 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                           height: 48,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
-                            gradient: const LinearGradient(
-                              colors: [Color(0xff2563EB), Color(0xff3B82F6)],
-                            ),
+                           color: AppColors.amber600
                           ),
                           child: Center(
                             child: isSaving

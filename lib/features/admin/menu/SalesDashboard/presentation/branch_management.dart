@@ -204,11 +204,11 @@ class _BranchManagementState extends State<BranchManagement> {
                           ),
 
                           decoration: BoxDecoration(
-                            color: const Color(0xffFACC15),
+                            color: AppColors.amber600,
                             borderRadius: BorderRadius.circular(12),
                           ),
 
-                          child: const Row(
+                          child:  Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.add, size: 18, color: Colors.black),

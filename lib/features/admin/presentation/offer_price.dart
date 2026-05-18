@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/presentation/active_offer_details_bottom_sheet.dart';
 import 'package:proteinova_connect/features/admin/presentation/add_offer_bottom_sheet.dart';
@@ -90,7 +91,7 @@ class _OfferPriceState extends State<OfferPrice> {
                       height: getHeight(context, 40),
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: const Color(0xff0B1742),
+                        color: AppColors.amber600,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Row(
@@ -202,6 +203,7 @@ class _OfferPriceState extends State<OfferPrice> {
                                   borderRadius: BorderRadius.circular(24),
                                   boxShadow: [
                                     BoxShadow(
+                                      // ignore: deprecated_member_use
                                       color: Colors.black.withOpacity(.04),
                                       blurRadius: 10,
                                       offset: const Offset(0, 4),

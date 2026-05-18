@@ -22,7 +22,8 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  String selectedRole = "Purchase";
+  String selectedRole = "Admin";
+ 
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
@@ -49,6 +50,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
+                          // ignore: deprecated_member_use
                           Colors.white.withOpacity(0.1),
                           Colors.white,
                         ],
@@ -90,6 +92,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   Text("System Role", style: AppTextStyles.buttonText16),
 
                   RoleToggle(
+                     initialValue: selectedRole,
                     onChanged: (value) {
                       setState(() {
                         selectedRole = value;

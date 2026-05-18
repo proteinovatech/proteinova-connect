@@ -610,6 +610,7 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
 
                           iconColor: iconColor,
 
+                          // ignore: deprecated_member_use
                           iconBg: iconColor.withOpacity(0.1),
 
                           growthColor:
@@ -969,6 +970,7 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
 
                               dividerThickness: 0.6,
 
+                              // ignore: deprecated_member_use
                               headingRowColor: MaterialStateProperty.all(
                                 const Color(0xffF8FAFC),
                               ),
@@ -1398,6 +1400,7 @@ class PurchaseStatCard extends StatelessWidget {
           border: Border.all(color: const Color(0xffE5E7EB)),
           boxShadow: [
             BoxShadow(
+              // ignore: deprecated_member_use
               color: Colors.black.withOpacity(0.02),
               blurRadius: 10,
               offset: const Offset(0, 4),

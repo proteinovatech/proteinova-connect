@@ -8,6 +8,7 @@ import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch/inventory/widget/receiveditem.dart';
 import 'package:proteinova_connect/features/branch/inventory/widget/traydetailcard.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/buildrow.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Receivestock extends StatefulWidget {
   final dispatchid;
@@ -41,16 +42,28 @@ class _ReceivestockState extends State<Receivestock> {
 
     try {
 
-      final response = await http.get(
+      // final response = await http.get(
 
-        Uri.parse(
-          "${ApiConstants.baseUrl}/api/branch/incoming-stock/1/dispatch/${widget.dispatchid}",
-        ),
+      //   Uri.parse(
+      //     "${ApiConstants.baseUrl}/api/branch/incoming-stock/1/dispatch/${widget.dispatchid}",
+      //   ),
 
-        headers: {
-          "Accept": "application/json",
-        },
-      );
+      //   headers: {
+      //     "Accept": "application/json",
+      //   },
+      final prefs = await SharedPreferences.getInstance();
+
+    int branchId = prefs.getInt("branch_id") ?? 0;
+
+    final response = await http.get(
+      Uri.parse(
+        "${ApiConstants.baseUrl}/api/branch/incoming-stock/$branchId/dispatch/${widget.dispatchid}",
+      ),
+      headers: {
+        "Accept": "application/json",
+      },
+    );
+  
 
       if (response.statusCode == 200) {
 

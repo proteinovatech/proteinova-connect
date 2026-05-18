@@ -58,6 +58,7 @@ class TotalTrackedBottomsheetWidget extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
+                    // ignore: deprecated_member_use
                     color: iconColor.withOpacity(0.10),
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -273,6 +274,7 @@ class TotalTrackedBottomsheetWidget extends StatelessWidget {
         vertical: getHeight(context, 4),
       ),
       decoration: BoxDecoration(
+        // ignore: deprecated_member_use
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),
