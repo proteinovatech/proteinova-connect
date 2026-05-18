@@ -26,6 +26,24 @@ class InventoryRepository {
     }
   }
 
+  Future<Map<String, dynamic>> fetchRawInventoryData() async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConstants.adminInventory),
+        headers: {"Accept": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] is Map<String, dynamic> ? data['data'] : (data is Map<String, dynamic> ? data : {});
+      } else {
+        throw Exception("Failed to load raw inventory data");
+      }
+    } catch (e) {
+      throw Exception("Error fetching raw inventory: $e");
+    }
+  }
+
   //
   Future<Map<String, dynamic>> fetchPurchaseById(int id) async {
     try {
