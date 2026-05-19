@@ -236,6 +236,8 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   //   SalesDashboardPage(),
                   // ),
                   _menuTile(Icons.inventory, "Incoming Stock", IncomingStock()),
+                   _menuTile(Icons.sell, "Purchase", AdminSuppliersScreen()),
+
 
                   _menuTile(
                     Icons.sell_outlined,

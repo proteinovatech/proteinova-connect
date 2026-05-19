@@ -86,28 +86,22 @@ void initState() {
   String? selectedTray;
   List<ProductSummary> productList = [];
   final List<String> eggCategories = [
-    "White Medium",
-    "White Bullet",
-    "White Small Eggs",
-    "Brown Eggs",
-    "Country Eggs",
-    "Quail Eggs",
-    "Duck Eggs"
+    "White large",
+    "White correct size",
+    "white export",
+    "white medium",
+    "white pullet",
+    "white small eggs",
+    "Brown eggs",
+    "country eggs",
+    "quail eggs",
+    "duck eggs"
   ];
 
   final List<String> trayType = [
     "Plastic Tray",
     "Paper Tray",
   ];
-  final Map<String, double> eggRates = {
-  "Brown Eggs": 210 / 30,
-  "Country Eggs": 270 / 30,
-  "Duck Eggs": 246 / 30,
-  "Quail Eggs": 100.5 / 30,
-  "White Bullet": 184.5 / 30,
-  "White Medium": 160.5 / 30,
-  "White Small Eggs": 147 / 30,
-};
 
   void updateProduct(int index) {
   final product = ProductSummary(
@@ -273,16 +267,7 @@ void updateTotalEggs(ProductInput product) {
             onChanged: (value) {
   setState(() {
     product.category = value ?? "";
-
-    final rate = eggRates[value] ?? 0;
-
-    product.necc = rate.toStringAsFixed(2);
-
-    neccControllers[index].text =
-        rate.toStringAsFixed(2);
   });
-
-  calculateFinalRate(index);
 
   widget.onProductsChanged(products);
 },  
@@ -326,11 +311,17 @@ void updateTotalEggs(ProductInput product) {
         SizedBox(height: getHeight(context, 6)),
         _buildField(
   controller: neccControllers[index],
-  hint: "NECC Rate",
+  hint: "Enter rate per egg",
   isNumeric: true,
   prefixText: "₹ ",
   icon: Icons.trending_up_outlined,
-  isDisplayOnly: true,
+  onChanged: (value) {
+    setState(() {
+      product.necc = value;
+    });
+    calculateFinalRate(index);
+    widget.onProductsChanged(products);
+  },
 ),
 
        SizedBox(height: getHeight(context, 14)),

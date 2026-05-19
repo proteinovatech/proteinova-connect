@@ -17,8 +17,15 @@ import 'purchase_state.dart';
       emit(PurchaseLoading());
       try {
         final suppliers = await supplierRepository.fetchSuppliers();
+        final purchases = await purchaseRepository.getPurchases();
+        _allPurchases = purchases;
+        await cache.savePurchases(purchases);
 
-        emit(PurchaseLoaded(allPurchases: _allPurchases,suppliers: suppliers, purchases: []));
+        emit(PurchaseLoaded(
+          allPurchases: purchases,
+          suppliers: suppliers,
+          purchases: purchases,
+        ));
       } catch (e) {
         emit(PurchaseError(e.toString()));
       }

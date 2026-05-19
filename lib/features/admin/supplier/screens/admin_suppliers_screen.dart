@@ -220,72 +220,71 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
 
                       SizedBox(height: getHeight(context, 20)),
 
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: getWidth(context, 12),
-                          vertical: getHeight(context, 12),
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: searchController,
-                                onChanged: searchSupplier,
-                                decoration: InputDecoration(
-                                  hintText: "Filter suppliers...",
-                                  prefixIcon: const Icon(Icons.search),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
-                              ),
-                            ),
+                      // Container(
+                      //   padding: EdgeInsets.symmetric(
+                      //     horizontal: getWidth(context, 12),
+                      //     vertical: getHeight(context, 12),
+                      //   ),
+                      //   decoration: BoxDecoration(
+                      //     color: Colors.white,
+                      //     borderRadius: BorderRadius.circular(20),
+                      //   ),
+                      //   child: Row(
+                      //     children: [
+                      //       Expanded(
+                      //         child: TextField(
+                      //           controller: searchController,
+                      //           onChanged: searchSupplier,
+                      //           decoration: InputDecoration(
+                      //             hintText: "Filter suppliers...",
+                      //             prefixIcon: const Icon(Icons.search),
+                      //             border: OutlineInputBorder(
+                      //               borderRadius: BorderRadius.circular(14),
+                      //             ),
+                      //           ),
+                      //         ),
+                      //       ),
 
-                            SizedBox(width: getWidth(context, 10)),
+                      //       SizedBox(width: getWidth(context, 10)),
 
-                            InkWell(
-                              onTap: filterAction,
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: getWidth(context, 16),
-                                  vertical: getHeight(context, 16),
-                                ),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                child: const Icon(Icons.filter_alt_outlined),
-                              ),
-                            ),
+                      //       InkWell(
+                      //         onTap: filterAction,
+                      //         child: Container(
+                      //           padding: EdgeInsets.symmetric(
+                      //             horizontal: getWidth(context, 16),
+                      //             vertical: getHeight(context, 16),
+                      //           ),
+                      //           decoration: BoxDecoration(
+                      //             border: Border.all(
+                      //               color: Colors.grey.shade300,
+                      //             ),
+                      //             borderRadius: BorderRadius.circular(14),
+                      //           ),
+                      //           child: const Icon(Icons.filter_alt_outlined),
+                      //         ),
+                      //       ),
 
-                            SizedBox(width: getWidth(context, 10)),
+                      //       SizedBox(width: getWidth(context, 10)),
 
-                            InkWell(
-                              onTap: downloadAction,
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: getWidth(context, 16),
-                                  vertical: getHeight(context, 16),
-                                ),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                child: const Icon(Icons.download),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
+                      //       InkWell(
+                      //         onTap: downloadAction,
+                      //         child: Container(
+                      //           padding: EdgeInsets.symmetric(
+                      //             horizontal: getWidth(context, 16),
+                      //             vertical: getHeight(context, 16),
+                      //           ),
+                      //           decoration: BoxDecoration(
+                      //             border: Border.all(
+                      //               color: Colors.grey.shade300,
+                      //             ),
+                      //             borderRadius: BorderRadius.circular(14),
+                      //           ),
+                      //           child: const Icon(Icons.download),
+                      //         ),
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
                       SizedBox(height: getHeight(context, 20)),
 
                       Expanded(

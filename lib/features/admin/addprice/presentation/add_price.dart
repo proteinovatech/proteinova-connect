@@ -47,33 +47,48 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
     super.dispose();
   }
 
+  final List<String> productList = [
+    "White large",
+    "White correct size",
+    "white export",
+    "white medium",
+    "white pullet",
+    "white small eggs",
+    "Brown eggs",
+    "country eggs",
+    "quail eggs",
+    "duck eggs",
+  ];
+
   Future<void> _fetchCurrentPrices() async {
     setState(() {
       isLoading = true;
     });
     try {
-      final rows = await OfferService.getCurrentPrices();
+      final dbPrices = await OfferService.getCurrentPrices();
       final fetchedProducts = <Map<String, dynamic>>[];
-      for (final row in rows) {
-        if (row is! Map) continue;
-        final map = Map<String, dynamic>.from(row);
-        final productName = (map["product_name"] ?? "").toString().trim();
-        final price = map["price_per_egg"];
-        final parsed = price == null ? null : double.tryParse(price.toString());
-        if (productName.isEmpty || parsed == null) continue;
-        final formatted = parsed.toStringAsFixed(2);
-        fetchedProducts.add({
-          "name": productName,
 
+      for (final name in productList) {
+        final found = dbPrices.firstWhere(
+          (p) =>
+              (p["product_name"] ?? "").toString().toLowerCase() ==
+              name.toLowerCase(),
+          orElse: () => <String, dynamic>{},
+        );
+
+        final price = found["price_per_egg"];
+        final parsed = price == null ? null : double.tryParse(price.toString());
+        final formatted = parsed != null ? parsed.toStringAsFixed(2) : "0.00";
+
+        fetchedProducts.add({
+          "name": name,
           "egg": TextEditingController(text: formatted),
         });
       }
+
       if (!mounted) return;
 
-      // Fully source product categories from DB response.
       for (final item in products) {
-        // (item["ncc"] as TextEditingController).dispose();
-        // (item["market"] as TextEditingController).dispose();
         (item["egg"] as TextEditingController).dispose();
       }
       products

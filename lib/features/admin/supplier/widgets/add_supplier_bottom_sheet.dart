@@ -23,6 +23,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
   final TextEditingController contactController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
+  final TextEditingController gstController = TextEditingController();
   final SupplierService _supplierService = SupplierService();
 
   String status = "Active";
@@ -38,6 +39,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
       emailController.text = widget.supplierToEdit!.email;
       phoneController.text = widget.supplierToEdit!.phone;
       status = widget.supplierToEdit!.active ? "Active" : "Inactive";
+      gstController.text = widget.supplierToEdit!.gstNumber ?? "";
     }
   }
 
@@ -302,6 +304,28 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                         ],
                       ),
 
+                      SizedBox(height: getHeight(context, 20)),
+
+                      /// GST NUMBER
+                      const Text(
+                        "GST Number (Optional)",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+
+                      SizedBox(height: getHeight(context, 10)),
+
+                      customField(
+                        controller: gstController,
+                        hint: "e.g. 22AAAAA0000A1Z5",
+                        inputFormatters: [
+                          UpperCaseTextFormatter(),
+                          LengthLimitingTextInputFormatter(15),
+                        ],
+                      ),
+
                       SizedBox(height: getHeight(context, 30)),
                     ],
                   ),
@@ -382,6 +406,9 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                                       phone: phoneController.text.trim(),
                                       email: emailController.text.trim(),
                                       active: status == 'Active',
+                                      gstNumber: gstController.text.trim().isEmpty
+                                          ? null
+                                          : gstController.text.trim(),
                                     );
 
                                     if (widget.supplierToEdit != null) {
@@ -525,6 +552,19 @@ class NameCapitalFormatter extends TextInputFormatter {
       text: text,
 
       selection: TextSelection.collapsed(offset: text.length),
+    );
+  }
+}
+
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
     );
   }
 }

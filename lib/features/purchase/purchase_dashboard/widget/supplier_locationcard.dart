@@ -12,8 +12,20 @@ import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/mod
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/add_supplier_pop.dart';
 
 class SupplierLocationCard extends StatefulWidget {
-   final Function(String supplier, String location,int supplierId) onChanged; 
-  const SupplierLocationCard({super.key,required this.onChanged,});
+  final Function(String supplier, String location, int supplierId) onChanged;
+  final TextEditingController brokerNameController;
+  final TextEditingController brokerNumController;
+  final DateTime? initialDate;
+  final Function(DateTime? date) onDateChanged;
+
+  const SupplierLocationCard({
+    super.key,
+    required this.onChanged,
+    required this.brokerNameController,
+    required this.brokerNumController,
+    required this.onDateChanged,
+    this.initialDate,
+  });
 
   @override
   State<SupplierLocationCard> createState() =>
@@ -26,16 +38,13 @@ class _SupplierLocationCardState extends State<SupplierLocationCard> {
   bool isExpanded = false;
   DateTime? deliveryDate;
   List<SupplierModel> suppliers = [];
-  final TextEditingController brokerNameController = TextEditingController();
-   final TextEditingController brokerNumController = TextEditingController();
 
-
- 
   @override
-void initState() {
-  super.initState();
-  context.read<SupplierBloc>().add(FetchSuppliers());
-}
+  void initState() {
+    super.initState();
+    deliveryDate = widget.initialDate;
+    context.read<SupplierBloc>().add(FetchSuppliers());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -258,7 +267,7 @@ Align(
               borderRadius: BorderRadius.circular(5),
               border: Border.all(color: AppColors.border),
             ),child: TextField(
-               controller: brokerNameController, 
+               controller: widget.brokerNameController, 
     decoration: InputDecoration(
       prefixIcon: Icon(Icons.person_outlined,color: AppColors.light,),
       hintText: "Enter broker name",
@@ -278,7 +287,7 @@ Align(
               borderRadius: BorderRadius.circular(5),
               border: Border.all(color: AppColors.border),
             ),child: TextField(
-               controller: brokerNumController,
+               controller: widget.brokerNumController,
                  keyboardType: TextInputType.number, 
                   inputFormatters: [
     FilteringTextInputFormatter.digitsOnly,
@@ -309,6 +318,7 @@ Align(
                   setState(() {
                     deliveryDate = picked;
                   });
+                  widget.onDateChanged(picked);
                 }
               },
               child: Container(

@@ -6,6 +6,7 @@ class Supplier {
   final String phone;
   final String email;
   final bool active;
+  final String? gstNumber;
 
   Supplier({
     required this.name,
@@ -15,6 +16,7 @@ class Supplier {
     required this.phone,
     required this.email,
     required this.active,
+    this.gstNumber,
   });
 
   factory Supplier.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class Supplier {
       phone: json['phone_number'] ?? '',
       email: json['email'] ?? '',
       active: json['status'] == 'Active' || json['status'] == 'ACTIVE' || json['status'] == true || json['active'] == true,
+      gstNumber: json['gst_number'],
     );
   }
 
@@ -37,6 +40,7 @@ class Supplier {
       'phone_number': phone,
       'email': email,
       'status': active ? 'ACTIVE' : 'INACTIVE',
+      'gst_number': gstNumber,
     };
   }
 }

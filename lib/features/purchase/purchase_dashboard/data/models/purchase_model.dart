@@ -22,6 +22,12 @@ class PurchaseRequest {
 
   final String purchaseStatus;
 
+  final String? paymentMethod;
+  final String? upiApp;
+  final String? otherUpiDetails;
+  final double? paymentAmount;
+  final double? debtAmount;
+
   final List<PurchaseItem> items;
 
   PurchaseRequest({
@@ -43,6 +49,11 @@ class PurchaseRequest {
     required this.brokerNumber,
     required this.brokerName,
     required this.description,
+    this.paymentMethod,
+    this.upiApp,
+    this.otherUpiDetails,
+    this.paymentAmount,
+    this.debtAmount,
     required this.items,
   });
 
@@ -60,10 +71,15 @@ class PurchaseRequest {
         "transport_charge": transportCharge,
         "misc_expense": miscExpense,
         "purchase_status": purchaseStatus,
-         'broker_fee': brokerFee,
+        'broker_fee': brokerFee,
         'broker_name': brokerName,
         'broker_number': brokerNumber,
         'description': description,
+        "payment_method": paymentMethod,
+        "upi_app": upiApp,
+        "other_upi_details": otherUpiDetails,
+        "payment_amount": paymentAmount,
+        "debt_amount": debtAmount,
         "items": items.map((e) => e.toJson()).toList(),
       };
 }
