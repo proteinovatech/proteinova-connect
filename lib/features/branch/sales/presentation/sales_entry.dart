@@ -687,25 +687,25 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ],
         ),
-        ElevatedButton.icon(
-          onPressed: () {},
-          icon: const Icon(Icons.list, size: 16),
-          label: const Text(
-            "View Today's Sales",
-            style: TextStyle(fontSize: 12),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.blue,
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            // ignore: deprecated_member_use
-            side: BorderSide(color: Colors.blue.withOpacity(0.3)),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        ),
+        // ElevatedButton.icon(
+        //   onPressed: () {},
+        //   icon: const Icon(Icons.list, size: 16),
+        //   label: const Text(
+        //     "View Today's Sales",
+        //     style: TextStyle(fontSize: 12),
+        //   ),
+        //   style: ElevatedButton.styleFrom(
+        //     backgroundColor: Colors.white,
+        //     foregroundColor: Colors.blue,
+        //     elevation: 0,
+        //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        //     // ignore: deprecated_member_use
+        //     side: BorderSide(color: Colors.blue.withOpacity(0.3)),
+        //     shape: RoundedRectangleBorder(
+        //       borderRadius: BorderRadius.circular(8),
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }
@@ -1570,8 +1570,10 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 child: ElevatedButton(
                   onPressed: isSubmitting ? null : handlePayment,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:AppColors.blueAccent,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    backgroundColor: AppColors.blueAccent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
                     elevation: 4,
                   ),
                   child: isSubmitting

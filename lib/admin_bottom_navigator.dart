@@ -21,6 +21,7 @@ import 'package:proteinova_connect/features/admin/presentation/admin_inventory.d
 import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
 import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
 import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
+import 'package:proteinova_connect/features/admin/purchase_expense/screens/purchase_expense_screen.dart';
 
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 
@@ -239,6 +240,15 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   // ),
                   _menuTile(Icons.inventory, "Incoming Stock", IncomingStock()),
                   _menuTile(Icons.sell, "Purchase", AdminSuppliersScreen()),
+<<<<<<< HEAD
+=======
+                  _menuTile(
+                    Icons.account_balance_wallet,
+                    "Purchase Expenses",
+                    const PurchaseExpenseScreen(),
+                  ),
+
+>>>>>>> 0b4b69398cf9abdb4051322590c747c84c846c77
 
                   _menuTile(
                     Icons.sell_outlined,

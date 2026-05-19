@@ -26,38 +26,30 @@ class SettingsOptionTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: const Color(0xffE5E7EB),
-          ),
+          border: Border.all(color: const Color(0xffE5E7EB)),
         ),
 
         child: Row(
           children: [
-
             Container(
               width: 58,
               height: 58,
 
               decoration: BoxDecoration(
-                color: const Color(0xffFEF3C7),
+                // color: const Color(0xffFEF3C7),
                 borderRadius: BorderRadius.circular(16),
               ),
 
-              child: Icon(
-                icon,
-                size: 28,
-              ),
+              child: Icon(icon, size: 28),
             ),
 
             const SizedBox(width: 16),
 
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: [
-
                   Text(
                     title,
                     style: const TextStyle(

@@ -116,7 +116,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
       /// APP BAR
       appBar: AppBar(
         backgroundColor: AppColors.white,
-        surfaceTintColor:AppColors.white, // IMPORTANT
+        surfaceTintColor: AppColors.white, // IMPORTANT
         elevation: 0,
         scrolledUnderElevation: 0, // IMPORTANT
 
@@ -133,10 +133,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              "Sales Dashboard",
-              style: AppTextStyles.headingText20
-            ),
+            Text("Sales Dashboard", style: AppTextStyles.headingText20),
 
             const SizedBox(height: 8),
 
@@ -233,7 +230,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                               "₹ ${salesData['cards']?['total_sales']?['value'] ?? salesData['cards']?['sales_today']?['amount'] ?? 0}",
                           icon: Icons.layers_outlined,
 
-                          iconColor:AppColors.blue,
+                          iconColor: AppColors.blue,
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -272,10 +269,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                   const SizedBox(height: 18),
 
                   /// TITLE
-                   Text(
-                    "Recent Sales",
-                    style: AppTextStyles.headingText20,
-                  ),
+                  Text("Recent Sales", style: AppTextStyles.headingText20),
 
                   const SizedBox(height: 2),
 
@@ -287,53 +281,52 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                   const SizedBox(height: 10),
 
                   /// SEARCH
-                  TextField(
-                    controller: searchController,
+                  // TextField(
+                  //   controller: searchController,
 
-                    onChanged: (value) {
-                      setState(() {
-                        currentPage = 1;
+                  //   onChanged: (value) {
+                  //     setState(() {
+                  //       currentPage = 1;
 
-                        if (value.isEmpty) {
-                          filteredOrders = recentOrders;
-                        } else {
-                          filteredOrders = recentOrders.where((order) {
-                            return order['customer']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains(value.toLowerCase()) ||
-                                order['order_id']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains(value.toLowerCase());
-                          }).toList();
-                        }
-                      });
-                    },
+                  //       if (value.isEmpty) {
+                  //         filteredOrders = recentOrders;
+                  //       } else {
+                  //         filteredOrders = recentOrders.where((order) {
+                  //           return order['customer']
+                  //                   .toString()
+                  //                   .toLowerCase()
+                  //                   .contains(value.toLowerCase()) ||
+                  //               order['order_id']
+                  //                   .toString()
+                  //                   .toLowerCase()
+                  //                   .contains(value.toLowerCase());
+                  //         }).toList();
+                  //       }
+                  //     });
+                  //   },
 
-                    decoration: InputDecoration(
-                      hintText: "Search orders, customers...",
-                      prefixIcon: const Icon(Icons.search),
+                  //   decoration: InputDecoration(
+                  //     hintText: "Search orders, customers...",
+                  //     prefixIcon: const Icon(Icons.search),
 
-                      filled: true,
-                      fillColor: Colors.white,
+                  //     filled: true,
+                  //     fillColor: Colors.white,
 
-                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                  //     contentPadding: const EdgeInsets.symmetric(vertical: 8),
 
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
+                  //     border: OutlineInputBorder(
+                  //       borderRadius: BorderRadius.circular(14),
+                  //       borderSide: BorderSide(color: Colors.grey.shade300),
+                  //     ),
 
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
+                  //     enabledBorder: OutlineInputBorder(
+                  //       borderRadius: BorderRadius.circular(14),
+                  //       borderSide: BorderSide(color: Colors.grey.shade300),
+                  //     ),
+                  //   ),
+                  // ),
+                  // const SizedBox(height: 10),
 
-                  /// FILTERS
                   /// FILTERS
                   Row(
                     children: [

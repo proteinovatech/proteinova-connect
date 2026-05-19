@@ -93,7 +93,10 @@ class AdminOffersPricesSkeletonLoader extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                               children: [
-                                skeletonBox(height: 14, width: 90, radius: 6),
+                                Expanded(
+                                  child: skeletonBox(height: 14, radius: 6),
+                                ),
+                                const SizedBox(width: 8),
 
                                 skeletonBox(height: 36, width: 36, radius: 10),
                               ],

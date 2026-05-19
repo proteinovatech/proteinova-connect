@@ -74,6 +74,11 @@ class _InventoryState extends State<Inventory> {
 
     return Scaffold(
       backgroundColor: AppColors.background1,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
+        title: Text("Incoming Queue", style: AppTextStyles.headingText22),
+      ),
 
       body: Padding(
         padding: EdgeInsets.only(
@@ -83,60 +88,14 @@ class _InventoryState extends State<Inventory> {
 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-
           children: [
-            SizedBox(height: size.height * 0.01),
-
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: size.width * 0.04),
-
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-
-                children: [
-                  SizedBox(height: size.height * 0.06),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                    children: [
-                      Image.asset("assets/erplogo.png", height: 40, width: 130),
-
-                      // Row(
-                      //   children: [
-                      //     const Icon(Icons.notifications_outlined),
-
-                      //     SizedBox(width: size.width * 0.02),
-
-                      //     CircleAvatar(
-                      //       radius: 18,
-
-                      //       backgroundColor: Colors.grey.shade300,
-
-                      //       child: Icon(
-                      //         Icons.person,
-                      //         size: 20,
-                      //         color: AppColors.background,
-                      //       ),
-                      //     ),
-                      //   ],
-                      // ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const Divider(),
-
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
 
                   children: [
-                    Text("Incoming Queue", style: AppTextStyles.headingText25),
-
+                    const SizedBox(height: 10),
                     Text(
                       "Manage Stock Shipments",
                       style: AppTextStyles.bodyText16,
@@ -161,6 +120,7 @@ class _InventoryState extends State<Inventory> {
                                     "${cards["expected_today"] ?? 0} Shipments",
                                 subtitle: "Today's expected deliveries",
                                 icon: Icons.event,
+                                iconColor: Colors.blue,
                               ),
                             ),
                             SizedBox(
@@ -171,6 +131,7 @@ class _InventoryState extends State<Inventory> {
                                     "${cards["ready_for_unloading"] ?? 0} Shipments",
                                 subtitle: "Requires immediate action",
                                 icon: Icons.local_shipping_outlined,
+                                iconColor: Colors.green,
                               ),
                             ),
                             SizedBox(
@@ -181,6 +142,7 @@ class _InventoryState extends State<Inventory> {
                                     "${cards["total_eggs_in_transit"] ?? 0} Eggs",
                                 subtitle: "Stock currently moving",
                                 icon: Icons.send_outlined,
+                                iconColor: Colors.orange,
                               ),
                             ),
                             SizedBox(
@@ -191,6 +153,7 @@ class _InventoryState extends State<Inventory> {
                                     "${cards["delayed_in_transit"] ?? 0} Shipments",
                                 subtitle: "Current transit delays",
                                 icon: Icons.warning_amber_rounded,
+                                iconColor: Colors.red,
                               ),
                             ),
                           ],
@@ -323,11 +286,11 @@ class _InventoryState extends State<Inventory> {
                           style: AppTextStyles.headingText22,
                         ),
 
-                        const Text(
-                          "View All",
+                        // const Text(
+                        //   "View All",
 
-                          style: TextStyle(color: Colors.blue),
-                        ),
+                        //   style: TextStyle(color: Colors.blue),
+                        // ),
                       ],
                     ),
 
