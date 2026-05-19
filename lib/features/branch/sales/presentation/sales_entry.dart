@@ -38,6 +38,10 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   String selectedPaymentMethod = "CASH";
   String selectedUpiApp = "";
   String otherUpiDetails = "";
+  List<dynamic> branches = [];
+  String selectedBranchId = "warehouse";
+  String soldLocation = "Warehouse";
+  String soldTo = "Retail";
 
   final TextEditingController customerNumberController =
       TextEditingController();
@@ -71,16 +75,48 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   Future<void> _fetchInitialData() async {
     try {
       if (mounted) setState(() => isLoading = true);
-      final response = await datasource.getSalesEntry(loginUserId: loginUserId);
+      final response = await datasource.getSalesEntry(
+        loginUserId: loginUserId,
+        branchId: selectedBranchId == "warehouse" ? null : int.tryParse(selectedBranchId),
+      );
       final model = SalesEntryModel.fromJson(response);
+
+      // Fetch offers from /api/offers exactly like the React flow
+      List<OfferModel> fetchedOffers = [];
+      try {
+        final offersList = await datasource.getOffers();
+        fetchedOffers = offersList
+            .where((o) => o['status'] == 'active')
+            .map((o) => OfferModel.fromJson(o))
+            .toList();
+      } catch (e) {
+        debugPrint("Error fetching offers, falling back to entry response: $e");
+        fetchedOffers = model.offers;
+      }
+
+      // Fetch branches from /api/branches exactly like the React flow
+      List<dynamic> fetchedBranches = [];
+      try {
+        final branchRes = await datasource.getBranches();
+        fetchedBranches = branchRes['data'] ?? [];
+      } catch (e) {
+        debugPrint("Error fetching branches: $e");
+      }
 
       if (mounted) {
         setState(() {
           headerData = model.header;
           salesHappen = model.header['sales_happen'] ?? "In_warehouse";
           products = model.productDetails;
-          offers = model.offers;
+          offers = fetchedOffers;
+          branches = fetchedBranches;
           filteredProducts = products;
+
+          if (model.header['sales_happen'] == "In_warehouse") {
+            soldLocation = "Warehouse";
+          } else {
+            soldLocation = model.header['branch_name'] ?? "Branch";
+          }
           isLoading = false;
         });
       }
@@ -90,44 +126,49 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     }
   }
 
+  void _onBranchChanged(String newBranchId) {
+    setState(() {
+      selectedBranchId = newBranchId;
+    });
+    _fetchInitialData();
+  }
+
   // --- Calculations ---
   double get subtotal => salesItems.fold(0.0, (sum, item) => sum + item.total);
 
   double get totalDiscount {
     double discount = 0;
+    final double totalEggsInCart = salesItems.fold(0.0, (sum, item) => sum + item.eggs);
+
     for (var offer in offers) {
       if (!offer.applied) continue;
 
-      final matchingItems = salesItems
-          .where(
-            (item) =>
-                item.eggCategoryGrade.trim().toLowerCase() ==
-                    offer.category.trim().toLowerCase() ||
-                offer.category.trim().toLowerCase() == "all products",
-          )
-          .toList();
+      final isAllProducts = offer.category.trim().toLowerCase() == "all products";
+      final matchingItem = isAllProducts
+          ? null
+          : salesItems.firstWhere(
+              (item) => item.eggCategoryGrade.trim().toLowerCase() == offer.category.trim().toLowerCase(),
+              orElse: () => SalesItem(eggCategoryGrade: ""),
+            );
 
-      if (matchingItems.isEmpty) continue;
+      if (!isAllProducts && (matchingItem == null || matchingItem.eggCategoryGrade.isEmpty)) {
+        continue;
+      }
 
       if (offer.offerType == 'buy_x_get_y') {
-        final int totalEggs = matchingItems.fold(
-          0,
-          (sum, item) => sum + item.eggs,
-        );
-        final int buyQtyThreshold = offer.buyTrays * 30;
-        if (totalEggs >= buyQtyThreshold && buyQtyThreshold > 0) {
-          final int freeEggsCount = (totalEggs ~/ buyQtyThreshold) * 30;
-          discount += double.parse(
-            (freeEggsCount * matchingItems.first.price).toStringAsFixed(2),
-          );
+        final double relevantEggs = isAllProducts ? totalEggsInCart : (matchingItem?.eggs.toDouble() ?? 0.0);
+        final double pricePerEgg = isAllProducts
+            ? (salesItems.isNotEmpty ? salesItems.first.price : 0.0)
+            : (matchingItem?.price ?? 0.0);
+
+        if (relevantEggs >= offer.buyQty && offer.buyQty > 0) {
+          final double freeEggsCount = (relevantEggs / offer.buyQty).floorToDouble() * offer.freeQty;
+          discount += double.parse((freeEggsCount * pricePerEgg).toStringAsFixed(2));
         }
       } else if (offer.offerType == 'percentage') {
-        final double matchedTotal = matchingItems.fold(
-          0.0,
-          (sum, item) => sum + item.total,
-        );
-        discount += (matchedTotal * offer.discountValue) / 100;
-      } else if (offer.offerType == 'fixed') {
+        final double relevantTotal = isAllProducts ? subtotal : (matchingItem?.total ?? 0.0);
+        discount += double.parse((relevantTotal * offer.discountValue / 100).toStringAsFixed(2));
+      } else if (offer.offerType == 'fixed_amount') {
         discount += offer.discountValue;
       }
     }
@@ -160,10 +201,14 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         item.calculateEggs();
       } else if (field == 'dozen') {
         item.dozen = double.tryParse(value.toString()) ?? 0;
-        item.calculateEggs();
+        item.eggs = (item.dozen * 12).round();
+        item.trays = (item.eggs / 30).ceil();
+        item.total = double.parse((item.eggs * item.price).toStringAsFixed(2));
       } else if (field == 'trays') {
         item.trays = int.tryParse(value.toString()) ?? 0;
-        item.calculateEggs();
+        item.eggs = item.trays * 30;
+        item.dozen = double.parse((item.eggs / 12).toStringAsFixed(2));
+        item.total = double.parse((item.eggs * item.price).toStringAsFixed(2));
       }
     });
   }
@@ -174,24 +219,21 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         (i) => i.eggCategoryGrade == product.productName,
       );
       if (existingIndex != -1) {
-        salesItems[existingIndex].trays += 1;
-        salesItems[existingIndex].calculateEggs();
+        final item = salesItems[existingIndex];
+        item.trays += 1;
+        item.eggs = (item.trays * 30) + (item.dozen * 12).round();
+        item.total = double.parse((item.eggs * item.price).toStringAsFixed(2));
       } else {
-        if (salesItems.length == 1 && salesItems[0].eggCategoryGrade == "") {
-          salesItems[0] = SalesItem(
-            eggCategoryGrade: product.productName,
-            price: product.perTrayPrice / 30,
-            trays: 1,
-          )..calculateEggs();
-        } else {
-          salesItems.add(
-            SalesItem(
-              eggCategoryGrade: product.productName,
-              price: product.perTrayPrice / 30,
-              trays: 1,
-            )..calculateEggs(),
-          );
-        }
+        salesItems.removeWhere((i) => i.eggCategoryGrade.isEmpty);
+        final newItem = SalesItem(
+          eggCategoryGrade: product.productName,
+          price: product.perTrayPrice / 30,
+          trays: 1,
+          eggs: 30,
+          dozen: 2.5,
+          total: product.perTrayPrice,
+        );
+        salesItems.add(newItem);
       }
     });
   }
@@ -240,16 +282,26 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       return;
     }
 
+    // Validate quantities
+    for (final item in validItems) {
+      if (item.eggs <= 0) {
+        _showError("Please add quantity (Dozen or Trays) for ${item.eggCategoryGrade}");
+        return;
+      }
+    }
+
     setState(() => isSubmitting = true);
     try {
       final payload = {
         "login_user_id": loginUserId.toString(),
         "sales_happen": salesHappen,
+        "sold_location_id": selectedBranchId,
         "customer_name": cName.isEmpty ? "Unknown Customer" : cName,
         "customer_number": cNumber.isEmpty ? "N/A" : cNumber,
         "customer_debit": double.tryParse(debtController.text) ?? 0,
         "dispatch_date": dateController.text,
-        "payment_method": selectedPaymentMethod,
+        "sales_date": dateController.text,
+        "payment_method": selectedPaymentMethod.toUpperCase(),
         "cash_received": double.tryParse(cashReceivedController.text) ?? 0,
         "upi_app": selectedPaymentMethod == "UPI"
             ? (selectedUpiApp.isEmpty ? "Other" : selectedUpiApp)
@@ -263,7 +315,8 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             .where((o) => o.applied)
             .map((o) => o.name)
             .toList(),
-        "sold_to": "Retail",
+        "sold_to": soldTo,
+        "sold_location": soldLocation,
         "notes": notesController.text,
         "items": validItems
             .map(
@@ -280,7 +333,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             .where((t) => t.qty > 0)
             .map((t) => {"tray_type": t.trayType, "qty": t.qty})
             .toList(),
-        "branch_id": branchId,
+        "branch_id": selectedBranchId == "warehouse" ? branchId : (int.tryParse(selectedBranchId) ?? branchId),
       };
 
       if (customerStatus == 'not_found' && cNumber.isNotEmpty) {
@@ -293,7 +346,12 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       final res = await datasource.createSale(body: payload);
       setState(() => isSubmitting = false);
 
-      final saleId = res['sale']?['id'] ?? res['id'] ?? res['sale_id'] ?? 'N/A';
+      final saleId = res['sale']?['id'] ??
+          res['data']?['id'] ??
+          res['id'] ??
+          res['sale_id'] ??
+          res['approval_id'] ??
+          'N/A';
       final isPending =
           res['status'] == "PENDING_REVIEW" || res['approval_id'] != null;
 
@@ -515,41 +573,86 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, size: 20),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  Text(
-                    "${salesHappen.replaceAll('_', ' ')} / ",
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                  const Text(
-                    "Sales Entry",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+              Expanded(
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back_ios, size: 20),
+                      onPressed: () => Navigator.pop(context),
                     ),
-                  ),
-                ],
+                    Flexible(
+                      child: Text(
+                        "$soldLocation / ",
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      "Sales Entry",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              // const Icon(Icons.notifications_none, color: Colors.grey),
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: selectedBranchId,
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down,
+                      size: 16,
+                      color: Color(0xFF64748B),
+                    ),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1E293B),
+                    ),
+                    items: [
+                      const DropdownMenuItem<String>(
+                        value: "warehouse",
+                        child: Text("Main Warehouse"),
+                      ),
+                      ...branches.map((b) {
+                        return DropdownMenuItem<String>(
+                          value: b['id']?.toString() ?? "",
+                          child: Text(b['branch_name'] ?? ""),
+                        );
+                      }).toList(),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) {
+                        _onBranchChanged(v);
+                      }
+                    },
+                  ),
+                ),
+              ),
             ],
           ),
           const Divider(),
-          // Align(
-          //   alignment: Alignment.centerLeft,
-          //   child: Text(
-          //     headerData?['title'] ?? "Sales Entry",
-          //     style: const TextStyle(
-          //       fontSize: 22,
-          //       fontWeight: FontWeight.w800,
-          //       color: Colors.black,
-          //     ),
-          //   ),
-          // ),
         ],
       ),
     );

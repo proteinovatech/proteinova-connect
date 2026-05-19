@@ -47,22 +47,23 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   String selectedBranchId = "warehouse";
   String soldLocation = "Warehouse";
   List<Map<String, dynamic>> branches = [];
-  
+
   Map<String, dynamic>? headerData;
   List<ProductDetail> products = [];
   List<AdminOfferModel> offers = [];
   List<SalesItem> salesItems = [SalesItem()];
   List<SaleTray> saleTrays = [SaleTray()];
-  
+
   bool isLoading = true;
   bool offersLoading = true;
   bool isSubmitting = false;
   String? customerStatus; // 'found', 'not_found', null
-  
+
   String selectedPaymentMethod = "CASH";
   String soldTo = "Retail";
-  
-  final TextEditingController customerNumberController = TextEditingController();
+
+  final TextEditingController customerNumberController =
+      TextEditingController();
   final TextEditingController customerNameController = TextEditingController();
   final TextEditingController cashReceivedController = TextEditingController();
   final TextEditingController debtController = TextEditingController();
@@ -110,15 +111,21 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         final List list = res['data']['offers_list'] ?? [];
         if (mounted) {
           setState(() {
-            offers = list.where((o) => o['status'] == 'active').map((o) => AdminOfferModel(
-              id: int.tryParse(o['id'].toString()) ?? 0,
-              name: o['offer_name'] ?? "",
-              category: o['product_name'] ?? "All Products",
-              offerType: o['offer_type'] ?? "fixed_amount",
-              buyQty: double.tryParse(o['buy_qty'].toString()) ?? 0,
-              freeQty: double.tryParse(o['free_qty'].toString()) ?? 0,
-              discountValue: double.tryParse(o['discount_value'].toString()) ?? 0,
-            )).toList();
+            offers = list
+                .where((o) => o['status'] == 'active')
+                .map(
+                  (o) => AdminOfferModel(
+                    id: int.tryParse(o['id'].toString()) ?? 0,
+                    name: o['offer_name'] ?? "",
+                    category: o['product_name'] ?? "All Products",
+                    offerType: o['offer_type'] ?? "fixed_amount",
+                    buyQty: double.tryParse(o['buy_qty'].toString()) ?? 0,
+                    freeQty: double.tryParse(o['free_qty'].toString()) ?? 0,
+                    discountValue:
+                        double.tryParse(o['discount_value'].toString()) ?? 0,
+                  ),
+                )
+                .toList();
             offersLoading = false;
           });
         }
@@ -134,9 +141,11 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       if (mounted) setState(() => isLoading = true);
       final res = await datasource.getSalesEntry(
         loginUserId: loginUserId,
-        branchId: selectedBranchId == "warehouse" ? null : int.tryParse(selectedBranchId),
+        branchId: selectedBranchId == "warehouse"
+            ? null
+            : int.tryParse(selectedBranchId),
       );
-      
+
       if (mounted) {
         setState(() {
           headerData = res['header'];
@@ -145,7 +154,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
           } else {
             soldLocation = res['header']?['branch_name'] ?? "Branch";
           }
-          
+
           products = (res['product_details'] as List? ?? [])
               .map((e) => ProductDetail.fromJson(e))
               .toList();
@@ -170,22 +179,37 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       if (!offer.applied) continue;
 
       final isAllProducts = offer.category == "All Products";
-      final matchingItem = isAllProducts ? null : salesItems.where((item) =>
-        item.eggCategoryGrade.trim().toLowerCase() == offer.category.trim().toLowerCase()
-      ).firstOrNull;
+      final matchingItem = isAllProducts
+          ? null
+          : salesItems
+                .where(
+                  (item) =>
+                      item.eggCategoryGrade.trim().toLowerCase() ==
+                      offer.category.trim().toLowerCase(),
+                )
+                .firstOrNull;
 
       if (!isAllProducts && matchingItem == null) continue;
 
       if (offer.offerType == 'buy_x_get_y') {
-        final double relevantEggs = isAllProducts ? totalEggsInCart.toDouble() : (matchingItem?.eggs.toDouble() ?? 0);
-        final double pricePerEgg = isAllProducts ? (salesItems.isNotEmpty ? salesItems.first.price : 0) : (matchingItem?.price ?? 0);
+        final double relevantEggs = isAllProducts
+            ? totalEggsInCart.toDouble()
+            : (matchingItem?.eggs.toDouble() ?? 0);
+        final double pricePerEgg = isAllProducts
+            ? (salesItems.isNotEmpty ? salesItems.first.price : 0)
+            : (matchingItem?.price ?? 0);
 
         if (relevantEggs >= offer.buyQty && offer.buyQty > 0) {
-          final double freeEggsCount = (relevantEggs ~/ offer.buyQty) * offer.freeQty;
-          discount += double.parse((freeEggsCount * pricePerEgg).toStringAsFixed(2));
+          final double freeEggsCount =
+              (relevantEggs ~/ offer.buyQty) * offer.freeQty;
+          discount += double.parse(
+            (freeEggsCount * pricePerEgg).toStringAsFixed(2),
+          );
         }
       } else if (offer.offerType == 'percentage') {
-        final double relevantTotal = isAllProducts ? subtotal : (matchingItem?.total ?? 0);
+        final double relevantTotal = isAllProducts
+            ? subtotal
+            : (matchingItem?.total ?? 0);
         discount += (relevantTotal * offer.discountValue) / 100;
       } else if (offer.offerType == 'fixed_amount') {
         discount += offer.discountValue;
@@ -218,8 +242,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         item.calculateEggs();
       } else if (field == 'dozen') {
         item.dozen = double.tryParse(value.toString()) ?? 0;
-        item.calculateEggs();
+        item.eggs = (item.dozen * 12).round();
         item.trays = (item.eggs / 30).ceil();
+        item.total = double.parse((item.eggs * item.price).toStringAsFixed(2));
       } else if (field == 'trays') {
         item.trays = int.tryParse(value.toString()) ?? 0;
         item.eggs = item.trays * 30;
@@ -231,32 +256,25 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
   void addProductFromCard(ProductDetail product) {
     setState(() {
-      final existingIndex = salesItems.indexWhere((i) => i.eggCategoryGrade == product.productName);
+      final existingIndex = salesItems.indexWhere(
+        (i) => i.eggCategoryGrade == product.productName,
+      );
       if (existingIndex != -1) {
-        salesItems[existingIndex].trays += 1;
-        salesItems[existingIndex].eggs = salesItems[existingIndex].trays * 30;
-        salesItems[existingIndex].dozen = double.parse((salesItems[existingIndex].eggs / 12).toStringAsFixed(2));
-        salesItems[existingIndex].total = double.parse((salesItems[existingIndex].eggs * (product.perTrayPrice / 30)).toStringAsFixed(2));
+        final item = salesItems[existingIndex];
+        item.trays += 1;
+        item.eggs = (item.trays * 30) + (item.dozen * 12).round();
+        item.total = double.parse((item.eggs * item.price).toStringAsFixed(2));
       } else {
-        if (salesItems.length == 1 && salesItems[0].eggCategoryGrade == "") {
-          salesItems[0] = SalesItem(
-            eggCategoryGrade: product.productName,
-            price: product.perTrayPrice / 30,
-            trays: 1,
-            eggs: 30,
-            dozen: 2.5,
-            total: product.perTrayPrice,
-          );
-        } else {
-          salesItems.add(SalesItem(
-            eggCategoryGrade: product.productName,
-            price: product.perTrayPrice / 30,
-            trays: 1,
-            eggs: 30,
-            dozen: 2.5,
-            total: product.perTrayPrice,
-          ));
-        }
+        salesItems.removeWhere((i) => i.eggCategoryGrade.isEmpty);
+        final newItem = SalesItem(
+          eggCategoryGrade: product.productName,
+          price: product.perTrayPrice / 30,
+          trays: 1,
+          eggs: 30,
+          dozen: 2.5,
+          total: product.perTrayPrice,
+        );
+        salesItems.add(newItem);
       }
     });
   }
@@ -297,7 +315,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       return;
     }
 
-    final validItems = salesItems.where((i) => i.eggCategoryGrade.isNotEmpty).toList();
+    final validItems = salesItems
+        .where((i) => i.eggCategoryGrade.isNotEmpty)
+        .toList();
     if (validItems.isEmpty) {
       _showError("Please add at least one product");
       return;
@@ -307,7 +327,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     try {
       final payload = {
         "login_user_id": loginUserId,
-        "sold_location_id": selectedBranchId == "warehouse" ? null : int.tryParse(selectedBranchId),
+        "sold_location_id": selectedBranchId == "warehouse"
+            ? null
+            : int.tryParse(selectedBranchId),
         "customer_name": cName.isEmpty ? "Unknown Customer" : cName,
         "customer_number": cNumber.isEmpty ? "N/A" : cNumber,
         "customer_debit": double.tryParse(debtController.text) ?? 0,
@@ -317,28 +339,46 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         "sold_to": soldTo,
         "sold_location": soldLocation,
         "notes": notesController.text,
-        "applied_offers": offers.where((o) => o.applied).map((o) => o.name).toList(),
+        "applied_offers": offers
+            .where((o) => o.applied)
+            .map((o) => o.name)
+            .toList(),
         "total_amount": totalAmount,
-        "items": validItems.map((i) => {
-          "egg_category_grade": i.eggCategoryGrade,
-          "dozen": i.dozen,
-          "eggs": i.eggs,
-          "trays": (i.eggs / 30).ceil(),
-          "total": i.total
-        }).toList(),
-        "sale_trays": saleTrays.where((t) => t.qty > 0).map((t) => {"tray_type": t.trayType, "qty": t.qty}).toList(),
+        "items": validItems
+            .map(
+              (i) => {
+                "egg_category_grade": i.eggCategoryGrade,
+                "dozen": i.dozen,
+                "eggs": i.eggs,
+                "trays": (i.eggs / 30).ceil(),
+                "total": i.total,
+              },
+            )
+            .toList(),
+        "sale_trays": saleTrays
+            .where((t) => t.qty > 0)
+            .map((t) => {"tray_type": t.trayType, "qty": t.qty})
+            .toList(),
       };
 
       if (customerStatus == 'not_found' && cNumber.isNotEmpty) {
-        await datasource.createCustomer(name: cName.isEmpty ? "Unknown Customer" : cName, number: cNumber);
+        await datasource.createCustomer(
+          name: cName.isEmpty ? "Unknown Customer" : cName,
+          number: cNumber,
+        );
       }
 
       final res = await datasource.createSale(body: payload);
       setState(() => isSubmitting = false);
-      
-      final saleId = res['data']?['id'] ?? res['id'] ?? res['approval_id'] ?? 'N/A';
+
+      final saleId = res['sale']?['id'] ??
+          res['data']?['id'] ??
+          res['id'] ??
+          res['sale_id'] ??
+          res['approval_id'] ??
+          'N/A';
       final isPending = res['status'] == "PENDING_REVIEW";
-      
+
       _showSuccessPopup(saleId, isPending, validItems);
     } catch (e) {
       setState(() => isSubmitting = false);
@@ -357,20 +397,54 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 80, height: 80,
-                decoration: const BoxDecoration(color: Color(0xFFFEF2F2), shape: BoxShape.circle),
-                child: const Icon(Icons.close, color: Color(0xFFEF4444), size: 40),
+                width: 80,
+                height: 80,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFEF2F2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.close,
+                  color: Color(0xFFEF4444),
+                  size: 40,
+                ),
               ),
               const SizedBox(height: 24),
-              const Text("Sale Failed", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Color(0xFF1E293B))),
+              const Text(
+                "Sale Failed",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
               const SizedBox(height: 12),
-              Text(msg, textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFF64748B), fontSize: 16)),
+              Text(
+                msg,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Color(0xFF64748B), fontSize: 16),
+              ),
               const SizedBox(height: 32),
-              SizedBox(width: double.infinity, height: 50, child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1E293B), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                child: const Text("Try Again", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              )),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1E293B),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    "Try Again",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -378,7 +452,11 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     );
   }
 
-  void _showSuccessPopup(dynamic saleId, bool isPending, List<SalesItem> finalItems) {
+  void _showSuccessPopup(
+    dynamic saleId,
+    bool isPending,
+    List<SalesItem> finalItems,
+  ) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -421,7 +499,8 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   // --- UI Builders ---
   @override
   Widget build(BuildContext context) {
-    if (isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (isLoading)
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -434,30 +513,43 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 _buildHeader(),
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
                     child: Column(
                       children: [
                         _buildSubHeader(),
                         const SizedBox(height: 16),
-                        if (isWide) 
+                        if (isWide)
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(flex: 1, child: Column(children: [
-                                _buildTransactionDetailsCard(),
-                                const SizedBox(height: 16),
-                                _buildProductSelectionCard(),
-                              ])),
+                              Expanded(
+                                flex: 1,
+                                child: Column(
+                                  children: [
+                                    _buildTransactionDetailsCard(),
+                                    const SizedBox(height: 16),
+                                    _buildProductSelectionCard(),
+                                  ],
+                                ),
+                              ),
                               const SizedBox(width: 16),
-                              Expanded(flex: 1, child: Column(children: [
-                                _buildSalesItemsCard(isWide),
-                                const SizedBox(height: 16),
-                                _buildTrayTypesCard(),
-                                const SizedBox(height: 16),
-                                _buildOffersCard(),
-                                const SizedBox(height: 16),
-                                _buildPaymentAndSummaryGrid(),
-                              ])),
+                              Expanded(
+                                flex: 1,
+                                child: Column(
+                                  children: [
+                                    _buildSalesItemsCard(isWide),
+                                    const SizedBox(height: 16),
+                                    _buildTrayTypesCard(),
+                                    const SizedBox(height: 16),
+                                    _buildOffersCard(),
+                                    const SizedBox(height: 16),
+                                    _buildPaymentAndSummaryGrid(),
+                                  ],
+                                ),
+                              ),
                             ],
                           )
                         else
@@ -483,7 +575,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 ),
               ],
             );
-          }
+          },
         ),
       ),
     );
@@ -506,7 +598,11 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                   ),
                   const Text(
                     "Sales Entry",
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
                 ],
               ),
@@ -525,7 +621,11 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       children: [
         const Text(
           "Sales Entry",
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.black),
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: Colors.black,
+          ),
         ),
         const SizedBox(height: 4),
         Row(
@@ -548,8 +648,16 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 child: DropdownButton<String>(
                   value: selectedBranchId,
                   items: [
-                    const DropdownMenuItem(value: "warehouse", child: Text("Main Warehouse")),
-                    ...branches.map((b) => DropdownMenuItem(value: b['id'].toString(), child: Text(b['branch_name'] ?? ""))),
+                    const DropdownMenuItem(
+                      value: "warehouse",
+                      child: Text("Main Warehouse"),
+                    ),
+                    ...branches.map(
+                      (b) => DropdownMenuItem(
+                        value: b['id'].toString(),
+                        child: Text(b['branch_name'] ?? ""),
+                      ),
+                    ),
                   ],
                   onChanged: (v) {
                     setState(() {
@@ -575,24 +683,32 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             children: [
               Expanded(
                 child: _buildInput(
-                  "Customer Name",
-                  customerNameController,
-                  hint: "John",
-                ),
-              ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: _buildInput(
                   "Customer Number",
                   customerNumberController,
                   hint: "9876543210",
                   keyboardType: TextInputType.phone,
                   onChanged: lookupCustomer,
-                  suffix: customerStatus == 'found' 
-                    ? const Icon(Icons.check_circle, color: Colors.green, size: 18)
-                    : customerStatus == 'not_found' 
-                      ? const Icon(Icons.person_add, color: Colors.orange, size: 18)
+                  suffix: customerStatus == 'found'
+                      ? const Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                          size: 18,
+                        )
+                      : customerStatus == 'not_found'
+                      ? const Icon(
+                          Icons.person_add,
+                          color: Colors.orange,
+                          size: 18,
+                        )
                       : null,
+                ),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: _buildInput(
+                  "Customer Name",
+                  customerNameController,
+                  hint: "John",
                 ),
               ),
             ],
@@ -613,7 +729,11 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 dateController.text = DateFormat('yyyy-MM-dd').format(date);
               }
             },
-            suffix: const Icon(Icons.calendar_today, size: 18, color: Colors.grey),
+            suffix: const Icon(
+              Icons.calendar_today,
+              size: 18,
+              color: Colors.grey,
+            ),
           ),
         ],
       ),
@@ -629,7 +749,12 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             controller: searchController,
             onChanged: (v) {
               setState(() {
-                filteredProducts = products.where((p) => p.productName.toLowerCase().contains(v.toLowerCase())).toList();
+                filteredProducts = products
+                    .where(
+                      (p) =>
+                          p.productName.toLowerCase().contains(v.toLowerCase()),
+                    )
+                    .toList();
               });
             },
             decoration: InputDecoration(
@@ -637,8 +762,14 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               prefixIcon: const Icon(Icons.search),
               filled: true,
               fillColor: Colors.grey.shade50,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade200)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade200)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.grey.shade200),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.grey.shade200),
+              ),
               contentPadding: const EdgeInsets.symmetric(vertical: 0),
             ),
           ),
@@ -669,11 +800,33 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(p.productName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(
+                        p.productName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       const SizedBox(height: 6),
-                      Text("₹${(p.perTrayPrice / 30).toStringAsFixed(2)} / Egg", style: const TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.w800)),
+                      Text(
+                        "₹${(p.perTrayPrice / 30).toStringAsFixed(2)} / Egg",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                       const SizedBox(height: 2),
-                      Text("Stock: ${p.stockEggs} eggs", style: TextStyle(fontSize: 11, color: isOutOfStock ? Colors.red : Colors.green, fontWeight: FontWeight.w500)),
+                      Text(
+                        "Stock: ${p.stockEggs} eggs",
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isOutOfStock ? Colors.red : Colors.green,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -692,7 +845,10 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         onTap: addItem,
         child: Container(
           padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(color: AppColors.amber600, borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(
+            color: AppColors.amber600,
+            borderRadius: BorderRadius.circular(8),
+          ),
           child: const Icon(Icons.add, color: Colors.white, size: 20),
         ),
       ),
@@ -704,11 +860,60 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               color: Colors.grey.shade100,
               child: Row(
                 children: const [
-                  Expanded(flex: 3, child: Text("Product", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold))),
-                  Expanded(flex: 2, child: Text("Dozen", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                  Expanded(flex: 2, child: Text("Trays", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                  Expanded(flex: 1, child: Text("Eggs", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                  Expanded(flex: 2, child: Text("Total", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      "Product",
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      "Dozen",
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      "Trays",
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      "Eggs",
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      "Total",
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
                   SizedBox(width: 30),
                 ],
               ),
@@ -724,28 +929,90 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: Row(
                     children: [
-                      Expanded(flex: 3, child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5),
-                        decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(8)),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: item.eggCategoryGrade.isEmpty ? null : item.eggCategoryGrade,
-                            isExpanded: true,
-                            hint: const Text("Select", style: TextStyle(fontSize: 11)),
-                            items: products.map((p) => DropdownMenuItem(value: p.productName, child: Text(p.productName, style: const TextStyle(fontSize: 11)))).toList(),
-                            onChanged: (v) => updateItem(index, 'product', v),
+                      Expanded(
+                        flex: 3,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: item.eggCategoryGrade.isEmpty
+                                  ? null
+                                  : item.eggCategoryGrade,
+                              isExpanded: true,
+                              hint: const Text(
+                                "Select",
+                                style: TextStyle(fontSize: 11),
+                              ),
+                              items: products
+                                  .map(
+                                    (p) => DropdownMenuItem(
+                                      value: p.productName,
+                                      child: Text(
+                                        p.productName,
+                                        style: const TextStyle(fontSize: 11),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (v) => updateItem(index, 'product', v),
+                            ),
                           ),
                         ),
-                      )),
+                      ),
                       const SizedBox(width: 4),
-                      Expanded(flex: 2, child: _buildStepper(item.dozen, (v) => updateItem(index, 'dozen', v), isDozen: true)),
+                      Expanded(
+                        flex: 2,
+                        child: _buildStepper(
+                          item.dozen,
+                          (v) => updateItem(index, 'dozen', v),
+                          isDozen: true,
+                        ),
+                      ),
                       const SizedBox(width: 4),
-                      Expanded(flex: 2, child: _buildStepper(item.trays.toDouble(), (v) => updateItem(index, 'trays', v.toInt()))),
+                      Expanded(
+                        flex: 2,
+                        child: _buildStepper(
+                          item.trays.toDouble(),
+                          (v) => updateItem(index, 'trays', v.toInt()),
+                        ),
+                      ),
                       const SizedBox(width: 4),
-                      Expanded(flex: 1, child: Text("${item.eggs}", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500), textAlign: TextAlign.center)),
-                      Expanded(flex: 2, child: Text("₹${item.total.toStringAsFixed(1)}", style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF16A34A), fontSize: 11), textAlign: TextAlign.right)),
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          "${item.eggs}",
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          "₹${item.total.toStringAsFixed(1)}",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF16A34A),
+                            fontSize: 11,
+                          ),
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
                       const SizedBox(width: 4),
-                      InkWell(onTap: () => removeItem(index), child: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 20)),
+                      InkWell(
+                        onTap: () => removeItem(index),
+                        child: const Icon(
+                          Icons.delete_outline,
+                          color: Color(0xFFEF4444),
+                          size: 20,
+                        ),
+                      ),
                     ],
                   ),
                 );
@@ -762,51 +1029,120 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                     children: [
                       Row(
                         children: [
-                          Expanded(child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            decoration: BoxDecoration(color: Colors.white, border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(8)),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: item.eggCategoryGrade.isEmpty ? null : item.eggCategoryGrade,
-                                isExpanded: true,
-                                hint: const Text("Select Product", style: TextStyle(fontSize: 13)),
-                                items: products.map((p) => DropdownMenuItem(value: p.productName, child: Text(p.productName, style: const TextStyle(fontSize: 13)))).toList(),
-                                onChanged: (v) => updateItem(index, 'product', v),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(color: Colors.grey.shade300),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: item.eggCategoryGrade.isEmpty
+                                      ? null
+                                      : item.eggCategoryGrade,
+                                  isExpanded: true,
+                                  hint: const Text(
+                                    "Select Product",
+                                    style: TextStyle(fontSize: 13),
+                                  ),
+                                  items: products
+                                      .map(
+                                        (p) => DropdownMenuItem(
+                                          value: p.productName,
+                                          child: Text(
+                                            p.productName,
+                                            style: const TextStyle(
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: (v) =>
+                                      updateItem(index, 'product', v),
+                                ),
                               ),
                             ),
-                          )),
+                          ),
                           const SizedBox(width: 10),
-                          InkWell(onTap: () => removeItem(index), child: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 24)),
+                          InkWell(
+                            onTap: () => removeItem(index),
+                            child: const Icon(
+                              Icons.delete_outline,
+                              color: Color(0xFFEF4444),
+                              size: 24,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          Expanded(child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text("Dozen", style: TextStyle(fontSize: 11, color: Colors.grey)),
-                              const SizedBox(height: 4),
-                              _buildStepper(item.dozen, (v) => updateItem(index, 'dozen', v), isDozen: true),
-                            ],
-                          )),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Dozen",
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                _buildStepper(
+                                  item.dozen,
+                                  (v) => updateItem(index, 'dozen', v),
+                                  isDozen: true,
+                                ),
+                              ],
+                            ),
+                          ),
                           const SizedBox(width: 8),
-                          Expanded(child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text("Trays", style: TextStyle(fontSize: 11, color: Colors.grey)),
-                              const SizedBox(height: 4),
-                              _buildStepper(item.trays.toDouble(), (v) => updateItem(index, 'trays', v.toInt())),
-                            ],
-                          )),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Trays",
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                _buildStepper(
+                                  item.trays.toDouble(),
+                                  (v) => updateItem(index, 'trays', v.toInt()),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text("Total Eggs: ${item.eggs}", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                          Text("Total: ₹${item.total.toStringAsFixed(1)}", style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF16A34A), fontSize: 14)),
+                          Text(
+                            "Total Eggs: ${item.eggs}",
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            "Total: ₹${item.total.toStringAsFixed(1)}",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF16A34A),
+                              fontSize: 14,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -827,7 +1163,12 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         onPressed: () => setState(() => saleTrays.add(SaleTray())),
         icon: const Icon(Icons.add, size: 14),
         label: const Text("Add Tray", style: TextStyle(fontSize: 12)),
-        style: ElevatedButton.styleFrom(backgroundColor: AppColors.amber600, foregroundColor: Colors.white, elevation: 0, padding: const EdgeInsets.symmetric(horizontal: 10)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.amber600,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+        ),
       ),
       child: Column(
         children: saleTrays.asMap().entries.map((entry) {
@@ -837,24 +1178,59 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             padding: const EdgeInsets.only(bottom: 12),
             child: Row(
               children: [
-                Expanded(flex: 3, child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(8)),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: tray.trayType,
-                      isExpanded: true,
-                      items: ["without tray", "Empty paper tray", "Empty plastic tray", "Plastic tray (With egg)", "Paper tray (with egg)"]
-                        .map((t) => DropdownMenuItem(value: t, child: Text(t, style: const TextStyle(fontSize: 12)))).toList(),
-                      onChanged: (v) => setState(() => tray.trayType = v!),
+                Expanded(
+                  flex: 3,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: tray.trayType,
+                        isExpanded: true,
+                        items:
+                            [
+                                  "without tray",
+                                  "Empty paper tray",
+                                  "Empty plastic tray",
+                                  "Plastic tray (With egg)",
+                                  "Paper tray (with egg)",
+                                ]
+                                .map(
+                                  (t) => DropdownMenuItem(
+                                    value: t,
+                                    child: Text(
+                                      t,
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged: (v) => setState(() => tray.trayType = v!),
+                      ),
                     ),
                   ),
-                )),
+                ),
                 const SizedBox(width: 10),
-                Expanded(flex: 2, child: _buildStepper(tray.qty.toDouble(), (v) => setState(() => tray.qty = v.toInt()))),
+                Expanded(
+                  flex: 2,
+                  child: _buildStepper(
+                    tray.qty.toDouble(),
+                    (v) => setState(() => tray.qty = v.toInt()),
+                  ),
+                ),
                 if (saleTrays.length > 1) ...[
                   const SizedBox(width: 10),
-                  InkWell(onTap: () => setState(() => saleTrays.removeAt(idx)), child: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 20)),
+                  InkWell(
+                    onTap: () => setState(() => saleTrays.removeAt(idx)),
+                    child: const Icon(
+                      Icons.delete_outline,
+                      color: Color(0xFFEF4444),
+                      size: 20,
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -870,31 +1246,50 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       child: Column(
         children: [
           if (offersLoading) const Center(child: CircularProgressIndicator()),
-          if (!offersLoading && offers.isEmpty) const Text("No active offers available.", style: TextStyle(color: Colors.grey, fontSize: 13)),
+          if (!offersLoading && offers.isEmpty)
+            const Text(
+              "No active offers available.",
+              style: TextStyle(color: Colors.grey, fontSize: 13),
+            ),
           ...offers.map((o) {
             final isAllProducts = o.category == "All Products";
-            final totalEggsInCart = salesItems.fold(0, (sum, item) => sum + item.eggs);
-            final matchingItem = salesItems.where((i) => i.eggCategoryGrade == o.category).firstOrNull;
+            final totalEggsInCart = salesItems.fold(
+              0,
+              (sum, item) => sum + item.eggs,
+            );
+            final matchingItem = salesItems
+                .where((i) => i.eggCategoryGrade == o.category)
+                .firstOrNull;
 
             bool isEligible = false;
             String hint = '';
 
             if (o.offerType == 'buy_x_get_y') {
-              final double currentQty = isAllProducts ? totalEggsInCart.toDouble() : (matchingItem?.eggs.toDouble() ?? 0);
+              final double currentQty = isAllProducts
+                  ? totalEggsInCart.toDouble()
+                  : (matchingItem?.eggs.toDouble() ?? 0);
               isEligible = currentQty >= o.buyQty;
-              hint = isEligible ? 'Apply Offer' : "Need ${o.buyQty.toInt()} eggs ${isAllProducts ? 'total' : 'of ${o.category}'}";
+              hint = isEligible
+                  ? 'Apply Offer'
+                  : "Need ${o.buyQty.toInt()} eggs ${isAllProducts ? 'total' : 'of ${o.category}'}";
             } else {
-              isEligible = isAllProducts ? salesItems.any((i) => i.eggCategoryGrade.isNotEmpty) : matchingItem != null;
-              hint = isEligible ? 'Apply Offer' : "Select ${isAllProducts ? 'any product' : o.category}";
+              isEligible = isAllProducts
+                  ? salesItems.any((i) => i.eggCategoryGrade.isNotEmpty)
+                  : matchingItem != null;
+              hint = isEligible
+                  ? 'Apply Offer'
+                  : "Select ${isAllProducts ? 'any product' : o.category}";
             }
 
             String offerDesc = o.name;
             if (o.offerType == 'buy_x_get_y') {
-              offerDesc = "${o.name} — Buy ${o.buyQty.toInt()} get ${o.freeQty.toInt()} free";
+              offerDesc =
+                  "${o.name} — Buy ${o.buyQty.toInt()} get ${o.freeQty.toInt()} free";
             } else if (o.offerType == 'percentage') {
               offerDesc = "${o.name} — ${o.discountValue.toInt()}% Off";
             } else if (o.offerType == 'fixed_amount') {
-              offerDesc = "${o.name} — ₹${o.discountValue.toInt()} Flat Discount";
+              offerDesc =
+                  "${o.name} — ₹${o.discountValue.toInt()} Flat Discount";
             }
 
             return Container(
@@ -903,25 +1298,56 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               decoration: BoxDecoration(
                 color: o.applied ? Colors.green.shade50 : Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: o.applied ? Colors.green : Colors.grey.shade200),
+                border: Border.all(
+                  color: o.applied ? Colors.green : Colors.grey.shade200,
+                ),
               ),
               child: Row(
                 children: [
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(offerDesc, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: Color(0xFF1E293B))),
-                    Text(o.category, style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w500)),
-                  ])),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          offerDesc,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        Text(
+                          o.category,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(width: 10),
                   ElevatedButton(
                     onPressed: isEligible ? () => toggleOffer(o.id) : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: o.applied ? const Color(0xFF16A34A) : const Color(0xFF2563EB),
+                      backgroundColor: o.applied
+                          ? const Color(0xFF16A34A)
+                          : const Color(0xFF2563EB),
                       foregroundColor: Colors.white,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
-                    child: Text(o.applied ? "Applied" : (isEligible ? "Apply" : hint), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      o.applied ? "Applied" : (isEligible ? "Apply" : hint),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -940,30 +1366,60 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
           child: Column(
             children: [
               Row(
-                children: ["CASH", "UPI", "CARD"].map((m) => Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: InkWell(
-                      onTap: () => setState(() => selectedPaymentMethod = m),
-                      child: Container(
-                        height: 40,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: selectedPaymentMethod == m ?AppColors.amber600 : Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: selectedPaymentMethod == m ? AppColors.amber600 : Colors.grey.shade300),
+                children: ["CASH", "UPI", "CARD"]
+                    .map(
+                      (m) => Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: InkWell(
+                            onTap: () =>
+                                setState(() => selectedPaymentMethod = m),
+                            child: Container(
+                              height: 40,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: selectedPaymentMethod == m
+                                    ? AppColors.amber600
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: selectedPaymentMethod == m
+                                      ? AppColors.amber600
+                                      : Colors.grey.shade300,
+                                ),
+                              ),
+                              child: Text(
+                                m,
+                                style: TextStyle(
+                                  color: selectedPaymentMethod == m
+                                      ? Colors.white
+                                      : Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                        child: Text(m, style: TextStyle(color: selectedPaymentMethod == m ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 12)),
                       ),
-                    ),
-                  ),
-                )).toList(),
+                    )
+                    .toList(),
               ),
               const SizedBox(height: 20),
-              _buildInput("Cash Received", cashReceivedController, keyboardType: TextInputType.number, hint: "0"),
+              _buildInput(
+                "Cash Received",
+                cashReceivedController,
+                keyboardType: TextInputType.number,
+                hint: "0",
+              ),
               if (selectedPaymentMethod == "CASH") ...[
                 const SizedBox(height: 15),
-                _buildInput("Debt (Optional)", debtController, keyboardType: TextInputType.number, hint: "0"),
+                _buildInput(
+                  "Debt (Optional)",
+                  debtController,
+                  keyboardType: TextInputType.number,
+                  hint: "0",
+                ),
               ],
             ],
           ),
@@ -974,9 +1430,17 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
           child: Column(
             children: [
               _summaryRow("Subtotal", "₹${subtotal.toStringAsFixed(2)}"),
-              _summaryRow("Discount", "-₹${totalDiscount.toStringAsFixed(2)}", color: const Color(0xFFEF4444)),
+              _summaryRow(
+                "Discount",
+                "-₹${totalDiscount.toStringAsFixed(2)}",
+                color: const Color(0xFFEF4444),
+              ),
               const Divider(height: 30),
-              _summaryRow("Total", "₹${totalAmount.toStringAsFixed(2)}", isBold: true),
+              _summaryRow(
+                "Total",
+                "₹${totalAmount.toStringAsFixed(2)}",
+                isBold: true,
+              ),
               const SizedBox(height: 25),
               SizedBox(
                 width: double.infinity,
@@ -984,12 +1448,21 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 child: ElevatedButton(
                   onPressed: isSubmitting ? null : handlePayment,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.green, 
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    backgroundColor: AppColors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
                   ),
-                  child: isSubmitting 
-                    ? const CircularProgressIndicator(color: Colors.white) 
-                    : Text("Complete Transaction ₹${totalAmount.toStringAsFixed(2)}", style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800)),
+                  child: isSubmitting
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text(
+                          "Complete Transaction ₹${totalAmount.toStringAsFixed(2)}",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                 ),
               ),
             ],
@@ -999,77 +1472,168 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     );
   }
 
-  Widget _buildStepper(double value, Function(double) onChanged, {bool isDozen = false}) {
+  Widget _buildStepper(
+    double value,
+    Function(double) onChanged, {
+    bool isDozen = false,
+  }) {
     return Container(
       height: 38,
-      decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(8), color: Colors.white),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+        color: Colors.white,
+      ),
       child: Row(
         children: [
           InkWell(
-            onTap: () { if (value > 0) onChanged(value - (isDozen ? 0.5 : 1)); }, 
-            child: Container(width: 24, alignment: Alignment.center, child: const Icon(Icons.remove, size: 12)),
+            onTap: () {
+              if (value > 0) onChanged(value - (isDozen ? 0.5 : 1));
+            },
+            child: Container(
+              width: 24,
+              alignment: Alignment.center,
+              child: const Icon(Icons.remove, size: 12),
+            ),
           ),
-          Expanded(child: Text(isDozen ? value.toStringAsFixed(1) : value.toInt().toString(), textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11))),
+          Expanded(
+            child: Text(
+              isDozen ? value.toStringAsFixed(1) : value.toInt().toString(),
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11),
+            ),
+          ),
           InkWell(
-            onTap: () => onChanged(value + (isDozen ? 0.5 : 1)), 
-            child: Container(width: 24, alignment: Alignment.center, child: const Icon(Icons.add, size: 12)),
+            onTap: () => onChanged(value + (isDozen ? 0.5 : 1)),
+            child: Container(
+              width: 24,
+              alignment: Alignment.center,
+              child: const Icon(Icons.add, size: 12),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCard({required String title, required Widget child, Widget? trailing}) {
+  Widget _buildCard({
+    required String title,
+    required Widget child,
+    Widget? trailing,
+  }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white, 
-        borderRadius: BorderRadius.circular(20), 
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.grey.shade200),
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF1E293B))),
-          if (trailing != null) trailing,
-        ]),
-        const SizedBox(height: 15),
-        child,
-      ]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+              if (trailing != null) trailing,
+            ],
+          ),
+          const SizedBox(height: 15),
+          child,
+        ],
+      ),
     );
   }
 
-  Widget _buildInput(String label, TextEditingController controller, {String? hint, Function(String)? onChanged, TextInputType? keyboardType, Widget? suffix, bool readOnly = false, VoidCallback? onTap}) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.w800)),
-      const SizedBox(height: 6),
-      TextField(
-        controller: controller,
-        onChanged: onChanged,
-        keyboardType: keyboardType,
-        readOnly: readOnly,
-        onTap: onTap,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        decoration: InputDecoration(
-          hintText: hint,
-          suffixIcon: suffix,
-          filled: true,
-          fillColor: const Color(0xFFF8FAFC),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade200)),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade200)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+  Widget _buildInput(
+    String label,
+    TextEditingController controller, {
+    String? hint,
+    Function(String)? onChanged,
+    TextInputType? keyboardType,
+    Widget? suffix,
+    bool readOnly = false,
+    VoidCallback? onTap,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Color(0xFF64748B),
+            fontWeight: FontWeight.w800,
+          ),
         ),
-      ),
-    ]);
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          onChanged: onChanged,
+          keyboardType: keyboardType,
+          readOnly: readOnly,
+          onTap: onTap,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          decoration: InputDecoration(
+            hintText: hint,
+            suffixIcon: suffix,
+            filled: true,
+            fillColor: const Color(0xFFF8FAFC),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
-  Widget _summaryRow(String label, String value, {Color? color, bool isBold = false}) {
+  Widget _summaryRow(
+    String label,
+    String value, {
+    Color? color,
+    bool isBold = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Text(label, style: TextStyle(fontWeight: isBold ? FontWeight.w900 : FontWeight.w600, fontSize: isBold ? 16 : 14, color: isBold ? const Color(0xFF1E293B) : const Color(0xFF64748B))),
-        Text(value, style: TextStyle(fontWeight: FontWeight.w900, color: color ?? const Color(0xFF1E293B), fontSize: isBold ? 18 : 14)),
-      ]),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: isBold ? FontWeight.w900 : FontWeight.w600,
+              fontSize: isBold ? 16 : 14,
+              color: isBold ? const Color(0xFF1E293B) : const Color(0xFF64748B),
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.w900,
+              color: color ?? const Color(0xFF1E293B),
+              fontSize: isBold ? 18 : 14,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1090,9 +1654,9 @@ class _SuccessDialog extends StatelessWidget {
   final VoidCallback onDashboard;
 
   const _SuccessDialog({
-    required this.saleId, 
-    required this.amount, 
-    required this.isPending, 
+    required this.saleId,
+    required this.amount,
+    required this.isPending,
     required this.customerName,
     required this.customerNumber,
     required this.date,
@@ -1101,7 +1665,7 @@ class _SuccessDialog extends StatelessWidget {
     required this.subtotal,
     required this.paymentMethod,
     required this.branchName,
-    required this.onNextSale, 
+    required this.onNextSale,
     required this.onDashboard,
   });
 
@@ -1116,40 +1680,113 @@ class _SuccessDialog extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(color: isPending ? const Color(0xFFFFF7ED) : const Color(0xFFF0FDF4), shape: BoxShape.circle),
-              child: Icon(isPending ? Icons.timer_outlined : Icons.check_circle_outline, size: 60, color: isPending ? const Color(0xFFF97316) : const Color(0xFF22C55E)),
+              decoration: BoxDecoration(
+                color: isPending
+                    ? const Color(0xFFFFF7ED)
+                    : const Color(0xFFF0FDF4),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isPending ? Icons.timer_outlined : Icons.check_circle_outline,
+                size: 60,
+                color: isPending
+                    ? const Color(0xFFF97316)
+                    : const Color(0xFF22C55E),
+              ),
             ),
             const SizedBox(height: 20),
-            Text(isPending ? "Approval Requested" : "Payment Successful!", textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF1E293B))),
+            Text(
+              isPending ? "Approval Requested" : "Payment Successful!",
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                color: Color(0xFF1E293B),
+              ),
+            ),
             const SizedBox(height: 10),
-            Text(isPending ? "This sale exceeds limits and requires admin approval." : "Your transaction has been recorded successfully.", textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFF64748B), fontSize: 14)),
+            Text(
+              isPending
+                  ? "This sale exceeds limits and requires admin approval."
+                  : "Your transaction has been recorded successfully.",
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
+            ),
             const SizedBox(height: 25),
             _infoRow(isPending ? "Request ID:" : "Sale ID:", "#$saleId"),
             _infoRow("Amount Paid:", "₹${amount.toStringAsFixed(2)}"),
             const SizedBox(height: 25),
-            if (!isPending) Row(children: [
-              Expanded(child: _actionBtn(Icons.download, "PDF", () async {
-                await SalesReceiptService.generateAndPrintReceipt(
-                  saleId: saleId, customerName: customerName, customerNumber: customerNumber, date: date,
-                  items: items, subtotal: subtotal, discount: discount, total: amount, paymentMethod: paymentMethod, isThermal: false,
-                  branchName: branchName,
-                );
-              })),
-              const SizedBox(width: 10),
-              Expanded(child: _actionBtn(Icons.print, "Print", () async {
-                await SalesReceiptService.generateAndPrintReceipt(
-                  saleId: saleId, customerName: customerName, customerNumber: customerNumber, date: date,
-                  items: items, subtotal: subtotal, discount: discount, total: amount, paymentMethod: paymentMethod, isThermal: true,
-                  branchName: branchName,
-                );
-              })),
-            ]),
+            if (!isPending)
+              Row(
+                children: [
+                  Expanded(
+                    child: _actionBtn(Icons.download, "PDF", () async {
+                      await SalesReceiptService.generateAndPrintReceipt(
+                        saleId: saleId,
+                        customerName: customerName,
+                        customerNumber: customerNumber,
+                        date: date,
+                        items: items,
+                        subtotal: subtotal,
+                        discount: discount,
+                        total: amount,
+                        paymentMethod: paymentMethod,
+                        isThermal: false,
+                        branchName: branchName,
+                      );
+                    }),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _actionBtn(Icons.print, "Print", () async {
+                      await SalesReceiptService.generateAndPrintReceipt(
+                        saleId: saleId,
+                        customerName: customerName,
+                        customerNumber: customerNumber,
+                        date: date,
+                        items: items,
+                        subtotal: subtotal,
+                        discount: discount,
+                        total: amount,
+                        paymentMethod: paymentMethod,
+                        isThermal: true,
+                        branchName: branchName,
+                      );
+                    }),
+                  ),
+                ],
+              ),
             const SizedBox(height: 20),
-            SizedBox(width: double.infinity, height: 50, child: ElevatedButton(
-              onPressed: onNextSale, 
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.amber600, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-              child: const Text("Next Sale Entry", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)))),
-            TextButton(onPressed: onDashboard, child: const Text("Back to Dashboard", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold))),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: onNextSale,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.amber600,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  "Next Sale Entry",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: onDashboard,
+              child: const Text(
+                "Back to Dashboard",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -1159,19 +1796,38 @@ class _SuccessDialog extends StatelessWidget {
   Widget _infoRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Text(label, style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.bold)),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF1E293B))),
-      ]),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF64748B),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _actionBtn(IconData icon, String label, VoidCallback onTap) {
     return OutlinedButton.icon(
-      onPressed: onTap, 
-      icon: Icon(icon, size: 18), 
+      onPressed: onTap,
+      icon: Icon(icon, size: 18),
       label: Text(label, style: const TextStyle(fontSize: 12)),
-      style: OutlinedButton.styleFrom(foregroundColor: AppColors.amber600, side: BorderSide(color: Colors.grey.shade300), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.amber600,
+        side: BorderSide(color: Colors.grey.shade300),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
     );
   }
 }

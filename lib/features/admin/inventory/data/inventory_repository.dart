@@ -111,18 +111,20 @@ class InventoryRepository {
     }
   }
 
-  Future<void> markArrival(int branchId, int dispatchId) async {
+  Future<void> markArrival(int dispatchId) async {
     try {
       final response = await http.put(
-        Uri.parse(
-          "${ApiConstants.branchIncomingStock}/$branchId/dispatch/$dispatchId/arrival",
-        ),
-        headers: {"Accept": "application/json"},
+        Uri.parse("${ApiConstants.baseUrl}/api/purchase/$dispatchId/movement-status"),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: jsonEncode({"status": "ARRIVAL"}),
       );
 
       if (response.statusCode != 200) {
         final data = jsonDecode(response.body);
-        throw Exception(data['message'] ?? "Failed to mark arrival");
+        throw Exception(data['error'] ?? data['message'] ?? "Failed to mark arrival");
       }
     } catch (e) {
       throw Exception("Error marking arrival: $e");

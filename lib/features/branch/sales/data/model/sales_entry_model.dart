@@ -53,6 +53,8 @@ class OfferModel {
   final String name;
   final String category;
   final int buyTrays;
+  final double buyQty;
+  final double freeQty;
   final double discountValue;
   final String offerType;
   bool applied;
@@ -62,18 +64,24 @@ class OfferModel {
     required this.name,
     required this.category,
     required this.buyTrays,
+    required this.buyQty,
+    required this.freeQty,
     required this.discountValue,
     required this.offerType,
     this.applied = false,
   });
 
   factory OfferModel.fromJson(Map<String, dynamic> json) {
+    final rawBuy = json["buy_qty"] ?? json["buyTrays"] ?? 0;
+    final parsedBuy = double.tryParse(rawBuy.toString()) ?? 0.0;
     return OfferModel(
       id: json["id"] ?? 0,
-      name: json["name"] ?? "",
-      category: json["category"] ?? "",
-      buyTrays: int.tryParse(json["buyTrays"].toString()) ?? 0,
-      discountValue: double.tryParse(json["discount_value"].toString()) ?? 0.0,
+      name: json["name"] ?? json["offer_name"] ?? "",
+      category: json["category"] ?? json["product_name"] ?? "",
+      buyTrays: parsedBuy.toInt(),
+      buyQty: parsedBuy,
+      freeQty: double.tryParse((json["free_qty"] ?? 0).toString()) ?? 0.0,
+      discountValue: double.tryParse((json["discount_value"] ?? 0).toString()) ?? 0.0,
       offerType: json["offer_type"] ?? "buy_x_get_y",
     );
   }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/services/notification_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proteinova_connect/features/admin/dailyclosing/screen/dailyclosing.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
+import 'package:proteinova_connect/features/admin/tray_management/screen/tray_management.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
@@ -236,13 +238,22 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   //   SalesDashboardPage(),
                   // ),
                   _menuTile(Icons.inventory, "Incoming Stock", IncomingStock()),
-                   _menuTile(Icons.sell, "Purchase", AdminSuppliersScreen()),
-
+                  _menuTile(Icons.sell, "Purchase", AdminSuppliersScreen()),
 
                   _menuTile(
                     Icons.sell_outlined,
                     "Offers & Prices",
                     OfferPrice(),
+                  ),
+                  _menuTile(
+                    Icons.reorder,
+                    "TrayManagement",
+                    TrayManagementScreen(),
+                  ),
+                  _menuTile(
+                    Icons.reorder,
+                    "Daily Closing",
+                    DailyClosingScreen(),
                   ),
                   // _menuTile(
                   //   Icons.report,

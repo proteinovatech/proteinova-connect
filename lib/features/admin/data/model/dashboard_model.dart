@@ -10,6 +10,7 @@ class DashboardModel {
   final String branchRevenue;
   final String profit;
   final List<dynamic> recentActivity;
+  final Map<String, dynamic> breakdowns;
 
   DashboardModel({
     required this.totalStockValue,
@@ -23,6 +24,7 @@ class DashboardModel {
     required this.branchRevenue,
     required this.profit,
     required this.recentActivity,
+    required this.breakdowns,
   });
 
   factory DashboardModel.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class DashboardModel {
       branchRevenue: json["branch_revenue"]?.toString() ?? "0",
       profit: json["profit"]?.toString() ?? "0",
       recentActivity: json["recent_activity"] ?? [],
+      breakdowns: json["breakdowns"] is Map ? Map<String, dynamic>.from(json["breakdowns"]) : {},
     );
   }
 }

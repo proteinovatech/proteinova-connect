@@ -62,24 +62,25 @@ class _IncomingStockState extends State<IncomingStock> {
     ).then((_) => _fetchData());
   }
 
-  // Future<void> _markArrival(int dispatchId) async {
-  //   try {
-  //     // Using branchId 1 as default
-  //     await _repository.markArrival(1, dispatchId);
-  //     if (mounted) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text("Arrival marked successfully")),
-  //       );
-  //     }
-  //     _fetchData();
-  //   } catch (e) {
-  //     if (mounted) {
-  //       ScaffoldMessenger.of(
-  //         context,
-  //       ).showSnackBar(SnackBar(content: Text("Error: $e")));
-  //     }
-  //   }
-  // }
+  Future<void> _markArrival(int dispatchId) async {
+    try {
+      await _repository.markArrival(dispatchId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Purchase marked as ARRIVED successfully!"),
+          ),
+        );
+      }
+      _fetchData();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      }
+    }
+  }
 
   List<PurchaseModel> get _filteredPurchases {
     List<PurchaseModel> list = purchases;
@@ -252,18 +253,33 @@ class _IncomingStockState extends State<IncomingStock> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
+                            Icon(
+                              Icons.inbox_outlined,
+                              size: 64,
+                              color: Colors.grey,
+                            ),
                             SizedBox(height: 16),
-                            Text("No shipments found", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey)),
+                            Text(
+                              "No shipments found",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              ),
+                            ),
                             SizedBox(height: 8),
-                            Text("There are currently no records for this specific category.", style: TextStyle(color: Colors.grey)),
+                            Text(
+                              "There are currently no records for this specific category.",
+                              style: TextStyle(color: Colors.grey),
+                            ),
                           ],
                         ),
                       )
                     : ListView.separated(
                         padding: const EdgeInsets.all(24),
                         itemCount: filteredPurchases.length,
-                        separatorBuilder: (context, index) => const Divider(height: 32),
+                        separatorBuilder: (context, index) =>
+                            const Divider(height: 32),
                         itemBuilder: (context, index) {
                           final p = filteredPurchases[index];
                           return InkWell(
@@ -274,7 +290,10 @@ class _IncomingStockState extends State<IncomingStock> {
                             child: Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xffF1F5F9),
                                     borderRadius: BorderRadius.circular(6),
@@ -292,7 +311,8 @@ class _IncomingStockState extends State<IncomingStock> {
                                 Expanded(
                                   flex: 3,
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         p.supplierName,
@@ -304,7 +324,9 @@ class _IncomingStockState extends State<IncomingStock> {
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        p.location.isEmpty ? "Location N/A" : p.location,
+                                        p.location.isEmpty
+                                            ? "Location N/A"
+                                            : p.location,
                                         style: const TextStyle(
                                           fontSize: 12,
                                           color: Color(0xff94A3B8),
@@ -316,7 +338,8 @@ class _IncomingStockState extends State<IncomingStock> {
                                 Expanded(
                                   flex: 3,
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         p.productName,
@@ -340,7 +363,8 @@ class _IncomingStockState extends State<IncomingStock> {
                                 Expanded(
                                   flex: 2,
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         p.totalQuantity.toString(),
@@ -520,14 +544,30 @@ class _IncomingStockState extends State<IncomingStock> {
                     ),
                     const SizedBox(width: 16),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(color: const Color(0xffFEF3C7), borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xffFEF3C7),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.verified_user, size: 16, color: Colors.amber),
+                          Icon(
+                            Icons.verified_user,
+                            size: 16,
+                            color: Colors.amber,
+                          ),
                           SizedBox(width: 6),
-                          Text("Role: Admin", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text(
+                            "Role: Admin",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -557,10 +597,15 @@ class _IncomingStockState extends State<IncomingStock> {
                   iconColor: Colors.black,
                   onTap: () {
                     final today = DateTime.now().toLocal();
-                    final todayStr = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+                    final todayStr =
+                        "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
                     _showShipmentModal(
                       "Expected Today",
-                      purchases.where((p) => p.arrivalDate.split('T').first == todayStr).toList(),
+                      purchases
+                          .where(
+                            (p) => p.arrivalDate.split('T').first == todayStr,
+                          )
+                          .toList(),
                     );
                   },
                 ),
@@ -596,7 +641,8 @@ class _IncomingStockState extends State<IncomingStock> {
                   iconColor: Colors.white,
                   onTap: () {
                     final today = DateTime.now().toLocal();
-                    final todayStr = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+                    final todayStr =
+                        "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
                     _showShipmentModal(
                       "Upcoming Shipments",
                       purchases.where((p) {
@@ -747,9 +793,10 @@ class _IncomingStockState extends State<IncomingStock> {
                               location: p.location.isEmpty ? "N/A" : p.location,
                               quantity: "${p.totalQuantity} Eggs",
                               type: p.productName,
-                              status: p.status,
-                              isReceive: p.status.toUpperCase() != "RECEIVED",
+                              purchaseStatus: p.purchaseStatus,
+                              movementStatus: p.movementStatus,
                               onReceive: () => _receiveStock(p.id),
+                              onMarkArrival: () => _markArrival(p.id),
                             );
                           },
                         ),

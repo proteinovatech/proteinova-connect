@@ -152,9 +152,10 @@ Widget buildTableRow({
   required String location,
   required String quantity,
   required String type,
-  required String status,
-  bool isReceive = false,
+  required String purchaseStatus,
+  required String movementStatus,
   VoidCallback? onReceive,
+  VoidCallback? onMarkArrival,
 }) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -238,29 +239,12 @@ Widget buildTableRow({
           flex: 3,
           child: Align(
             alignment: Alignment.centerLeft,
-            child: isReceive
-                ? InkWell(
-                    onTap: onReceive,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xffFEF3C7),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Text(
-                        "Receive Stock",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10,
-                          color: Color(0xff92400E),
-                        ),
-                      ),
-                    ),
-                  )
-                : _buildStatusChip(status),
+            child: _buildStatusColumn(
+              purchaseStatus: purchaseStatus,
+              movementStatus: movementStatus,
+              onReceive: onReceive,
+              onMarkArrival: onMarkArrival,
+            ),
           ),
         ),
       ],
@@ -268,32 +252,104 @@ Widget buildTableRow({
   );
 }
 
-Widget _buildStatusChip(String status) {
-  Color bgColor = const Color(0xffF3F4F6);
-  Color textColor = const Color(0xff374151);
-  String label = status.toUpperCase();
+Widget _buildStatusColumn({
+  required String purchaseStatus,
+  required String movementStatus,
+  VoidCallback? onReceive,
+  VoidCallback? onMarkArrival,
+}) {
+  final pStatus = purchaseStatus.toUpperCase();
+  final mStatus = movementStatus.toUpperCase();
 
-  if (label == "RECEIVED") {
-    bgColor = const Color(0xffDCFCE7);
-    textColor = const Color(0xff166534);
-  } else if (label == "ARRIVAL" || label == "PURCHASED") {
-    bgColor = const Color(0xffDBEAFE);
-    textColor = const Color(0xff1E40AF);
-  }
-
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-    decoration: BoxDecoration(
-      color: bgColor,
+  if (pStatus == "PURCHASED" && mStatus == "RECEIVED") {
+    return InkWell(
+      onTap: onReceive,
       borderRadius: BorderRadius.circular(6),
-    ),
-    child: Text(
-      label.replaceAll('_', ' '),
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-        fontSize: 10,
-        color: textColor,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: const Color(0xffFEF3C7),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: const Text(
+          "Receive Stock",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 10,
+            color: Color(0xff92400E),
+          ),
+        ),
       ),
-    ),
-  );
+    );
+  } else if (pStatus == "PURCHASED" && mStatus == "ARRIVAL") {
+    return InkWell(
+      onTap: onReceive,
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: const Color(0xff10B981),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: const Text(
+          "Receive Stock",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 10,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  } else if (pStatus == "PURCHASED" &&
+      (mStatus == "IN_TRANSIT" || mStatus == "PENDING" || mStatus.isEmpty)) {
+    return InkWell(
+      onTap: onMarkArrival,
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: const Color(0xff2563EB),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: const Text(
+          "Mark as Arrival",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 10,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  } else {
+    // Default fallback status chip
+    Color bgColor = const Color(0xffF3F4F6);
+    Color textColor = const Color(0xff374151);
+    String label = purchaseStatus.toUpperCase();
+
+    if (label == "RECEIVED") {
+      bgColor = const Color(0xffDCFCE7);
+      textColor = const Color(0xff166534);
+    } else if (label == "ARRIVAL" || label == "PURCHASED") {
+      bgColor = const Color(0xffDBEAFE);
+      textColor = const Color(0xff1E40AF);
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label.replaceAll('_', ' '),
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 10,
+          color: textColor,
+        ),
+      ),
+    );
+  }
 }

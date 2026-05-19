@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -52,6 +53,12 @@ class SalesReceiptService {
     String? branchName,
     bool isThermal = true,
   }) async {
+    final logo = pw.MemoryImage(
+      (await rootBundle.load('assets/Logo@3x.png')).buffer.asUint8List(),
+    );
+    final fontData = await rootBundle.load("assets/fonts/NotoSans-Regular.ttf");
+
+    final ttf = pw.Font.ttf(fontData);
     if (!isThermal) {
       final pdfBytes = await generateReceiptPdf(
         saleId: saleId,
@@ -81,35 +88,45 @@ class SalesReceiptService {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Center(
-                child: pw.Column(
-                  children: [
-                    pw.Text(
-                      branchName ?? "PROTEINOVA",
-                      style: pw.TextStyle(
-                        fontSize: 18,
-                        fontWeight: pw.FontWeight.bold,
-                      ),
-                    ),
-                    if (branchName != null)
-                      pw.Text(
-                        "PROTEINOVA - Freshness Delivered",
-                        style: pw.TextStyle(
-                          fontSize: 8,
-                          color: PdfColors.grey700,
+              pw.Row(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  /// LOGO LEFT SIDE
+                  pw.Container(width: 35, height: 35, child: pw.Image(logo)),
+
+                  pw.SizedBox(width: 12),
+
+                  /// SHOP DETAILS
+                  pw.Expanded(
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          "PROTEINOVA",
+                          style: pw.TextStyle(
+                            fontSize: 18,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
                         ),
-                      )
-                    else
-                      pw.Text(
-                        "Freshness Delivered",
-                        style: pw.TextStyle(fontSize: 10),
-                      ),
-                    pw.SizedBox(height: 10),
-                  ],
-                ),
+
+                        pw.SizedBox(height: 2),
+
+                        pw.Text(
+                          "PURE PROTEIN, PURE POWER",
+                          style: pw.TextStyle(
+                            fontSize: 8,
+                            color: PdfColors.grey700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
+
+              pw.SizedBox(height: 10),
               pw.Divider(),
-              pw.Text("Receipt #: $saleId"),
+              pw.Text("Receipt : $saleId"),
               pw.Text("Date: $date"),
               pw.Text("Customer: $customerName"),
               if (customerNumber.isNotEmpty) pw.Text("Phone: $customerNumber"),
@@ -166,7 +183,7 @@ class SalesReceiptService {
                           pw.Expanded(
                             flex: 2,
                             child: pw.Text(
-                              "INR ${item.total.toStringAsFixed(2)}",
+                              "₹ ${item.total.toStringAsFixed(2)}",
                               style: const pw.TextStyle(fontSize: 10),
                               textAlign: pw.TextAlign.right,
                             ),
@@ -180,14 +197,28 @@ class SalesReceiptService {
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
                   pw.Text("Subtotal:"),
-                  pw.Text("INR ${subtotal.toStringAsFixed(2)}"),
+                  pw.Text("₹ ${subtotal.toStringAsFixed(2)}"),
                 ],
               ),
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
                   pw.Text("Discount:"),
-                  pw.Text("-INR ${discount.toStringAsFixed(2)}"),
+                  pw.Text("₹ ${discount.toStringAsFixed(2)}"),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text("SGST:", style: const pw.TextStyle(fontSize: 8)),
+                  pw.Text("₹ 0.00", style: const pw.TextStyle(fontSize: 8)),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text("CGST:", style: const pw.TextStyle(fontSize: 8)),
+                  pw.Text("₹ 0.00", style: const pw.TextStyle(fontSize: 8)),
                 ],
               ),
               pw.SizedBox(height: 5),
@@ -202,11 +233,8 @@ class SalesReceiptService {
                     ),
                   ),
                   pw.Text(
-                    "INR ${total.toStringAsFixed(2)}",
-                    style: pw.TextStyle(
-                      fontWeight: pw.FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                    "₹ ${total.toStringAsFixed(2)}",
+                    style: pw.TextStyle(font: ttf),
                   ),
                 ],
               ),
@@ -375,14 +403,14 @@ class SalesReceiptService {
                             pw.Padding(
                               padding: const pw.EdgeInsets.all(8),
                               child: pw.Text(
-                                "INR ${item.price.toStringAsFixed(2)}",
+                                " ₹ ${item.price.toStringAsFixed(2)}",
                                 textAlign: pw.TextAlign.right,
                               ),
                             ),
                             pw.Padding(
                               padding: const pw.EdgeInsets.all(8),
                               child: pw.Text(
-                                "INR ${item.total.toStringAsFixed(2)}",
+                                "₹ ${item.total.toStringAsFixed(2)}",
                                 textAlign: pw.TextAlign.right,
                               ),
                             ),
@@ -398,13 +426,13 @@ class SalesReceiptService {
                   pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
-                      pw.Text("Subtotal: INR ${subtotal.toStringAsFixed(2)}"),
+                      pw.Text("Subtotal: ₹ ${subtotal.toStringAsFixed(2)}"),
                       pw.Text(
-                        "Offer Discount: -INR ${discount.toStringAsFixed(2)}",
+                        "Offer Discount: -₹ ${discount.toStringAsFixed(2)}",
                       ),
                       pw.Divider(color: PdfColors.grey400),
                       pw.Text(
-                        "Grand Total: INR ${total.toStringAsFixed(2)}",
+                        "Grand Total: ₹ ${total.toStringAsFixed(2)}",
                         style: pw.TextStyle(
                           fontSize: 16,
                           fontWeight: pw.FontWeight.bold,
