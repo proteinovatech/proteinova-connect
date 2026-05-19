@@ -245,114 +245,113 @@ class _DistributionPageState extends State<DistributionPage> {
                           SizedBox(height: getHeight(context, 18)),
 
                           /// SEARCH + FILTER
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  height: getHeight(context, 40),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: getWidth(context, 12),
-                                  ),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(color: AppColors.border),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.search,
-                                        color: Colors.grey,
-                                        size: 20,
-                                      ),
-                                      SizedBox(width: getWidth(context, 10)),
-                                      Expanded(
-                                        child: TextField(
-                                          controller: _searchController,
-                                          decoration: const InputDecoration(
-                                            hintText: "Search dispatches...",
-                                            hintStyle: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 13,
-                                            ),
-                                            border: InputBorder.none,
-                                          ),
-                                          onSubmitted: (_) => _fetchData(),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: getWidth(context, 10)),
-                              Container(
-                                height: getHeight(context, 40),
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: getWidth(context, 14),
-                                ),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<String>(
-                                    value: _selectedStatus.isEmpty
-                                        ? null
-                                        : _selectedStatus,
-                                    hint: Row(
-                                      children: [
-                                        const Icon(Icons.tune, size: 18),
-                                        SizedBox(width: getWidth(context, 6)),
-                                        const Text(
-                                          "Filter",
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    icon: const Icon(
-                                      Icons.keyboard_arrow_down,
-                                      size: 18,
-                                    ),
-                                    items:
-                                        [
-                                              "",
-                                              "PENDING",
-                                              "LOADING",
-                                              "IN_TRANSIT",
-                                              "DELIVERED",
-                                              "CANCELLED",
-                                            ]
-                                            .map(
-                                              (status) => DropdownMenuItem(
-                                                value: status,
-                                                child: Text(
-                                                  status.isEmpty
-                                                      ? "All"
-                                                      : status,
-                                                  style: const TextStyle(
-                                                    fontSize: 13,
-                                                  ),
-                                                ),
-                                              ),
-                                            )
-                                            .toList(),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _selectedStatus = value ?? "";
-                                        currentPage = 1;
-                                      });
-                                      _fetchData();
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-
+                          // Row(
+                          //   children: [
+                          //     Expanded(
+                          //       child: Container(
+                          //         height: getHeight(context, 40),
+                          //         padding: EdgeInsets.symmetric(
+                          //           horizontal: getWidth(context, 12),
+                          //         ),
+                          //         decoration: BoxDecoration(
+                          //           borderRadius: BorderRadius.circular(14),
+                          //           border: Border.all(color: AppColors.border),
+                          //         ),
+                          //         child: Row(
+                          //           children: [
+                          //             const Icon(
+                          //               Icons.search,
+                          //               color: Colors.grey,
+                          //               size: 20,
+                          //             ),
+                          //             SizedBox(width: getWidth(context, 10)),
+                          //             Expanded(
+                          //               child: TextField(
+                          //                 controller: _searchController,
+                          //                 decoration: const InputDecoration(
+                          //                   hintText: "Search dispatches...",
+                          //                   hintStyle: TextStyle(
+                          //                     color: Colors.grey,
+                          //                     fontSize: 13,
+                          //                   ),
+                          //                   border: InputBorder.none,
+                          //                 ),
+                          //                 onSubmitted: (_) => _fetchData(),
+                          //               ),
+                          //             ),
+                          //           ],
+                          //         ),
+                          //       ),
+                          //     ),
+                          //     SizedBox(width: getWidth(context, 10)),
+                          //     Container(
+                          //       height: getHeight(context, 40),
+                          //       padding: EdgeInsets.symmetric(
+                          //         horizontal: getWidth(context, 14),
+                          //       ),
+                          //       decoration: BoxDecoration(
+                          //         borderRadius: BorderRadius.circular(14),
+                          //         border: Border.all(
+                          //           color: Colors.grey.shade300,
+                          //         ),
+                          //       ),
+                          //       child: DropdownButtonHideUnderline(
+                          //         child: DropdownButton<String>(
+                          //           value: _selectedStatus.isEmpty
+                          //               ? null
+                          //               : _selectedStatus,
+                          //           hint: Row(
+                          //             children: [
+                          //               const Icon(Icons.tune, size: 18),
+                          //               SizedBox(width: getWidth(context, 6)),
+                          //               const Text(
+                          //                 "Filter",
+                          //                 style: TextStyle(
+                          //                   fontSize: 13,
+                          //                   fontWeight: FontWeight.bold,
+                          //                 ),
+                          //               ),
+                          //             ],
+                          //           ),
+                          //           icon: const Icon(
+                          //             Icons.keyboard_arrow_down,
+                          //             size: 18,
+                          //           ),
+                          //           items:
+                          //               [
+                          //                     "",
+                          //                     "PENDING",
+                          //                     "LOADING",
+                          //                     "IN_TRANSIT",
+                          //                     "DELIVERED",
+                          //                     "CANCELLED",
+                          //                   ]
+                          //                   .map(
+                          //                     (status) => DropdownMenuItem(
+                          //                       value: status,
+                          //                       child: Text(
+                          //                         status.isEmpty
+                          //                             ? "All"
+                          //                             : status,
+                          //                         style: const TextStyle(
+                          //                           fontSize: 13,
+                          //                         ),
+                          //                       ),
+                          //                     ),
+                          //                   )
+                          //                   .toList(),
+                          //           onChanged: (value) {
+                          //             setState(() {
+                          //               _selectedStatus = value ?? "";
+                          //               currentPage = 1;
+                          //             });
+                          //             _fetchData();
+                          //           },
+                          //         ),
+                          //       ),
+                          //     ),
+                          //   ],
+                          // ),
                           SizedBox(height: getHeight(context, 15)),
 
                           /// DISPATCH LIST
@@ -399,8 +398,8 @@ class _DistributionPageState extends State<DistributionPage> {
                                     dispatch['status']?.toString() ?? "PENDING",
                                 statusColor: _getStatusColor(
                                   dispatch['status']?.toString() ?? "PENDING",
-                                  
-                                ), context: context,
+                                ),
+                                context: context,
                               );
                             }),
 

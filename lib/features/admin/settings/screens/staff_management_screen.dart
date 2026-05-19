@@ -186,7 +186,7 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
     final isWide = MediaQuery.of(context).size.width > 900;
 
     return Scaffold(
-      backgroundColor:AppColors.background,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -234,6 +234,22 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
             "Settings",
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
+          // InkWell(
+          //   onTap: () => Navigator.pop(context),
+          //   child: const Row(
+          //     mainAxisSize: MainAxisSize.min,
+          //     children: [
+          //       Icon(Icons.arrow_back_ios_new, size: 20),
+
+          //       SizedBox(width: 8),
+
+          //       Text(
+          //         "Settings",
+          //         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          //       ),
+          //     ],
+          //   ),
+          // ),
           const SizedBox(width: 16),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -560,52 +576,97 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         LayoutBuilder(
-  builder: (context, constraints) {
-    if (constraints.maxWidth < 700) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          InkWell(
-            onTap: () => setState(() => showAddForm = false),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.arrow_back, size: 18),
+          builder: (context, constraints) {
+            if (constraints.maxWidth < 700) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // InkWell(
+                  //   onTap: () => setState(() => showAddForm = false),
+                  //   child: const Row(
+                  //     mainAxisSize: MainAxisSize.min,
+                  //     children: [
+                  //       Icon(Icons.arrow_back, size: 18),
 
-                SizedBox(width: 8),
+                  //       SizedBox(width: 8),
 
-                Text(
-                  "Back to List",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                  //       Text(
+                  //         "Back to List",
+                  //         style: TextStyle(fontWeight: FontWeight.bold),
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
+
+                  // const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => setState(() => showAddForm = false),
+
+                          child: const Text(
+                            "Cancel",
+                            style: TextStyle(color: Colors.black),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _handleSaveUser,
+
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.amber600,
+                            foregroundColor: Colors.black,
+                          ),
+
+                          child: Text(
+                            editingUserId != null
+                                ? "Update Member"
+                                : "Save Member",
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-          ),
+                ],
+              );
+            }
 
-          const SizedBox(height: 16),
+            return Row(
+              children: [
+                // InkWell(
+                //   onTap: () => setState(() => showAddForm = false),
 
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () =>
-                      setState(() => showAddForm = false),
+                //   child: const Row(
+                //     children: [
+                //       Icon(Icons.arrow_back, size: 18),
+
+                //       SizedBox(width: 8),
+
+                //       Text(
+                //         "Back to List",
+                //         style: TextStyle(fontWeight: FontWeight.bold),
+                //       ),
+                //     ],
+                //   ),
+                // ),
+                // const Spacer(),
+                OutlinedButton(
+                  onPressed: () => setState(() => showAddForm = false),
 
                   child: const Text(
                     "Cancel",
-                    style: TextStyle(
-                      color: Colors.black,
-                    ),
+                    style: TextStyle(color: Colors.black),
                   ),
                 ),
-              ),
 
-              const SizedBox(width: 12),
+                const SizedBox(width: 12),
 
-              Expanded(
-                child: ElevatedButton(
+                ElevatedButton(
                   onPressed: _handleSaveUser,
 
                   style: ElevatedButton.styleFrom(
@@ -614,73 +675,13 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
                   ),
 
                   child: Text(
-                    editingUserId != null
-                        ? "Update Member"
-                        : "Save Member",
+                    editingUserId != null ? "Update Member" : "Save Member",
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      );
-    }
-
-    return Row(
-      children: [
-        InkWell(
-          onTap: () => setState(() => showAddForm = false),
-
-          child: const Row(
-            children: [
-              Icon(Icons.arrow_back, size: 18),
-
-              SizedBox(width: 8),
-
-              Text(
-                "Back to List",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
+              ],
+            );
+          },
         ),
-
-        const Spacer(),
-
-        OutlinedButton(
-          onPressed: () =>
-              setState(() => showAddForm = false),
-
-          child: const Text(
-            "Cancel",
-            style: TextStyle(
-              color: Colors.black,
-            ),
-          ),
-        ),
-
-        const SizedBox(width: 12),
-
-        ElevatedButton(
-          onPressed: _handleSaveUser,
-
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.amber600,
-            foregroundColor: Colors.black,
-          ),
-
-          child: Text(
-            editingUserId != null
-                ? "Update Member"
-                : "Save Member",
-          ),
-        ),
-      ],
-    );
-  },
-),
         const SizedBox(height: 24),
         Container(
           padding: const EdgeInsets.all(30),

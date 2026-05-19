@@ -64,7 +64,6 @@ class _DailyClosingState extends State<DailyClosing> {
 
   @override
   Widget build(BuildContext context) {
-
     return BlocListener<DailyClosingBloc, DailyClosingState>(
       listener: (context, state) {
         if (state is DailyClosingSuccess) {
@@ -86,7 +85,7 @@ class _DailyClosingState extends State<DailyClosing> {
         }
       },
       child: Scaffold(
-        backgroundColor:AppColors.background,
+        backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background1,
           scrolledUnderElevation: 0,
@@ -96,23 +95,23 @@ class _DailyClosingState extends State<DailyClosing> {
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 16),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.verified_user_outlined,
-                    size: 18,
-                    color: AppColors.amber600,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    "Branch",
-                    style: TextStyle(
-                      color: AppColors.amber600,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
+              // child: Row(
+              //   // children: [
+              //   //   const Icon(
+              //   //     Icons.verified_user_outlined,
+              //   //     size: 18,
+              //   //     color: AppColors.amber600,
+              //   //   ),
+              //   //   const SizedBox(width: 4),
+              //   //   Text(
+              //   //     "Branch",
+              //   //     style: TextStyle(
+              //   //       color: AppColors.amber600,
+              //   //       fontWeight: FontWeight.bold,
+              //   //     ),
+              //   //   ),
+              //   // ],
+              // ),
             ),
           ],
         ),
@@ -218,40 +217,37 @@ class _DailyClosingState extends State<DailyClosing> {
               ],
             ),
           ),
-        Container(
-  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-  decoration: BoxDecoration(
-    color: data.status == "OPEN"
-        ? Colors.green.shade50
-        : Colors.red.shade50,
-    borderRadius: BorderRadius.circular(20),
-  ),
-  child: Row(
-    children: [
-      CircleAvatar(
-        radius: 4,
-        backgroundColor:
-            data.status == "OPEN"
-                ? Colors.green
-                : Colors.red,
-      ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: data.status == "OPEN"
+                  ? Colors.green.shade50
+                  : Colors.red.shade50,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 4,
+                  backgroundColor: data.status == "OPEN"
+                      ? Colors.green
+                      : Colors.red,
+                ),
 
-      const SizedBox(width: 8),
+                const SizedBox(width: 8),
 
-      Text(
-        "Status: ${data.status}",
-        style: TextStyle(
-          color:
-              data.status == "OPEN"
-                  ? Colors.green
-                  : Colors.red,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    ],
-  ),
-) ],
+                Text(
+                  "Status: ${data.status}",
+                  style: TextStyle(
+                    color: data.status == "OPEN" ? Colors.green : Colors.red,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

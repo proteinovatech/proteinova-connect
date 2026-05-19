@@ -7,13 +7,16 @@ class ShipmentCard extends StatelessWidget {
   final String count;
   final String subtitle;
   final IconData icon;
- final VoidCallback? onTap;
+  final Color? iconColor;
+  final VoidCallback? onTap;
   const ShipmentCard({
     super.key,
     required this.title,
     required this.count,
     required this.subtitle,
-    required this.icon, this.onTap,
+    required this.icon,
+    this.iconColor,
+    this.onTap,
   });
 
   @override
@@ -39,7 +42,7 @@ class ShipmentCard extends StatelessWidget {
                 title,
                 style: AppTextStyles.bodyText12semibold
               ),               
-                             Icon(icon, size: 18, color: AppColors.dark),
+                             Icon(icon, size: 18, color: iconColor ?? AppColors.dark),
             ],
           ),
           SizedBox(height: size.height*0.01),
