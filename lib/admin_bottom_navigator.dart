@@ -248,7 +248,8 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
 
 
                   _menuTile(
-                    Icons.sell_outlined,
+                    Icons.sell_outlined,  
+                     
                     "Offers & Prices",
                     OfferPrice(),
                   ),

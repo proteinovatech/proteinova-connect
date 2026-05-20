@@ -297,6 +297,7 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildProfileTile({
     required IconData icon,
     required String title,

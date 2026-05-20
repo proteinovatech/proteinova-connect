@@ -23,6 +23,7 @@ class _DispatchItem {
 
   _DispatchItem({
     required this.id,
+    // ignore: unused_element_parameter
     this.category = '',
     this.trays = 0,
     this.eggs = 0,
@@ -351,25 +352,25 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-          ),
-          const SizedBox(width: 10),
-          const Text(
-            "Dispatch Planning",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildHeader() {
+  //   return Container(
+  //     color: Colors.white,
+  //     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+  //     child: Row(
+  //       children: [
+  //         IconButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           icon: const Icon(Icons.arrow_back, color: Colors.black),
+  //         ),
+  //         const SizedBox(width: 10),
+  //         const Text(
+  //           "Dispatch Planning",
+  //           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildPageTitle() {
     return Column(
