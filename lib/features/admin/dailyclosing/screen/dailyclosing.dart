@@ -196,7 +196,7 @@ class _DailyClosingViewState extends State<DailyClosingView> {
   }
 
   Widget _buildActionBar(BuildContext context, DailyClosingAdminState state) {
-    final selectedBranch = state.branches.firstWhere(
+    final _ = state.branches.firstWhere(
       (b) => b.id == state.selectedBranchId,
       orElse: () => state.branches.first,
     );

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
-import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/admin/settings/data/services/settings_service.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/profile_screen.dart';
 import '../widgets/role_textfield.dart';

@@ -305,7 +305,7 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
           const Text("Received Items", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const Divider(height: 40),
           ...items.asMap().entries.map((entry) {
-            final idx = entry.key;
+            final _ = entry.key;
             final item = entry.value;
             final trays = int.tryParse(item['trays'].toString()) ?? 0;
             final capacity = int.tryParse(item['capacity'].toString()) ?? 30;

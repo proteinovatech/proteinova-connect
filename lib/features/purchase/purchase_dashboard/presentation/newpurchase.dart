@@ -601,10 +601,10 @@ class _NewpurchaseState extends State<Newpurchase> {
   }
 
   Widget _buildPurchaseSummaryCard(Size size) {
-    final double productTotal = getProductTotal();
+    final double _ = getProductTotal();
     final double additionalTotal = getAdditionalTotal();
     final double totalCost = getTotalCost();
-    final double trays = getTotalTrays();
+    final double _ = getTotalTrays();
     final double perTray = getCostPerTray();
 
     return Container(

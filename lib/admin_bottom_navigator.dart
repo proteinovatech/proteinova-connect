@@ -240,18 +240,16 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   // ),
                   _menuTile(Icons.inventory, "Incoming Stock", IncomingStock()),
                   _menuTile(Icons.sell, "Purchase", AdminSuppliersScreen()),
-<<<<<<< HEAD
-=======
                   _menuTile(
                     Icons.account_balance_wallet,
                     "Purchase Expenses",
                     const PurchaseExpenseScreen(),
                   ),
 
->>>>>>> 0b4b69398cf9abdb4051322590c747c84c846c77
 
                   _menuTile(
-                    Icons.sell_outlined,
+                    Icons.sell_outlined,  
+                     
                     "Offers & Prices",
                     OfferPrice(),
                   ),

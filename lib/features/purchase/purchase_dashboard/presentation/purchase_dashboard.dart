@@ -28,6 +28,7 @@ class PurchaseDashboard extends StatefulWidget {
 }
 
 class _PurchaseDashboardState extends State<PurchaseDashboard> {
+  // ignore: unused_field
   static bool _hasLoadedOnce = false;
   String searchQuery = "";
   String? filterSupplier = "All Suppliers";
@@ -44,6 +45,7 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
   }
 
   void _showPurchaseDetailsBottomSheet(BuildContext context, Map<String, dynamic> purchase) {
+    // ignore: unused_local_variable
     final Size size = MediaQuery.of(context).size;
     final items = purchase["items"] as List? ?? [];
     final brokerName = purchase["broker_name"] ?? "--";
@@ -58,7 +60,7 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
     final otherUpi = purchase["other_upi_details"] ?? "";
     final paymentAmt = double.tryParse(purchase["payment_amount"]?.toString() ?? "0") ?? 0.0;
     final debtAmt = double.tryParse(purchase["debt_amount"]?.toString() ?? "0") ?? 0.0;
-    final movementStatus = purchase["movement_status"] ?? "PENDING";
+    final _ = purchase["movement_status"] ?? "PENDING";
     final purchaseStatus = purchase["purchase_status"] ?? "PENDING";
 
     final double itemsCost = items.fold(
