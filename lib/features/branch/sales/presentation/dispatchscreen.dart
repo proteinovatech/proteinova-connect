@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/branch/sales/bloc/dispatch/dispatch_bloc.dart';
+import 'package:proteinova_connect/features/branch/sales/bloc/dispatch/dispatch_event.dart';
+import 'package:proteinova_connect/features/branch/sales/bloc/dispatch/dispatch_state.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/dispatchcard2.dart';
 import 'package:proteinova_connect/features/branch/sales/widget/dispatchcard3.dart';
 
@@ -15,41 +19,72 @@ class Dispatchscreen extends StatefulWidget {
 
 class _DispatchscreenState extends State<Dispatchscreen> {
   Size get size => MediaQuery.of(context).size;
-  List<dynamic> dispatches = [];
-  bool isLoading = true;
-  String? error;
+  
   final SalesRepository _repository = SalesRepository();
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchDispatches();
-  }
+  
 
-  Future<void> _fetchDispatches() async {
-    setState(() {
-      isLoading = true;
-      error = null;
-    });
-    try {
-      // For now using the dashboard API to get dispatches if needed,
-      // or a specific dispatch API if we add it to the repository.
-      // The React code doesn't show a specific dispatch API, it uses getSales.
-      final data = await _repository.fetchSalesDashboard();
-      setState(() {
-        dispatches = data["recent_orders"] ?? [];
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        error = e.toString();
-        isLoading = false;
-      });
-    }
-  }
-
+  
   @override
   Widget build(BuildContext context) {
+    return BlocProvider(
+  create: (_) => DispatchBloc(
+    _repository,
+  )..add(FetchDispatchEvent()),
+
+  child: BlocBuilder<
+      DispatchBloc,
+      DispatchState>(
+    builder: (context, state) {
+
+      // LOADING
+      if (state is DispatchLoading) {
+        return const Scaffold(
+          body: Center(
+            child:
+                CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      // ERROR
+      if (state is DispatchError) {
+        return Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment:
+                  MainAxisAlignment.center,
+
+              children: [
+
+                Text(
+                  "Error: ${state.message}",
+                ),
+
+                ElevatedButton(
+                  onPressed: () {
+                    context
+                        .read<DispatchBloc>()
+                        .add(
+                          FetchDispatchEvent(),
+                        );
+                  },
+
+                  child: const Text(
+                    "Retry",
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      // SUCCESS
+      if (state is DispatchLoaded) {
+
+        final dispatches =
+            state.dispatches;
     return Scaffold(
       backgroundColor: AppColors.background1,
       appBar: AppBar(
@@ -69,23 +104,15 @@ class _DispatchscreenState extends State<Dispatchscreen> {
           SizedBox(width: 10),
         ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : error != null
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("Error: $error"),
-                  ElevatedButton(
-                    onPressed: _fetchDispatches,
-                    child: const Text("Retry"),
-                  ),
-                ],
-              ),
-            )
-          : RefreshIndicator(
-              onRefresh: _fetchDispatches,
+      body:  RefreshIndicator(
+              onRefresh:() async {
+
+              context
+                  .read<DispatchBloc>()
+                  .add(
+                    RefreshDispatchEvent(),
+                  );
+            },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: Padding(
@@ -94,7 +121,7 @@ class _DispatchscreenState extends State<Dispatchscreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(height: size.height * 0.02),
-                      _buildStatsRows(),
+                      _buildStatsRows(dispatches),
                       SizedBox(height: size.height * 0.05),
                       _buildDispatchListHeader(),
                       SizedBox(height: size.height * 0.02),
@@ -140,9 +167,15 @@ class _DispatchscreenState extends State<Dispatchscreen> {
               ),
             ),
     );
+          }
+
+      return const SizedBox();
+    },
+  ),
+);
   }
 
-  Widget _buildStatsRows() {
+  Widget _buildStatsRows( List<dynamic> dispatches, ) {
     return Column(
       children: [
         Row(
@@ -198,7 +231,9 @@ class _DispatchscreenState extends State<Dispatchscreen> {
         ),
       ],
     );
+    
   }
+  
 
   Widget _buildDispatchListHeader() {
     return Row(
@@ -226,5 +261,7 @@ class _DispatchscreenState extends State<Dispatchscreen> {
       ),
       child: Icon(icon, color: Colors.grey, size: 20),
     );
+    
   }
+  
 }

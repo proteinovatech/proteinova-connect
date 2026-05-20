@@ -2,7 +2,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_bloc.dart';
+import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_event.dart';
+import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_state.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/widget/activityitem.dart';
@@ -18,59 +21,56 @@ class Inventory extends StatefulWidget {
 }
 
 class _InventoryState extends State<Inventory> {
-  bool isLoading = true;
-
-  Map<String, dynamic>? inventoryData;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchInventory();
-  }
-
-  Future<void> fetchInventory() async {
-    try {
-      final String baseUrl = dotenv.env['BASE_URL'] ?? "";
-
-      final response = await http.get(
-        Uri.parse("$baseUrl/api/branch/incoming-stock/1"),
-      );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          inventoryData = jsonDecode(response.body);
-
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          isLoading = false;
-        });
-
-        print("STATUS CODE : ${response.statusCode}");
-      }
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-
-      print("ERROR : $e");
-    }
-  }
+ 
 
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
 
-    if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
+   return BlocProvider(
+  create: (_) =>
+      InventoryBloc()
+        ..add(FetchInventoryEvent()),
 
-    final cards = inventoryData?["cards"] ?? {};
+  child: BlocBuilder<
+      InventoryBloc,
+      InventoryState>(
+    builder: (context, state) {
 
-    final shipments = inventoryData?["shipments"] ?? [];
+      // LOADING
+      if (state is InventoryLoading) {
+        return const Scaffold(
+          body: Center(
+            child:
+                CircularProgressIndicator(),
+          ),
+        );
+      }
 
-    final recentActivity = inventoryData?["recent_activity"] ?? [];
+      // ERROR
+      if (state is InventoryError) {
+        return Scaffold(
+          body: Center(
+            child: Text(state.message),
+          ),
+        );
+      }
+
+      // SUCCESS
+      if (state is InventoryLoaded) {
+
+        final inventoryData =
+            state.inventoryData;
+
+        final cards =
+            inventoryData["cards"] ?? {};
+
+        final shipments =
+            inventoryData["shipments"] ?? [];
+
+        final recentActivity =
+            inventoryData["recent_activity"] ?? [];
+
 
     return Scaffold(
       backgroundColor: AppColors.background1,
@@ -246,7 +246,9 @@ class _InventoryState extends State<Inventory> {
                                         body: jsonEncode({"status": "ARRIVAL"}),
                                       );
                                       if (response.statusCode == 200) {
-                                        fetchInventory();
+                                       context
+                                          .read<InventoryBloc>()
+                                          .add(FetchInventoryEvent());
                                       } else {
                                         print(
                                           "PUT ERROR : ${response.statusCode}",
@@ -265,7 +267,9 @@ class _InventoryState extends State<Inventory> {
                                       ),
                                     ).then((value) {
                                       if (value == true) {
-                                        fetchInventory();
+                                       context
+                                          .read<InventoryBloc>()
+                                          .add(FetchInventoryEvent());
                                       }
                                     });
                                   }
@@ -342,5 +346,12 @@ class _InventoryState extends State<Inventory> {
         ),
       ),
     );
+     }
+
+      return const SizedBox();
+    },
+  ),
+);
   }
+  
 }
