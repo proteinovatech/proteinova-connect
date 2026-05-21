@@ -1,9 +1,13 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/network/dio_client.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/bloc/dashboard_bloc.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/bloc/dashboard_event.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/bloc/dashboard_state.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/dashboardoverview.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/data/model/dashboard_model.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/resentactivity.dart';
@@ -25,11 +29,12 @@ class BranchDashboard extends StatefulWidget {
 }
 
 class _BranchDashboardState extends State<BranchDashboard> {
+  
   Size get size => MediaQuery.of(context).size;
 
   late final DashboardRepository repository;
-
-  bool isLoading = true;
+  late DashboardBloc dashboardBloc;
+  
   bool isShopOpen = false;
   DashboardModel? dashboardModel;
 
@@ -37,42 +42,44 @@ class _BranchDashboardState extends State<BranchDashboard> {
   void initState() {
     super.initState();
     repository = DashboardRepository(DioClient().dio);
-    fetchDashboard();
+     dashboardBloc = DashboardBloc(repository);
+     dashboardBloc.add(FetchDashboardEvent());
   }
 
-  Future<void> fetchDashboard() async {
-    try {
-      final result = await repository.fetchDashboardData();
-
-      if (mounted) {
-        setState(() {
-          dashboardModel = result;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-
-      print("ERROR : $e");
-    }
-  }
+  
 
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Scaffold(body: Center(child: DashboardSkeletonLoader()));
-    }
+     return BlocProvider(
+    create: (_) => dashboardBloc,
 
-    if (dashboardModel == null) {
-      return const Scaffold(
-        body: Center(child: Text("Error loading dashboard data")),
-      );
-    }
+    child: BlocBuilder<DashboardBloc, DashboardState>(
+
+      builder: (context, state) {
+
+        // LOADING
+        if (state is DashboardLoading) {
+          return const Scaffold(
+            body: Center(
+              child: DashboardSkeletonLoader(),
+            ),
+          );
+        }
+
+        // ERROR
+        if (state is DashboardError) {
+          return Scaffold(
+            body: Center(
+              child: Text(state.message),
+            ),
+          );
+        }
+
+        // SUCCESS
+        if (state is DashboardLoaded) {
+
+          final dashboardModel = state.dashboard;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -201,12 +208,8 @@ class _BranchDashboardState extends State<BranchDashboard> {
                  color: Colors.blue,
 
     onRefresh: () async {
-      setState(() {
-        isLoading = true;
-      });
-
-      await fetchDashboard();
-    },
+  dashboardBloc.add(FetchDashboardEvent());
+},
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,7 +255,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                             SizedBox(height: getHeight(context, 15)),
                 
                             Text(
-                              "${dashboardModel!.cards.openingStocks} Trays",
+                              "${dashboardModel.cards.openingStocks} Trays",
                 
                               style: AppTextStyles.headingText20,
                             ),
@@ -269,7 +272,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                               title: "Today Tray Sold",
                 
                               value:
-                                  "${dashboardModel!.cards.todayTraySold} trays",
+                                  "${dashboardModel.cards.todayTraySold} trays",
                 
                               icon: Icons.check_circle_outline,
                 
@@ -288,7 +291,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                               title: "Closing Stock",
                 
                               value:
-                                  "${dashboardModel!.cards.closingStock} trays",
+                                  "${dashboardModel.cards.closingStock} trays",
                 
                               percent: "0%",
                 
@@ -310,7 +313,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                 
                       Text("Active Offers", style: AppTextStyles.headingText22),
                       GridView.builder(
-                        itemCount: dashboardModel!.activeOffers.length,
+                        itemCount: dashboardModel.activeOffers.length,
                 
                         shrinkWrap: true,
                 
@@ -324,7 +327,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                               childAspectRatio: 1.3,
                             ),
                         itemBuilder: (context, index) {
-                          final offer = dashboardModel!.activeOffers[index];
+                          final offer = dashboardModel.activeOffers[index];
                           return Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
@@ -438,7 +441,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                 
                             SizedBox(height: getHeight(context, 15)),
                 
-                            dashboardModel!.lowStockAlerts.isEmpty
+                            dashboardModel.lowStockAlerts.isEmpty
                                 ? const Center(
                                     child: Padding(
                                       padding: EdgeInsets.all(20),
@@ -446,11 +449,11 @@ class _BranchDashboardState extends State<BranchDashboard> {
                                     ),
                                   )
                                 : ListView.builder(
-                                    itemCount: dashboardModel!.lowStockAlerts.length,
+                                    itemCount: dashboardModel.lowStockAlerts.length,
                                     shrinkWrap: true,
                                     physics: const NeverScrollableScrollPhysics(),
                                     itemBuilder: (context, index) {
-                                      final alert = dashboardModel!.lowStockAlerts[index];
+                                      final alert = dashboardModel.lowStockAlerts[index];
                                       return Padding(
                                         padding: const EdgeInsets.only(bottom: 10),
                                         child: lowStockBox(
@@ -519,13 +522,13 @@ class _BranchDashboardState extends State<BranchDashboard> {
                                           final index = value.toInt();
                 
                                           if (index >=
-                                              dashboardModel!
+                                              dashboardModel
                                                   .dailySalesVolume
                                                   .length) {
                                             return const SizedBox();
                                           }
                 
-                                          final date = dashboardModel!
+                                          final date = dashboardModel
                                               .dailySalesVolume[index]
                                               .saleDate;
                 
@@ -548,11 +551,11 @@ class _BranchDashboardState extends State<BranchDashboard> {
                                   ),
                 
                                   barGroups: List.generate(
-                                    dashboardModel!.dailySalesVolume.length,
+                                    dashboardModel.dailySalesVolume.length,
                 
                                     (i) {
                                       final item =
-                                          dashboardModel!.dailySalesVolume[i];
+                                          dashboardModel.dailySalesVolume[i];
                 
                                       final retail = item.retailSalesUnits
                                           .toDouble();
@@ -630,10 +633,10 @@ class _BranchDashboardState extends State<BranchDashboard> {
                         ],
                       ),
                 
-                      dashboardModel!.recentActivity.isEmpty
+                      dashboardModel.recentActivity.isEmpty
                           ? const Center(child: Text("No Recent Activity"))
                           : ListView.builder(
-                              itemCount: dashboardModel!.recentActivity.length,
+                              itemCount: dashboardModel.recentActivity.length,
                 
                               shrinkWrap: true,
                 
@@ -641,7 +644,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                 
                               itemBuilder: (context, index) {
                                 final item =
-                                    dashboardModel!.recentActivity[index];
+                                    dashboardModel.recentActivity[index];
                 
                                 return Column(
                                   children: [
@@ -679,4 +682,9 @@ class _BranchDashboardState extends State<BranchDashboard> {
       ),
     );
   }
-}
+    return const SizedBox();
+      },
+    ),
+  );
+  }
+  }

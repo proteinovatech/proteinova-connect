@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/features/admin/menu/SalesDashboard/data/datasource/sales_remote_datasource.dart';
+import 'package:proteinova_connect/features/admin/menu/SalesDashboard/bloc/sales_dashboard_bloc.dart';
+import 'package:proteinova_connect/features/admin/menu/SalesDashboard/bloc/sales_dashboard_state.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/presentation/sales_entry_page.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/widget/sales_row.dart';
 
@@ -13,18 +15,14 @@ class SalesDashboardPage extends StatefulWidget {
 }
 
 class _SalesDashboardPageState extends State<SalesDashboardPage> {
-  final SalesRemoteDatasource datasource = SalesRemoteDatasource();
+ 
   TextEditingController searchController = TextEditingController();
   DateTime? selectedDate;
   String selectedWarehouse = "All Branches";
   String formattedDate = "Select Date";
-  Map<String, dynamic> salesData = {};
   List<String> warehouseList = [];
-  List recentOrders = [];
-  List filteredOrders = [];
-  bool isLoading = true;
   int currentPage = 1;
-
+  List filteredOrders = [];
   int itemsPerPage = 10;
   List get paginatedOrders {
     final startIndex = (currentPage - 1) * itemsPerPage;
@@ -41,73 +39,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
     );
   }
 
-  @override
-  void initState() {
-    super.initState();
-    getWarehouseList();
-    getSales();
-  }
-
-  Future<void> getSales() async {
-    try {
-      final response = await datasource.getSales();
-      print("SALES DASHBOARD RESPONSE =>");
-
-      print("SALES RESPONSE =>");
-      print(response);
-
-      setState(() {
-        salesData = response;
-
-        recentOrders =
-            response['sales'] ??
-            response['recent_orders'] ??
-            response['data'] ??
-            [];
-
-        filteredOrders = recentOrders;
-
-        isLoading = false;
-      });
-
-      print("RECENT ORDERS =>");
-      print(recentOrders);
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-
-      print("GET SALES ERROR =>");
-      print(e.toString());
-    }
-  }
-
-  Future<void> getWarehouseList() async {
-    try {
-      final response = await datasource.getSalesDashboard();
-      print("WAREHOUSE API =>");
-      print(response);
-
-      /// API FIELD
-      final List warehouseData = response["warehouse_list"] ?? [];
-
-      setState(() {
-        warehouseList = [
-          "All Branches",
-          ...warehouseData.map((e) => e.toString()),
-        ];
-
-        if (warehouseList.isNotEmpty) {
-          selectedWarehouse = warehouseList.first;
-        }
-      });
-
-      print("WAREHOUSE LIST => $warehouseList");
-    } catch (e) {
-      print("WAREHOUSE ERROR => ${e.toString()}");
-    }
-  }
-
+   
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -164,9 +96,39 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
         ),
       ),
 
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+      body:  BlocConsumer<SalesDashboardBloc, SalesDashboardState>(
+  listener: (context, state) {
+
+    if (state is SalesDashboardError) {
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(state.message),
+        ),
+      );
+    }
+  },
+
+  builder: (context, state) {
+
+    if (state is SalesDashboardLoading) {
+
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (state is SalesDashboardLoaded) {
+
+      final salesData = state.salesData;
+
+      final recentOrders = state.recentOrders;
+      if (filteredOrders.isEmpty) {
+  filteredOrders = List.from(recentOrders);
+}
+      filteredOrders = recentOrders;
+
+      return  SingleChildScrollView(
               padding: const EdgeInsets.all(16),
 
               child: Column(
@@ -454,10 +416,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
 
                       GestureDetector(
                         onTap: () async {
-                          setState(() {
-                            isLoading = true;
-                          });
-
+                         
                           searchController.clear();
 
                           formattedDate = "Select Date";
@@ -466,11 +425,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
 
                           currentPage = 1;
 
-                          await getSales();
-
-                          setState(() {
-                            isLoading = false;
-                          });
+                          
                         },
 
                         child: Container(
@@ -845,7 +800,12 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                   ),
                 ],
               ),
-            ),
+             );
+    }
+
+    return const SizedBox();
+  },
+),
     );
   }
 

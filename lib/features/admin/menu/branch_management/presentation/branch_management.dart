@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
-import 'package:proteinova_connect/features/admin/data/model/branch_model.dart';
+import 'package:proteinova_connect/features/admin/menu/branch_management/bloc/branch_bloc/branch_bloc.dart';
+import 'package:proteinova_connect/features/admin/menu/branch_management/bloc/branch_form_bloc/branch_form_bloc.dart';
 import 'package:proteinova_connect/features/admin/menu/branch_management/data/services/branch_service.dart';
 import 'package:proteinova_connect/features/admin/menu/branch_management/presentation/add_branch_details.dart';
 import 'package:proteinova_connect/features/admin/menu/branch_management/widget/info_cards.dart';
@@ -16,109 +18,24 @@ class BranchManagement extends StatefulWidget {
 }
 
 class _BranchManagementState extends State<BranchManagement> {
-  List<BranchModel> branches = [];
-  bool isLoading = true;
+  
+  
   final ScrollController _scrollController = ScrollController();
 
-  bool isRefreshing = false;
+ 
   String selectedRegionFilter = "All Regions";
   String selectedStatusFilter = "All Statuses";
   String searchQuery = "";
   int? selectedBranchId;
 
-  List<BranchModel> get filteredBranches {
-    return branches.where((branch) {
-      final matchesBranch =
-          selectedBranchId == null || branch.id == selectedBranchId;
-      final matchesRegion =
-          selectedRegionFilter == "All Regions" ||
-          branch.region == selectedRegionFilter;
-      final matchesStatus =
-          selectedStatusFilter == "All Statuses" ||
-          branch.status == selectedStatusFilter;
-      final matchesSearch =
-          searchQuery.isEmpty ||
-          branch.branchName.toLowerCase().contains(searchQuery.toLowerCase()) ||
-          branch.city.toLowerCase().contains(searchQuery.toLowerCase());
-      return matchesBranch && matchesRegion && matchesStatus && matchesSearch;
-    }).toList();
-  }
-
-  Future<void> refreshDashboard() async {
-    setState(() {
-      isRefreshing = true;
-    });
-
-    await Future.delayed(const Duration(seconds: 1));
-
-    await loadBranches();
-
-    setState(() {
-      isRefreshing = false;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    loadBranches();
-  }
-
-  int get _activeBranchesCount {
-    if (selectedBranchId != null) {
-      return branches
-          .where((b) => b.id == selectedBranchId && b.status == "Active")
-          .length;
-    }
-    return branches.where((b) => b.status == "Active").length;
-  }
-
-  int get _totalEggStock {
-    if (selectedBranchId != null) {
-      return branches
-          .where((b) => b.id == selectedBranchId)
-          .fold(0, (sum, b) => sum + b.currentStock);
-    }
-    return branches.fold(0, (sum, b) => sum + b.currentStock);
-  }
-
-  double get _totalSales {
-    if (selectedBranchId != null) {
-      return branches
-          .where((b) => b.id == selectedBranchId)
-          .fold(0.0, (sum, b) => sum + b.totalSales);
-    }
-    return branches.fold(0.0, (sum, b) => sum + b.totalSales);
-  }
-
-  double get _totalRevenue {
-    if (selectedBranchId != null) {
-      return branches
-          .where((b) => b.id == selectedBranchId)
-          .fold(0.0, (sum, b) => sum + b.totalRevenue);
-    }
-    return branches.fold(0.0, (sum, b) => sum + b.totalRevenue);
-  }
-
-  Future<void> loadBranches() async {
-    try {
-      final data = await BranchService().fetchBranches();
-
-      setState(() {
-        branches = data;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-
-      print(e);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final blocState = context.watch<BranchBloc>().state;
+
+final branches =
+    blocState is BranchLoaded
+        ? blocState.branches
+        : [];
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -253,11 +170,71 @@ class _BranchManagementState extends State<BranchManagement> {
         ],
       ),
 
-      body: isLoading || isRefreshing
-          ? const Center(child: AdminBranchManagementSkeletonLoader())
-          : RefreshIndicator(
-              onRefresh: refreshDashboard,
-              color: AppColors.dark,
+      body:  BlocBuilder<BranchBloc, BranchState>(
+  builder: (context, state) {
+
+    if (state is BranchLoading) {
+      return const Center(
+        child: AdminBranchManagementSkeletonLoader(),
+      );
+    }
+
+    if (state is BranchError) {
+      return Center(
+        child: Text(state.message),
+      );
+    }
+
+    if (state is BranchLoaded) {
+
+      final branches = state.branches;
+      final filteredBranches = branches.where((branch) {
+
+  final matchesBranch =
+      selectedBranchId == null ||
+      branch.id == selectedBranchId;
+
+  final matchesRegion =
+      selectedRegionFilter == "All Regions" ||
+      branch.region == selectedRegionFilter;
+
+  final matchesStatus =
+      selectedStatusFilter == "All Statuses" ||
+      branch.status == selectedStatusFilter;
+
+  final matchesSearch =
+      searchQuery.isEmpty ||
+      branch.branchName
+          .toLowerCase()
+          .contains(searchQuery.toLowerCase()) ||
+      branch.city
+          .toLowerCase()
+          .contains(searchQuery.toLowerCase());
+
+  return matchesBranch &&
+      matchesRegion &&
+      matchesStatus &&
+      matchesSearch;
+
+}).toList();
+final activeBranchesCount =
+    branches.where((b) => b.status == "Active").length;
+
+final totalEggStock =
+    branches.fold(0, (sum, b) => sum + b.currentStock);
+
+final totalSales =
+    branches.fold(0.0, (sum, b) => sum + b.totalSales);
+
+final totalRevenue =
+    branches.fold(0.0, (sum, b) => sum + b.totalRevenue);
+
+      return RefreshIndicator(
+        onRefresh: () async {
+          context.read<BranchBloc>()
+              .add(RefreshBranchesEvent());
+        },
+
               child: SingleChildScrollView(
                 controller: _scrollController,
 
@@ -275,7 +252,7 @@ class _BranchManagementState extends State<BranchManagement> {
                           Expanded(
                             child: InfoCards(
                               title: "Total Active Branches",
-                              value: "$_activeBranchesCount",
+                              value: "$activeBranchesCount",
                               percent: "+ 1",
                               subtitle: "new branch this year",
                               icon: Icons.trending_up,
@@ -288,7 +265,7 @@ class _BranchManagementState extends State<BranchManagement> {
                           Expanded(
                             child: InfoCards(
                               title: "Total Egg Stock",
-                              value: "$_totalEggStock",
+                              value: "$totalEggStock",
                               percent: "Live",
                               subtitle: "across all grades",
                               icon: Icons.trending_up,
@@ -305,7 +282,7 @@ class _BranchManagementState extends State<BranchManagement> {
                           Expanded(
                             child: InfoCards(
                               title: "Total Sales Today",
-                              value: "₹${_totalSales.toStringAsFixed(0)}",
+                              value: "₹${totalSales.toStringAsFixed(0)}",
                               percent: "+5.4%",
                               subtitle: "vs yesterday",
                               icon: Icons.trending_up,
@@ -318,7 +295,7 @@ class _BranchManagementState extends State<BranchManagement> {
                           Expanded(
                             child: InfoCards(
                               title: "Branch Revenue (MTD)",
-                              value: "₹${_totalRevenue.toStringAsFixed(0)}",
+                              value: "₹${totalRevenue.toStringAsFixed(0)}",
                               percent: "+0%",
                               subtitle: "vs last month",
                               icon: Icons.trending_up,
@@ -358,17 +335,26 @@ class _BranchManagementState extends State<BranchManagement> {
                                       ),
 
                                       GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const AddBranchDetails(),
-                                            ),
-                                          ).then((value) {
-                                            loadBranches();
-                                          });
-                                        },
+                                       onTap: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => BlocProvider(
+        create: (_) => BranchFormBloc(
+          BranchService(),
+        )..add(
+            LoadBranchFormDataEvent(),
+          ),
+
+        child: const AddBranchDetails(),
+      ),
+    ),
+  ).then((value) {
+    context.read<BranchBloc>().add(
+      LoadBranchesEvent(),
+    );
+  });
+},
                                         child: Container(
                                           padding: EdgeInsets.symmetric(
                                             horizontal: getWidth(context, 12),
@@ -935,7 +921,8 @@ class _BranchManagementState extends State<BranchManagement> {
                                                                     ) {
                                                                       if (value ==
                                                                           true) {
-                                                                        loadBranches();
+                                                                       context.read<BranchBloc>().add(
+                                                                          LoadBranchesEvent(),);
                                                                       }
                                                                     });
                                                                   },
@@ -1000,12 +987,8 @@ class _BranchManagementState extends State<BranchManagement> {
                                                                     if (confirm ==
                                                                         true) {
                                                                       try {
-                                                                        await BranchService().deleteBranch(
-                                                                          branch
-                                                                              .id,
-                                                                        );
-
-                                                                        loadBranches();
+                                                                      context.read<BranchBloc>().add(
+                                                                         DeleteBranchEvent(branch.id),);
                                                                       } catch (
                                                                         e
                                                                       ) {
@@ -1056,7 +1039,11 @@ class _BranchManagementState extends State<BranchManagement> {
                   ),
                 ),
               ),
-            ),
-    );
-  }
+            );
+    }
+     return const SizedBox();
+  }));
+
+  
+}
 }

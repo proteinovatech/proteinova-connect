@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/bloc/dashboard_bloc.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/bloc/dashboard_event.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/bloc/dashboard_state.dart';
 import 'package:proteinova_connect/core/network/dio_client.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
-import 'package:proteinova_connect/features/branch/branch_dashboard/data/model/dashboard_model.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/data/repository/dashboard_repository.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/widget/dashboard_overview_skeleton.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stock.dart';
@@ -16,33 +19,9 @@ class Dashboardoverview extends StatefulWidget {
 }
 
 class _DashboardoverviewState extends State<Dashboardoverview> {
-  bool isLoading = true;
-  DashboardModel? dashboardModel;
-  late final DashboardRepository repository;
+ 
 
-  @override
-  void initState() {
-    super.initState();
-    repository = DashboardRepository(DioClient().dio);
-    fetchDashboardData();
-  }
-
-  Future<void> fetchDashboardData() async {
-    try {
-      final result = await repository.fetchDashboardData();
-
-      setState(() {
-        dashboardModel = result;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      print(e);
-    }
-  }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,20 +35,42 @@ class _DashboardoverviewState extends State<Dashboardoverview> {
         title: const Text("All Stocks"),
       ),
 
-      body: isLoading
-          ? const Center(child: DashboardOverviewSkeleton())
-          : Padding(
-              padding: const EdgeInsets.all(12),
+      body: BlocProvider(
+  create: (_) => DashboardBloc(
+    DashboardRepository(DioClient().dio),
+  )..add(FetchDashboardEvent()),
+
+  child: BlocBuilder<DashboardBloc, DashboardState>(
+    builder: (context, state) {
+
+      // LOADING
+      if (state is DashboardLoading) {
+        return const Center(
+          child: DashboardOverviewSkeleton(),
+        );
+      }
+
+      // ERROR
+      if (state is DashboardError) {
+        return Center(
+          child: Text(state.message),
+        );
+      }
+
+      // SUCCESS
+      if (state is DashboardLoaded) {
+
+        final dashboardModel = state.dashboard;
+
+        return Padding(
+          padding: const EdgeInsets.all(12),
 
               child: RefreshIndicator(
                  color: Colors.blue,
 
   onRefresh: () async {
-    setState(() {
-      isLoading = true;
-    });
-
-    await fetchDashboardData();
+    context.read<DashboardBloc>()
+                  .add(FetchDashboardEvent());
   },
                 child: ListView(
                   children: [
@@ -77,7 +78,7 @@ class _DashboardoverviewState extends State<Dashboardoverview> {
                     Stock(
                       title: "Closing Stock",
                 
-                      value: "${dashboardModel!.cards.closingStock} trays",
+                      value: "${dashboardModel.cards.closingStock} trays",
                 
                       percent: "13.5%",
                 
@@ -98,7 +99,7 @@ class _DashboardoverviewState extends State<Dashboardoverview> {
                     Stockdetails(
                       title: "Opening Stock",
                 
-                      value: "${dashboardModel!.cards.openingStocks} trays",
+                      value: "${dashboardModel.cards.openingStocks} trays",
                 
                       icon: Icons.inventory,
                 
@@ -115,7 +116,7 @@ class _DashboardoverviewState extends State<Dashboardoverview> {
                     Stock(
                       title: "Sales Today",
                 
-                      value: "₹ ${dashboardModel!.cards.salesToday}",
+                      value: "₹ ${dashboardModel.cards.salesToday}",
                 
                       percent: "-2%",
                 
@@ -137,7 +138,7 @@ class _DashboardoverviewState extends State<Dashboardoverview> {
                       title: "Incoming Stocks",
                 
                       value:
-                          "${dashboardModel!.cards.incomingStockInTransit} trays",
+                          "${dashboardModel.cards.incomingStockInTransit} trays",
                 
                       icon: Icons.local_shipping,
                 
@@ -154,7 +155,7 @@ class _DashboardoverviewState extends State<Dashboardoverview> {
                     Stockdetails(
                       title: "Damage stock",
                 
-                      value: "${dashboardModel!.cards.damagedStock} trays",
+                      value: "${dashboardModel.cards.damagedStock} trays",
                 
                       icon: Icons.send_outlined,
                 
@@ -171,7 +172,7 @@ class _DashboardoverviewState extends State<Dashboardoverview> {
                     Stockdetails(
                       title: "Today Expense",
                 
-                      value: "₹ ${dashboardModel!.cards.todayExpense}",
+                      value: "₹ ${dashboardModel.cards.todayExpense}",
                 
                       icon: Icons.trending_up,
                 
@@ -184,7 +185,13 @@ class _DashboardoverviewState extends State<Dashboardoverview> {
                   ],
                 ),
               ),
-            ),
+            
     );
   }
+     return const SizedBox();
+    },
+  ),
+)
+);
+}
 }
