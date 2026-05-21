@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
-import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/services/tray_receive_service.dart';
+import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_receive_bloc.dart';
+import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_receive_event.dart';
+import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_receive_state.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_expense_management_skeleton_loader.dart';
 
 class ReceiveTraysScreen extends StatefulWidget {
@@ -13,36 +16,14 @@ class ReceiveTraysScreen extends StatefulWidget {
 }
 
 class _ReceiveTraysScreenState extends State<ReceiveTraysScreen> {
-  final TrayReceiveService _trayReceiveService = TrayReceiveService();
-  List<dynamic> receiveNotes = [];
-  bool isLoading = true;
-
   @override
-  void initState() {
-    super.initState();
-    _fetchReceiveNotes();
-  }
+void initState() {
+  super.initState();
 
-  Future<void> _fetchReceiveNotes() async {
-    setState(() {
-      isLoading = true;
-    });
-    try {
-      final notes = await _trayReceiveService.getTrayReceiveNotes();
-      setState(() {
-        receiveNotes = notes;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error loading records: $e')));
-    }
-  }
-
+  context.read<TrayReceiveBloc>().add(
+    FetchTrayReceiveNotes(),
+  );
+}
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -111,10 +92,31 @@ class _ReceiveTraysScreenState extends State<ReceiveTraysScreen> {
         ),
       ),
 
-      body: isLoading
-          ? const AdminExpenseManagementSkeletonLoader()
-          : RefreshIndicator(
-              onRefresh: _fetchReceiveNotes,
+      body: BlocConsumer<TrayReceiveBloc, TrayReceiveState>(
+  listener: (context, state) {
+    if (state is TrayReceiveError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(state.message)),
+      );
+    }
+  },
+
+  builder: (context, state) {
+
+    if (state is TrayReceiveLoading) {
+      return const AdminExpenseManagementSkeletonLoader();
+    }
+
+    if (state is TrayReceiveLoaded) {
+
+      final receiveNotes = state.receiveNotes;
+
+      return RefreshIndicator(
+              onRefresh: () async {
+  context.read<TrayReceiveBloc>().add(
+    FetchTrayReceiveNotes(),
+  );
+},
               child: SafeArea(
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
@@ -414,14 +416,8 @@ class _ReceiveTraysScreenState extends State<ReceiveTraysScreen> {
                                     ),
 
                                     /// ROWS OR EMPTY
-                                    if (isLoading)
-                                      const Padding(
-                                        padding: EdgeInsets.all(50),
-                                        child: Center(
-                                          child: CircularProgressIndicator(),
-                                        ),
-                                      )
-                                    else if (receiveNotes.isEmpty)
+                                    
+                                     if (receiveNotes.isEmpty)
                                       Container(
                                         width: double.infinity,
 
@@ -543,7 +539,13 @@ class _ReceiveTraysScreenState extends State<ReceiveTraysScreen> {
                   ),
                 ),
               ),
-            ),
+            );      
+    }
+
+    return const SizedBox();
+  },
+),
+            
     );
   }
 

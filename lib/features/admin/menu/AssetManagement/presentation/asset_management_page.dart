@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
+import 'package:proteinova_connect/features/admin/menu/AssetManagement/bloc/asset_bloc.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/widget/add_asset_Button.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/widget/total_tracked_bottomsheet_widget.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/widget/asset_table_widget.dart';
@@ -9,7 +11,6 @@ import 'package:proteinova_connect/features/admin/menu/AssetManagement/widget/fi
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/widget/under_maintenance_bottomsheet.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_expense_management_skeleton_loader.dart';
 
-import '../data/asset_repository.dart';
 import '../models/asset_model.dart';
 
 class AssetManagementPage extends StatefulWidget {
@@ -20,9 +21,7 @@ class AssetManagementPage extends StatefulWidget {
 }
 
 class _AssetManagementPageState extends State<AssetManagementPage> {
-  final AssetRepository _repository = AssetRepository();
-  List<AssetModel> assets = [];
-  bool isLoading = true;
+  
   String searchQuery = '';
   String selectedBranch = 'All Branches';
   String selectedCategory = 'All Categories';
@@ -31,75 +30,15 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
   @override
   void initState() {
     super.initState();
-    _fetchData();
+   context.read<AssetBloc>().add(
+  FetchAssetsEvent(),
+);
   }
 
-  Future<void> _fetchData() async {
-    setState(() => isLoading = true);
-    try {
-      final list = await _repository.fetchAssets();
-      setState(() {
-        assets = list;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() => isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error fetching assets: $e')));
-      }
-    }
-  }
-
-  int get _totalTracked => assets.length;
-  int get _currentlyInUse => assets.where((a) => a.status == 'In Use').length;
-  int get _underMaintenance =>
-      assets.where((a) => a.status == 'Maintenance').length;
-  int get _damaged => assets.where((a) => a.status == 'Damaged').length;
-
-  List<String> get _availableBranches {
-    final list = assets.map((a) => a.location).toSet().toList();
-    list.sort();
-    return ['All Branches', ...list];
-  }
-
-  List<String> get _availableCategories {
-    final list = assets.map((a) => a.category).toSet().toList();
-    list.sort();
-    return ['All Categories', ...list];
-  }
-
-  List<AssetModel> get _filteredAssets {
-    return assets.where((a) {
-      // Search filter
-      final query = searchQuery.toLowerCase();
-      final matchesSearch =
-          query.isEmpty ||
-          a.name.toLowerCase().contains(query) ||
-          a.assetId.toLowerCase().contains(query) ||
-          a.category.toLowerCase().contains(query);
-
-      // Branch filter
-      final matchesBranch =
-          selectedBranch == 'All Branches' || a.location == selectedBranch;
-
-      // Category filter
-      final matchesCategory =
-          selectedCategory == 'All Categories' ||
-          a.category == selectedCategory;
-
-      // Status filter
-      final matchesStatus =
-          selectedStatus == 'All Statuses' || a.status == selectedStatus;
-
-      return matchesSearch && matchesBranch && matchesCategory && matchesStatus;
-    }).toList();
-  }
-
+ 
   // ── Bottom Sheet helpers ──────────────────────────────────────────────────
 
-  void _showBottomSheet() {
+  void _showBottomSheet(List<AssetModel> assets) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -113,7 +52,7 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
     );
   }
 
-  void _showInUseSheet() {
+  void _showInUseSheet(List<AssetModel> assets) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -124,7 +63,7 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
     );
   }
 
-  void _showMaintenanceSheet() {
+  void _showMaintenanceSheet(List<AssetModel> assets) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -135,7 +74,7 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
     );
   }
 
-  void _showDamagedSheet() {
+  void _showDamagedSheet(List<AssetModel> assets) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -150,9 +89,80 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Scaffold(body: AdminExpenseManagementSkeletonLoader());
-    }
+    return BlocConsumer<
+      AssetBloc,
+      AssetState>(
+        listener: (context, state) {
+
+  if (state is AssetError) {
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+      SnackBar(
+        content: Text(state.message),
+      ),
+    );
+  }
+},
+builder: (context, state) {
+
+  List<AssetModel> assets = [];
+
+  if (state is AssetLoaded) {
+    assets = state.assets;
+  }
+  final totalTracked = assets.length;
+
+final currentlyInUse =
+    assets.where((a) => a.status == 'In Use').length;
+
+final underMaintenance =
+    assets.where((a) => a.status == 'Maintenance').length;
+
+final damaged =
+    assets.where((a) => a.status == 'Damaged').length;
+
+final availableBranches = [
+  'All Branches',
+  ...assets.map((a) => a.location).toSet().toList()..sort(),
+];
+final availableCategories = [
+  'All Categories',
+  ...assets.map((a) => a.category).toSet().toList()..sort(),
+];
+
+final filteredAssets = assets.where((a) {
+
+  final query = searchQuery.toLowerCase();
+
+  final matchesSearch =
+      query.isEmpty ||
+      a.name.toLowerCase().contains(query) ||
+      a.assetId.toLowerCase().contains(query) ||
+      a.category.toLowerCase().contains(query);
+       final matchesBranch =
+      selectedBranch == 'All Branches' ||
+      a.location == selectedBranch;
+
+  final matchesCategory =
+      selectedCategory == 'All Categories' ||
+      a.category == selectedCategory;
+
+  final matchesStatus =
+      selectedStatus == 'All Statuses' ||
+      a.status == selectedStatus;
+      return matchesSearch &&
+      matchesBranch &&
+      matchesCategory &&
+      matchesStatus;
+
+}).toList();
+
+  if (state is AssetLoading) {
+    return const Scaffold(
+      body: AdminExpenseManagementSkeletonLoader(),
+    );
+  }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -224,10 +234,13 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
         // ],
       ),
 
-      body: isLoading
-          ? const AdminExpenseManagementSkeletonLoader()
-          : RefreshIndicator(
-              onRefresh: _fetchData,
+      body: RefreshIndicator(
+              onRefresh: () async {
+
+  context.read<AssetBloc>().add(
+    RefreshAssetsEvent(),
+  );
+},
               child: SafeArea(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
@@ -240,24 +253,24 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
                           children: [
                             Expanded(
                               child: GestureDetector(
-                                onTap: _showBottomSheet,
+                                onTap: ()=>  _showBottomSheet(assets),
                                 child: _statCard(
                                   icon: Icons.inventory_2_outlined,
                                   iconColor: Colors.blue,
                                   title: 'Total Tracked Assets',
-                                  count: _totalTracked.toString(),
+                                  count: totalTracked.toString(),
                                 ),
                               ),
                             ),
                             SizedBox(width: getWidth(context, 12)),
                             Expanded(
                               child: GestureDetector(
-                                onTap: _showInUseSheet,
+                                onTap: ()=>  _showInUseSheet(assets),
                                 child: _statCard(
                                   icon: Icons.local_shipping_outlined,
                                   iconColor: Colors.green,
                                   title: 'Currently In Use',
-                                  count: _currentlyInUse.toString(),
+                                  count: currentlyInUse.toString(),
                                 ),
                               ),
                             ),
@@ -274,24 +287,24 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
                           children: [
                             Expanded(
                               child: GestureDetector(
-                                onTap: _showMaintenanceSheet,
+                                onTap:()=>  _showMaintenanceSheet(assets),
                                 child: _statCard(
                                   icon: Icons.build_outlined,
                                   iconColor: Colors.purple,
                                   title: 'Under Maintenance',
-                                  count: _underMaintenance.toString(),
+                                  count: underMaintenance.toString(),
                                 ),
                               ),
                             ),
                             SizedBox(width: getWidth(context, 12)),
                             Expanded(
                               child: GestureDetector(
-                                onTap: _showDamagedSheet,
+                                onTap:()=>  _showDamagedSheet(assets),
                                 child: _statCard(
                                   icon: Icons.warning_amber_rounded,
                                   iconColor: Colors.red,
                                   title: 'Damaged',
-                                  count: _damaged.toString(),
+                                  count: damaged.toString(),
                                 ),
                               ),
                             ),
@@ -345,8 +358,8 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
                                   selectedBranch: selectedBranch,
                                   selectedCategory: selectedCategory,
                                   selectedStatus: selectedStatus,
-                                  availableBranches: _availableBranches,
-                                  availableCategories: _availableCategories,
+                                  availableBranches: availableBranches,
+                                  availableCategories: availableCategories,
                                   onFilterChanged: (branch, category, status) {
                                     setState(() {
                                       selectedBranch = branch;
@@ -361,7 +374,9 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
                             SizedBox(height: getHeight(context, 14)),
 
                             /// Add Asset button
-                            addAssetButton(context, onAssetAdded: _fetchData),
+                            addAssetButton(context, onAssetAdded: () {
+    context.read<AssetBloc>().add(FetchAssetsEvent());
+  },),
                           ],
                         ),
                       ),
@@ -370,8 +385,10 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
 
                       /// ── ASSET TABLE ───────────────────────────────────────────
                       AssetTableWidget(
-                        assets: _filteredAssets,
-                        onStatusChanged: _fetchData,
+                        assets: filteredAssets,
+                        onStatusChanged:() {
+    context.read<AssetBloc>().add(FetchAssetsEvent());
+  },
                       ),
 
                       SizedBox(height: getHeight(context, 30)),
@@ -381,7 +398,9 @@ class _AssetManagementPageState extends State<AssetManagementPage> {
               ),
             ),
     );
-  }
+    
+  }  );
+}
 
   // ── Stat Card widget ──────────────────────────────────────────────────────
 

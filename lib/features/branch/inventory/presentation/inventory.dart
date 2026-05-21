@@ -1,8 +1,13 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_bloc.dart';
+import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_event.dart' show FetchInventoryEvent;
+import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:proteinova_connect/core/theme/app_colors.dart';
@@ -20,11 +25,11 @@ class Inventory extends StatefulWidget {
 }
 
 class _InventoryState extends State<Inventory> {
-  bool isLoading = true;
+ 
   int branchId = 1;
   String userRole = "Staff";
   String branchName = "";
-  Map<String, dynamic>? inventoryData;
+  
 
   final TextEditingController searchController = TextEditingController();
   String searchQuery = "";
@@ -32,8 +37,93 @@ class _InventoryState extends State<Inventory> {
   @override
   void initState() {
     super.initState();
-    _loadUserData().then((_) => fetchIncomingStock());
+    _loadUserData().then((_) {
+
+    context.read<InventoryBloc>().add(
+      FetchInventoryEvent(),
+    );
+
+  });
   }
+  Future<void> handleMarkArrival(
+  Map<String, dynamic> shipment,
+) async {
+
+  final rawId = shipment["dispatch_id"];
+
+  if (rawId == null) {
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          "Error: Dispatch ID not found in row data.",
+        ),
+      ),
+    );
+
+    return;
+  }
+
+  try {
+
+    final String baseUrl =
+        dotenv.env['BASE_URL'] ?? "";
+
+    final response = await http.put(
+      Uri.parse(
+        "$baseUrl/api/dispatch/$rawId/status",
+      ),
+
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+
+      body: jsonEncode({
+        "status": "ARRIVAL",
+      }),
+    );
+
+    if (response.statusCode == 200) {
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Shipment marked as ARRIVED successfully!",
+          ),
+        ),
+      );
+
+      context.read<InventoryBloc>().add(
+        FetchInventoryEvent(),
+      );
+
+    } else {
+
+      final errData = jsonDecode(response.body);
+
+      final errMsg =
+          errData['error'] ??
+          "Failed to mark arrival";
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errMsg),
+        ),
+      );
+    }
+
+  } catch (err) {
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          "Failed to mark arrival: $err",
+        ),
+      ),
+    );
+  }
+}
 
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -48,91 +138,8 @@ class _InventoryState extends State<Inventory> {
     }
   }
 
-  Future<void> fetchIncomingStock() async {
-    try {
-      if (mounted) setState(() => isLoading = true);
-      final String baseUrl = dotenv.env['BASE_URL'] ?? "";
-
-      final response = await http.get(
-        Uri.parse("$baseUrl/api/branch/incoming-stock/$branchId"),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (mounted) {
-          setState(() {
-            inventoryData = data;
-            branchName = data['branch_name'] ?? "";
-            isLoading = false;
-          });
-        }
-      } else {
-        if (mounted) {
-          setState(() {
-            isLoading = false;
-          });
-        }
-        debugPrint("STATUS CODE : ${response.statusCode}");
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-      debugPrint("ERROR : $e");
-    }
-  }
-
-  Future<void> handleMarkArrival(Map<String, dynamic> shipment) async {
-    final rawId = shipment["dispatch_id"];
-    if (rawId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Error: Dispatch ID not found in row data."),
-        ),
-      );
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Starting Mark Arrival process...")),
-    );
-
-    try {
-      final String baseUrl = dotenv.env['BASE_URL'] ?? "";
-      final response = await http.put(
-        Uri.parse("$baseUrl/api/dispatch/$rawId/status"),
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-        body: jsonEncode({"status": "ARRIVAL"}),
-      );
-
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Shipment marked as ARRIVED successfully!"),
-          ),
-        );
-        fetchIncomingStock();
-      } else {
-        final errData = jsonDecode(response.body);
-        final errMsg =
-            errData['error'] ??
-            "Failed to mark arrival: ${response.statusCode}";
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(errMsg)));
-      }
-    } catch (err) {
-      debugPrint("Error marking arrival: $err");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Failed to mark arrival: $err")));
-    }
-  }
+ 
+  
 
   String formatDate(String? dateStr) {
     if (dateStr == null || dateStr.isEmpty) return "No Date";
@@ -185,34 +192,72 @@ class _InventoryState extends State<Inventory> {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
+    return BlocBuilder<InventoryBloc, InventoryState>(
+  builder: (context, state) {
+
+    if (state is InventoryLoading) {
       return const Scaffold(
         body: Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.amber600),
-          ),
+          child: CircularProgressIndicator(),
         ),
       );
     }
 
-    final cards = inventoryData?["cards"] ?? {};
-    final rawShipments = inventoryData?["shipments"] as List? ?? [];
-    final recentActivity = inventoryData?["recent_activity"] as List? ?? [];
+    if (state is InventoryError) {
+      return Scaffold(
+        body: Center(
+          child: Text(state.message),
+        ),
+      );
+    }
 
-    // Filter shipments by search query
-    final shipments = rawShipments.where((s) {
-      if (searchQuery.isEmpty) return true;
-      final q = searchQuery.toLowerCase();
-      final code = (s["dispatch_code"] ?? "").toString().toLowerCase();
-      final from = (s["supplier_or_from"] ?? "").toString().toLowerCase();
-      final driver = (s["vehicle_driver"] ?? "").toString().toLowerCase();
-      final prod = (s["product_summary"] ?? "").toString().toLowerCase();
-      return code.contains(q) ||
-          from.contains(q) ||
-          driver.contains(q) ||
-          prod.contains(q);
-    }).toList();
+    if (state is InventoryLoaded) {
 
+      final inventoryData = state.inventoryData;
+
+      final cards = inventoryData["cards"] ?? {};
+
+      final rawShipments =
+          inventoryData["shipments"] as List? ?? [];
+
+      final recentActivity =
+          inventoryData["recent_activity"] as List? ?? [];
+
+      branchName =
+          inventoryData["branch_name"] ?? "";
+
+      final shipments = rawShipments.where((s) {
+
+        if (searchQuery.isEmpty) return true;
+
+        final q = searchQuery.toLowerCase();
+
+        final code =
+            (s["dispatch_code"] ?? "")
+                .toString()
+                .toLowerCase();
+
+        final from =
+            (s["supplier_or_from"] ?? "")
+                .toString()
+                .toLowerCase();
+
+        final driver =
+            (s["vehicle_driver"] ?? "")
+                .toString()
+                .toLowerCase();
+
+        final prod =
+            (s["product_summary"] ?? "")
+                .toString()
+                .toLowerCase();
+
+        return code.contains(q) ||
+            from.contains(q) ||
+            driver.contains(q) ||
+            prod.contains(q);
+
+      }).toList();
     return Scaffold(
       backgroundColor: AppColors.background1,
       appBar: AppBar(
@@ -465,7 +510,8 @@ class _InventoryState extends State<Inventory> {
                                     ),
                                   ).then((value) {
                                     if (value == true) {
-                                      fetchIncomingStock();
+                                     context.read<InventoryBloc>().add(
+                                       FetchInventoryEvent(),);
                                     }
                                   });
                                 }
@@ -527,7 +573,11 @@ class _InventoryState extends State<Inventory> {
           ),
         ],
       ),
-    );
+    );}
+
+    return const SizedBox();
+  },
+);
   }
 }
 

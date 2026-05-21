@@ -7,6 +7,8 @@ import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch/addexpense/presentation/expense_management/presentation/expense_management.dart';
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/presentation/daily_closing.dart';
+import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_bloc.dart';
+import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_event.dart';
 import 'package:proteinova_connect/features/branch/inventory/presentation/inventory.dart';
 import 'package:proteinova_connect/features/branch/sales/presentation/sales.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
@@ -82,7 +84,18 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
 
   int selectedIndex = 0;
 
-  final List<Widget> pages = [BranchDashboard(), Sales(), Inventory(), DailyClosing()];
+  final List<Widget> pages = [
+    BranchDashboard(),
+    Sales(), 
+    BlocProvider(
+    create: (_) => InventoryBloc()..add(
+        FetchInventoryEvent(),
+      ),
+
+    child: Inventory(),
+  ),
+
+   DailyClosing()];
 
   @override
   Widget build(BuildContext context) {
