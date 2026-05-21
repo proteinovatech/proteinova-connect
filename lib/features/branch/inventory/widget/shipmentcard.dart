@@ -21,10 +21,12 @@ class ShipmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     final Size size =MediaQuery.of(context).size;
+    final Size size = MediaQuery.of(context).size;
     return Container(
-      height:size.height*0.18,
-      padding: const EdgeInsets.all(14),
+      height: size.height * 0.18,
+      padding: EdgeInsets.all(
+        MediaQuery.of(context).size.width >= 700 ? 12 : 16,
+      ),
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         color: AppColors.background,
@@ -35,26 +37,17 @@ class ShipmentCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-                     Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: AppTextStyles.bodyText12semibold
-              ),               
-                             Icon(icon, size: 18, color: iconColor ?? AppColors.dark),
+              Text(title, style: AppTextStyles.bodyText12semibold),
+              Icon(icon, size: 14, color: iconColor ?? AppColors.dark),
             ],
           ),
-          SizedBox(height: size.height*0.01),
-                  Text(
-            count,
-            style: AppTextStyles.headingText20
-          ),
-         SizedBox(height: size.height*0.01),
-          Text(
-            subtitle,
-            style: AppTextStyles.bodyText12
-          ),
+          SizedBox(height: size.height * 0.01),
+          Text(count, style: AppTextStyles.headingText20),
+          SizedBox(height: size.height * 0.01),
+          Text(subtitle, style: AppTextStyles.bodyText12),
         ],
       ),
     );

@@ -67,8 +67,8 @@ class _SalesState extends State<Sales> {
       create: (context) =>
           SalesBloc()..add(FetchSalesDashboard(branchId: branchId)),
       child: Scaffold(
-        backgroundColor:AppColors.background,
-                appBar: AppBar(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
           backgroundColor: AppColors.background1,
           scrolledUnderElevation: 0,
           elevation: 0,
@@ -214,44 +214,77 @@ class _SalesState extends State<Sales> {
   }
 
   Widget _buildDashboardGrid(Map<String, dynamic> cards) {
+    final width = MediaQuery.of(context).size.width;
+
+    final bool isTablet = width >= 700;
+
     return GridView.count(
-      crossAxisCount: 2,
       shrinkWrap: true,
+
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 16,
-      crossAxisSpacing: 16,
-      childAspectRatio: 1.3,
+
+      crossAxisCount: isTablet ? 4 : 2,
+
+      mainAxisSpacing: isTablet ? 12 : 16,
+
+      crossAxisSpacing: isTablet ? 12 : 16,
+
+      childAspectRatio: isTablet ? 1.55 : 1.3,
+
       children: [
         _buildStatCard(
           "Total Sales",
+
           "₹${((cards['total_sales']?['value'] ?? 0) as num).toLocaleString()}",
+
           "Lifetime Revenue",
+
           Icons.currency_rupee,
+
           const Color(0xFFFFFBEB),
+
           const Color(0xFFD97706),
         ),
+
         _buildStatCard(
           "Total Orders",
+
           "${cards['total_orders']?['value'] ?? 0}",
+
           "Total Transactions",
+
           Icons.shopping_bag_outlined,
+
           const Color(0xFFF1F6FF),
+
           const Color(0xFF2563EB),
         ),
+
         _buildStatCard(
           "Eggs Sold",
+
           "${((cards['total_sales_eggs']?['value'] ?? 0) as num).toLocaleString()}",
+
           "Today's Volume",
+
           Icons.egg_outlined,
+
           const Color(0xFFEFF6FF),
+
           const Color(0xFF3B82F6),
         ),
+
         _buildStatCard(
           "Today's Sales",
+
           "₹${((cards['total_sales']?['today'] ?? 0) as num).toLocaleString()}",
+
           "Recorded Today",
+
           Icons.trending_up,
+
           const Color(0xFFF0FDF4),
+
           const Color(0xFF16A34A),
         ),
       ],
@@ -266,8 +299,9 @@ class _SalesState extends State<Sales> {
     Color bg,
     Color iconColor,
   ) {
+    final isTablet = MediaQuery.of(context).size.width >= 700;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isTablet ? 8 : 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
