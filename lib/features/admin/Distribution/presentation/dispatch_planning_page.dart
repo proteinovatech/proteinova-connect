@@ -50,6 +50,13 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
   final TextEditingController _paperTraysController = TextEditingController(
     text: "0",
   );
+  final amountController = TextEditingController();
+  final debtController = TextEditingController();
+  final referenceController = TextEditingController();
+
+  int selectedPayment = 0;
+
+  String selectedUpi = "";
 
   String? _selectedShopName;
   List<Map<String, dynamic>> _branches = [];
@@ -256,8 +263,8 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      // backgroundColor: AppColors.white,
 
+      // backgroundColor: AppColors.white,
       appBar: AppBar(
         backgroundColor: AppColors.white,
         surfaceTintColor: AppColors.white,
@@ -333,6 +340,9 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                           const SizedBox(height: 20),
                           _buildEmptyTraysCard(),
                           const SizedBox(height: 20),
+                          _buildPaymentCard(),
+                          const SizedBox(height: 20),
+
                           _buildSummaryCard(),
                           const SizedBox(height: 20),
                           _buildOverallDispatchCard(),
@@ -378,12 +388,12 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
       children: const [
         Text(
           "New Dispatch",
-          style: TextStyle(fontSize: 32, fontWeight: FontWeight.w600),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
         SizedBox(height: 5),
         Text(
           "Manage dispatching to update inventory",
-          style: TextStyle(color: Colors.grey, fontSize: 16),
+          style: TextStyle(color: Colors.grey, fontSize: 12),
         ),
       ],
     );
@@ -429,7 +439,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
               Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -507,13 +517,91 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                   hint: "9876543210",
                   keyboardType: TextInputType.phone,
                   inputFormatters: [
-    FilteringTextInputFormatter.digitsOnly,
-    LengthLimitingTextInputFormatter(10),
-  ],
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(10),
+                  ],
                 ),
               ),
             ],
           ),
+          //    Row(
+          //   children: [
+          //     // Expanded(
+          //     //   child: _buildDropdownField(
+          //     //     "Sales To *",
+          //     //     _selectedShopName,
+          //     //     _branches.map((b) => b['branch_name'].toString()).toList(),
+          //     //     (val) {
+          //     //       setState(() => _selectedShopName = val);
+          //     //     },
+          //     //   ),
+          //     // ),
+          //     const SizedBox(width: 10),
+          //     Expanded(
+          //       child: _buildDropdownField(
+          //         "Select Shop *",
+          //         _selectedShopName,
+          //         _branches.map((b) => b['branch_name'].toString()).toList(),
+          //         (val) {
+          //           setState(() => _selectedShopName = val);
+          //         },
+          //       ),
+          //     ),
+          //   ],
+          // ),
+          // const SizedBox(height: 15),
+          // /// Row 2
+          // Row(
+          //   children: [
+          //     Expanded(
+          //       child: _buildDateField(
+          //         "Dispatch Date *",
+          //         _dispatchDateController,
+          //       ),
+          //     ),
+          //     const SizedBox(width: 10),
+          //     Expanded(
+          //       child: _buildDateField(
+          //         "Expected Arrival Date *",
+          //         _arrivalDateController,
+          //       ),
+          //     ),
+          //   ],
+          // ),
+          // const SizedBox(height: 15),
+          // /// Row 3
+          // Row(
+          //   children: [
+          //     Expanded(
+          //       child: _buildTextField(
+          //         "Vehicle No. *",
+          //         _vehicleNoController,
+          //         hint: "TN 32 B 2134",
+          //         uppercase: true,
+          //       ),
+          //     ),
+          //     const SizedBox(width: 10),
+          //     Expanded(
+          //       child: _buildTextField(
+          //         "Driver Name *",
+          //         _driverNameController,
+          //         hint: "John Doe",
+          //       ),
+          //     ),
+          //   ],
+          // ),
+          // const SizedBox(height: 15),
+          // /// Last Single Full Width
+          // _buildTextField(
+          //   "Driver Number *",
+          //   _driverPhoneController,
+          //   hint: "9876543210",
+          //   keyboardType: TextInputType.phone,
+          //   inputFormatters: [
+          //     FilteringTextInputFormatter.digitsOnly,
+          //     LengthLimitingTextInputFormatter(10),
+          //   ],
+          // ),
         ],
       ),
     );
@@ -765,6 +853,233 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
     );
   }
 
+  Widget _buildPaymentCard() {
+    return _buildCard(
+      title: "Choose Payment",
+
+      child: DefaultTabController(
+        length: 3,
+
+        child: StatefulBuilder(
+          builder: (context, setLocal) {
+            return Column(
+              children: [
+                const Align(
+                  alignment: Alignment.centerLeft,
+
+                  child: Text(
+                    "Select payment method for this sale",
+                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+
+                TabBar(
+                  labelColor: Colors.blue,
+                  unselectedLabelColor: Colors.black54,
+                  tabs: const [
+                    Tab(text: "UPI Payment"),
+                    Tab(text: "COD"),
+                    Tab(text: "RTGS/NEFT"),
+                  ],
+                ),
+
+                SizedBox(
+                  height: 340,
+
+                  child: TabBarView(
+                    children: [
+                      /// UPI
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+
+                        children: [
+                          const SizedBox(height: 20),
+
+                          const Text(
+                            "Select UPI App",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                          const SizedBox(height: 14),
+
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _upiButton("Google Pay", setLocal),
+                              ),
+
+                              const SizedBox(width: 6),
+
+                              Expanded(child: _upiButton("PhonePe", setLocal)),
+
+                              const SizedBox(width: 6),
+
+                              Expanded(child: _upiButton("Paytm", setLocal)),
+
+                              const SizedBox(width: 6),
+
+                              Expanded(child: _upiButton("Other", setLocal)),
+                            ],
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          _buildTextField(
+                            "Reference / ID",
+                            referenceController,
+                            hint: "UPI ID or Ref No",
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          _buildTextField(
+                            "Enter Amount",
+                            amountController,
+                            hint: "₹ 0.00",
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          _buildTextField(
+                            "Debt (Optional)",
+                            debtController,
+                            hint: "₹ 0.00",
+                          ),
+                        ],
+                      ),
+
+                      /// COD
+                      Column(
+                        children: [
+                          const SizedBox(height: 10),
+
+                          const Text(
+                            "Cash on Delivery",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                          const SizedBox(height: 4),
+
+                          const Text(
+                            "Pay when order arrives.",
+                            style: TextStyle(fontSize: 11),
+                          ),
+
+                          const SizedBox(height: 15),
+
+                          _buildTextField(
+                            "Enter Amount",
+                            amountController,
+                            hint: "₹ 0.00",
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          _buildTextField(
+                            "Debt (Optional)",
+                            debtController,
+                            hint: "₹ 0.00",
+                          ),
+                        ],
+                      ),
+
+                      /// RTGS
+                      Column(
+                        children: [
+                          const SizedBox(height: 10),
+
+                          const Text(
+                            "RTGS/NEFT Transfer",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+
+                          const SizedBox(height: 4),
+
+                          const Text(
+                            "Bank transfer via RTGS or NEFT",
+                            style: TextStyle(fontSize: 11),
+                          ),
+
+                          const SizedBox(height: 15),
+
+                          _buildTextField(
+                            "Transaction Reference",
+                            referenceController,
+                            hint: "Enter Reference ID",
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          _buildTextField(
+                            "Enter Amount",
+                            amountController,
+                            hint: "₹ 0.00",
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          _buildTextField(
+                            "Debt (Optional)",
+                            debtController,
+                            hint: "₹ 0.00",
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _upiButton(String title, StateSetter setLocal) {
+    return SizedBox(
+      height: 28,
+
+      child: OutlinedButton(
+        onPressed: () {
+          setLocal(() {
+            selectedUpi = title;
+          });
+        },
+
+        style: OutlinedButton.styleFrom(
+          backgroundColor: selectedUpi == title
+              ? Colors.blue.withValues(alpha: 0.5)
+              : Colors.white,
+
+          padding: EdgeInsets.zero,
+        ),
+
+        child: Text(
+          title,
+          overflow: TextOverflow.ellipsis,
+
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSummaryCard() {
     return _buildCard(
       title: "Dispatch Summary",
@@ -978,76 +1293,68 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
   }
 
   Widget _buildTextField(
-  String label,
-  TextEditingController controller, {
-  String? hint,
-  bool uppercase = false,
-  TextInputType? keyboardType,
-  List<TextInputFormatter>? inputFormatters,
-  int? maxLength,
-}) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        label,
-        style: const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.bold,
+    String label,
+    TextEditingController controller, {
+    String? hint,
+    bool uppercase = false,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    int? maxLength,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
         ),
-      ),
 
-      const SizedBox(height: 8),
+        const SizedBox(height: 8),
 
-      TextField(
-        controller: controller,
-        keyboardType: keyboardType,
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
 
-        maxLength: maxLength,
+          maxLength: maxLength,
 
-        inputFormatters: inputFormatters,
+          inputFormatters: inputFormatters,
 
-        onChanged: (val) {
-          if (uppercase) {
-            controller.value = TextEditingValue(
-              text: val.toUpperCase(),
-              selection: TextSelection.collapsed(
-                offset: val.length,
-              ),
-            );
-          }
+          onChanged: (val) {
+            if (uppercase) {
+              controller.value = TextEditingValue(
+                text: val.toUpperCase(),
+                selection: TextSelection.collapsed(offset: val.length),
+              );
+            }
 
-          setState(() {});
-        },
+            setState(() {});
+          },
 
-        decoration: InputDecoration(
-          counterText: "",
+          decoration: InputDecoration(
+            counterText: "",
 
-          hintText: hint,
+            hintText: hint,
 
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(
-              color: Colors.grey.shade300,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
             ),
           ),
-
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(
-              color: Colors.grey.shade300,
-            ),
-          ),
-
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 12,
-          ),
         ),
-      ),
-    ],
-  );
-}
+      ],
+    );
+  }
+
   Widget _buildTableDropdown(String value, Function(String?) onChanged) {
     final categories = [
       "White large",

@@ -386,7 +386,12 @@ class _DistributionPageState extends State<DistributionPage> {
 
                               return dispatchCard(
                                 id: dispatch['dispatch_id']?.toString() ?? "-",
-                                date: dispatch['date']?.toString() ?? "-",
+                                date:
+                                    dispatch['date']
+                                        ?.toString()
+                                        .split("T")
+                                        .first ??
+                                    "-",
                                 branch:
                                     dispatch['destination_branch']
                                         ?.toString() ??

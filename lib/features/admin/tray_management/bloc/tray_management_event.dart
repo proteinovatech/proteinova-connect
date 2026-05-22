@@ -11,3 +11,15 @@ class AddTraysEvent extends TrayManagementEvent {
     required this.paperTrays,
   });
 }
+
+class ReturnTraysEvent extends TrayManagementEvent {
+  final String warehouse;
+  final int plastic;
+  final int paper;
+
+  ReturnTraysEvent({
+    required this.warehouse,
+    required this.plastic,
+    required this.paper,
+  });
+}

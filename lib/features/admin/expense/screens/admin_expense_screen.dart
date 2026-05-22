@@ -151,7 +151,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:AppColors.lightGrey,
+      backgroundColor: AppColors.lightGrey,
       body: isLoading
           ? const AdminExpenseManagementSkeletonLoader()
           : RefreshIndicator(
@@ -220,7 +220,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             child: Container(
                               height: getHeight(context, 50),
                               padding: EdgeInsets.symmetric(
-                                horizontal: getWidth(context, 14),
+                                horizontal: getWidth(context, 12),
                               ),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(14),
@@ -258,7 +258,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             ),
                           ),
 
-                          SizedBox(width: getWidth(context, 10)),
+                          SizedBox(width: getWidth(context, 4)),
                           Expanded(
                             child: InkWell(
                               onTap: () async {
@@ -366,7 +366,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             amount:
                                 "₹${dashboardData?.cards.rentFacilities.toStringAsFixed(2) ?? "0.00"}",
                             icon: Icons.apartment,
-                            iconBg:AppColors.violet100,
+                            iconBg: AppColors.violet100,
                             onTap: () {
                               showExpenseDetailsBottomSheet("Rent");
                             },
@@ -725,7 +725,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                     height: getHeight(context, 48),
                                     child: ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor:AppColors.amber600,
+                                        backgroundColor: AppColors.amber600,
                                         foregroundColor: Colors.black,
                                         elevation: 0,
                                         shape: RoundedRectangleBorder(

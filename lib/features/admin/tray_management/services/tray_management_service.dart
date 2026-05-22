@@ -8,17 +8,23 @@ class TrayManagementService {
 
   Future<List<TrayInventoryModel>> getInventory() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/tray-inventory/get-inventory'));
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/tray-inventory/get-inventory'),
+      );
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
         if (jsonResponse['success'] == true) {
           List data = jsonResponse['data'] ?? [];
           return data.map((e) => TrayInventoryModel.fromJson(e)).toList();
         } else {
-          throw Exception(jsonResponse['message'] ?? 'Failed to fetch inventory');
+          throw Exception(
+            jsonResponse['message'] ?? 'Failed to fetch inventory',
+          );
         }
       } else {
-        throw Exception('Failed to fetch inventory. Status code: ${response.statusCode}');
+        throw Exception(
+          'Failed to fetch inventory. Status code: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Error fetching inventory: $e');
@@ -35,14 +41,16 @@ class TrayManagementService {
           'paper_tray_count': paperTrays,
         }),
       );
-      
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         final jsonResponse = jsonDecode(response.body);
         if (jsonResponse['success'] != true) {
           throw Exception(jsonResponse['message'] ?? 'Failed to add trays');
         }
       } else {
-        throw Exception('Failed to add trays. Status code: ${response.statusCode}');
+        throw Exception(
+          'Failed to add trays. Status code: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Error adding trays: $e');

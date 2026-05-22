@@ -292,6 +292,194 @@ class _TrayManagementViewState extends State<TrayManagementView> {
     );
   }
 
+  void _showReturnTrayDialog(BuildContext context) {
+    String? selectedWarehouse;
+
+    _plasticTraysController.clear();
+    _paperTraysController.clear();
+
+    showDialog(
+      context: context,
+
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setLocal) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+
+              child: Container(
+                width: 400,
+
+                padding: const EdgeInsets.all(24),
+
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+
+                  crossAxisAlignment: CrossAxisAlignment.start,
+
+                  children: [
+                    Center(
+                      child: Text(
+                        "Return Trays to Namakkal",
+
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    Divider(),
+
+                    const SizedBox(height: 20),
+
+                    /// Warehouse
+                    const Text(
+                      "Warehouse",
+
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    DropdownButtonFormField<String>(
+                      value: selectedWarehouse,
+
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+
+                      hint: const Text("Select Warehouse"),
+
+                      items: ["Bangalore", "Chennai", "Salem"]
+                          .map(
+                            (e) => DropdownMenuItem(value: e, child: Text(e)),
+                          )
+                          .toList(),
+
+                      onChanged: (v) {
+                        setLocal(() {
+                          selectedWarehouse = v;
+                        });
+                      },
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    /// Plastic
+                    const Text("Plastic Trays"),
+
+                    const SizedBox(height: 8),
+
+                    TextField(
+                      controller: _plasticTraysController,
+
+                      keyboardType: TextInputType.number,
+
+                      decoration: InputDecoration(
+                        hintText: "Enter count",
+
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    /// Paper
+                    const Text("Paper Trays"),
+
+                    const SizedBox(height: 8),
+
+                    TextField(
+                      controller: _paperTraysController,
+
+                      keyboardType: TextInputType.number,
+
+                      decoration: InputDecoration(
+                        hintText: "Enter count",
+
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    Container(
+                      color: const Color(0xffF1F5F9),
+
+                      padding: const EdgeInsets.all(12),
+
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () {
+                                Navigator.pop(dialogContext);
+                              },
+
+                              child: const Text("Cancel"),
+                            ),
+                          ),
+
+                          const SizedBox(width: 12),
+
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.yellow,
+                              ),
+
+                              onPressed: () {
+                                final plastic =
+                                    int.tryParse(
+                                      _plasticTraysController.text,
+                                    ) ??
+                                    0;
+
+                                final paper =
+                                    int.tryParse(_paperTraysController.text) ??
+                                    0;
+
+                                context.read<TrayManagementBloc>().add(
+                                  AddTraysEvent(
+                                    plasticTrays: plastic,
+                                    paperTrays: paper,
+                                  ),
+                                );
+
+                                Navigator.pop(dialogContext);
+                              },
+
+                              child: const Text(
+                                "Submit",
+
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // In Flutter Web / Desktop we could use Row but on Mobile Row will overflow.
@@ -361,29 +549,72 @@ class _TrayManagementViewState extends State<TrayManagementView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFD600),
-                      foregroundColor: Colors.black,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                Row(
+                  children: [
+                    /// Return Tray
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+
+                        onPressed: () => _showReturnTrayDialog(context),
+
+                        icon: const Icon(Icons.undo, size: 18),
+
+                        label: const Text(
+                          "Return Trays to\nNamakkal",
+
+                          textAlign: TextAlign.center,
+
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
                       ),
                     ),
-                    onPressed: () => _showAddTraysDialog(context),
-                    icon: const Icon(Icons.add, size: 18),
-                    label: const Text(
-                      'Add Trays to Namakkal',
-                      style: TextStyle(fontWeight: FontWeight.w600),
+
+                    const SizedBox(width: 12),
+
+                    /// Add Tray
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFD600),
+
+                          foregroundColor: Colors.black,
+
+                          elevation: 0,
+
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+
+                        onPressed: () => _showAddTraysDialog(context),
+
+                        icon: const Icon(Icons.add, size: 18),
+
+                        label: const Text(
+                          "Add Trays to\nNamakkal",
+
+                          textAlign: TextAlign.center,
+
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
+
                 const SizedBox(height: 20),
                 // Cards
                 Wrap(
