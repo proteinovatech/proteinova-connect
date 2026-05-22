@@ -3,6 +3,9 @@ import 'package:proteinova_connect/core/services/notification_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/features/admin/Receiving%20branch/presentation/receiving_branch.dart';
 import 'package:proteinova_connect/features/admin/dailyclosing/screen/dailyclosing.dart';
+import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bloc.dart';
+import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_event.dart' hide LoadBranchesEvent;
+import 'package:proteinova_connect/features/admin/expense/data/repository/expense_repository.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/bloc/asset_bloc.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/data/asset_repository.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_receive_bloc.dart';
@@ -12,8 +15,9 @@ import 'package:proteinova_connect/features/admin/menu/SalesDashboard/bloc/sales
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/data/datasource/sales_remote_datasource.dart';
 import 'package:proteinova_connect/features/admin/menu/branch_management/bloc/branch_bloc/branch_bloc.dart';
 import 'package:proteinova_connect/features/admin/menu/branch_management/data/services/branch_service.dart';
-import 'package:proteinova_connect/features/admin/purchase/presentation/purchase.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
+import 'package:proteinova_connect/features/admin/supplier/bloc/supplier_bloc.dart';
+import 'package:proteinova_connect/features/admin/supplier/data/services/supplier_service.dart';
 import 'package:proteinova_connect/features/admin/tray_management/screen/tray_management.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
@@ -218,12 +222,26 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
 
                   //Inventory
                   _menuTile(
-                    Icons.inbox_outlined,
-                    "Inventory",
-                    AdminInventory(),
+                    Icons.store,
+                    "Branch Management",
+                    BlocProvider(
+    create: (_) => BranchBloc(
+      BranchService(),
+    )..add(
+        LoadBranchesEvent(),
+      ),
+
+    child: BranchManagement(),
+  ),
                   ),
 
-                  //Asset Management
+                  // _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
+                  _menuTile(Icons.money, "Expenses", AdminExpenseScreen()),
+                  _menuTile(
+                    Icons.local_shipping_rounded,
+                    "Supplier",
+                    AdminSuppliersScreen(),
+                  ),
                   _menuTile(
                     Icons.account_balance_wallet_outlined,
                     "Asset Management",
@@ -338,8 +356,21 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   //   "SalesDashboard",
                   //   SalesDashboardPage(),
                   // ),
+                  _menuTile(Icons.inventory, "Incoming Stock", IncomingStock()),
+                  _menuTile(Icons.sell, "Purchase", AdminSuppliersScreen()),
+                  _menuTile(
+                    Icons.account_balance_wallet,
+                    "Purchase Expenses",
+                    const PurchaseExpenseScreen(),
+                  ),
 
-                  //Daily Closing
+
+                  _menuTile(
+                    Icons.sell_outlined,  
+                     
+                    "Offers & Prices",
+                    OfferPrice(),
+                  ),
                   _menuTile(
                     Icons.storefront_outlined,
                     "Daily Closing",
@@ -357,8 +388,6 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   //   "Report",
                   //   AdminReportDashboardScreen(),
                   // ),
-
-                  //setting
                   _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
                   // _menuTile(Icons.money, "Expenses", ExpenseManagement()),
                   const SizedBox(height: 20),

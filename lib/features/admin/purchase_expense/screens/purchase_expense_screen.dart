@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
-import '../data/purchase_expense_repository.dart';
-import '../models/purchase_list_item.dart';
-import '../models/purchase_detail_response.dart';
-import '../models/supplier_item.dart';
+import 'package:proteinova_connect/features/admin/purchase_expense/bloc/purchase_bloc.dart';
+import 'package:proteinova_connect/features/admin/purchase_expense/bloc/purchase_event.dart';
+import 'package:proteinova_connect/features/admin/purchase_expense/bloc/purchase_state.dart';
+import '../data/repository/purchase_expense_repository.dart';
+import '../data/models/purchase_list_item.dart';
+import '../data/models/purchase_detail_response.dart';
 
 class PurchaseExpenseScreen extends StatefulWidget {
   const PurchaseExpenseScreen({super.key});
@@ -15,62 +18,29 @@ class PurchaseExpenseScreen extends StatefulWidget {
 class _PurchaseExpenseScreenState extends State<PurchaseExpenseScreen> {
   final PurchaseExpenseRepository _repository = PurchaseExpenseRepository();
 
-  List<PurchaseListItem> _purchases = [];
+ 
   final Map<int, PurchaseDetailResponse> _purchaseDetails = {};
-  List<SupplierItem> _suppliers = [];
+  
 
   String _searchTerm = "";
   String _selectedSupplierId = "All";
   int _currentPage = 1;
   final int _recordsPerPage = 10;
 
-  bool _isFetching = true;
+ 
   bool _isSubmitting = false;
 
   @override
   void initState() {
     super.initState();
-    _loadInitialData();
+   context.read<PurchaseExpenseBloc>().add(
+  LoadPurchaseExpenseData(),
+);
   }
 
-  Future<void> _loadInitialData() async {
-    setState(() {
-      _isFetching = true;
-    });
-
-    try {
-      // 1. Fetch purchases
-      final purchasesData = await _repository.fetchPurchases();
-      // 2. Fetch suppliers
-      final suppliersData = await _repository.fetchSuppliers();
-
-      if (mounted) {
-        setState(() {
-          _purchases = purchasesData;
-          _suppliers = suppliersData;
-          _isFetching = false;
-        });
-        // Start background loading of visible purchases details
-        _loadVisibleDetails();
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isFetching = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Error loading data: $e"),
-            backgroundColor: AppColors.redAccent,
-          ),
-        );
-      }
-    }
-  }
-
-  // Slice list of purchases based on search and supplier filters
-  List<PurchaseListItem> _getFilteredPurchases() {
-    return _purchases.where((item) {
+   // Slice list of purchases based on search and supplier filters
+  List<PurchaseListItem> _getFilteredPurchases(List<PurchaseListItem> purchases,) {
+    return purchases.where((item) {
       final searchLower = _searchTerm.toLowerCase();
       final poMatch = "po-${item.id}".toLowerCase().contains(searchLower);
 
@@ -102,8 +72,8 @@ class _PurchaseExpenseScreenState extends State<PurchaseExpenseScreen> {
   }
 
   // Background fetch details for visible items to populate Products, Trays, and Eggs
-  void _loadVisibleDetails() {
-    final filtered = _getFilteredPurchases();
+  void _loadVisibleDetails( List<PurchaseListItem> purchases,) {
+    final filtered = _getFilteredPurchases(purchases);
     final visible = _getCurrentPageData(filtered);
 
     for (var item in visible) {
@@ -177,9 +147,7 @@ class _PurchaseExpenseScreenState extends State<PurchaseExpenseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredPurchases = _getFilteredPurchases();
-    final currentPageData = _getCurrentPageData(filteredPurchases);
-    final totalPages = (filteredPurchases.length / _recordsPerPage).ceil();
+    
 
     return Scaffold(
       backgroundColor: AppColors.lightGrey,
@@ -224,14 +192,88 @@ class _PurchaseExpenseScreenState extends State<PurchaseExpenseScreen> {
           ),
         ],
       ),
-      body: _isFetching
-          ? const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.amber600),
-              ),
-            )
-          : RefreshIndicator(
-              onRefresh: _loadInitialData,
+      body: BlocListener<
+    PurchaseExpenseBloc,
+    PurchaseExpenseState>(
+  listener: (context, state) {
+     if (state.isSuccess) {
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Expenses saved successfully!",
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.pop(context);
+
+      context
+          .read<PurchaseExpenseBloc>()
+          .add(
+            LoadPurchaseExpenseData(),
+          );
+    }
+
+
+    if (state.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(state.error!),
+          backgroundColor: AppColors.redAccent,
+        ),
+      );
+    }
+  },
+
+  child: BlocBuilder<
+      PurchaseExpenseBloc,
+      PurchaseExpenseState>(
+    builder: (context, state) {
+
+      if (state.isLoading) {
+        return const Center(
+          child: CircularProgressIndicator(
+            valueColor:
+                AlwaysStoppedAnimation<Color>(
+              AppColors.amber600,
+            ),
+          ),
+        );
+      }
+
+      final purchases = state.purchases;
+
+      WidgetsBinding.instance
+    .addPostFrameCallback((_) {
+
+  _loadVisibleDetails(purchases);
+
+});
+
+      final suppliers = state.suppliers;
+
+      final filteredPurchases =
+          _getFilteredPurchases(purchases);
+
+      final currentPageData =
+          _getCurrentPageData(filteredPurchases);
+
+      final totalPages =
+          (filteredPurchases.length /
+                  _recordsPerPage)
+              .ceil();
+
+      return  RefreshIndicator(
+              onRefresh:() async {
+          context
+              .read<PurchaseExpenseBloc>()
+              .add(
+                LoadPurchaseExpenseData(),
+              );
+        },
               color: AppColors.amber600,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -267,7 +309,7 @@ class _PurchaseExpenseScreenState extends State<PurchaseExpenseScreen> {
                                   _searchTerm = val;
                                   _currentPage = 1;
                                 });
-                                _loadVisibleDetails();
+                                _loadVisibleDetails(purchases);
                               },
                               decoration: InputDecoration(
                                 hintText: "Search PO, supplier, location, driver...",
@@ -319,7 +361,7 @@ class _PurchaseExpenseScreenState extends State<PurchaseExpenseScreen> {
                                             value: "All",
                                             child: Text("All Suppliers"),
                                           ),
-                                          ..._suppliers.map((sup) {
+                                          ...suppliers.map((sup) {
                                             return DropdownMenuItem(
                                               value: sup.id.toString(),
                                               child: Text(sup.supplierCompanyName ?? "Supplier ${sup.id}"),
@@ -332,7 +374,7 @@ class _PurchaseExpenseScreenState extends State<PurchaseExpenseScreen> {
                                               _selectedSupplierId = val;
                                               _currentPage = 1;
                                             });
-                                            _loadVisibleDetails();
+                                            _loadVisibleDetails(purchases);
                                           }
                                         },
                                       ),
@@ -614,7 +656,7 @@ class _PurchaseExpenseScreenState extends State<PurchaseExpenseScreen> {
                                         setState(() {
                                           _currentPage--;
                                         });
-                                        _loadVisibleDetails();
+                                        _loadVisibleDetails(purchases);
                                       }
                                     : null,
                               ),
@@ -629,7 +671,7 @@ class _PurchaseExpenseScreenState extends State<PurchaseExpenseScreen> {
                                         setState(() {
                                           _currentPage++;
                                         });
-                                        _loadVisibleDetails();
+                                        _loadVisibleDetails(purchases);
                                       }
                                     : null,
                               ),
@@ -640,12 +682,17 @@ class _PurchaseExpenseScreenState extends State<PurchaseExpenseScreen> {
                   ],
                 ),
               ),
-            ),
+            ); },
+  ),
+),
     );
   }
 
   // --- POPUP: VIEW DETAILS ---
   void _showViewPurchasePopup(int purchaseId) async {
+     context.read<PurchaseExpenseBloc>().add(
+    LoadPurchaseDetail(purchaseId),
+  );
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -1041,25 +1088,27 @@ class _PurchaseExpenseScreenState extends State<PurchaseExpenseScreen> {
                                     _isSubmitting = true;
                                   });
                                   try {
-                                    final success = await _repository.saveExpenses(
-                                      purchaseId: row.id,
-                                      loading: loadingExp,
-                                      unloading: unloadingExp,
-                                      transport: transportExp,
-                                    );
+                                  context.read<PurchaseExpenseBloc>().add(
+                                  SaveExpenseEvent(
+                                       purchaseId: row.id,
 
-                                    if (success) {
-                                      if (mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                            content: Text("Expenses saved successfully!"),
-                                            backgroundColor: Colors.green,
-                                          ),
-                                        );
-                                      }
-                                      Navigator.pop(context); // Close bottom sheet
-                                      _loadInitialData(); // Refresh list data
-                                    }
+                                 loading: double.tryParse(
+                                   loadingController.text,
+                                    ) ??
+                                      0,
+
+                                   unloading: double.tryParse(
+                                  unloadingController.text,
+                                           ) ??
+                                        0,
+
+                                 transport: double.tryParse(
+                                  transportController.text,
+                                   ) ??
+                                    0,
+                                   ),
+                                  );
+
                                   } catch (e) {
                                     if (mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(

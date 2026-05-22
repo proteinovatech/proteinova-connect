@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
+import 'package:proteinova_connect/features/admin/expense/data/models/expense_model.dart';
 
-import '../models/expense_model.dart';
 
 class ExpenseTableRow extends StatelessWidget {
   final ExpenseModel expense;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
-import '../models/supplier_model.dart';
+import '../data/models/supplier_model.dart';
 import 'info_tile.dart';
 
 class SupplierCardAdmin extends StatelessWidget {

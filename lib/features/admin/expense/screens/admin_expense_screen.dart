@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
+import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bloc.dart';
+import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_event.dart';
+import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_state.dart';
+import 'package:proteinova_connect/features/admin/expense/data/models/branch_expense_dashboard_model.dart';
+
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_expense_management_skeleton_loader.dart';
 
-import '../data/expense_repository.dart';
-import '../models/branch_expense_dashboard_model.dart';
+import '../data/repository/expense_repository.dart';
+
 import '../widgets/expense_category_item.dart';
 import '../widgets/expense_summary_card.dart';
 import '../widgets/expense_table_header.dart';
@@ -32,7 +38,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
 
   Map<int, String> branches = {};
 
-  bool isLoading = true;
+  
   bool isSaving = false;
   BranchExpenseDashboardModel? dashboardData;
 
@@ -53,59 +59,14 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
   void initState() {
     super.initState();
     dateController.text = DateTime.now().toString().split(' ')[0];
-    _initData();
-  }
+     Future.microtask(() {
 
-  Future<void> _initData() async {
-    await _fetchBranches();
-    if (branches.isNotEmpty) {
-      // Set default branch to the first one fetched
-      selectedBranchId = branches.keys.first;
-      _fetchData();
-    } else {
-      setState(() => isLoading = false);
-    }
-  }
-
-  Future<void> _fetchBranches() async {
-    try {
-      final fetchedBranches = await _repository.fetchBranches();
-      setState(() {
-        branches = fetchedBranches;
-      });
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Error fetching branches: $e")));
-      }
-    }
-  }
-
-  Future<void> _fetchData() async {
-    setState(() => isLoading = true);
-    try {
-      final data = await _repository.fetchBranchExpenses(
-        branchId: selectedBranchId,
-        month: selectedMonth,
-      );
-      setState(() {
-        dashboardData = data;
-        if (dashboardData != null) {
-          dashboardData!.recentExpenses.sort(
-            (a, b) => b.expenseDate.compareTo(a.expenseDate),
-          );
-        }
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() => isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
-      }
-    }
+    context
+        .read<BranchExpenseBloc>()
+        .add(
+          LoadBranchesEvent(),
+        );
+  });
   }
 
   Future<void> _saveExpense() async {
@@ -136,7 +97,12 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
           const SnackBar(content: Text("Expense saved successfully")),
         );
       }
-      _fetchData();
+      context.read<BranchExpenseBloc>().add(
+  LoadDashboardEvent(
+    branchId: selectedBranchId,
+    month: selectedMonth,
+  ),
+);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -147,11 +113,12 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
       setState(() => isSaving = false);
     }
   }
+ 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightGrey,
+      backgroundColor:AppColors.lightGrey,
       body: isLoading
           ? const AdminExpenseManagementSkeletonLoader()
           : RefreshIndicator(
@@ -250,7 +217,12 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                       setState(() {
                                         selectedBranchId = value;
                                       });
-                                      _fetchData();
+                                      context.read<BranchExpenseBloc>().add(
+  LoadDashboardEvent(
+    branchId: selectedBranchId,
+    month: selectedMonth,
+  ),
+);
                                     }
                                   },
                                 ),
@@ -274,7 +246,12 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                     selectedMonth =
                                         "${picked.year}-${picked.month.toString().padLeft(2, '0')}";
                                   });
-                                  _fetchData();
+                                  context.read<BranchExpenseBloc>().add(
+  LoadDashboardEvent(
+    branchId: selectedBranchId,
+    month: selectedMonth,
+  ),
+);
                                 }
                               },
                               child: dropdownBox(selectedMonth),
@@ -284,7 +261,14 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                           SizedBox(width: getWidth(context, 10)),
 
                           InkWell(
-                            onTap: _fetchData,
+                            onTap:() async {
+  context.read<BranchExpenseBloc>().add(
+    LoadDashboardEvent(
+      branchId: selectedBranchId,
+      month: selectedMonth,
+    ),
+  );
+},
                             child: Container(
                               height: getHeight(context, 50),
                               padding: EdgeInsets.symmetric(
@@ -509,7 +493,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
 
                             /// TABLE ROWS
                             if (dashboardData != null)
-                              ...dashboardData!.categories.map(
+                              ...dashboardData.categories.map(
                                 (cat) => Container(
                                   padding: EdgeInsets.symmetric(
                                     horizontal: getWidth(context, 16),
@@ -549,7 +533,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                               ),
 
                             if (dashboardData == null ||
-                                dashboardData!.categories.isEmpty)
+                                dashboardData.categories.isEmpty)
                               Padding(
                                 padding: const EdgeInsets.all(20),
                                 child: Text(
@@ -930,7 +914,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             if (isLoading)
                               const Center(child: CircularProgressIndicator())
                             else if (dashboardData == null ||
-                                dashboardData!.recentExpenses.isEmpty)
+                                dashboardData.recentExpenses.isEmpty)
                               Center(
                                 child: Column(
                                   children: [
@@ -955,11 +939,11 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                               ListView.builder(
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
-                                itemCount: dashboardData!.recentExpenses.length,
+                                itemCount: dashboardData.recentExpenses.length,
                                 itemBuilder: (context, index) {
                                   return ExpenseTableRow(
                                     expense:
-                                        dashboardData!.recentExpenses[index],
+                                        dashboardData.recentExpenses[index],
                                   );
                                 },
                               ),
@@ -970,9 +954,14 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                   ),
                 ),
               ),
-            ),
-    );
-  }
+            );
+}
+)
+);
+}
+
+  
+
 
   Widget dropdownBox(String title) {
     return Container(

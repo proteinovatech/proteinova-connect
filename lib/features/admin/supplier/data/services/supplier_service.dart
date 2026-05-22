@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:proteinova_connect/core/config/api_config.dart';
-import 'package:proteinova_connect/features/admin/supplier/models/supplier_model.dart';
+import 'package:proteinova_connect/features/admin/supplier/data/models/supplier_model.dart';
 
 class SupplierService {
   final String baseUrl = ApiConfig.baseUrl;
