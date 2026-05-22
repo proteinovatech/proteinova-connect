@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
-import 'package:proteinova_connect/features/admin/settings/data/services/settings_service.dart';
+import 'package:proteinova_connect/features/admin/settings/bloc/user/user_bloc.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/profile_screen.dart';
 import '../widgets/role_textfield.dart';
 
@@ -12,18 +13,9 @@ class StaffManagementScreen extends StatefulWidget {
 }
 
 class _StaffManagementScreenState extends State<StaffManagementScreen> {
-  final SettingsService _settingsService = SettingsService();
-
-  List<dynamic> users = [];
-  bool isLoading = true;
+  
   bool showAddForm = false;
   int? editingUserId;
-
-  Map<String, dynamic> formOptions = {
-    "roles": [],
-    "branches": [],
-    "warehouses": [],
-  };
 
   final nameController = TextEditingController();
   final emailController = TextEditingController();
@@ -35,25 +27,12 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchData();
+     context.read<UserBloc>().add(
+    FetchUsersEvent(),
+  );
   }
 
-  Future<void> _fetchData() async {
-    setState(() => isLoading = true);
-    try {
-      final usersList = await _settingsService.fetchUsersList();
-      final formData = await _settingsService.fetchUserFormData();
-      setState(() {
-        users = usersList;
-        formOptions = formData;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() => isLoading = false);
-      _showSnackBar("Error fetching data: $e", isError: true);
-    }
-  }
-
+ 
   void _resetForm() {
     nameController.clear();
     emailController.clear();
@@ -77,100 +56,106 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
     });
   }
 
-  Future<void> _handleDelete(int userId) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text(
-          "Delete Staff Member?",
-          style: TextStyle(color: Colors.red),
-        ),
-        content: const Text(
-          "This action cannot be undone. This user will lose access to the system.",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text("Delete"),
-          ),
-        ],
-      ),
+ Future<void> _handleSaveUser() async {
+  if (nameController.text.isEmpty ||
+      emailController.text.isEmpty ||
+      (editingUserId == null && passwordController.text.isEmpty) ||
+      selectedRole == null) {
+    _showSnackBar(
+      "Name, Email, Password and Role are required",
+      isError: true,
     );
-
-    if (confirm == true) {
-      final success = await _settingsService.deleteUser(userId);
-      if (success) {
-        _fetchData();
-        _showSnackBar("Staff member deleted successfully");
-      } else {
-        _showSnackBar("Failed to delete user", isError: true);
-      }
-    }
+    return;
   }
 
-  Future<void> _handleSaveUser() async {
-    if (nameController.text.isEmpty ||
-        emailController.text.isEmpty ||
-        (editingUserId == null && passwordController.text.isEmpty) ||
-        selectedRole == null) {
-      _showSnackBar(
-        "Name, Email, Password and Role are required",
-        isError: true,
-      );
-      return;
-    }
+  final normalizedRole = selectedRole!.toLowerCase();
 
-    final normalizedRole = selectedRole!.toLowerCase();
-    if (normalizedRole == "branch" && selectedBranch == null) {
-      _showSnackBar("Please select a branch for this user", isError: true);
-      return;
-    }
-    if ((normalizedRole == "admin" ||
-            normalizedRole == "ware house" ||
-            normalizedRole == "purchase") &&
-        selectedWarehouse == null) {
-      _showSnackBar("Please select a warehouse for this user", isError: true);
-      return;
-    }
+  if (normalizedRole == "branch" && selectedBranch == null) {
+    _showSnackBar(
+      "Please select a branch for this user",
+      isError: true,
+    );
+    return;
+  }
 
-    final userData = {
-      "name": nameController.text,
-      "email": emailController.text,
-      "password": passwordController.text,
-      "role": selectedRole,
-      "branch_id": selectedBranch != null
-          ? int.tryParse(selectedBranch!)
-          : null,
-      "warehouse_id": selectedWarehouse != null
-          ? int.tryParse(selectedWarehouse!)
-          : null,
-    };
+  if ((normalizedRole == "admin" ||
+          normalizedRole == "ware house" ||
+          normalizedRole == "purchase") &&
+      selectedWarehouse == null) {
+    _showSnackBar(
+      "Please select a warehouse for this user",
+      isError: true,
+    );
+    return;
+  }
 
-    final success = await _settingsService.saveUser(
-      userData,
+  final userData = {
+    "name": nameController.text,
+    "email": emailController.text,
+    "password": passwordController.text,
+    "role": selectedRole,
+    "branch_id": selectedBranch != null
+        ? int.tryParse(selectedBranch!)
+        : null,
+    "warehouse_id": selectedWarehouse != null
+        ? int.tryParse(selectedWarehouse!)
+        : null,
+  };
+
+  context.read<UserBloc>().add(
+    SaveUserEvent(
+      userData: userData,
       userId: editingUserId,
-    );
-    if (success) {
-      _showSnackBar(
-        "Staff member ${editingUserId != null ? "updated" : "added"} successfully",
-      );
-      setState(() => showAddForm = false);
-      _resetForm();
-      _fetchData();
-    } else {
-      _showSnackBar("Failed to save user", isError: true);
-    }
-  }
+    ),
+  );
 
+  setState(() {
+    showAddForm = false;
+  });
+
+  _resetForm();
+}
+ 
+ Future<void> _handleDelete(int userId) async {
+  final confirm = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      title: const Text(
+        "Delete Staff Member?",
+        style: TextStyle(color: Colors.red),
+      ),
+      content: const Text(
+        "This action cannot be undone. This user will lose access to the system.",
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text(
+            "Cancel",
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context, true),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+          ),
+          child: const Text("Delete"),
+        ),
+      ],
+    ),
+  );
+
+  if (confirm == true) {
+    context.read<UserBloc>().add(
+      DeleteUserEvent(userId),
+    );
+  }
+}
   void _showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -180,9 +165,44 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     final isWide = MediaQuery.of(context).size.width > 900;
+    return BlocConsumer<UserBloc, UserState>(
+    listener: (context, state) {
+
+      /// SUCCESS
+      if (state is UserActionSuccess) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(state.message),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+
+      /// ERROR
+      if (state is UserError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(state.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    },
+
+    builder: (context, state) {
+
+      /// DATA
+      List<dynamic> users = [];
+      Map<String, dynamic> formOptions = {};
+
+      if (state is UserLoaded) {
+        users = state.users;
+        formOptions = state.formOptions;
+      }
 
     return Scaffold(
       backgroundColor:AppColors.background,
@@ -202,11 +222,14 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
 
                   /// MAIN CONTENT
                   Expanded(
-                    child: isLoading
-                        ? const Center(child: CircularProgressIndicator())
+                    child: state is UserLoading
+                         ? const Center(child: CircularProgressIndicator(),)
                         : SingleChildScrollView(
                             padding: const EdgeInsets.all(24),
-                            child: _buildMainContent(isWide),
+                            child: _buildMainContent( 
+                              isWide,
+                              users,
+                              formOptions,),
                           ),
                   ),
                 ],
@@ -215,8 +238,10 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
           ],
         ),
       ),
+      );}
     );
   }
+
 
   Widget _buildHeader() {
     return Container(
@@ -314,12 +339,14 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
     );
   }
 
-  Widget _buildMainContent(bool isWide) {
-    if (showAddForm) return _buildAddForm(isWide);
-    return _buildStaffList(isWide);
+  Widget _buildMainContent(bool isWide,
+  List<dynamic> users,
+  Map<String, dynamic> formOptions,) {
+    if (showAddForm) return _buildAddForm(isWide,formOptions);
+    return _buildStaffList(isWide,users);
   }
 
-  Widget _buildStaffList(bool isWide) {
+  Widget _buildStaffList(bool isWide, List<dynamic> users,) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -352,12 +379,14 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
           ],
         ),
         const SizedBox(height: 24),
-        isWide ? _buildStaffTable() : _buildStaffListView(),
+       isWide
+    ? _buildStaffTable(users)
+    : _buildStaffListView(users),
       ],
     );
   }
 
-  Widget _buildStaffTable() {
+  Widget _buildStaffTable( List<dynamic> users,) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -451,7 +480,7 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
     );
   }
 
-  Widget _buildStaffListView() {
+  Widget _buildStaffListView( List<dynamic> users,) {
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -554,7 +583,7 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
     );
   }
 
-  Widget _buildAddForm(bool isWide) {
+  Widget _buildAddForm(bool isWide,Map<String, dynamic> formOptions,) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

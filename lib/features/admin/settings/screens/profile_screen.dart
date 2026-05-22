@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proteinova_connect/features/admin/settings/bloc/profile/profile_bloc.dart';
+import 'package:proteinova_connect/features/admin/settings/bloc/profile/profile_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/features/admin/settings/data/services/settings_service.dart';
@@ -85,6 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+
   void _showPopup(String title, String message, {bool isError = false}) {
     showDialog(
       context: context,
@@ -119,42 +123,75 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final isWide = MediaQuery.of(context).size.width > 900;
+Widget build(BuildContext context) {
+  final isWide = MediaQuery.of(context).size.width > 900;
 
-    return Scaffold(
-      backgroundColor: const Color(0xffF8F8F8),
-      body: SafeArea(
-        child: Column(
-          children: [
-            /// GLOBAL HEADER
-            _buildHeader(),
-            const Divider(height: 1),
+  return BlocListener<ProfileBloc, ProfileState>(
+    listener: (context, state) {
+      if (state.successMessage != null) {
+        _showPopup(
+          "Success",
+          state.successMessage!,
+        );
+      }
 
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  /// SIDEBAR
-                  if (isWide) _buildSidebar(),
+      if (state.errorMessage != null) {
+        _showPopup(
+          "Error",
+          state.errorMessage!,
+          isError: true,
+        );
+      }
+    },
 
-                  /// MAIN CONTENT
-                  Expanded(
-                    child: isLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : SingleChildScrollView(
-                            padding: const EdgeInsets.all(24),
-                            child: _buildProfileCard(),
-                          ),
+    child: BlocBuilder<ProfileBloc, ProfileState>(
+      builder: (context, state) {
+
+        /// Sync controllers from bloc state
+        emailController.text = state.email;
+        roleController.text = state.role;
+
+        return Scaffold(
+          backgroundColor: const Color(0xffF8F8F8),
+
+          body: SafeArea(
+            child: Column(
+              children: [
+                /// HEADER
+                _buildHeader(),
+
+                const Divider(height: 1),
+
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+
+                      /// SIDEBAR
+                      if (isWide) _buildSidebar(),
+
+                      /// MAIN CONTENT
+                      Expanded(
+                        child: state.isLoading
+                            ? const Center(
+                                child: CircularProgressIndicator(),
+                              )
+                            : SingleChildScrollView(
+                                padding: const EdgeInsets.all(24),
+                                child: _buildProfileCard(state),
+                              ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
+          ),
+        );
+      },
+    ),
+  );
+}
 
   Widget _buildHeader() {
     return Container(
@@ -254,7 +291,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileCard() {
+  Widget _buildProfileCard(ProfileState state) {
     return Container(
       padding: const EdgeInsets.all(30),
       decoration: BoxDecoration(

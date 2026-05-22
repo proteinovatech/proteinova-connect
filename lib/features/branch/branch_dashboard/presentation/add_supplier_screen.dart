@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:proteinova_connect/features/admin/supplier/models/supplier_model.dart';
-import 'package:proteinova_connect/features/admin/supplier/services/supplier_service.dart';
+import 'package:proteinova_connect/features/admin/supplier/data/models/supplier_model.dart';
+import 'package:proteinova_connect/features/admin/supplier/data/services/supplier_service.dart';
 
 class AddSupplierScreen extends StatefulWidget {
   const AddSupplierScreen({super.key});
