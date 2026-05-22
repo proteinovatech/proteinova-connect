@@ -4,7 +4,10 @@ import '../model/sales_entry_model.dart';
 class SalesRepository {
   final BranchSalesRemoteDatasource _datasource = BranchSalesRemoteDatasource();
 
-  Future<SalesEntryModel> fetchSalesEntry({required int loginUserId, int? branchId}) async {
+  Future<SalesEntryModel> fetchSalesEntry({
+    required int loginUserId,
+    int? branchId,
+  }) async {
     final data = await _datasource.getSalesEntry(
       loginUserId: loginUserId,
       branchId: branchId,

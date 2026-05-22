@@ -371,7 +371,8 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       final res = await datasource.createSale(body: payload);
       setState(() => isSubmitting = false);
 
-      final saleId = res['sale']?['id'] ??
+      final saleId =
+          res['sale']?['id'] ??
           res['data']?['id'] ??
           res['id'] ??
           res['sale_id'] ??

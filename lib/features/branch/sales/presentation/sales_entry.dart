@@ -54,8 +54,57 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
   final BranchSalesRemoteDatasource datasource = BranchSalesRemoteDatasource();
   List<ProductDetail> filteredProducts = [];
+  int? selectedProductIndex;
+  bool showSalesItems = false;
+
   int loginUserId = 0;
   int branchId = 0;
+
+  double? selectedDozen;
+
+  void selectDozen(double dozen) {
+    if (selectedProductIndex == null) return;
+
+    final product = filteredProducts[selectedProductIndex!];
+
+    setState(() {
+      selectedDozen = dozen;
+
+      final existingIndex = salesItems.indexWhere(
+        (e) => e.eggCategoryGrade == product.productName,
+      );
+
+      if (existingIndex != -1) {
+        final item = salesItems[existingIndex];
+
+        item.dozen = dozen;
+
+        item.eggs = (dozen * 12).round();
+
+        item.trays = (item.eggs / 30).ceil();
+
+        item.total = double.parse((item.eggs * item.price).toStringAsFixed(2));
+      } else {
+        salesItems.removeWhere((e) => e.eggCategoryGrade.isEmpty);
+
+        salesItems.add(
+          SalesItem(
+            eggCategoryGrade: product.productName,
+
+            price: product.perTrayPrice / 30,
+
+            dozen: dozen,
+
+            eggs: (dozen * 12).round(),
+
+            trays: ((dozen * 12) / 30).ceil(),
+
+            total: ((dozen * 12) * (product.perTrayPrice / 30)).toDouble(),
+          ),
+        );
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -77,7 +126,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       if (mounted) setState(() => isLoading = true);
       final response = await datasource.getSalesEntry(
         loginUserId: loginUserId,
-        branchId: selectedBranchId == "warehouse" ? null : int.tryParse(selectedBranchId),
+        branchId: selectedBranchId == "warehouse"
+            ? null
+            : int.tryParse(selectedBranchId),
       );
       final model = SalesEntryModel.fromJson(response);
 
@@ -138,36 +189,52 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
   double get totalDiscount {
     double discount = 0;
-    final double totalEggsInCart = salesItems.fold(0.0, (sum, item) => sum + item.eggs);
+    final double totalEggsInCart = salesItems.fold(
+      0.0,
+      (sum, item) => sum + item.eggs,
+    );
 
     for (var offer in offers) {
       if (!offer.applied) continue;
 
-      final isAllProducts = offer.category.trim().toLowerCase() == "all products";
+      final isAllProducts =
+          offer.category.trim().toLowerCase() == "all products";
       final matchingItem = isAllProducts
           ? null
           : salesItems.firstWhere(
-              (item) => item.eggCategoryGrade.trim().toLowerCase() == offer.category.trim().toLowerCase(),
+              (item) =>
+                  item.eggCategoryGrade.trim().toLowerCase() ==
+                  offer.category.trim().toLowerCase(),
               orElse: () => SalesItem(eggCategoryGrade: ""),
             );
 
-      if (!isAllProducts && (matchingItem == null || matchingItem.eggCategoryGrade.isEmpty)) {
+      if (!isAllProducts &&
+          (matchingItem == null || matchingItem.eggCategoryGrade.isEmpty)) {
         continue;
       }
 
       if (offer.offerType == 'buy_x_get_y') {
-        final double relevantEggs = isAllProducts ? totalEggsInCart : (matchingItem?.eggs.toDouble() ?? 0.0);
+        final double relevantEggs = isAllProducts
+            ? totalEggsInCart
+            : (matchingItem?.eggs.toDouble() ?? 0.0);
         final double pricePerEgg = isAllProducts
             ? (salesItems.isNotEmpty ? salesItems.first.price : 0.0)
             : (matchingItem?.price ?? 0.0);
 
         if (relevantEggs >= offer.buyQty && offer.buyQty > 0) {
-          final double freeEggsCount = (relevantEggs / offer.buyQty).floorToDouble() * offer.freeQty;
-          discount += double.parse((freeEggsCount * pricePerEgg).toStringAsFixed(2));
+          final double freeEggsCount =
+              (relevantEggs / offer.buyQty).floorToDouble() * offer.freeQty;
+          discount += double.parse(
+            (freeEggsCount * pricePerEgg).toStringAsFixed(2),
+          );
         }
       } else if (offer.offerType == 'percentage') {
-        final double relevantTotal = isAllProducts ? subtotal : (matchingItem?.total ?? 0.0);
-        discount += double.parse((relevantTotal * offer.discountValue / 100).toStringAsFixed(2));
+        final double relevantTotal = isAllProducts
+            ? subtotal
+            : (matchingItem?.total ?? 0.0);
+        discount += double.parse(
+          (relevantTotal * offer.discountValue / 100).toStringAsFixed(2),
+        );
       } else if (offer.offerType == 'fixed_amount') {
         discount += offer.discountValue;
       }
@@ -187,7 +254,15 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   void removeItem(int index) {
     setState(() {
       salesItems.removeAt(index);
-      if (salesItems.isEmpty) salesItems.add(SalesItem());
+      if (salesItems.isEmpty) {
+        setState(() {
+          showSalesItems = false;
+
+          selectedProductIndex = null;
+
+          selectedDozen = null;
+        });
+      }
     });
   }
 
@@ -225,13 +300,25 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         item.total = double.parse((item.eggs * item.price).toStringAsFixed(2));
       } else {
         salesItems.removeWhere((i) => i.eggCategoryGrade.isEmpty);
+        // final newItem = SalesItem(
+        //   eggCategoryGrade: product.productName,
+        //   price: product.perTrayPrice / 30,
+        //   trays: 1,
+        //   eggs: 30,
+        //   dozen: 2.5,
+        //   total: product.perTrayPrice,
+        // );
         final newItem = SalesItem(
           eggCategoryGrade: product.productName,
           price: product.perTrayPrice / 30,
-          trays: 1,
-          eggs: 30,
-          dozen: 2.5,
-          total: product.perTrayPrice,
+
+          trays: 0,
+          eggs: 0,
+
+          // START EMPTY
+          dozen: 0.0,
+
+          total: 0,
         );
         salesItems.add(newItem);
       }
@@ -285,7 +372,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     // Validate quantities
     for (final item in validItems) {
       if (item.eggs <= 0) {
-        _showError("Please add quantity (Dozen or Trays) for ${item.eggCategoryGrade}");
+        _showError(
+          "Please add quantity (Dozen or Trays) for ${item.eggCategoryGrade}",
+        );
         return;
       }
     }
@@ -333,7 +422,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             .where((t) => t.qty > 0)
             .map((t) => {"tray_type": t.trayType, "qty": t.qty})
             .toList(),
-        "branch_id": selectedBranchId == "warehouse" ? branchId : (int.tryParse(selectedBranchId) ?? branchId),
+        "branch_id": selectedBranchId == "warehouse"
+            ? branchId
+            : (int.tryParse(selectedBranchId) ?? branchId),
       };
 
       if (customerStatus == 'not_found' && cNumber.isNotEmpty) {
@@ -346,7 +437,8 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       final res = await datasource.createSale(body: payload);
       setState(() => isSubmitting = false);
 
-      final saleId = res['sale']?['id'] ??
+      final saleId =
+          res['sale']?['id'] ??
           res['data']?['id'] ??
           res['id'] ??
           res['sale_id'] ??
@@ -490,7 +582,15 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            bool isWide = constraints.maxWidth > 900;
+            final bool isMobile = constraints.maxWidth < 700;
+
+            final bool isTablet =
+                constraints.maxWidth >= 700 && constraints.maxWidth < 1200;
+
+            final bool isDesktop = constraints.maxWidth >= 1200;
+
+            final bool isWide = isTablet || isDesktop;
+
             return Column(
               children: [
                 _buildHeader(),
@@ -513,26 +613,57 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                                 child: Column(
                                   children: [
                                     _buildTransactionDetailsCard(),
+
                                     const SizedBox(height: 16),
+
                                     _buildProductSelectionCard(),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                flex: 1,
-                                child: Column(
-                                  children: [
-                                    _buildSalesItemsCard(isWide),
+
                                     const SizedBox(height: 16),
+
+                                    if (showSalesItems)
+                                      _buildSalesItemsCard(isWide),
+
+                                    const SizedBox(height: 16),
+
                                     _buildTrayTypesCard(),
+
                                     const SizedBox(height: 16),
                                     _buildOffersCard(),
                                     const SizedBox(height: 16),
-                                    _buildPaymentAndSummaryGrid(),
+                                    // ROW START
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+
+                                      children: [
+                                        Expanded(
+                                          child: _buildPaymentAndSummaryGrid(),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: _buildBillSummaryCard(),
+                                        ),
+                                      ],
+                                    ),
+                                    // ROW END
                                   ],
                                 ),
                               ),
+                              // const SizedBox(width: 16),
+                              // Expanded(
+                              //   flex: 1,
+                              //   child: Column(
+                              //     children: [
+                              //       _buildSalesItemsCard(isWide),
+                              //       const SizedBox(height: 16),
+                              //       _buildTrayTypesCard(),
+                              //       const SizedBox(height: 16),
+                              //       _buildOffersCard(),
+                              //       const SizedBox(height: 16),
+                              //       _buildPaymentAndSummaryGrid(),
+                              //     ],
+                              //   ),
+                              // ),
                             ],
                           )
                         else
@@ -549,6 +680,8 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                               _buildOffersCard(),
                               const SizedBox(height: 16),
                               _buildPaymentAndSummaryGrid(),
+                              const SizedBox(height: 16),
+                              _buildBillSummaryCard(),
                             ],
                           ),
                         const SizedBox(height: 40),
@@ -602,54 +735,57 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                   ],
                 ),
               ),
-              const SizedBox(width: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 3,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: selectedBranchId,
-                    icon: const Icon(
-                      Icons.keyboard_arrow_down,
-                      size: 16,
-                      color: Color(0xFF64748B),
-                    ),
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1E293B),
-                    ),
-                    items: [
-                      const DropdownMenuItem<String>(
-                        value: "warehouse",
-                        child: Text("Main Warehouse"),
-                      ),
-                      ...branches.map((b) {
-                        return DropdownMenuItem<String>(
-                          value: b['id']?.toString() ?? "",
-                          child: Text(b['branch_name'] ?? ""),
-                        );
-                      }).toList(),
-                    ],
-                    onChanged: (v) {
-                      if (v != null) {
-                        _onBranchChanged(v);
-                      }
-                    },
-                  ),
-                ),
-              ),
+              // const SizedBox(width: 10),
+              // Container(
+              //   padding: const EdgeInsets.symmetric(
+              //     horizontal: 12,
+              //     vertical: 2,
+              //   ),
+              //   decoration: BoxDecoration(
+              //     color: Colors.white,
+              //     borderRadius: BorderRadius.circular(8),
+              //     border: Border.all(color: const Color(0xFFE2E8F0)),
+              //     boxShadow: [
+              //       BoxShadow(
+              //         color: Colors.black.withOpacity(0.03),
+              //         blurRadius: 3,
+              //         offset: const Offset(0, 1),
+              //       ),
+              //     ],
+              //   ),
+              //   child: DropdownButtonHideUnderline(
+              //     child: DropdownButton<String>(
+              //       value: selectedBranchId,
+              //       icon: const Icon(
+              //         Icons.keyboard_arrow_down,
+              //         size: 16,
+              //         color: Color(0xFF64748B),
+              //       ),
+              //       style: const TextStyle(
+              //         fontSize: 13,
+              //         fontWeight: FontWeight.w600,
+              //         color: Color(0xFF1E293B),
+              //       ),
+              //       items: [
+              //         const DropdownMenuItem<String>(
+              //           value: "warehouse",
+              //           child: Text("Main Warehouse"),
+              //         ),
+              //         ...branches.map((b) {
+              //           return DropdownMenuItem<String>(
+              //             value: b['id']?.toString() ?? "",
+              //             child: Text(b['branch_name'] ?? ""),
+              //           );
+              //         }).toList(),
+              //       ],
+              //       onChanged: (v) {
+              //         if (v != null) {
+              //           _onBranchChanged(v);
+              //         }
+              //       },
+              //     ),
+              //   ),
+              // ),
             ],
           ),
           const Divider(),
@@ -711,157 +847,306 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   }
 
   Widget _buildTransactionDetailsCard() {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Tablet only
+    final bool isTablet = screenWidth >= 700;
+
     return _buildCard(
       title: "Transaction Details",
       child: Column(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: _buildInput(
-                  "Customer Number",
-                  customerNumberController,
-                  hint: "9876543210",
-                  keyboardType: TextInputType.phone,
-                  onChanged: lookupCustomer,
-                  suffix: customerStatus == 'found'
-                      ? const Icon(
-                          Icons.check_circle,
-                          color: Colors.green,
-                          size: 18,
-                        )
-                      : customerStatus == 'not_found'
-                      ? const Icon(
-                          Icons.person_add,
-                          color: Colors.orange,
-                          size: 18,
-                        )
-                      : null,
+          // MOBILE VIEW
+          if (!isTablet) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: _buildInput(
+                    "Customer Number",
+                    customerNumberController,
+                    hint: "9876543210",
+                    keyboardType: TextInputType.phone,
+                    onChanged: lookupCustomer,
+                    suffix: customerStatus == 'found'
+                        ? const Icon(
+                            Icons.check_circle,
+                            color: Colors.green,
+                            size: 18,
+                          )
+                        : customerStatus == 'not_found'
+                        ? const Icon(
+                            Icons.person_add,
+                            color: Colors.orange,
+                            size: 18,
+                          )
+                        : null,
+                  ),
                 ),
-              ),
 
-              const SizedBox(width: 15),
-              Expanded(
-                child: _buildInput(
-                  "Customer Name",
-                  customerNameController,
-                  hint: "Enter customer name",
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: _buildInput(
+                    "Customer Name",
+                    customerNameController,
+                    hint: "Enter customer name",
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          _buildInput(
-            "Sales Date",
-            dateController,
-            readOnly: true,
-            onTap: () async {
-              final date = await showDatePicker(
-                context: context,
-                initialDate: DateTime.now(),
-                firstDate: DateTime(2000),
-                lastDate: DateTime.now(),
-              );
-              if (date != null) {
-                dateController.text = DateFormat('yyyy-MM-dd').format(date);
-              }
-            },
-            suffix: const Icon(
-              Icons.calendar_today,
-              size: 18,
-              color: Colors.grey,
+              ],
             ),
-          ),
+
+            const SizedBox(height: 15),
+
+            _buildInput(
+              "Sales Date",
+              dateController,
+              readOnly: true,
+              onTap: () async {
+                final date = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime.now(),
+                );
+
+                if (date != null) {
+                  dateController.text = DateFormat('yyyy-MM-dd').format(date);
+                }
+              },
+              suffix: const Icon(
+                Icons.calendar_today,
+                size: 18,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+
+          // TABLET VIEW
+          if (isTablet)
+            Row(
+              children: [
+                Expanded(
+                  child: _buildInput(
+                    "Customer Number",
+                    customerNumberController,
+                    hint: "9876543210",
+                    keyboardType: TextInputType.phone,
+                    onChanged: lookupCustomer,
+                    suffix: customerStatus == 'found'
+                        ? const Icon(
+                            Icons.check_circle,
+                            color: Colors.green,
+                            size: 18,
+                          )
+                        : customerStatus == 'not_found'
+                        ? const Icon(
+                            Icons.person_add,
+                            color: Colors.orange,
+                            size: 18,
+                          )
+                        : null,
+                  ),
+                ),
+
+                const SizedBox(width: 20),
+
+                Expanded(
+                  child: _buildInput(
+                    "Customer Name",
+                    customerNameController,
+                    hint: "Enter customer name",
+                  ),
+                ),
+
+                const SizedBox(width: 20),
+
+                Expanded(
+                  child: _buildInput(
+                    "Sales Date",
+                    dateController,
+                    readOnly: true,
+                    onTap: () async {
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime.now(),
+                      );
+
+                      if (date != null) {
+                        dateController.text = DateFormat(
+                          'yyyy-MM-dd',
+                        ).format(date);
+                      }
+                    },
+                    suffix: const Icon(
+                      Icons.calendar_today,
+                      size: 18,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );
   }
 
   Widget _buildProductSelectionCard() {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // ONLY TABLET
+    final bool isTablet = screenWidth >= 700;
+
     return _buildCard(
       title: "Product Selection",
+
       child: Column(
         children: [
-          TextField(
-            controller: searchController,
-            onChanged: (v) {
-              setState(() {
-                filteredProducts = products
-                    .where(
-                      (p) =>
-                          p.productName.toLowerCase().contains(v.toLowerCase()),
-                    )
-                    .toList();
-              });
-            },
-            decoration: InputDecoration(
-              hintText: "Search product by name",
-              prefixIcon: const Icon(Icons.search),
-              filled: true,
-              fillColor: Colors.grey.shade50,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.grey.shade200),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.grey.shade200),
-              ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 0),
-            ),
-          ),
-          const SizedBox(height: 15),
+          // TextField(
+          //   controller: searchController,
+          //   onChanged: (v) {
+          //     setState(() {
+          //       filteredProducts = products
+          //           .where(
+          //             (p) =>
+          //                 p.productName.toLowerCase().contains(v.toLowerCase()),
+          //           )
+          //           .toList();
+          //     });
+          //   },
+          //   decoration: InputDecoration(
+          //     hintText: "Search product by name",
+          //     prefixIcon: const Icon(Icons.search),
+          //     filled: true,
+          //     fillColor: Colors.grey.shade50,
+          //     border: OutlineInputBorder(
+          //       borderRadius: BorderRadius.circular(10),
+          //       borderSide: BorderSide(color: Colors.grey.shade200),
+          //     ),
+          //     enabledBorder: OutlineInputBorder(
+          //       borderRadius: BorderRadius.circular(10),
+          //       borderSide: BorderSide(color: Colors.grey.shade200),
+          //     ),
+          //     contentPadding: const EdgeInsets.symmetric(vertical: 0),
+          //   ),
+          // ),
+          // const SizedBox(height: 10),
           GridView.builder(
             shrinkWrap: true,
+
             physics: const NeverScrollableScrollPhysics(),
+
             itemCount: filteredProducts.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 1.3,
+
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: isTablet ? 5 : 2,
+
+              childAspectRatio: isTablet ? 2.0 : 1.3,
+
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
             ),
+
             itemBuilder: (context, index) {
               final p = filteredProducts[index];
+
               final isOutOfStock = p.stockEggs <= 0;
+
+              final isSelected = selectedProductIndex == index;
+
               return InkWell(
-                onTap: isOutOfStock ? null : () => addProductFromCard(p),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
+                onTap: isOutOfStock
+                    ? null
+                    : () {
+                        setState(() {
+                          selectedProductIndex = index;
+
+                          // SHOW
+                          showSalesItems = true;
+                        });
+
+                        addProductFromCard(p);
+                      },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+
+                  padding: EdgeInsets.all(isTablet ? 8 : 12),
+
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isSelected
+                        ? Colors.blue.withOpacity(0.08)
+                        : Colors.white,
+
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade200),
+
+                    border: Border.all(
+                      color: isSelected ? Colors.blue : Colors.grey.shade200,
+
+                      width: isSelected ? 2 : 1,
+                    ),
                   ),
+
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
+
+                    crossAxisAlignment: CrossAxisAlignment.start,
+
                     children: [
-                      Text(
-                        p.productName,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                      Flexible(
+                        child: Text(
+                          p.productName,
+
+                          maxLines: 1,
+
+                          overflow: TextOverflow.ellipsis,
+
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+
+                            fontSize: isTablet ? 11 : 14,
+
+                            height: 1.0,
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 6),
+
+                      const SizedBox(height: 2),
+
                       Text(
                         "₹${(p.perTrayPrice / 30).toStringAsFixed(2)} / Egg",
-                        style: const TextStyle(
-                          fontSize: 12,
+
+                        maxLines: 1,
+
+                        overflow: TextOverflow.ellipsis,
+
+                        style: TextStyle(
                           color: Colors.blue,
-                          fontWeight: FontWeight.w800,
+
+                          fontWeight: FontWeight.w700,
+
+                          fontSize: isTablet ? 10 : 12,
+
+                          height: 1.0,
                         ),
                       ),
+
                       const SizedBox(height: 2),
+
                       Text(
-                        "Stock: ${p.stockEggs} Eggs",
+                        "Stock: ${p.stockEggs}",
+
+                        maxLines: 1,
+
+                        overflow: TextOverflow.ellipsis,
+
                         style: TextStyle(
-                          fontSize: 11,
                           color: isOutOfStock ? Colors.red : Colors.green,
-                          fontWeight: FontWeight.w500,
+
+                          fontSize: isTablet ? 10 : 11,
+
+                          height: 1.0,
                         ),
                       ),
                     ],
@@ -870,6 +1155,106 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               );
             },
           ),
+          if (isTablet) ...[
+            const SizedBox(height: 10),
+
+            Align(
+              alignment: Alignment.centerRight,
+
+              child: Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 16,
+
+                children: [0.5, 1.0, 1.5, 2.0, 2.5].map((d) {
+                  final selected = selectedDozen == d;
+
+                  return AnimatedScale(
+                    scale: selected ? 0.92 : 1,
+
+                    duration: const Duration(milliseconds: 120),
+
+                    curve: Curves.easeOut,
+
+                    child: Material(
+                      color: Colors.transparent,
+
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(8),
+
+                        splashColor: Colors.blue.withOpacity(0.25),
+
+                        highlightColor: Colors.blue.withOpacity(0.10),
+
+                        onTap: selectedProductIndex == null
+                            ? null
+                            : () {
+                                setState(() {
+                                  // selected highlight
+                                  selectedDozen = d;
+                                });
+
+                                // add dozen
+                                selectDozen(d);
+                              },
+
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+
+                          curve: Curves.easeInOut,
+
+                          width: 52,
+
+                          height: 44,
+
+                          decoration: BoxDecoration(
+                            color: selected ? Colors.blue : Colors.white,
+
+                            borderRadius: BorderRadius.circular(8),
+
+                            border: Border.all(
+                              color: selected
+                                  ? Colors.blue
+                                  : Colors.grey.shade300,
+
+                              width: selected ? 2 : 1,
+                            ),
+
+                            boxShadow: selected
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.blue.withOpacity(0.25),
+
+                                      blurRadius: 10,
+
+                                      spreadRadius: 1,
+                                    ),
+                                  ]
+                                : [],
+                          ),
+
+                          child: Center(
+                            child: AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 150),
+
+                              style: TextStyle(
+                                color: selected ? Colors.white : Colors.black,
+
+                                fontWeight: FontWeight.bold,
+
+                                fontSize: selected ? 13 : 14,
+                              ),
+
+                              child: Text(d.toStringAsFixed(1)),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -893,12 +1278,14 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         children: [
           if (isWide)
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+
               color: Colors.grey.shade100,
+
               child: Row(
                 children: const [
                   Expanded(
-                    flex: 3,
+                    flex: 5,
                     child: Text(
                       "Product",
                       style: TextStyle(
@@ -907,51 +1294,78 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                       ),
                     ),
                   ),
+
                   Expanded(
-                    flex: 2,
+                    flex: 3,
                     child: Text(
                       "Dozen",
+
+                      textAlign: TextAlign.center,
+
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ),
+
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      "Trays",
+
+                      textAlign: TextAlign.center,
+
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+
                   Expanded(
                     flex: 2,
                     child: Text(
-                      "Trays",
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Text(
                       "Eggs",
+
+                      textAlign: TextAlign.center,
+
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ),
+
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      "Rate/Egg",
+
+                      textAlign: TextAlign.center,
+
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+
                   Expanded(
                     flex: 2,
                     child: Text(
                       "Total",
+
+                      textAlign: TextAlign.right,
+
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
-                      textAlign: TextAlign.right,
                     ),
                   ),
-                  SizedBox(width: 30),
+
+                  SizedBox(width: 28),
                 ],
               ),
             ),
@@ -966,90 +1380,172 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: Row(
                     children: [
+                      // Expanded(
+                      //   flex: 3,
+                      //   child: Container(
+                      //     padding: const EdgeInsets.symmetric(horizontal: 5),
+                      //     decoration: BoxDecoration(
+                      //       border: Border.all(color: Colors.grey.shade300),
+                      //       borderRadius: BorderRadius.circular(8),
+                      //     ),
+                      //     child: DropdownButtonHideUnderline(
+                      //       child: DropdownButton<String>(
+                      //         value: item.eggCategoryGrade.isEmpty
+                      //             ? null
+                      //             : item.eggCategoryGrade,
+                      //         isExpanded: true,
+                      //         hint: const Text(
+                      //           "Select Product",
+                      //           style: TextStyle(fontSize: 11),
+                      //         ),
+                      //         items: products
+                      //             .map(
+                      //               (p) => DropdownMenuItem(
+                      //                 value: p.productName,
+                      //                 child: Text(
+                      //                   p.productName,
+                      //                   style: const TextStyle(fontSize: 11),
+                      //                 ),
+                      //               ),
+                      //             )
+                      //             .toList(),
+                      //         onChanged: (v) => updateItem(index, 'product', v),
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                       Expanded(
-                        flex: 3,
+                        flex: 5,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          height: 60,
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          alignment: Alignment.centerLeft,
                           decoration: BoxDecoration(
+                            color: Colors.white,
                             border: Border.all(color: Colors.grey.shade300),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: item.eggCategoryGrade.isEmpty
-                                  ? null
-                                  : item.eggCategoryGrade,
-                              isExpanded: true,
-                              hint: const Text(
-                                "Select Product",
-                                style: TextStyle(fontSize: 11),
-                              ),
-                              items: products
-                                  .map(
-                                    (p) => DropdownMenuItem(
-                                      value: p.productName,
-                                      child: Text(
-                                        p.productName,
-                                        style: const TextStyle(fontSize: 11),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (v) => updateItem(index, 'product', v),
+                          child: Text(
+                            item.eggCategoryGrade.isEmpty
+                                ? "Select Product"
+                                : item.eggCategoryGrade,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: item.eggCategoryGrade.isEmpty
+                                  ? Colors.grey
+                                  : Colors.black,
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 4),
+
+                      const SizedBox(width: 12),
+
                       Expanded(
-                        flex: 2,
-                        child: _buildStepper(
-                          item.dozen,
-                          (v) => updateItem(index, 'dozen', v),
-                          isDozen: true,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        flex: 2,
-                        child: _buildStepper(
-                          item.trays.toDouble(),
-                          (v) => updateItem(index, 'trays', v.toInt()),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        flex: 1,
-                        child: Text(
-                          "${item.eggs}",
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
+                        flex: 3,
+                        child: SizedBox(
+                          height: 60,
+                          child: _buildStepper(
+                            item.dozen,
+                            (v) => updateItem(index, 'dozen', v),
+                            isDozen: true,
                           ),
-                          textAlign: TextAlign.center,
                         ),
                       ),
+
+                      const SizedBox(width: 12),
+
+                      Expanded(
+                        flex: 3,
+                        child: SizedBox(
+                          height: 60,
+                          child: _buildStepper(
+                            item.trays.toDouble(),
+                            (v) => updateItem(index, 'trays', v.toInt()),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
                       Expanded(
                         flex: 2,
-                        child: Text(
-                          "₹${item.total.toStringAsFixed(1)}",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF16A34A),
-                            fontSize: 11,
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            "${item.eggs}",
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                          textAlign: TextAlign.right,
                         ),
                       ),
-                      const SizedBox(width: 4),
+
+                      const SizedBox(width: 10),
+
+                      Expanded(
+                        flex: 2,
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            item.eggs == 0
+                                ? "0"
+                                : (item.total / item.eggs).toStringAsFixed(1),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      Expanded(
+                        flex: 2,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            "₹${item.total.toStringAsFixed(1)}",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF16A34A),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 14),
+
                       InkWell(
                         onTap: () => removeItem(index),
-                        child: const Icon(
-                          Icons.delete_outline,
-                          color: Color(0xFFEF4444),
-                          size: 20,
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          alignment: Alignment.center,
+                          child: const Icon(
+                            Icons.delete_outline,
+                            color: Color(0xFFEF4444),
+                            size: 20,
+                          ),
                         ),
                       ),
+                      // const SizedBox(width: 4),
+                      // InkWell(
+                      //   onTap: () => removeItem(index),
+                      //   child: const Icon(
+                      //     Icons.delete_outline,
+                      //     color: Color(0xFFEF4444),
+                      //     size: 20,
+                      //   ),
+                      // ),
                     ],
                   ),
                 );
@@ -1429,6 +1925,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   }
 
   Widget _buildPaymentAndSummaryGrid() {
+    final isTablet = MediaQuery.of(context).size.width >= 700;
     return Column(
       children: [
         _buildCard(
@@ -1439,7 +1936,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               children: [
                 // Sidebar-like payment selector
                 Container(
-                  width: 100,
+                  width: isTablet ? 70 : 100,
                   decoration: BoxDecoration(
                     color: Colors.grey.shade50,
                     borderRadius: BorderRadius.circular(12),
@@ -1453,12 +1950,29 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                     ],
                   ),
                 ),
-                const SizedBox(width: 15),
+                SizedBox(width: isTablet ? 10 : 15),
                 // Payment content
                 Expanded(
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
+
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      _buildInput(
+                        "Enter Amount Received",
+                        cashReceivedController,
+                        keyboardType: TextInputType.number,
+                        hint: "0.00",
+                        prefix: const Padding(
+                          padding: EdgeInsets.only(left: 24, top: 10),
+                          child: Text(
+                            "₹",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        onChanged: (v) => setState(() {}),
+                      ),
+                      SizedBox(width: isTablet ? 10 : 15),
                       if (selectedPaymentMethod == "UPI") ...[
                         const Text(
                           "Select UPI App",
@@ -1468,10 +1982,10 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                             color: Color(0xFF374151),
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        SizedBox(width: isTablet ? 10 : 15),
                         Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
+                          spacing: isTablet ? 8 : 4,
+                          runSpacing: isTablet ? 8 : 4,
                           children: ["Google Pay", "PhonePe", "Paytm"]
                               .map(
                                 (app) => ChoiceChip(
@@ -1502,38 +2016,32 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                               )
                               .toList(),
                         ),
-                        const SizedBox(height: 15),
+                        SizedBox(width: isTablet ? 10 : 15),
                         _buildInput(
                           "Other UPI Details (Optional)",
                           TextEditingController(text: otherUpiDetails),
                           onChanged: (v) => otherUpiDetails = v,
                         ),
-                        const SizedBox(height: 15),
+                        SizedBox(width: isTablet ? 10 : 15),
                       ],
-                      if (selectedPaymentMethod == "CASH") ...[
+                      if (selectedPaymentMethod == "CASH" ||
+                          selectedPaymentMethod == "CARD"
+                      //||selectedPaymentMethod == "UPI"
+                      ) ...[
                         _buildInput(
                           "Customer Debt (Optional)",
+
                           debtController,
+
                           keyboardType: TextInputType.number,
+
                           hint: "0",
                         ),
-                        const SizedBox(height: 15),
+
+                        SizedBox(width: isTablet ? 10 : 15),
                       ],
-                      _buildInput(
-                        "Enter Amount Received",
-                        cashReceivedController,
-                        keyboardType: TextInputType.number,
-                        hint: "0.00",
-                        prefix: const Padding(
-                          padding: EdgeInsets.only(top: 10),
-                          child: Text(
-                            "₹",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        onChanged: (v) => setState(() {}),
-                      ),
-                      const SizedBox(height: 15),
+
+                      SizedBox(width: isTablet ? 10 : 15),
                       _buildInput(
                         "Notes",
                         notesController,
@@ -1546,52 +2054,114 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        _buildCard(
-          title: "Bill Summary",
-          child: Column(
-            children: [
-              _summaryRow("Subtotal", "₹${subtotal.toStringAsFixed(2)}"),
-              _summaryRow(
-                "Discount",
-                "-₹${totalDiscount.toStringAsFixed(2)}",
-                color: const Color(0xFFEF4444),
-              ),
-              const Divider(height: 40),
-              _summaryRow(
-                "Total",
-                "₹${totalAmount.toStringAsFixed(2)}",
-                isBold: true,
-              ),
-              const SizedBox(height: 25),
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: isSubmitting ? null : handlePayment,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.blueAccent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    elevation: 4,
-                  ),
-                  child: isSubmitting
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          "Complete Sale",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                ),
-              ),
-            ],
-          ),
-        ),
+
+        // const SizedBox(height: 16),
+        // _buildCard(
+        //   title: "Bill Summary",
+        //   child: Column(
+        //     children: [
+        //       _summaryRow("Subtotal", "₹${subtotal.toStringAsFixed(2)}"),
+        //       _summaryRow(
+        //         "Discount",
+        //         "-₹${totalDiscount.toStringAsFixed(2)}",
+        //         color: const Color(0xFFEF4444),
+        //       ),
+        //       const Divider(height: 40),
+        //       _summaryRow(
+        //         "Total",
+        //         "₹${totalAmount.toStringAsFixed(2)}",
+        //         isBold: true,
+        //       ),
+        //       const SizedBox(height: 25),
+        //       SizedBox(
+        //         width: double.infinity,
+        //         height: 55,
+        //         child: ElevatedButton(
+        //           onPressed: isSubmitting ? null : handlePayment,
+        //           style: ElevatedButton.styleFrom(
+        //             backgroundColor: AppColors.blueAccent,
+        //             shape: RoundedRectangleBorder(
+        //               borderRadius: BorderRadius.circular(15),
+        //             ),
+        //             elevation: 4,
+        //           ),
+        //           child: isSubmitting
+        //               ? const CircularProgressIndicator(color: Colors.white)
+        //               : const Text(
+        //                   "Complete Sale",
+        //                   style: TextStyle(
+        //                     color: Colors.white,
+        //                     fontSize: 16,
+        //                     fontWeight: FontWeight.w800,
+        //                   ),
+        //                 ),
+        //         ),
+        //       ),
+        //     ],
+        //   ),
+        // ),
       ],
+    );
+  }
+
+  Widget _buildBillSummaryCard() {
+    return _buildCard(
+      title: "Bill Summary",
+
+      child: Column(
+        children: [
+          _summaryRow("Subtotal", "₹ ${subtotal.toStringAsFixed(2)}"),
+
+          _summaryRow(
+            "Discount",
+            "- ₹ ${totalDiscount.toStringAsFixed(2)}",
+
+            color: const Color(0xFFEF4444),
+          ),
+
+          const Divider(height: 40),
+
+          _summaryRow(
+            "Total",
+            "₹ ${totalAmount.toStringAsFixed(2)}",
+
+            isBold: true,
+          ),
+
+          const SizedBox(height: 15),
+
+          SizedBox(
+            width: double.infinity,
+            height: 40,
+
+            child: ElevatedButton(
+              onPressed: isSubmitting ? null : handlePayment,
+
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.blueAccent,
+
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+
+                elevation: 4,
+              ),
+
+              child: isSubmitting
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text(
+                      "Complete Sale",
+
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1625,38 +2195,91 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     Function(double) onChanged, {
     bool isDozen = false,
   }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // TABLET ONLY
+    final bool isTablet = screenWidth >= 700;
+
     return Container(
       height: 40,
+
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.shade300),
+
         borderRadius: BorderRadius.circular(8),
+
         color: Colors.white,
       ),
+
       child: Row(
         children: [
+          // REMOVE BUTTON
           InkWell(
             onTap: () {
-              if (value > 0) onChanged(value - (isDozen ? 0.5 : 1));
+              if (value > 0) {
+                onChanged(value - (isDozen ? 0.5 : 1));
+              }
             },
-            child: Container(
-              width: 24,
-              alignment: Alignment.center,
-              child: const Icon(Icons.remove, size: 12),
+
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+
+              child: Container(
+                width: 30,
+                height: 34,
+
+                alignment: Alignment.center,
+
+                decoration: isTablet
+                    ? BoxDecoration(
+                        color: Colors.grey.shade100,
+
+                        borderRadius: BorderRadius.circular(6),
+
+                        border: Border.all(color: Colors.grey.shade300),
+                      )
+                    : null,
+
+                child: const Icon(Icons.remove, size: 12, color: Colors.black),
+              ),
             ),
           ),
           Expanded(
             child: Text(
               isDozen ? value.toStringAsFixed(1) : value.toInt().toString(),
+
               textAlign: TextAlign.center,
+
               style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12),
             ),
           ),
+
+          // ADD BUTTON
           InkWell(
             onTap: () => onChanged(value + (isDozen ? 0.5 : 1)),
-            child: Container(
-              width: 24,
-              alignment: Alignment.center,
-              child: const Icon(Icons.add, size: 12),
+
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+
+              child: Container(
+                width: 30,
+                height: 34,
+
+                alignment: Alignment.center,
+
+                // TABLET ONLY CONTAINER
+                decoration: isTablet
+                    ? BoxDecoration(
+                        color: Colors.grey.shade100,
+
+                        borderRadius: BorderRadius.circular(6),
+
+                        border: Border.all(color: Colors.grey.shade300),
+                      )
+                    : null,
+
+                child: const Icon(Icons.add, size: 12, color: Colors.black),
+              ),
             ),
           ),
         ],
@@ -1721,6 +2344,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     bool readOnly = false,
     VoidCallback? onTap,
   }) {
+    final isTablet = MediaQuery.of(context).size.width >= 700;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1758,9 +2382,10 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
             ),
-            contentPadding: const EdgeInsets.symmetric(
+            contentPadding: EdgeInsets.symmetric(
               horizontal: 16,
-              vertical: 14,
+
+              vertical: isTablet ? 10 : 14,
             ),
           ),
         ),

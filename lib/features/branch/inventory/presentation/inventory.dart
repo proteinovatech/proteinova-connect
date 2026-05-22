@@ -328,54 +328,82 @@ class _InventoryState extends State<Inventory> {
                   // Cards Layout
                   LayoutBuilder(
                     builder: (context, constraints) {
-                      double cardWidth = constraints.maxWidth > 800
-                          ? (constraints.maxWidth - 20) / 3
+                      final bool isTablet = constraints.maxWidth >= 700;
+
+                      final double cardWidth = isTablet
+                          ? (constraints.maxWidth - 36) / 4
                           : (constraints.maxWidth - 10) / 2;
+
                       return Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
+                        spacing: isTablet ? 12 : 10,
+
+                        runSpacing: isTablet ? 12 : 10,
+
                         children: [
                           SizedBox(
                             width: cardWidth,
+
                             child: ShipmentCard(
                               title: "EXPECTED TODAY",
+
                               count:
                                   "${cards["expected_today"] ?? 0} Shipments",
+
                               subtitle: "Today's expected deliveries",
+
                               icon: Icons.event,
+
                               iconColor: Colors.blue,
                             ),
                           ),
+
                           SizedBox(
                             width: cardWidth,
+
                             child: ShipmentCard(
-                              title: "READY FOR\n UNLOADING",
+                              title: "READY FOR UNLOADING",
+
                               count:
                                   "${cards["ready_for_unloading"] ?? 0} Shipments",
+
                               subtitle: "Requires immediate action",
+
                               icon: Icons.local_shipping_outlined,
+
                               iconColor: Colors.green,
                             ),
                           ),
+
                           SizedBox(
                             width: cardWidth,
+
                             child: ShipmentCard(
                               title: "TOTAL IN TRANSIT",
+
                               count:
                                   "${formatNumber(cards["total_eggs_in_transit"])} Eggs",
+
                               subtitle: "Stock currently moving",
+
                               icon: Icons.send_outlined,
+
                               iconColor: Colors.orange,
                             ),
                           ),
+
                           SizedBox(
                             width: cardWidth,
+
                             child: ShipmentCard(
                               title: "DELAYED IN TRANSIT",
+
                               count:
                                   "${cards["delayed_in_transit"] ?? 0} Shipments",
+
                               subtitle: "Current transit delays",
+
                               icon: Icons.warning_amber_rounded,
+
                               iconColor: Colors.red,
                             ),
                           ),
