@@ -12,7 +12,7 @@ class ProductSelectionWidget extends StatelessWidget {
   final Future<void> Function(String productName) onProductTap;
 
   final num Function(dynamic value) toNum;
-final Map<String, int> selectedEggsMap;
+  final Map<String, int> selectedEggsMap;
   const ProductSelectionWidget({
     super.key,
     required this.searchController,

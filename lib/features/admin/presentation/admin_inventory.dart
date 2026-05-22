@@ -7,8 +7,8 @@ import '../inventory/data/inventory_repository.dart';
 import '../inventory/models/inventory_model.dart';
 
 // Newly added imports for React compatibility
-import 'package:proteinova_connect/features/admin/supplier/services/supplier_service.dart';
-import 'package:proteinova_connect/features/admin/supplier/models/supplier_model.dart';
+import 'package:proteinova_connect/features/admin/supplier/data/services/supplier_service.dart';
+import 'package:proteinova_connect/features/admin/supplier/data/models/supplier_model.dart';
 import 'package:proteinova_connect/features/admin/presentation/receive_stockscreen.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/presentation/sales_entry_page.dart';
 

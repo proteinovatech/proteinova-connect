@@ -3,8 +3,8 @@ import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/add_supplier_screen.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/editbutton.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/statusbadge.dart';
-import 'package:proteinova_connect/features/admin/supplier/services/supplier_service.dart';
-import 'package:proteinova_connect/features/admin/supplier/models/supplier_model.dart';
+import 'package:proteinova_connect/features/admin/supplier/data/services/supplier_service.dart';
+import 'package:proteinova_connect/features/admin/supplier/data/models/supplier_model.dart';
 
 class SuppliersScreen extends StatefulWidget {
   const SuppliersScreen({super.key});

@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:proteinova_connect/core/network/api_constants.dart';
-import '../models/expense_model.dart';
-import '../models/branch_expense_dashboard_model.dart';
+import 'package:proteinova_connect/features/admin/expense/data/models/branch_expense_dashboard_model.dart';
+import 'package:proteinova_connect/features/admin/expense/data/models/expense_model.dart';
+
 
 class ExpenseRepository {
   Future<BranchExpenseDashboardModel> fetchBranchExpenses({

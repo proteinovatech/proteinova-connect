@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/data/model/branch_model.dart';
+import 'package:proteinova_connect/features/admin/menu/branch_management/bloc/branch_form_bloc/branch_form_bloc.dart';
 import 'package:proteinova_connect/features/admin/menu/branch_management/data/model/branch_form_data_model.dart';
 import 'package:proteinova_connect/features/admin/menu/branch_management/data/services/branch_service.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_branch_management_skeleton_loader.dart';
@@ -28,41 +30,6 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
   final maxStockController = TextEditingController();
   final notesController = TextEditingController();
 
-  List<String> statuses = [];
-  List<String> regions = [];
-  List<ManagerModel> managers = [];
-  Future<void> loadFormData() async {
-    try {
-      setState(() {
-        isLoading = true;
-      });
-
-      final data = await BranchService().fetchBranchFormData();
-
-      if (!mounted) return;
-
-      setState(() {
-        statuses = data.statuses;
-        regions = data.regions;
-        managers = data.managers;
-
-        isLoading = false;
-      });
-
-      print("Statuses => $statuses");
-      print("Regions => $regions");
-      print("Managers => ${managers.length}");
-    } catch (e, stackTrace) {
-      print("LOAD ERROR => $e");
-      print(stackTrace);
-
-      if (!mounted) return;
-
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
 
   @override
   void initState() {
@@ -84,7 +51,9 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
       selectedManager = widget.branch!.branchManagerId?.toString();
     }
 
-    loadFormData();
+     context.read<BranchFormBloc>().add(
+    LoadBranchFormDataEvent(),
+  );
   }
 
   bool isLoading = true;
@@ -93,12 +62,48 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
   String? selectedManager;
   @override
   Widget build(BuildContext context) {
-   
+   return BlocConsumer<
+    BranchFormBloc,
+    BranchFormState>(
+      
+  listener: (context, state) {
+
+    if (state is BranchFormSuccess) {
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(state.message),
+        ),
+      );
+
+      Navigator.pop(context, true);
+    }
+
+    if (state is BranchFormError) {
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(state.message),
+        ),
+      );
+    }
+  },
+
+  builder: (context, state) {
+      List<String> statuses = [];
+    List<ManagerModel> managers = [];
+
+    if (state is BranchFormLoaded) {
+      statuses = state.statuses;
+      managers = state.managers;
+    }
 
     return Scaffold(
       backgroundColor: AppColors.white,
 
-      body: isLoading
+      body: state is BranchFormLoading
           ? Center(child: const AdminBranchManagementSkeletonLoader())
           : SafeArea(
               child: SingleChildScrollView(
@@ -866,5 +871,7 @@ class _AddBranchDetailsState extends State<AddBranchDetails> {
               ),
             ),
     );
+      },
+);
   }
 }

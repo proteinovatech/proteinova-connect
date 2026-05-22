@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_expense_management_skeleton_loader.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/features/admin/supplier/widgets/add_supplier_bottom_sheet.dart';
+import 'package:proteinova_connect/features/admin/supplier/bloc/supplier_bloc.dart';
 
-import '../models/supplier_model.dart';
-import '../services/supplier_service.dart';
+import '../data/models/supplier_model.dart';
+import '../data/services/supplier_service.dart';
 
 import '../widgets/supplier_card_admin.dart';
 
@@ -20,38 +22,20 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
 
   final TextEditingController searchController = TextEditingController();
   final SupplierService _supplierService = SupplierService();
-
   List<Supplier> suppliers = [];
-  List<Supplier> filteredSuppliers = [];
-  bool isLoading = true;
+
+List<Supplier> filteredSuppliers = [];
+ 
 
   @override
   void initState() {
     super.initState();
-    fetchSuppliers();
+    context.read<SupplierBloc>().add(
+    FetchSuppliersEvent(),
+  );
   }
 
-  Future<void> fetchSuppliers() async {
-    setState(() {
-      isLoading = true;
-    });
-    try {
-      final fetchedSuppliers = await _supplierService.getSuppliers();
-      setState(() {
-        suppliers = fetchedSuppliers;
-        filteredSuppliers = fetchedSuppliers;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Failed to load suppliers: $e")));
-    }
-  }
-
+ 
   void searchSupplier(String value) {
     setState(() {
       filteredSuppliers = suppliers.where((supplier) {
@@ -71,7 +55,9 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
         return const AddSupplierBottomSheet();
       },
     ).then((_) {
-      fetchSuppliers(); // Refresh after adding
+       context.read<SupplierBloc>().add(
+    FetchSuppliersEvent(),
+  );// Refresh after adding
     });
   }
 
@@ -84,7 +70,9 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
         return AddSupplierBottomSheet(supplierToEdit: supplier);
       },
     ).then((_) {
-      fetchSuppliers(); // Refresh after editing
+       context.read<SupplierBloc>().add(
+    FetchSuppliersEvent(),
+  ); // Refresh after editing
     });
   }
 
@@ -157,12 +145,38 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return BlocConsumer<SupplierBloc, SupplierState>(
+
+    listener: (context, state) {
+
+      if (state is SupplierError) {
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(state.message),
+          ),
+        );
+      }
+    },
+
+    builder: (context, state) {
+
+      List<dynamic> filteredSuppliers = [];
+
+      if (state is SupplierLoaded) {
+        filteredSuppliers = state.filteredSuppliers;
+      }
     return Scaffold(
       backgroundColor: Colors.white,
-      body: isLoading
-          ? const AdminExpenseManagementSkeletonLoader()
+      body: state is SupplierLoading
+            ? const AdminExpenseManagementSkeletonLoader()
           : RefreshIndicator(
-              onRefresh: fetchSuppliers,
+               onRefresh: () async {
+
+                  context.read<SupplierBloc>().add(
+                    FetchSuppliersEvent(),
+                  );
+                },
               child: SafeArea(
                 child: Padding(
                   padding: EdgeInsets.symmetric(
@@ -288,9 +302,7 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
                       SizedBox(height: getHeight(context, 20)),
 
                       Expanded(
-                        child: isLoading
-                            ? const Center(child: CircularProgressIndicator())
-                            : ListView.builder(
+                        child: ListView.builder(
                                 itemCount: filteredSuppliers.length,
                                 itemBuilder: (context, index) {
                                   final supplier = filteredSuppliers[index];
@@ -353,6 +365,10 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
                 ),
               ),
             ),
+            );
+            }
     );
   }
+
+
 }

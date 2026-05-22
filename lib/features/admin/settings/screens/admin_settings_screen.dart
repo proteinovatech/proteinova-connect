@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
+import 'package:proteinova_connect/features/admin/settings/bloc/profile/profile_bloc.dart';
+import 'package:proteinova_connect/features/admin/settings/bloc/profile/profile_event.dart';
+import 'package:proteinova_connect/features/admin/settings/bloc/user/user_bloc.dart';
+import 'package:proteinova_connect/features/admin/settings/data/services/settings_service.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/profile_screen.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/staff_management_screen.dart';
 
@@ -16,16 +21,28 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   /// FUNCTIONS
 
   void onProfileTap() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const ProfileScreen()),
-    );
+   Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => BlocProvider(
+      create: (_) => ProfileBloc(
+        SettingsService(),
+      )..add(LoadProfileEvent()),
+      child: const ProfileScreen(),
+    ),
+  ),
+);
   }
 
   void onRolePermissionTap() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const StaffManagementScreen()),
+      MaterialPageRoute(
+        builder: (context) => BlocProvider(
+         create: (_) => UserBloc(
+          SettingsService())..add(FetchUsersEvent()),
+             child: const StaffManagementScreen(),
+         )),
     );
   }
 
@@ -104,4 +121,5 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       ),
     );
   }
+
 }

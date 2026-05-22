@@ -1,4 +1,4 @@
-import '../models/supplier_model.dart';
+import 'models/supplier_model.dart';
 
 List<Supplier> supplierDummyData = [
   Supplier(
