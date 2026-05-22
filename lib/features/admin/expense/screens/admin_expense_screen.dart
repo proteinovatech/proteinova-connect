@@ -38,7 +38,12 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
 
   Map<int, String> branches = {};
 
-  
+  Future<void> _fetchData() async {
+    context.read<BranchExpenseBloc>().add(
+      LoadDashboardEvent(branchId: selectedBranchId, month: selectedMonth),
+    );
+  }
+
   bool isSaving = false;
   BranchExpenseDashboardModel? dashboardData;
 
@@ -59,14 +64,9 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
   void initState() {
     super.initState();
     dateController.text = DateTime.now().toString().split(' ')[0];
-     Future.microtask(() {
-
-    context
-        .read<BranchExpenseBloc>()
-        .add(
-          LoadBranchesEvent(),
-        );
-  });
+    Future.microtask(() {
+      context.read<BranchExpenseBloc>().add(LoadBranchesEvent());
+    });
   }
 
   Future<void> _saveExpense() async {
@@ -98,11 +98,8 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
         );
       }
       context.read<BranchExpenseBloc>().add(
-  LoadDashboardEvent(
-    branchId: selectedBranchId,
-    month: selectedMonth,
-  ),
-);
+        LoadDashboardEvent(branchId: selectedBranchId, month: selectedMonth),
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -113,855 +110,856 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
       setState(() => isSaving = false);
     }
   }
- 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:AppColors.lightGrey,
-      body: isLoading
-          ? const AdminExpenseManagementSkeletonLoader()
-          : RefreshIndicator(
-              onRefresh: _fetchData,
-              child: SafeArea(
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: getWidth(context, 18),
-                    vertical: getHeight(context, 24),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      /// HEADER
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            icon: const Icon(Icons.arrow_back),
+      backgroundColor: AppColors.lightGrey,
+      // body: isLoading
+      //     ? const AdminExpenseManagementSkeletonLoader()
+      //     : RefreshIndicator(
+      //         onRefresh: _fetchData,
+      // backgroundColor:AppColors.lightGrey,
+      body: BlocBuilder<BranchExpenseBloc, BranchExpenseState>(
+        builder: (context, state) {
+          final dashboardData = state.dashboardData;
+          final branches = state.branches;
+          final isLoading = state.isLoading;
+          if (state.isLoading && state.dashboardData == null) {
+            return const AdminExpenseManagementSkeletonLoader();
+          }
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              context.read<BranchExpenseBloc>().add(
+                LoadDashboardEvent(
+                  branchId: selectedBranchId,
+                  month: selectedMonth,
+                ),
+              );
+            },
+            child: SafeArea(
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                  horizontal: getWidth(context, 18),
+                  vertical: getHeight(context, 24),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// HEADER
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.arrow_back),
+                        ),
+
+                        const SizedBox(width: 8),
+
+                        const Expanded(
+                          child: Text(
+                            "Expense Management",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
+                        ),
 
-                          const SizedBox(width: 8),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: getWidth(context, 14),
+                            vertical: getHeight(context, 10),
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.amber100,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.shield_outlined, size: 18),
+                              SizedBox(width: 6),
+                              Text(
+                                "Admin",
+                                style: TextStyle(fontWeight: FontWeight.w700),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
 
-                          const Expanded(
-                            child: Text(
-                              "Expense Management",
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
+                    SizedBox(height: getHeight(context, 20)),
+
+                    /// FILTERS
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: getHeight(context, 50),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: getWidth(context, 12),
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<int>(
+                                value: branches.containsKey(selectedBranchId)
+                                    ? selectedBranchId
+                                    : null,
+                                hint: const Text("Select Branch"),
+                                isExpanded: true,
+                                icon: const Icon(Icons.arrow_drop_down),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                                items: branches.entries.map((entry) {
+                                  return DropdownMenuItem<int>(
+                                    value: entry.key,
+                                    child: Text(entry.value),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    setState(() {
+                                      selectedBranchId = value;
+                                    });
+                                    context.read<BranchExpenseBloc>().add(
+                                      LoadDashboardEvent(
+                                        branchId: selectedBranchId,
+                                        month: selectedMonth,
+                                      ),
+                                    );
+                                  }
+                                },
                               ),
                             ),
                           ),
+                        ),
 
-                          Container(
+                        SizedBox(width: getWidth(context, 4)),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () async {
+                              final DateTime? picked = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime(2101),
+                                helpText: "Select Month",
+                              );
+                              if (picked != null) {
+                                setState(() {
+                                  selectedMonth =
+                                      "${picked.year}-${picked.month.toString().padLeft(2, '0')}";
+                                });
+                                context.read<BranchExpenseBloc>().add(
+                                  LoadDashboardEvent(
+                                    branchId: selectedBranchId,
+                                    month: selectedMonth,
+                                  ),
+                                );
+                              }
+                            },
+                            child: dropdownBox(selectedMonth),
+                          ),
+                        ),
+
+                        SizedBox(width: getWidth(context, 10)),
+
+                        InkWell(
+                          onTap: () async {
+                            context.read<BranchExpenseBloc>().add(
+                              LoadDashboardEvent(
+                                branchId: selectedBranchId,
+                                month: selectedMonth,
+                              ),
+                            );
+                          },
+                          child: Container(
+                            height: getHeight(context, 50),
                             padding: EdgeInsets.symmetric(
-                              horizontal: getWidth(context, 14),
-                              vertical: getHeight(context, 10),
+                              horizontal: getWidth(context, 20),
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.amber100,
-                              borderRadius: BorderRadius.circular(12),
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: const Color(0xffE5E7EB),
+                              ),
                             ),
-                            child: const Row(
+                            child: Row(
                               children: [
-                                Icon(Icons.shield_outlined, size: 18),
-                                SizedBox(width: 6),
-                                Text(
-                                  "Admin",
+                                isLoading
+                                    ? SizedBox(
+                                        height: getHeight(context, 20),
+                                        width: getWidth(context, 20),
+                                        child: const CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(Icons.refresh),
+                                SizedBox(width: getWidth(context, 8)),
+                                const Text(
+                                  "Refresh",
                                   style: TextStyle(fontWeight: FontWeight.w700),
                                 ),
                               ],
                             ),
                           ),
-                        ],
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: getHeight(context, 18)),
+
+                    /// SUMMARY
+                    Row(
+                      children: [
+                        ExpenseSummaryCard(
+                          title: "Total Expenses (MTD)",
+                          amount:
+                              "₹${dashboardData?.cards.totalExpensesMtd.toStringAsFixed(2) ?? "0.00"}",
+                          icon: Icons.currency_rupee,
+                          iconBg: AppColors.blue100,
+
+                          onTap: () {
+                            showExpenseDetailsBottomSheet(
+                              "Total Expenses (MTD)",
+                            );
+                          },
+                        ),
+
+                        SizedBox(width: getWidth(context, 12)),
+
+                        ExpenseSummaryCard(
+                          title: "Salary / Payroll",
+                          amount:
+                              "₹${dashboardData?.cards.salaryPayroll.toStringAsFixed(2) ?? "0.00"}",
+                          icon: Icons.person_outline,
+                          iconBg: AppColors.blue100,
+                          onTap: () {
+                            showExpenseDetailsBottomSheet("Salary / Payroll");
+                          },
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: getHeight(context, 12)),
+
+                    Row(
+                      children: [
+                        ExpenseSummaryCard(
+                          title: "Rent & Facilities",
+                          amount:
+                              "₹${dashboardData?.cards.rentFacilities.toStringAsFixed(2) ?? "0.00"}",
+                          icon: Icons.apartment,
+                          iconBg: AppColors.violet100,
+                          onTap: () {
+                            showExpenseDetailsBottomSheet("Rent");
+                          },
+                        ),
+
+                        SizedBox(width: getWidth(context, 12)),
+
+                        ExpenseSummaryCard(
+                          title: "Transport & Fuel",
+                          amount:
+                              "₹${dashboardData?.cards.transportFuel.toStringAsFixed(2) ?? "0.00"}",
+                          icon: Icons.local_shipping_outlined,
+                          iconBg: AppColors.green100,
+                          onTap: () {
+                            showExpenseDetailsBottomSheet("Transport");
+                          },
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: getHeight(context, 12)),
+
+                    Row(
+                      children: [
+                        ExpenseSummaryCard(
+                          title: "Electricity",
+                          amount:
+                              "₹${_getCategoryAmount("ELECTRICITY").toStringAsFixed(2)}",
+                          icon: Icons.bolt,
+                          iconBg: AppColors.amber100,
+                          onTap: () {
+                            showExpenseDetailsBottomSheet("Electricity");
+                          },
+                        ),
+
+                        SizedBox(width: getWidth(context, 12)),
+
+                        ExpenseSummaryCard(
+                          title: "Miscellaneous",
+                          amount:
+                              "₹${_getCategoryAmount("MISCELLANEOUS").toStringAsFixed(2)}",
+                          icon: Icons.more_horiz,
+                          iconBg: AppColors.lightGrey,
+                          onTap: () {
+                            showExpenseDetailsBottomSheet("Miscellaneous");
+                          },
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: getHeight(context, 12)),
+
+                    Row(
+                      children: [
+                        ExpenseSummaryCard(
+                          title: "Maintenance",
+                          amount:
+                              "₹${_getCategoryAmount("MAINTENANCE").toStringAsFixed(2)}",
+                          icon: Icons.build,
+                          iconBg: AppColors.red100,
+                          onTap: () {
+                            showExpenseDetailsBottomSheet("Maintenance");
+                          },
+                        ),
+
+                        SizedBox(width: getWidth(context, 12)),
+
+                        ExpenseSummaryCard(
+                          title: "Other Expenses",
+                          amount:
+                              "₹${_getCategoryAmount("OTHER_EXPENSES").toStringAsFixed(2)}",
+                          icon: Icons.groups,
+                          iconBg: AppColors.teal100,
+                          onTap: () {
+                            showExpenseDetailsBottomSheet("Other_Expenses");
+                          },
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: getHeight(context, 24)),
+
+                    /// CATEGORY BREAKDOWN TABLE
+                    Text(
+                      "Category Breakdown",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
+                    ),
 
-                      SizedBox(height: getHeight(context, 20)),
+                    SizedBox(height: getHeight(context, 12)),
 
-                      /// FILTERS
-                      Row(
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Column(
                         children: [
-                          Expanded(
-                            child: Container(
-                              height: getHeight(context, 50),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: getWidth(context, 12),
-                              ),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: Colors.grey.shade300),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<int>(
-                                  value: branches.containsKey(selectedBranchId)
-                                      ? selectedBranchId
-                                      : null,
-                                  hint: const Text("Select Branch"),
-                                  isExpanded: true,
-                                  icon: const Icon(Icons.arrow_drop_down),
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                  items: branches.entries.map((entry) {
-                                    return DropdownMenuItem<int>(
-                                      value: entry.key,
-                                      child: Text(entry.value),
-                                    );
-                                  }).toList(),
-                                  onChanged: (value) {
-                                    if (value != null) {
-                                      setState(() {
-                                        selectedBranchId = value;
-                                      });
-                                      context.read<BranchExpenseBloc>().add(
-  LoadDashboardEvent(
-    branchId: selectedBranchId,
-    month: selectedMonth,
-  ),
-);
-                                    }
-                                  },
-                                ),
+                          /// TABLE HEADER
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: getWidth(context, 16),
+                              vertical: getHeight(context, 12),
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(16),
                               ),
                             ),
-                          ),
-
-                          SizedBox(width: getWidth(context, 4)),
-                          Expanded(
-                            child: InkWell(
-                              onTap: () async {
-                                final DateTime? picked = await showDatePicker(
-                                  context: context,
-                                  initialDate: DateTime.now(),
-                                  firstDate: DateTime(2000),
-                                  lastDate: DateTime(2101),
-                                  helpText: "Select Month",
-                                );
-                                if (picked != null) {
-                                  setState(() {
-                                    selectedMonth =
-                                        "${picked.year}-${picked.month.toString().padLeft(2, '0')}";
-                                  });
-                                  context.read<BranchExpenseBloc>().add(
-  LoadDashboardEvent(
-    branchId: selectedBranchId,
-    month: selectedMonth,
-  ),
-);
-                                }
-                              },
-                              child: dropdownBox(selectedMonth),
-                            ),
-                          ),
-
-                          SizedBox(width: getWidth(context, 10)),
-
-                          InkWell(
-                            onTap:() async {
-  context.read<BranchExpenseBloc>().add(
-    LoadDashboardEvent(
-      branchId: selectedBranchId,
-      month: selectedMonth,
-    ),
-  );
-},
-                            child: Container(
-                              height: getHeight(context, 50),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: getWidth(context, 20),
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: const Color(0xffE5E7EB),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  isLoading
-                                      ? SizedBox(
-                                          height: getHeight(context, 20),
-                                          width: getWidth(context, 20),
-                                          child:
-                                              const CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                              ),
-                                        )
-                                      : const Icon(Icons.refresh),
-                                  SizedBox(width: getWidth(context, 8)),
-                                  const Text(
-                                    "Refresh",
+                            child: const Row(
+                              children: [
+                                Expanded(
+                                  flex: 3,
+                                  child: Text(
+                                    "CATEGORY",
                                     style: TextStyle(
-                                      fontWeight: FontWeight.w700,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      SizedBox(height: getHeight(context, 18)),
-
-                      /// SUMMARY
-                      Row(
-                        children: [
-                          ExpenseSummaryCard(
-                            title: "Total Expenses (MTD)",
-                            amount:
-                                "₹${dashboardData?.cards.totalExpensesMtd.toStringAsFixed(2) ?? "0.00"}",
-                            icon: Icons.currency_rupee,
-                            iconBg: AppColors.blue100,
-
-                            onTap: () {
-                              showExpenseDetailsBottomSheet(
-                                "Total Expenses (MTD)",
-                              );
-                            },
-                          ),
-
-                          SizedBox(width: getWidth(context, 12)),
-
-                          ExpenseSummaryCard(
-                            title: "Salary / Payroll",
-                            amount:
-                                "₹${dashboardData?.cards.salaryPayroll.toStringAsFixed(2) ?? "0.00"}",
-                            icon: Icons.person_outline,
-                            iconBg: AppColors.blue100,
-                            onTap: () {
-                              showExpenseDetailsBottomSheet("Salary / Payroll");
-                            },
-                          ),
-                        ],
-                      ),
-
-                      SizedBox(height: getHeight(context, 12)),
-
-                      Row(
-                        children: [
-                          ExpenseSummaryCard(
-                            title: "Rent & Facilities",
-                            amount:
-                                "₹${dashboardData?.cards.rentFacilities.toStringAsFixed(2) ?? "0.00"}",
-                            icon: Icons.apartment,
-                            iconBg: AppColors.violet100,
-                            onTap: () {
-                              showExpenseDetailsBottomSheet("Rent");
-                            },
-                          ),
-
-                          SizedBox(width: getWidth(context, 12)),
-
-                          ExpenseSummaryCard(
-                            title: "Transport & Fuel",
-                            amount:
-                                "₹${dashboardData?.cards.transportFuel.toStringAsFixed(2) ?? "0.00"}",
-                            icon: Icons.local_shipping_outlined,
-                            iconBg: AppColors.green100,
-                            onTap: () {
-                              showExpenseDetailsBottomSheet("Transport");
-                            },
-                          ),
-                        ],
-                      ),
-
-                      SizedBox(height: getHeight(context, 12)),
-
-                      Row(
-                        children: [
-                          ExpenseSummaryCard(
-                            title: "Electricity",
-                            amount:
-                                "₹${_getCategoryAmount("ELECTRICITY").toStringAsFixed(2)}",
-                            icon: Icons.bolt,
-                            iconBg: AppColors.amber100,
-                            onTap: () {
-                              showExpenseDetailsBottomSheet("Electricity");
-                            },
-                          ),
-
-                          SizedBox(width: getWidth(context, 12)),
-
-                          ExpenseSummaryCard(
-                            title: "Miscellaneous",
-                            amount:
-                                "₹${_getCategoryAmount("MISCELLANEOUS").toStringAsFixed(2)}",
-                            icon: Icons.more_horiz,
-                            iconBg: AppColors.lightGrey,
-                            onTap: () {
-                              showExpenseDetailsBottomSheet("Miscellaneous");
-                            },
-                          ),
-                        ],
-                      ),
-
-                      SizedBox(height: getHeight(context, 12)),
-
-                      Row(
-                        children: [
-                          ExpenseSummaryCard(
-                            title: "Maintenance",
-                            amount:
-                                "₹${_getCategoryAmount("MAINTENANCE").toStringAsFixed(2)}",
-                            icon: Icons.build,
-                            iconBg: AppColors.red100,
-                            onTap: () {
-                              showExpenseDetailsBottomSheet("Maintenance");
-                            },
-                          ),
-
-                          SizedBox(width: getWidth(context, 12)),
-
-                          ExpenseSummaryCard(
-                            title: "Other Expenses",
-                            amount:
-                                "₹${_getCategoryAmount("OTHER_EXPENSES").toStringAsFixed(2)}",
-                            icon: Icons.groups,
-                            iconBg: AppColors.teal100,
-                            onTap: () {
-                              showExpenseDetailsBottomSheet("Other_Expenses");
-                            },
-                          ),
-                        ],
-                      ),
-
-                      SizedBox(height: getHeight(context, 24)),
-
-                      /// CATEGORY BREAKDOWN TABLE
-                      Text(
-                        "Category Breakdown",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      SizedBox(height: getHeight(context, 12)),
-
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade200),
-                        ),
-                        child: Column(
-                          children: [
-                            /// TABLE HEADER
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: getWidth(context, 16),
-                                vertical: getHeight(context, 12),
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade50,
-                                borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(16),
                                 ),
-                              ),
-                              child: const Row(
-                                children: [
-                                  Expanded(
-                                    flex: 3,
-                                    child: Text(
-                                      "CATEGORY",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    flex: 2,
-                                    child: Text(
-                                      "TOTAL AMOUNT",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            /// TABLE ROWS
-                            if (dashboardData != null)
-                              ...dashboardData.categories.map(
-                                (cat) => Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: getWidth(context, 16),
-                                    vertical: getHeight(context, 12),
-                                  ),
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      top: BorderSide(
-                                        color: Colors.grey.shade100,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 3,
-                                        child: Text(
-                                          cat.category,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text(
-                                          "₹${cat.amount.toStringAsFixed(2)}",
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          textAlign: TextAlign.right,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-
-                            if (dashboardData == null ||
-                                dashboardData.categories.isEmpty)
-                              Padding(
-                                padding: const EdgeInsets.all(20),
-                                child: Text(
-                                  "No category data available",
-                                  style: TextStyle(color: Colors.grey.shade500),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(height: getHeight(context, 18)),
-
-                      /// ADD EXPENSE
-                      Container(
-                        padding: const EdgeInsets.all(22),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xffE5E7EB)),
-                        ),
-
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  "Add Expense",
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-
-                                const Icon(Icons.keyboard_arrow_down),
-                              ],
-                            ),
-
-                            SizedBox(height: getHeight(context, 18)),
-
-                            const Text("Expense Date *"),
-
-                            SizedBox(height: getHeight(context, 10)),
-
-                            GestureDetector(
-                              onTap: () async {
-                                final DateTime? picked = await showDatePicker(
-                                  context: context,
-                                  initialDate: DateTime.now(),
-                                  firstDate: DateTime(2000),
-                                  lastDate: DateTime(2101),
-                                );
-                                if (picked != null) {
-                                  setState(() {
-                                    dateController.text = picked
-                                        .toString()
-                                        .split(' ')[0];
-                                  });
-                                }
-                              },
-                              child: AbsorbPointer(
-                                child: ExpenseTextField(
-                                  hint: "YYYY-MM-DD",
-                                  controller: dateController,
-                                  prefixIcon: const Icon(Icons.calendar_month),
-                                ),
-                              ),
-                            ),
-
-                            SizedBox(height: getHeight(context, 18)),
-
-                            const Text("Expense Category *"),
-
-                            SizedBox(height: getHeight(context, 10)),
-
-                            dropdownField(),
-
-                            SizedBox(height: getHeight(context, 18)),
-
-                            const Text("Amount (₹) *"),
-
-                            SizedBox(height: getHeight(context, 10)),
-
-                            ExpenseTextField(
-                              hint: "e.g. 500",
-                              controller: amountController,
-                            ),
-
-                            SizedBox(height: getHeight(context, 18)),
-
-                            const Text("Payment Method *"),
-
-                            SizedBox(height: getHeight(context, 10)),
-
-                            Row(
-                              children: [
-                                paymentButton("Cash"),
-
-                                SizedBox(width: getWidth(context, 14)),
-
-                                paymentButton("UPI"),
-
-                                SizedBox(width: getWidth(context, 14)),
-
-                                paymentButton("Card"),
-                              ],
-                            ),
-
-                            SizedBox(height: getHeight(context, 18)),
-
-                            const Text("Status"),
-
-                            SizedBox(height: getHeight(context, 10)),
-
-                            Row(
-                              children: [
-                                statusButton("Paid"),
-
-                                SizedBox(width: getWidth(context, 14)),
-
-                                statusButton("Pending"),
-                              ],
-                            ),
-
-                            SizedBox(height: getHeight(context, 18)),
-
-                            const Text("Description"),
-
-                            SizedBox(height: getHeight(context, 10)),
-
-                            ExpenseTextField(
-                              hint: "e.g. Transport for stock from warehouse",
-                              controller: descriptionController,
-                              maxLines: 3,
-                            ),
-
-                            SizedBox(height: getHeight(context, 12)),
-
-                            Row(
-                              children: [
                                 Expanded(
-                                  child: SizedBox(
-                                    height: getHeight(context, 48),
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(
-                                          0xffF3F4F6,
-                                        ),
-                                        foregroundColor: Colors.black,
-                                        elevation: 0,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            14,
-                                          ),
-                                        ),
-                                      ),
-                                      onPressed: () {
-                                        amountController.clear();
-                                        descriptionController.clear();
-                                      },
-                                      child: const Text("Reset"),
+                                  flex: 2,
+                                  child: Text(
+                                    "TOTAL AMOUNT",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
                                     ),
-                                  ),
-                                ),
-
-                                SizedBox(width: getWidth(context, 16)),
-
-                                Expanded(
-                                  child: SizedBox(
-                                    height: getHeight(context, 48),
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.amber600,
-                                        foregroundColor: Colors.black,
-                                        elevation: 0,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                      ),
-                                      onPressed: isSaving ? null : _saveExpense,
-                                      child: isSaving
-                                          ? SizedBox(
-                                              width: getWidth(context, 20),
-                                              height: getHeight(context, 20),
-                                              child: CircularProgressIndicator(
-                                                color: Colors.black,
-                                                strokeWidth: 2,
-                                              ),
-                                            )
-                                          : const Text("Save Expense"),
-                                    ),
+                                    textAlign: TextAlign.right,
                                   ),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
 
-                      SizedBox(height: getHeight(context, 24)),
-
-                      /// CATEGORIES
-                      Container(
-                        padding: const EdgeInsets.all(22),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xffE5E7EB)),
-                        ),
-
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-
-                          children: [
-                            Text(
-                              "Expense Categories",
-                              style: TextStyle(
-                                fontSize: getWidth(context, 20),
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-
-                            SizedBox(height: getHeight(context, 20)),
-
-                            GridView.count(
-                              crossAxisCount: 4,
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-
-                              mainAxisSpacing: 0,
-                              crossAxisSpacing: 2,
-
-                              childAspectRatio: 0.70,
-                              children: [
-                                InkWell(
-                                  onTap: () =>
-                                      setState(() => selectedCategory = "Rent"),
-                                  child: ExpenseCategoryItem(
-                                    title: "Rent",
-                                    icon: Icons.apartment,
-                                    bgColor: selectedCategory == "Rent"
-                                        ? AppColors.blue100
-                                        : AppColors.violet100,
+                          /// TABLE ROWS
+                          if (dashboardData != null)
+                            ...dashboardData.categories.map(
+                              (cat) => Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getWidth(context, 16),
+                                  vertical: getHeight(context, 12),
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    top: BorderSide(
+                                      color: Colors.grey.shade100,
+                                    ),
                                   ),
                                 ),
-
-                                InkWell(
-                                  onTap: () => setState(
-                                    () => selectedCategory = "Salary",
-                                  ),
-                                  child: ExpenseCategoryItem(
-                                    title: "Salary",
-                                    icon: Icons.person_outline,
-                                    bgColor: selectedCategory == "Salary"
-                                        ? AppColors.blue100
-                                        : AppColors.blue100,
-                                  ),
-                                ),
-
-                                InkWell(
-                                  onTap: () => setState(
-                                    () => selectedCategory = "Electricity",
-                                  ),
-                                  child: ExpenseCategoryItem(
-                                    title: "Electricity",
-                                    icon: Icons.bolt,
-                                    bgColor: selectedCategory == "Electricity"
-                                        ? AppColors.blue100
-                                        : AppColors.amber100,
-                                  ),
-                                ),
-
-                                InkWell(
-                                  onTap: () => setState(
-                                    () => selectedCategory = "Miscellaneous",
-                                  ),
-                                  child: ExpenseCategoryItem(
-                                    title: "Miscellaneous",
-                                    icon: Icons.more_horiz,
-                                    bgColor: selectedCategory == "Miscellaneous"
-                                        ? AppColors.blue100
-                                        : AppColors.lightGrey,
-                                  ),
-                                ),
-
-                                InkWell(
-                                  onTap: () => setState(
-                                    () => selectedCategory = "Transport",
-                                  ),
-                                  child: ExpenseCategoryItem(
-                                    title: "Transport",
-                                    icon: Icons.local_shipping_outlined,
-                                    bgColor: selectedCategory == "Transport"
-                                        ? AppColors.blue100
-                                        : AppColors.green100,
-                                  ),
-                                ),
-
-                                InkWell(
-                                  onTap: () => setState(
-                                    () => selectedCategory = "Packing",
-                                  ),
-                                  child: ExpenseCategoryItem(
-                                    title: "Packing",
-                                    icon: Icons.inventory_2,
-                                    bgColor: selectedCategory == "Packing"
-                                        ? AppColors.blue100
-                                        : AppColors.violet100,
-                                  ),
-                                ),
-
-                                InkWell(
-                                  onTap: () => setState(
-                                    () => selectedCategory = "Maintenance",
-                                  ),
-                                  child: ExpenseCategoryItem(
-                                    title: "Maintenance",
-                                    icon: Icons.build,
-                                    bgColor: selectedCategory == "Maintenance"
-                                        ? AppColors.blue100
-                                        : AppColors.red100,
-                                  ),
-                                ),
-
-                                InkWell(
-                                  onTap: () => setState(
-                                    () => selectedCategory = "Other Expenses",
-                                  ),
-                                  child: ExpenseCategoryItem(
-                                    title: "Other Expenses",
-                                    icon: Icons.groups,
-                                    bgColor:
-                                        selectedCategory == "Other Expenses"
-                                        ? AppColors.blue100
-                                        : AppColors.teal100,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(height: getHeight(context, 24)),
-
-                      /// RECENT EXPENSES
-                      Container(
-                        padding: const EdgeInsets.all(22),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xffE5E7EB)),
-                        ),
-
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-
-                          children: [
-                            Text(
-                              "Recent Expenses",
-                              style: TextStyle(
-                                fontSize: getWidth(context, 22),
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-
-                            SizedBox(height: getHeight(context, 20)),
-
-                            const ExpenseTableHeader(),
-
-                            SizedBox(height: getHeight(context, 20)),
-
-                            if (isLoading)
-                              const Center(child: CircularProgressIndicator())
-                            else if (dashboardData == null ||
-                                dashboardData.recentExpenses.isEmpty)
-                              Center(
-                                child: Column(
+                                child: Row(
                                   children: [
-                                    Icon(
-                                      Icons.receipt_long,
-                                      size: 80,
-                                      color: Colors.grey.shade300,
+                                    Expanded(
+                                      flex: 3,
+                                      child: Text(
+                                        cat.category,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
                                     ),
-
-                                    SizedBox(height: getHeight(context, 12)),
-
-                                    const Text(
-                                      "No expenses found for this branch & month.",
-                                      style: TextStyle(
-                                        color: Color(0xff6B7280),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Text(
+                                        "₹${cat.amount.toStringAsFixed(2)}",
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.right,
                                       ),
                                     ),
                                   ],
                                 ),
-                              )
-                            else
-                              ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: dashboardData.recentExpenses.length,
-                                itemBuilder: (context, index) {
-                                  return ExpenseTableRow(
-                                    expense:
-                                        dashboardData.recentExpenses[index],
-                                  );
-                                },
                               ),
-                          ],
-                        ),
+                            ),
+
+                          if (dashboardData == null ||
+                              dashboardData.categories.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Text(
+                                "No category data available",
+                                style: TextStyle(color: Colors.grey.shade500),
+                              ),
+                            ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+
+                    SizedBox(height: getHeight(context, 18)),
+
+                    /// ADD EXPENSE
+                    Container(
+                      padding: const EdgeInsets.all(22),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xffE5E7EB)),
+                      ),
+
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "Add Expense",
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+
+                              const Icon(Icons.keyboard_arrow_down),
+                            ],
+                          ),
+
+                          SizedBox(height: getHeight(context, 18)),
+
+                          const Text("Expense Date *"),
+
+                          SizedBox(height: getHeight(context, 10)),
+
+                          GestureDetector(
+                            onTap: () async {
+                              final DateTime? picked = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime(2101),
+                              );
+                              if (picked != null) {
+                                setState(() {
+                                  dateController.text = picked.toString().split(
+                                    ' ',
+                                  )[0];
+                                });
+                              }
+                            },
+                            child: AbsorbPointer(
+                              child: ExpenseTextField(
+                                hint: "YYYY-MM-DD",
+                                controller: dateController,
+                                prefixIcon: const Icon(Icons.calendar_month),
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: getHeight(context, 18)),
+
+                          const Text("Expense Category *"),
+
+                          SizedBox(height: getHeight(context, 10)),
+
+                          dropdownField(),
+
+                          SizedBox(height: getHeight(context, 18)),
+
+                          const Text("Amount (₹) *"),
+
+                          SizedBox(height: getHeight(context, 10)),
+
+                          ExpenseTextField(
+                            hint: "e.g. 500",
+                            controller: amountController,
+                          ),
+
+                          SizedBox(height: getHeight(context, 18)),
+
+                          const Text("Payment Method *"),
+
+                          SizedBox(height: getHeight(context, 10)),
+
+                          Row(
+                            children: [
+                              paymentButton("Cash"),
+
+                              SizedBox(width: getWidth(context, 14)),
+
+                              paymentButton("UPI"),
+
+                              SizedBox(width: getWidth(context, 14)),
+
+                              paymentButton("Card"),
+                            ],
+                          ),
+
+                          SizedBox(height: getHeight(context, 18)),
+
+                          const Text("Status"),
+
+                          SizedBox(height: getHeight(context, 10)),
+
+                          Row(
+                            children: [
+                              statusButton("Paid"),
+
+                              SizedBox(width: getWidth(context, 14)),
+
+                              statusButton("Pending"),
+                            ],
+                          ),
+
+                          SizedBox(height: getHeight(context, 18)),
+
+                          const Text("Description"),
+
+                          SizedBox(height: getHeight(context, 10)),
+
+                          ExpenseTextField(
+                            hint: "e.g. Transport for stock from warehouse",
+                            controller: descriptionController,
+                            maxLines: 3,
+                          ),
+
+                          SizedBox(height: getHeight(context, 12)),
+
+                          Row(
+                            children: [
+                              Expanded(
+                                child: SizedBox(
+                                  height: getHeight(context, 48),
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xffF3F4F6),
+                                      foregroundColor: Colors.black,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      amountController.clear();
+                                      descriptionController.clear();
+                                    },
+                                    child: const Text("Reset"),
+                                  ),
+                                ),
+                              ),
+
+                              SizedBox(width: getWidth(context, 16)),
+
+                              Expanded(
+                                child: SizedBox(
+                                  height: getHeight(context, 48),
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.amber600,
+                                      foregroundColor: Colors.black,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    onPressed: isSaving ? null : _saveExpense,
+                                    child: isSaving
+                                        ? SizedBox(
+                                            width: getWidth(context, 20),
+                                            height: getHeight(context, 20),
+                                            child: CircularProgressIndicator(
+                                              color: Colors.black,
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : const Text("Save Expense"),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: getHeight(context, 24)),
+
+                    /// CATEGORIES
+                    Container(
+                      padding: const EdgeInsets.all(22),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xffE5E7EB)),
+                      ),
+
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+
+                        children: [
+                          Text(
+                            "Expense Categories",
+                            style: TextStyle(
+                              fontSize: getWidth(context, 20),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+
+                          SizedBox(height: getHeight(context, 20)),
+
+                          GridView.count(
+                            crossAxisCount: 4,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+
+                            mainAxisSpacing: 0,
+                            crossAxisSpacing: 2,
+
+                            childAspectRatio: 0.70,
+                            children: [
+                              InkWell(
+                                onTap: () =>
+                                    setState(() => selectedCategory = "Rent"),
+                                child: ExpenseCategoryItem(
+                                  title: "Rent",
+                                  icon: Icons.apartment,
+                                  bgColor: selectedCategory == "Rent"
+                                      ? AppColors.blue100
+                                      : AppColors.violet100,
+                                ),
+                              ),
+
+                              InkWell(
+                                onTap: () =>
+                                    setState(() => selectedCategory = "Salary"),
+                                child: ExpenseCategoryItem(
+                                  title: "Salary",
+                                  icon: Icons.person_outline,
+                                  bgColor: selectedCategory == "Salary"
+                                      ? AppColors.blue100
+                                      : AppColors.blue100,
+                                ),
+                              ),
+
+                              InkWell(
+                                onTap: () => setState(
+                                  () => selectedCategory = "Electricity",
+                                ),
+                                child: ExpenseCategoryItem(
+                                  title: "Electricity",
+                                  icon: Icons.bolt,
+                                  bgColor: selectedCategory == "Electricity"
+                                      ? AppColors.blue100
+                                      : AppColors.amber100,
+                                ),
+                              ),
+
+                              InkWell(
+                                onTap: () => setState(
+                                  () => selectedCategory = "Miscellaneous",
+                                ),
+                                child: ExpenseCategoryItem(
+                                  title: "Miscellaneous",
+                                  icon: Icons.more_horiz,
+                                  bgColor: selectedCategory == "Miscellaneous"
+                                      ? AppColors.blue100
+                                      : AppColors.lightGrey,
+                                ),
+                              ),
+
+                              InkWell(
+                                onTap: () => setState(
+                                  () => selectedCategory = "Transport",
+                                ),
+                                child: ExpenseCategoryItem(
+                                  title: "Transport",
+                                  icon: Icons.local_shipping_outlined,
+                                  bgColor: selectedCategory == "Transport"
+                                      ? AppColors.blue100
+                                      : AppColors.green100,
+                                ),
+                              ),
+
+                              InkWell(
+                                onTap: () => setState(
+                                  () => selectedCategory = "Packing",
+                                ),
+                                child: ExpenseCategoryItem(
+                                  title: "Packing",
+                                  icon: Icons.inventory_2,
+                                  bgColor: selectedCategory == "Packing"
+                                      ? AppColors.blue100
+                                      : AppColors.violet100,
+                                ),
+                              ),
+
+                              InkWell(
+                                onTap: () => setState(
+                                  () => selectedCategory = "Maintenance",
+                                ),
+                                child: ExpenseCategoryItem(
+                                  title: "Maintenance",
+                                  icon: Icons.build,
+                                  bgColor: selectedCategory == "Maintenance"
+                                      ? AppColors.blue100
+                                      : AppColors.red100,
+                                ),
+                              ),
+
+                              InkWell(
+                                onTap: () => setState(
+                                  () => selectedCategory = "Other Expenses",
+                                ),
+                                child: ExpenseCategoryItem(
+                                  title: "Other Expenses",
+                                  icon: Icons.groups,
+                                  bgColor: selectedCategory == "Other Expenses"
+                                      ? AppColors.blue100
+                                      : AppColors.teal100,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: getHeight(context, 24)),
+
+                    /// RECENT EXPENSES
+                    Container(
+                      padding: const EdgeInsets.all(22),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xffE5E7EB)),
+                      ),
+
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+
+                        children: [
+                          Text(
+                            "Recent Expenses",
+                            style: TextStyle(
+                              fontSize: getWidth(context, 22),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+
+                          SizedBox(height: getHeight(context, 20)),
+
+                          const ExpenseTableHeader(),
+
+                          SizedBox(height: getHeight(context, 20)),
+
+                          if (isLoading)
+                            const Center(child: CircularProgressIndicator())
+                          else if (dashboardData == null ||
+                              dashboardData.recentExpenses.isEmpty)
+                            Center(
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.receipt_long,
+                                    size: 80,
+                                    color: Colors.grey.shade300,
+                                  ),
+
+                                  SizedBox(height: getHeight(context, 12)),
+
+                                  const Text(
+                                    "No expenses found for this branch & month.",
+                                    style: TextStyle(color: Color(0xff6B7280)),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: dashboardData.recentExpenses.length,
+                              itemBuilder: (context, index) {
+                                return ExpenseTableRow(
+                                  expense: dashboardData.recentExpenses[index],
+                                );
+                              },
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            );
-}
-)
-);
-}
-
-  
-
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   Widget dropdownBox(String title) {
     return Container(
