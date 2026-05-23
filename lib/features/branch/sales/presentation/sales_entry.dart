@@ -37,7 +37,6 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
   String selectedPaymentMethod = "CASH";
   String selectedUpiApp = "";
-  String otherUpiDetails = "";
   List<dynamic> branches = [];
   String selectedBranchId = "warehouse";
   String soldLocation = "Warehouse";
@@ -51,6 +50,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   final TextEditingController notesController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
   final TextEditingController searchController = TextEditingController();
+  final TextEditingController cashReceivedByController = TextEditingController();
+  final TextEditingController cashContactNumberController = TextEditingController();
+  final TextEditingController otherUpiDetailsController = TextEditingController();
 
   final BranchSalesRemoteDatasource datasource = BranchSalesRemoteDatasource();
   List<ProductDetail> filteredProducts = [];
@@ -76,32 +78,17 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
       if (existingIndex != -1) {
         final item = salesItems[existingIndex];
-
         item.dozen = dozen;
-
-        item.eggs = (dozen * 12).round();
-
-        item.trays = (item.eggs / 30).ceil();
-
-        item.total = double.parse((item.eggs * item.price).toStringAsFixed(2));
+        item.calculateEggs();
       } else {
         salesItems.removeWhere((e) => e.eggCategoryGrade.isEmpty);
-
-        salesItems.add(
-          SalesItem(
-            eggCategoryGrade: product.productName,
-
-            price: product.perTrayPrice / 30,
-
-            dozen: dozen,
-
-            eggs: (dozen * 12).round(),
-
-            trays: ((dozen * 12) / 30).ceil(),
-
-            total: ((dozen * 12) * (product.perTrayPrice / 30)).toDouble(),
-          ),
+        final newItem = SalesItem(
+          eggCategoryGrade: product.productName,
+          price: product.perTrayPrice / 30,
+          dozen: dozen,
         );
+        newItem.calculateEggs();
+        salesItems.add(newItem);
       }
     });
   }
@@ -111,6 +98,21 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     super.initState();
     dateController.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
     _loadUserData().then((_) => _fetchInitialData());
+  }
+
+  @override
+  void dispose() {
+    customerNumberController.dispose();
+    customerNameController.dispose();
+    cashReceivedController.dispose();
+    debtController.dispose();
+    notesController.dispose();
+    dateController.dispose();
+    searchController.dispose();
+    cashReceivedByController.dispose();
+    cashContactNumberController.dispose();
+    otherUpiDetailsController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadUserData() async {
@@ -177,12 +179,6 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     }
   }
 
-  void _onBranchChanged(String newBranchId) {
-    setState(() {
-      selectedBranchId = newBranchId;
-    });
-    _fetchInitialData();
-  }
 
   // --- Calculations ---
   double get subtotal => salesItems.fold(0.0, (sum, item) => sum + item.total);
@@ -221,9 +217,12 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ? (salesItems.isNotEmpty ? salesItems.first.price : 0.0)
             : (matchingItem?.price ?? 0.0);
 
-        if (relevantEggs >= offer.buyQty && offer.buyQty > 0) {
+        final double buyEggs = offer.buyQty * 30;
+        final double freeEggs = offer.freeQty * 30;
+
+        if (relevantEggs >= buyEggs && buyEggs > 0) {
           final double freeEggsCount =
-              (relevantEggs / offer.buyQty).floorToDouble() * offer.freeQty;
+              (relevantEggs / buyEggs).floorToDouble() * freeEggs;
           discount += double.parse(
             (freeEggsCount * pricePerEgg).toStringAsFixed(2),
           );
@@ -235,7 +234,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         discount += double.parse(
           (relevantTotal * offer.discountValue / 100).toStringAsFixed(2),
         );
-      } else if (offer.offerType == 'fixed_amount') {
+      } else if (offer.offerType == 'fixed' || offer.offerType == 'fixed_amount') {
         discount += offer.discountValue;
       }
     }
@@ -276,14 +275,10 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         item.calculateEggs();
       } else if (field == 'dozen') {
         item.dozen = double.tryParse(value.toString()) ?? 0;
-        item.eggs = (item.dozen * 12).round();
-        item.trays = (item.eggs / 30).ceil();
-        item.total = double.parse((item.eggs * item.price).toStringAsFixed(2));
+        item.calculateEggs();
       } else if (field == 'trays') {
         item.trays = int.tryParse(value.toString()) ?? 0;
-        item.eggs = item.trays * 30;
-        item.dozen = double.parse((item.eggs / 12).toStringAsFixed(2));
-        item.total = double.parse((item.eggs * item.price).toStringAsFixed(2));
+        item.calculateEggs();
       }
     });
   }
@@ -296,37 +291,25 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       if (existingIndex != -1) {
         final item = salesItems[existingIndex];
         item.trays += 1;
-        item.eggs = (item.trays * 30) + (item.dozen * 12).round();
-        item.total = double.parse((item.eggs * item.price).toStringAsFixed(2));
+        item.calculateEggs();
       } else {
         salesItems.removeWhere((i) => i.eggCategoryGrade.isEmpty);
-        // final newItem = SalesItem(
-        //   eggCategoryGrade: product.productName,
-        //   price: product.perTrayPrice / 30,
-        //   trays: 1,
-        //   eggs: 30,
-        //   dozen: 2.5,
-        //   total: product.perTrayPrice,
-        // );
         final newItem = SalesItem(
           eggCategoryGrade: product.productName,
           price: product.perTrayPrice / 30,
-
-          trays: 0,
-          eggs: 0,
-
-          // START EMPTY
-          dozen: 0.0,
-
-          total: 0,
+          trays: 1,
         );
+        newItem.calculateEggs();
         salesItems.add(newItem);
       }
     });
   }
 
   Future<void> lookupCustomer(String number) async {
-    if (number.length < 10) return;
+    if (number.length < 10) {
+      setState(() => customerStatus = null);
+      return;
+    }
     try {
       final res = await datasource.getCustomerByNumber(number);
       // ignore: unnecessary_null_comparison
@@ -361,6 +344,26 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       return;
     }
 
+    if (selectedPaymentMethod == "CASH") {
+      final cashReceivedBy = cashReceivedByController.text.trim();
+      final cashContactNumber = cashContactNumberController.text.trim();
+
+      if (cashReceivedBy.isEmpty) {
+        _showError("Please enter Cash Received By name");
+        return;
+      }
+
+      if (cashContactNumber.isEmpty) {
+        _showError("Please enter Cash Contact Number");
+        return;
+      }
+
+      if (cashContactNumber.length != 10 || double.tryParse(cashContactNumber) == null) {
+        _showError("Cash Contact Number must be a valid 10-digit number");
+        return;
+      }
+    }
+
     final validItems = salesItems
         .where((i) => i.eggCategoryGrade.isNotEmpty)
         .toList();
@@ -392,11 +395,17 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         "sales_date": dateController.text,
         "payment_method": selectedPaymentMethod.toUpperCase(),
         "cash_received": double.tryParse(cashReceivedController.text) ?? 0,
+        "cash_received_by": selectedPaymentMethod == "CASH"
+            ? cashReceivedByController.text.trim()
+            : null,
+        "cash_contact_number": selectedPaymentMethod == "CASH"
+            ? cashContactNumberController.text.trim()
+            : null,
         "upi_app": selectedPaymentMethod == "UPI"
             ? (selectedUpiApp.isEmpty ? "Other" : selectedUpiApp)
             : null,
         "other_upi_details": selectedPaymentMethod == "UPI"
-            ? otherUpiDetails
+            ? otherUpiDetailsController.text.trim()
             : null,
         "total_amount": totalAmount,
         "offer_discount": totalDiscount,
@@ -582,8 +591,6 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final bool isMobile = constraints.maxWidth < 700;
-
             final bool isTablet =
                 constraints.maxWidth >= 700 && constraints.maxWidth < 1200;
 
@@ -1958,21 +1965,6 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildInput(
-                        "Enter Amount Received",
-                        cashReceivedController,
-                        keyboardType: TextInputType.number,
-                        hint: "0.00",
-                        prefix: const Padding(
-                          padding: EdgeInsets.only(left: 24, top: 10),
-                          child: Text(
-                            "₹",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        onChanged: (v) => setState(() {}),
-                      ),
-                      SizedBox(width: isTablet ? 10 : 15),
                       if (selectedPaymentMethod == "UPI") ...[
                         const Text(
                           "Select UPI App",
@@ -1982,7 +1974,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                             color: Color(0xFF374151),
                           ),
                         ),
-                        SizedBox(width: isTablet ? 10 : 15),
+                        SizedBox(height: isTablet ? 10 : 15),
                         Wrap(
                           spacing: isTablet ? 8 : 4,
                           runSpacing: isTablet ? 8 : 4,
@@ -2016,32 +2008,59 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                               )
                               .toList(),
                         ),
-                        SizedBox(width: isTablet ? 10 : 15),
+                        SizedBox(height: isTablet ? 10 : 15),
                         _buildInput(
                           "Other UPI Details (Optional)",
-                          TextEditingController(text: otherUpiDetails),
-                          onChanged: (v) => otherUpiDetails = v,
+                          otherUpiDetailsController,
                         ),
-                        SizedBox(width: isTablet ? 10 : 15),
+                        SizedBox(height: isTablet ? 10 : 15),
                       ],
-                      if (selectedPaymentMethod == "CASH" ||
-                          selectedPaymentMethod == "CARD"
-                      //||selectedPaymentMethod == "UPI"
-                      ) ...[
+                      if (selectedPaymentMethod == "CASH") ...[
+                        _buildInput(
+                          "Cash Received Person Name *",
+                          cashReceivedByController,
+                          hint: "Name",
+                        ),
+                        SizedBox(height: isTablet ? 10 : 15),
+                        _buildInput(
+                          "Cash Contact Number *",
+                          cashContactNumberController,
+                          hint: "10-digit mobile",
+                          keyboardType: TextInputType.phone,
+                        ),
+                        SizedBox(height: isTablet ? 10 : 15),
                         _buildInput(
                           "Customer Debt (Optional)",
-
                           debtController,
-
                           keyboardType: TextInputType.number,
-
                           hint: "0",
                         ),
-
-                        SizedBox(width: isTablet ? 10 : 15),
+                        SizedBox(height: isTablet ? 10 : 15),
                       ],
-
-                      SizedBox(width: isTablet ? 10 : 15),
+                      if (selectedPaymentMethod == "CARD") ...[
+                        _buildInput(
+                          "Customer Debt (Optional)",
+                          debtController,
+                          keyboardType: TextInputType.number,
+                          hint: "0",
+                        ),
+                        SizedBox(height: isTablet ? 10 : 15),
+                      ],
+                      _buildInput(
+                        "Enter Amount Received",
+                        cashReceivedController,
+                        keyboardType: TextInputType.number,
+                        hint: "0.00",
+                        prefix: const Padding(
+                          padding: EdgeInsets.only(left: 24, top: 10),
+                          child: Text(
+                            "₹",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        onChanged: (v) => setState(() {}),
+                      ),
+                      SizedBox(height: isTablet ? 10 : 15),
                       _buildInput(
                         "Notes",
                         notesController,

@@ -82,7 +82,7 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return AddSupplierBottomSheet();
+        return AddSupplierBottomSheet(supplierToEdit: supplier);
       },
     ).then((_) {
       fetchSuppliers(); // Refresh after editing

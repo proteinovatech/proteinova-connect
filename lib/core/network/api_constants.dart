@@ -3,7 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class ApiConstants {
   static final String baseUrl = dotenv.env['BASE_URL'] ?? "";
 
-  static String dashboard(int branchId) => "$baseUrl/api/branch/dashboard?branch_id=$branchId";
+  static String dashboard(int branchId) => "$baseUrl/api/branch/dashboard/$branchId";
   static final String salesEntry = "$baseUrl/api/sales/entry";
   static final String branchExpenses = "$baseUrl/api/branch/expenses";
   static final String branches = "$baseUrl/api/branches";

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
+import 'package:proteinova_connect/features/admin/purchase/data/services/supplier_service.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_inventory_overview_skeleton_loader.dart';
+import 'package:proteinova_connect/features/admin/supplier/data/models/supplier_model.dart';
 import 'package:proteinova_connect/features/admin/widget/inventory_card.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/features/warehouse/inventory/data/models/inventory_model.dart';
@@ -8,8 +10,7 @@ import 'package:proteinova_connect/features/warehouse/inventory/data/inventory_r
 
 
 // Newly added imports for React compatibility
-import 'package:proteinova_connect/features/admin/supplier/services/supplier_service.dart';
-import 'package:proteinova_connect/features/admin/supplier/models/supplier_model.dart';
+
 import 'package:proteinova_connect/features/admin/presentation/receive_stockscreen.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/presentation/sales_entry_page.dart';
 

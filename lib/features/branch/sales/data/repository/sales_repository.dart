@@ -30,4 +30,8 @@ class SalesRepository {
   Future<Map<String, dynamic>> findCustomer(String number) async {
     return await _datasource.getCustomerByNumber(number);
   }
+
+  Future<Map<String, dynamic>> rejectSale({required int approvalId}) async {
+    return await _datasource.rejectSale(approvalId: approvalId);
+  }
 }

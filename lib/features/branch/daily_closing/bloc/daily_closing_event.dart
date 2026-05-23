@@ -14,11 +14,13 @@ class SubmitDailyClosing extends DailyClosingEvent {
   final String status;
   final String notes;
   final double countedCash;
+  final int? loginUserId;
 
   SubmitDailyClosing({
     required this.branchId,
     required this.status,
     required this.notes,
     required this.countedCash,
+    this.loginUserId,
   });
 }

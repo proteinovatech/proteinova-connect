@@ -9,6 +9,8 @@ class DailyClosingModel {
   final ClosingStockValue closingStockValue;
   final TodaysSummary todaysSummary;
   final String notes;
+  final SalesExpenseDetail sales;
+  final SalesExpenseDetail expenses;
 
   DailyClosingModel({
     required this.status,
@@ -21,6 +23,8 @@ class DailyClosingModel {
     required this.closingStockValue,
     required this.todaysSummary,
     required this.notes,
+    required this.sales,
+    required this.expenses,
   });
 
   factory DailyClosingModel.fromJson(Map<String, dynamic> json) {
@@ -35,9 +39,38 @@ class DailyClosingModel {
       closingStockValue: ClosingStockValue.fromJson(json['closing_stock_value'] ?? {}),
       todaysSummary: TodaysSummary.fromJson(json['todays_summary'] ?? {}),
       notes: json['notes'] ?? "",
+      sales: SalesExpenseDetail.fromJson(json['sales'] ?? {}),
+      expenses: SalesExpenseDetail.fromJson(json['expenses'] ?? {}),
     );
   }
 }
+
+class SalesExpenseDetail {
+  final num total;
+  final num cash;
+  final num upi;
+  final num card;
+  final num online;
+
+  SalesExpenseDetail({
+    required this.total,
+    required this.cash,
+    required this.upi,
+    required this.card,
+    required this.online,
+  });
+
+  factory SalesExpenseDetail.fromJson(Map<String, dynamic> json) {
+    return SalesExpenseDetail(
+      total: json['total'] ?? 0,
+      cash: json['cash'] ?? 0,
+      upi: json['upi'] ?? 0,
+      card: json['card'] ?? 0,
+      online: json['online'] ?? 0,
+    );
+  }
+}
+
 
 class StockSummaryData {
   final num totalOpening;
