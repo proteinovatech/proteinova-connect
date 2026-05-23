@@ -5,8 +5,8 @@ import 'package:flutter/services.dart'
         FilteringTextInputFormatter,
         LengthLimitingTextInputFormatter;
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
-import 'package:proteinova_connect/features/admin/supplier/models/supplier_model.dart';
-import 'package:proteinova_connect/features/admin/supplier/services/supplier_service.dart';
+import 'package:proteinova_connect/features/warehouse/supplier/service/supplier_service.dart';
+import 'package:proteinova_connect/features/warehouse/supplier/models/supplier_model.dart';
 
 class AddSupplierBottomSheet extends StatefulWidget {
   final Supplier? supplierToEdit;
