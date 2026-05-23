@@ -5,16 +5,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_bloc.dart';
-import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_event.dart' show FetchInventoryEvent;
-import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/features/branch/branch_dashboard/widget/activityitem.dart';
+import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_bloc.dart';
+import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_event.dart';
+import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_state.dart';
 import 'package:proteinova_connect/features/branch/inventory/presentation/receivestock.dart';
-import 'package:proteinova_connect/features/branch/inventory/widget/order_shipmentcard.dart';
 import 'package:proteinova_connect/features/branch/inventory/widget/shipmentcard.dart';
 
 class Inventory extends StatefulWidget {
@@ -25,105 +23,17 @@ class Inventory extends StatefulWidget {
 }
 
 class _InventoryState extends State<Inventory> {
- 
   int branchId = 1;
   String userRole = "Staff";
   String branchName = "";
-  
-
   final TextEditingController searchController = TextEditingController();
   String searchQuery = "";
 
   @override
   void initState() {
     super.initState();
-    _loadUserData().then((_) {
-
-    context.read<InventoryBloc>().add(
-      FetchInventoryEvent(),
-    );
-
-  });
+    _loadUserData();
   }
-  Future<void> handleMarkArrival(
-  Map<String, dynamic> shipment,
-) async {
-
-  final rawId = shipment["dispatch_id"];
-
-  if (rawId == null) {
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          "Error: Dispatch ID not found in row data.",
-        ),
-      ),
-    );
-
-    return;
-  }
-
-  try {
-
-    final String baseUrl =
-        dotenv.env['BASE_URL'] ?? "";
-
-    final response = await http.put(
-      Uri.parse(
-        "$baseUrl/api/dispatch/$rawId/status",
-      ),
-
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-
-      body: jsonEncode({
-        "status": "ARRIVAL",
-      }),
-    );
-
-    if (response.statusCode == 200) {
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Shipment marked as ARRIVED successfully!",
-          ),
-        ),
-      );
-
-      context.read<InventoryBloc>().add(
-        FetchInventoryEvent(),
-      );
-
-    } else {
-
-      final errData = jsonDecode(response.body);
-
-      final errMsg =
-          errData['error'] ??
-          "Failed to mark arrival";
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errMsg),
-        ),
-      );
-    }
-
-  } catch (err) {
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          "Failed to mark arrival: $err",
-        ),
-      ),
-    );
-  }
-}
 
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -135,11 +45,66 @@ class _InventoryState extends State<Inventory> {
             ? '${roleStr[0].toUpperCase()}${roleStr.substring(1)}'
             : 'Staff';
       });
+      // Fire the fetch event with dynamic branch ID
+      context.read<InventoryBloc>().add(
+        FetchInventoryEvent(branchId: branchId),
+      );
     }
   }
 
- 
-  
+  Future<void> handleMarkArrival(Map<String, dynamic> shipment) async {
+    final rawId = shipment["dispatch_id"].toString().replaceAll(
+      RegExp(r'[^0-9]'),
+      '',
+    );
+    if (rawId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Error: Dispatch ID not found in row data."),
+        ),
+      );
+      return;
+    }
+
+    try {
+      final String baseUrl = dotenv.env['BASE_URL'] ?? "";
+      final response = await http.put(
+        Uri.parse("$baseUrl/api/dispatch/$rawId/status"),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: jsonEncode({"status": "ARRIVAL"}),
+      );
+
+      if (response.statusCode == 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Shipment marked as ARRIVED successfully!"),
+            ),
+          );
+          context.read<InventoryBloc>().add(
+            FetchInventoryEvent(branchId: branchId),
+          );
+        }
+      } else {
+        final errData = jsonDecode(response.body);
+        final errMsg = errData['error'] ?? "Failed to mark arrival";
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(errMsg)));
+        }
+      }
+    } catch (err) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Failed to mark arrival: $err")));
+      }
+    }
+  }
 
   String formatDate(String? dateStr) {
     if (dateStr == null || dateStr.isEmpty) return "No Date";
@@ -156,462 +121,1067 @@ class _InventoryState extends State<Inventory> {
 
   Color getStatusBgColor(String status) {
     switch (status.trim().toUpperCase()) {
-      case "ARRIVAL":
+      case "READY FOR UNLOAD":
       case "READY_FOR_UNLOAD":
-        return Colors.green.shade100;
+      case "ARRIVAL":
+        return const Color(0xFFDCFCE7); // green
+      case "PENDING":
+        return const Color(0xFFFFF3C7); // orange
+      case "IN TRANSIT":
       case "IN_TRANSIT":
+      case "EXPECTED TODAY":
       case "EXPECTED_TODAY":
-        return Colors.blue.shade100;
+        return const Color(0xFFE2E8F0); // gray
       case "DELAYED":
-        return Colors.red.shade100;
-      case "RECEIVED":
-      case "DELIVERED":
-        return Colors.grey.shade200;
+        return const Color(0xFFFEE2E2); // red
+      case "TRACK SHIPMENT":
+      case "TRACK_SHIPMENT":
+        return Colors.black26;
       default:
-        return Colors.orange.shade100;
+        return const Color(0xFFF1F5F9);
     }
   }
 
   Color getStatusTextColor(String status) {
     switch (status.trim().toUpperCase()) {
-      case "ARRIVAL":
+      case "READY FOR UNLOAD":
       case "READY_FOR_UNLOAD":
-        return Colors.green.shade800;
+      case "ARRIVAL":
+        return const Color(0xFF15803D);
+      case "PENDING":
+        return const Color(0xFFB45309);
+      case "IN TRANSIT":
       case "IN_TRANSIT":
+      case "EXPECTED TODAY":
       case "EXPECTED_TODAY":
-        return Colors.blue.shade800;
+        return const Color(0xFF475569);
       case "DELAYED":
-        return Colors.red.shade800;
-      case "RECEIVED":
-      case "DELIVERED":
-        return Colors.grey.shade800;
+        return const Color(0xFFB91C1C);
+      case "TRACK SHIPMENT":
+      case "TRACK_SHIPMENT":
+        return Colors.black87;
       default:
-        return Colors.orange.shade800;
+        return const Color(0xFF64748B);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<InventoryBloc, InventoryState>(
-  builder: (context, state) {
+      builder: (context, state) {
+        if (state is InventoryLoading) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-    if (state is InventoryLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
+        if (state is InventoryError) {
+          return Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Error: ${state.message}",
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _loadUserData,
+                    child: const Text("Retry"),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
-    if (state is InventoryError) {
-      return Scaffold(
-        body: Center(
-          child: Text(state.message),
-        ),
-      );
-    }
+        if (state is InventoryLoaded) {
+          final inventoryData = state.inventoryData;
+          final cards = inventoryData["cards"] ?? {};
+          final rawShipments = inventoryData["shipments"] as List? ?? [];
+          final recentActivity =
+              inventoryData["recent_activity"] as List? ?? [];
+          branchName = inventoryData["branch_name"] ?? "";
 
-    if (state is InventoryLoaded) {
+          // Filter shipments locally by search query
+          final shipments = rawShipments.where((s) {
+            if (searchQuery.isEmpty) return true;
+            final q = searchQuery.toLowerCase();
+            final code = (s["dispatch_code"] ?? "").toString().toLowerCase();
+            final from = (s["supplier_or_from"] ?? "").toString().toLowerCase();
+            final driver = (s["vehicle_driver"] ?? "").toString().toLowerCase();
+            final prod = (s["product_summary"] ?? "").toString().toLowerCase();
+            return code.contains(q) ||
+                from.contains(q) ||
+                driver.contains(q) ||
+                prod.contains(q);
+          }).toList();
 
-      final inventoryData = state.inventoryData;
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final bool isDesktop = constraints.maxWidth >= 900;
 
-      final cards = inventoryData["cards"] ?? {};
-
-      final rawShipments =
-          inventoryData["shipments"] as List? ?? [];
-
-      final recentActivity =
-          inventoryData["recent_activity"] as List? ?? [];
-
-      branchName =
-          inventoryData["branch_name"] ?? "";
-
-      final shipments = rawShipments.where((s) {
-
-        if (searchQuery.isEmpty) return true;
-
-        final q = searchQuery.toLowerCase();
-
-        final code =
-            (s["dispatch_code"] ?? "")
-                .toString()
-                .toLowerCase();
-
-        final from =
-            (s["supplier_or_from"] ?? "")
-                .toString()
-                .toLowerCase();
-
-        final driver =
-            (s["vehicle_driver"] ?? "")
-                .toString()
-                .toLowerCase();
-
-        final prod =
-            (s["product_summary"] ?? "")
-                .toString()
-                .toLowerCase();
-
-        return code.contains(q) ||
-            from.contains(q) ||
-            driver.contains(q) ||
-            prod.contains(q);
-
-      }).toList();
-    return Scaffold(
-      backgroundColor: AppColors.background1,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        scrolledUnderElevation: 0,
-        title: Text("Incoming Stock", style: AppTextStyles.headingText22),
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header role info matching React dashboard header
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            color: AppColors.background,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
+              return Scaffold(
+                backgroundColor: const Color(0xFFF8FAFC),
+                body: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "${branchName.isNotEmpty ? branchName : "Branch"} Inventory",
-                      style: AppTextStyles.headingText22.copyWith(fontSize: 18),
+                    // Header Bar
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      color: AppColors.background,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${branchName.isNotEmpty ? branchName : "Branch"} Inventory",
+                                style: AppTextStyles.headingText22,
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.verified_user_outlined,
+                                    size: 16,
+                                    color: Color(0xFF10B981),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    "Role: $userRole",
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.verified_user,
-                          size: 14,
-                          color: Colors.green,
+                    const Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Color(0xFFE2E8F0),
+                    ),
+
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Page Description
+                            Text(
+                              "Incoming Stock Queue",
+                              style: AppTextStyles.headingText22.copyWith(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              "Manage and receive incoming shipments from suppliers to update inventory.",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Metric Cards Grid
+                            _buildMetricCards(cards, constraints.maxWidth),
+                            const SizedBox(height: 32),
+
+                            // Main Content layout: Side-by-side on desktop, Stacked on mobile
+                            isDesktop
+                                ? Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        flex: 7,
+                                        child: _buildShipmentsPanel(
+                                          shipments,
+                                          isDesktop,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 24),
+                                      Expanded(
+                                        flex: 3,
+                                        child: _buildRecentActivityPanel(
+                                          recentActivity,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      _buildShipmentsPanel(
+                                        shipments,
+                                        isDesktop,
+                                      ),
+                                      const SizedBox(height: 24),
+                                      _buildRecentActivityPanel(recentActivity),
+                                    ],
+                                  ),
+                          ],
                         ),
-                        const SizedBox(width: 4),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        }
+
+        return const SizedBox();
+      },
+    );
+  }
+
+  Widget _buildMetricCards(Map<dynamic, dynamic> cards, double width) {
+    final double cardWidth = width >= 900
+        ? (width - 120) / 4
+        : width >= 600
+        ? (width - 70) / 2
+        : width - 48;
+
+    return Wrap(
+      spacing: 16,
+      runSpacing: 16,
+      children: [
+        SizedBox(
+          width: cardWidth,
+          child: ShipmentCard(
+            title: "Expected Today",
+            count: "${cards["expected_today"] ?? 0} Shipments",
+            subtitle: "Today's expected deliveries",
+            icon: Icons.calendar_today_outlined,
+            iconColor: Colors.blueAccent,
+          ),
+        ),
+        SizedBox(
+          width: cardWidth,
+          child: ShipmentCard(
+            title: "Ready for Unloading",
+            count: "${cards["ready_for_unloading"] ?? 0} Shipments",
+            subtitle: "Requires immediate action",
+            icon: Icons.local_shipping_outlined,
+            iconColor: Colors.green,
+          ),
+        ),
+        SizedBox(
+          width: cardWidth,
+          child: ShipmentCard(
+            title: "Total in Transit",
+            count: "${formatNumber(cards["total_eggs_in_transit"])} Eggs",
+            subtitle: "Stock currently moving",
+            icon: Icons.send_outlined,
+            iconColor: Colors.orange,
+          ),
+        ),
+        SizedBox(
+          width: cardWidth,
+          child: ShipmentCard(
+            title: "Delayed in Transit",
+            count: "${cards["delayed_in_transit"] ?? 0} Shipments",
+            subtitle: "Current transit delays",
+            icon: Icons.warning_amber_outlined,
+            iconColor: Colors.red,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildShipmentsPanel(List<dynamic> shipments, bool isDesktop) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Local Search and Filter Header
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: TextField(
+                    controller: searchController,
+                    onChanged: (val) {
+                      setState(() {
+                        searchQuery = val;
+                      });
+                    },
+                    decoration: const InputDecoration(
+                      icon: Icon(
+                        Icons.search,
+                        color: Color(0xFF64748B),
+                        size: 20,
+                      ),
+                      hintText: "Search PO, Supplier, or Driver...",
+                      hintStyle: TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 14,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Shipment Data Table (Desktop) or Cards List (Mobile)
+          if (shipments.isEmpty)
+            _buildEmptyState()
+          else if (isDesktop)
+            _buildShipmentTable(shipments)
+          else
+            _buildShipmentCardsList(shipments),
+
+          const SizedBox(height: 20),
+
+          // Pagination UI
+          Divider(color: Colors.grey.shade200),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Showing ${shipments.length} records",
+                style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+              ),
+              Row(
+                children: [
+                  OutlinedButton(
+                    onPressed: null,
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                    ),
+                    child: const Text("Previous"),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton(
+                    onPressed: () {},
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                    ),
+                    child: const Text("Next"),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShipmentTable(List<dynamic> shipments) {
+    return Column(
+      children: [
+        Table(
+          columnWidths: const {
+            0: FlexColumnWidth(1.5), // Record
+            1: FlexColumnWidth(1.2), // Source
+            2: FlexColumnWidth(1.3), // Driver
+            3: FlexColumnWidth(1.5), // Summary
+            4: FlexColumnWidth(1.0), // Status
+            5: FlexColumnWidth(1.5), // Action
+          },
+          children: [
+            TableRow(
+              decoration: const BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+                ),
+              ),
+              children: [
+                _buildHeaderCell("Shipment Record"),
+                _buildHeaderCell("Source Details"),
+                _buildHeaderCell("Vehicle & Driver"),
+                _buildHeaderCell("Product Summary"),
+                _buildHeaderCell("Status"),
+                _buildHeaderCell("Action", textAlign: TextAlign.right),
+              ],
+            ),
+            ...shipments.map((row) {
+              final status = (row["status"] ?? "").toString().replaceAll(
+                "_",
+                " ",
+              );
+              final isArrival = row["status"] == "ARRIVAL";
+              final isMarkArrival =
+                  row["status"] == "IN_TRANSIT" ||
+                  row["status"] == "EXPECTED_TODAY" ||
+                  row["status"] == "DELAYED";
+
+              return TableRow(
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: Colors.grey.shade100),
+                  ),
+                ),
+                children: [
+                  // Record
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          "Role: $userRole",
+                          row["dispatch_code"] ?? "N/A",
                           style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "Exp: ${formatDate(row["expected_arrival"])}",
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF64748B),
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Text(
-                  //   "Incoming Stock Queue",
-                  //   style: AppTextStyles.headingText22.copyWith(fontSize: 20),
-                  // ),
-                  // const SizedBox(height: 4),
-                  // const Text(
-                  //   "Manage and receive incoming shipments from suppliers to update inventory.",
-                  //   style: TextStyle(fontSize: 12, color: Colors.grey),
-                  // ),
-                  const SizedBox(height: 3),
-
-                  // Cards Layout
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      final bool isTablet = constraints.maxWidth >= 700;
-
-                      final double cardWidth = isTablet
-                          ? (constraints.maxWidth - 36) / 4
-                          : (constraints.maxWidth - 10) / 2;
-
-                      return Wrap(
-                        spacing: isTablet ? 12 : 10,
-
-                        runSpacing: isTablet ? 12 : 10,
-
-                        children: [
-                          SizedBox(
-                            width: cardWidth,
-
-                            child: ShipmentCard(
-                              title: "EXPECTED TODAY",
-
-                              count:
-                                  "${cards["expected_today"] ?? 0} Shipments",
-
-                              subtitle: "Today's expected deliveries",
-
-                              icon: Icons.event,
-
-                              iconColor: Colors.blue,
-                            ),
-                          ),
-
-                          SizedBox(
-                            width: cardWidth,
-
-                            child: ShipmentCard(
-                              title: "READY FOR UNLOADING",
-
-                              count:
-                                  "${cards["ready_for_unloading"] ?? 0} Shipments",
-
-                              subtitle: "Requires immediate action",
-
-                              icon: Icons.local_shipping_outlined,
-
-                              iconColor: Colors.green,
-                            ),
-                          ),
-
-                          SizedBox(
-                            width: cardWidth,
-
-                            child: ShipmentCard(
-                              title: "TOTAL IN TRANSIT",
-
-                              count:
-                                  "${formatNumber(cards["total_eggs_in_transit"])} Eggs",
-
-                              subtitle: "Stock currently moving",
-
-                              icon: Icons.send_outlined,
-
-                              iconColor: Colors.orange,
-                            ),
-                          ),
-
-                          SizedBox(
-                            width: cardWidth,
-
-                            child: ShipmentCard(
-                              title: "DELAYED IN TRANSIT",
-
-                              count:
-                                  "${cards["delayed_in_transit"] ?? 0} Shipments",
-
-                              subtitle: "Current transit delays",
-
-                              icon: Icons.warning_amber_rounded,
-
-                              iconColor: Colors.red,
-                            ),
-                          ),
-                        ],
-                      );
-                    },
                   ),
-                  const SizedBox(height: 24),
+                  // Source
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          row["supplier_or_from"] ?? "N/A",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          "Main Warehouse",
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF94A3B8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Vehicle
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          row["vehicle_driver"] ?? "N/A",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          "Vehicle Info",
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF94A3B8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Product Summary
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          row["product_summary"] ?? "N/A",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "${formatNumber(row["total_eggs"])} Eggs",
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Status Badge
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: getStatusBgColor(row["status"] ?? ""),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          status,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: getStatusTextColor(row["status"] ?? ""),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Actions
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (isArrival)
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Receivestock(
+                                    dispatchid: row["dispatch_id"],
+                                  ),
+                                ),
+                              ).then((value) {
+                                if (value == true) {
+                                  context.read<InventoryBloc>().add(
+                                    FetchInventoryEvent(branchId: branchId),
+                                  );
+                                }
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF10B981),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              "Receive Stock",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        if (isMarkArrival)
+                          ElevatedButton(
+                            onPressed: () => handleMarkArrival(row),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2563EB),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              "Mark as Arrival",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.file_download_outlined,
+                            color: Color(0xFF64748B),
+                            size: 20,
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Receivestock(
+                                  dispatchid: row["dispatch_id"],
+                                ),
+                              ),
+                            ).then((value) {
+                              if (value == true) {
+                                context.read<InventoryBloc>().add(
+                                  FetchInventoryEvent(branchId: branchId),
+                                );
+                              }
+                            });
+                          },
+                          tooltip: "View Details",
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }),
+          ],
+        ),
+      ],
+    );
+  }
 
-                  // Search Controller Bar matching React's po-table-controls
+  Widget _buildShipmentCardsList(List<dynamic> shipments) {
+    return ListView.builder(
+      itemCount: shipments.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        final row = shipments[index];
+        final status = (row["status"] ?? "").toString().replaceAll("_", " ");
+        final isArrival = row["status"] == "ARRIVAL";
+        final isMarkArrival =
+            row["status"] == "IN_TRANSIT" ||
+            row["status"] == "EXPECTED_TODAY" ||
+            row["status"] == "DELAYED";
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    row["dispatch_code"] ?? "N/A",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
+                      horizontal: 10,
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey.shade300),
+                      color: getStatusBgColor(row["status"] ?? ""),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    child: TextField(
-                      controller: searchController,
-                      onChanged: (val) {
-                        setState(() {
-                          searchQuery = val;
-                        });
-                      },
-                      decoration: const InputDecoration(
-                        icon: Icon(Icons.search, color: Colors.grey),
-                        hintText: "Search PO, Supplier, or Driver...",
-                        border: InputBorder.none,
-                        isDense: true,
+                    child: Text(
+                      status,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: getStatusTextColor(row["status"] ?? ""),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
-
-                  // Shipments Heading
-                  Text("Shipments", style: AppTextStyles.headingText22),
-                  const SizedBox(height: 10),
-
-                  // Shipments List
-                  shipments.isEmpty
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 40,
-                              horizontal: 20,
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.local_shipping_outlined,
-                                  size: 60,
-                                  color: Colors.grey.withOpacity(0.3),
-                                ),
-                                const SizedBox(height: 12),
-                                const Text(
-                                  "No Incoming Stock Found",
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF334155),
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                const Text(
-                                  "There are currently no pending shipments or arrivals for this branch.\nNew dispatches from the warehouse will appear here automatically.",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Color(0xFF64748B),
-                                    height: 1.5,
-                                  ),
-                                ),
-                              ],
-                            ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "Exp: ${formatDate(row["expected_arrival"])}",
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 12),
+              Divider(color: Colors.grey.shade100),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "From Supplier",
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF94A3B8),
                           ),
-                        )
-                      : ListView.builder(
-                          itemCount: shipments.length,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            final shipment = shipments[index];
-                            final status = (shipment["status"] ?? "")
-                                .toString()
-                                .trim()
-                                .toUpperCase();
-
-                            final isMarkArrival =
-                                status == "IN_TRANSIT" ||
-                                status == "EXPECTED_TODAY" ||
-                                status == "DELAYED";
-
-                            final isReceiveStock =
-                                status == "ARRIVAL" ||
-                                status == "READY_FOR_UNLOAD";
-
-                            return OrderShipmentcard(
-                              orderId: shipment["dispatch_code"] ?? "",
-                              dateTime: formatDate(
-                                shipment["expected_arrival"],
-                              ),
-                              status: status.replaceAll("_", " "),
-                              statusBgColor: getStatusBgColor(status),
-                              statusTextColor: getStatusTextColor(status),
-                              supplier: shipment["supplier_or_from"] ?? "",
-                              product: shipment["product_summary"] ?? "",
-                              quantity: "${shipment["total_trays"] ?? 0} Tray",
-                              buttonColor: isReceiveStock
-                                  ? const Color(0xFF10B981)
-                                  : isMarkArrival
-                                  ? const Color(0xFF2563EB)
-                                  : Colors.grey.shade400,
-                              buttonText: isReceiveStock
-                                  ? "Receive Stock"
-                                  : isMarkArrival
-                                  ? "Mark as Arrival"
-                                  : "View Details",
-                              onReceiveTap: () async {
-                                if (isMarkArrival) {
-                                  await handleMarkArrival(shipment);
-                                } else {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => Receivestock(
-                                        dispatchid: shipment["dispatch_id"],
-                                      ),
-                                    ),
-                                  ).then((value) {
-                                    if (value == true) {
-                                     context.read<InventoryBloc>().add(
-                                       FetchInventoryEvent(),);
-                                    }
-                                  });
-                                }
-                              },
-                            );
-                          },
                         ),
-                  const SizedBox(height: 24),
+                        const SizedBox(height: 2),
+                        Text(
+                          row["supplier_or_from"] ?? "N/A",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Vehicle & Driver",
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF94A3B8),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          row["vehicle_driver"] ?? "N/A",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Product Summary",
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF94A3B8),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          row["product_summary"] ?? "N/A",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Total Quantity",
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF94A3B8),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          "${formatNumber(row["total_eggs"])} Eggs",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  if (isArrival)
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  Receivestock(dispatchid: row["dispatch_id"]),
+                            ),
+                          ).then((value) {
+                            if (value == true) {
+                              context.read<InventoryBloc>().add(
+                                FetchInventoryEvent(branchId: branchId),
+                              );
+                            }
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          "Receive Stock",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  if (isMarkArrival)
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => handleMarkArrival(row),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2563EB),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          "Mark as Arrival",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.file_download_outlined,
+                      color: Color(0xFF64748B),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              Receivestock(dispatchid: row["dispatch_id"]),
+                        ),
+                      ).then((value) {
+                        if (value == true) {
+                          context.read<InventoryBloc>().add(
+                            FetchInventoryEvent(branchId: branchId),
+                          );
+                        }
+                      });
+                    },
+                    tooltip: "View Details",
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-                  // Recent Activity
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildHeaderCell(
+    String label, {
+    TextAlign textAlign = TextAlign.left,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Text(
+        label,
+        textAlign: textAlign,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF64748B),
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 20),
+        child: Column(
+          children: [
+            const Icon(
+              Icons.local_shipping_outlined,
+              size: 64,
+              color: Color(0xFFCBD5E1),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              "No Incoming Stock Found",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF334155),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "There are currently no pending shipments or arrivals for this branch.\nNew dispatches from the warehouse will appear here automatically.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentActivityPanel(List<dynamic> activities) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Recent Activity",
+            style: AppTextStyles.headingText22.copyWith(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 20),
+          if (activities.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: const [
+                    Icon(
+                      Icons.history_toggle_off_outlined,
+                      size: 36,
+                      color: Color(0xFFCBD5E1),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "No recent activity logs",
+                      style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ListView.builder(
+              itemCount: activities.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemBuilder: (context, index) {
+                final activity = activities[index];
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "Recent Activity",
-                        style: AppTextStyles.headingText22,
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.local_shipping_outlined,
+                          color: Color(0xFF2563EB),
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              activity["actor_name"] ?? "N/A",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: Color(0xFF1E293B),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              "${activity["activity"] ?? ""}  •  ${formatDate(activity["created_at"])}",
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-
-                  recentActivity.isEmpty
-                      ? const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(20),
-                            child: Text("No recent activity logs"),
-                          ),
-                        )
-                      : ListView.builder(
-                          itemCount: recentActivity.length,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            final item = recentActivity[index];
-
-                            return Column(
-                              children: [
-                                ActivityItem(
-                                  leading: const CircleAvatar(
-                                    backgroundColor: Colors.grey,
-                                    child: Icon(
-                                      Icons.person,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  title: item["actor_name"] ?? "",
-                                  subtitle: Text(item["activity"] ?? ""),
-                                  time: formatDate(item["created_at"]),
-                                  tag: item["activity_type"] ?? "",
-                                ),
-                                const SizedBox(height: 10),
-                              ],
-                            );
-                          },
-                        ),
-                ],
-              ),
+                );
+              },
             ),
-          ),
         ],
       ),
-    );}
-
-    return const SizedBox();
-  },
-);
-  }
-}
-
-extension NumberFormatting on num {
-  String toLocaleString() {
-    final formatter = NumberFormat('#,##,###');
-    return formatter.format(this);
+    );
   }
 }

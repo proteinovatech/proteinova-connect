@@ -17,6 +17,7 @@ class DailyClosing extends StatefulWidget {
 
 class _DailyClosingState extends State<DailyClosing> {
   int? branchId;
+  int? userId;
   final TextEditingController _notesController = TextEditingController();
   final TextEditingController _countedCashController = TextEditingController();
 
@@ -38,6 +39,7 @@ class _DailyClosingState extends State<DailyClosing> {
   Future<void> _loadBranchIdAndFetch() async {
     final prefs = await SharedPreferences.getInstance();
     branchId = prefs.getInt("branch_id");
+    userId = prefs.getInt("user_id");
     if (branchId != null) {
       _fetchData();
     }
@@ -302,11 +304,19 @@ class _DailyClosingState extends State<DailyClosing> {
               data.stockSummary.totalClosing,
             ),
             _buildStockRow(
-              "Eggs",
+              "All Stocks Eggs",
               data.stockSummary.totalOpeningEggs,
               data.stockSummary.totalReceivedEggs,
               data.stockSummary.totalSoldEggs,
               data.stockSummary.totalClosingEggs,
+            ),
+            _buildStockRow(
+              "Total",
+              data.stockSummary.totalOpening,
+              data.stockSummary.totalReceived,
+              data.stockSummary.totalSold,
+              data.stockSummary.totalClosing,
+              isBold: true,
             ),
           ],
         ),
@@ -314,21 +324,32 @@ class _DailyClosingState extends State<DailyClosing> {
     );
   }
 
-  DataRow _buildStockRow(String item, num op, num rec, num sold, num cls) {
+  DataRow _buildStockRow(
+    String item,
+    num op,
+    num rec,
+    num sold,
+    num cls, {
+    bool isBold = false,
+  }) {
+    final style = TextStyle(
+      fontSize: 12,
+      fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+    );
     return DataRow(
       cells: [
-        DataCell(Text(item, style: const TextStyle(fontSize: 12))),
+        DataCell(Text(item, style: style)),
         DataCell(
-          Text(op.toStringAsFixed(1), style: const TextStyle(fontSize: 12)),
+          Text(op.toStringAsFixed(1), style: style),
         ),
         DataCell(
-          Text(rec.toStringAsFixed(1), style: const TextStyle(fontSize: 12)),
+          Text(rec.toStringAsFixed(1), style: style),
         ),
         DataCell(
-          Text(sold.toStringAsFixed(1), style: const TextStyle(fontSize: 12)),
+          Text(sold.toStringAsFixed(1), style: style),
         ),
         DataCell(
-          Text(cls.toStringAsFixed(1), style: const TextStyle(fontSize: 12)),
+          Text(cls.toStringAsFixed(1), style: style),
         ),
       ],
     );
@@ -345,7 +366,7 @@ class _DailyClosingState extends State<DailyClosing> {
         children: [
           _buildSummaryItem(
             "Cash Sales",
-            "₹${data.salesSummary.cash.toStringAsFixed(2)}",
+            "₹${data.sales.cash.toStringAsFixed(2)}",
           ),
           _buildSummaryItem(
             "Closing Cash (System)",
@@ -353,7 +374,7 @@ class _DailyClosingState extends State<DailyClosing> {
           ),
           _buildSummaryItem(
             "Expenses (Cash)",
-            "₹${data.expenseSummary.cash.toStringAsFixed(2)}",
+            "₹${data.expenses.cash.toStringAsFixed(2)}",
           ),
           const Divider(),
           Padding(
@@ -447,11 +468,11 @@ class _DailyClosingState extends State<DailyClosing> {
           title: "Sales Summary",
           child: Row(
             children: [
-              Expanded(child: _buildStatBox("Total", data.salesSummary.total)),
+              Expanded(child: _buildStatBox("Total", data.sales.total)),
               const SizedBox(width: 8),
-              Expanded(child: _buildStatBox("Cash", data.salesSummary.cash)),
+              Expanded(child: _buildStatBox("Cash", data.sales.cash)),
               const SizedBox(width: 8),
-              Expanded(child: _buildStatBox("UPI", data.salesSummary.upi)),
+              Expanded(child: _buildStatBox("UPI", data.sales.upi)),
             ],
           ),
         ),
@@ -463,7 +484,7 @@ class _DailyClosingState extends State<DailyClosing> {
               Expanded(
                 child: _buildStatBox(
                   "Total",
-                  data.expenseSummary.total,
+                  data.expenses.total,
                   color: Colors.red.shade700,
                 ),
               ),
@@ -471,7 +492,7 @@ class _DailyClosingState extends State<DailyClosing> {
               Expanded(
                 child: _buildStatBox(
                   "Cash",
-                  data.expenseSummary.cash,
+                  data.expenses.cash,
                   color: Colors.red.shade700,
                 ),
               ),
@@ -479,7 +500,7 @@ class _DailyClosingState extends State<DailyClosing> {
               Expanded(
                 child: _buildStatBox(
                   "UPI",
-                  data.expenseSummary.upi,
+                  data.expenses.upi,
                   color: Colors.red.shade700,
                 ),
               ),
@@ -550,9 +571,9 @@ class _DailyClosingState extends State<DailyClosing> {
             title: "Checklist",
             child: Column(
               children: [
-                _buildCheckItem("Sales verified", "sales", isClosed),
-                _buildCheckItem("Cash counted", "cash", isClosed),
-                _buildCheckItem("Stock checked", "stock", isClosed),
+                _buildCheckItem("Verified all Sales entries", "sales", isClosed),
+                _buildCheckItem("Counted Physical Cash", "cash", isClosed),
+                _buildCheckItem("Checked stock level", "stock", isClosed),
               ],
             ),
           ),
@@ -707,6 +728,7 @@ class _DailyClosingState extends State<DailyClosing> {
         status: status,
         notes: _notesController.text,
         countedCash: double.tryParse(_countedCashController.text) ?? 0,
+        loginUserId: userId,
       ),
     );
   }

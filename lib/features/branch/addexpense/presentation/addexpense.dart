@@ -23,16 +23,16 @@ class _AddexpenseState extends State<Addexpense> {
   final TextEditingController dateController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
-final List<String> categoryList = [
-  "SALARY",
-  "RENT",
-  "ELECTRICITY",
-  "TRANSPORT",
-  "PACKING",
-  "MAINTENANCE",
-  "MISCELLANEOUS",
-  "OTHER_EXPENSES",
-];
+  final List<String> categoryList = [
+    "SALARY",
+    "RENT",
+    "ELECTRICITY",
+    "TRANSPORT",
+    "PACKING",
+    "MAINTENANCE",
+    "MISCELLANEOUS",
+    "OTHER_EXPENSES",
+  ];
 
   @override
   void initState() {
@@ -69,9 +69,9 @@ final List<String> categoryList = [
 
   void _submit() {
     if (selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a category")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please select a category")));
       return;
     }
     if (selectedPayment.isEmpty) {
@@ -81,21 +81,23 @@ final List<String> categoryList = [
       return;
     }
     if (amountController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter an amount")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please enter an amount")));
       return;
     }
 
     context.read<ExpenseBloc>().add(
-      SubmitExpense(data: {
-        "branch_id": branchId ?? 0,
-        "expense_date": dateController.text,
-        "category": selectedCategory,
-        "amount": amountController.text,
-        "payment_method": selectedPayment,
-        "description": descriptionController.text,
-      }),
+      SubmitExpense(
+        data: {
+          "branch_id": branchId ?? 0,
+          "expense_date": dateController.text,
+          "category": selectedCategory,
+          "amount": amountController.text,
+          "payment_method": selectedPayment,
+          "description": descriptionController.text,
+        },
+      ),
     );
   }
 
@@ -107,7 +109,10 @@ final List<String> categoryList = [
       listener: (context, state) {
         if (state is ExpenseSubmitSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.green),
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.green,
+            ),
           );
           Navigator.pop(context, true);
         } else if (state is ExpenseError) {
@@ -152,7 +157,9 @@ final List<String> categoryList = [
                       lastDate: DateTime(2101),
                     );
                     if (picked != null) {
-                      dateController.text = DateFormat('yyyy-MM-dd').format(picked);
+                      dateController.text = DateFormat(
+                        'yyyy-MM-dd',
+                      ).format(picked);
                     }
                   },
                   child: AbsorbPointer(
@@ -160,7 +167,9 @@ final List<String> categoryList = [
                       controller: dateController,
                       decoration: InputDecoration(
                         suffixIcon: const Icon(Icons.calendar_today),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
@@ -177,13 +186,16 @@ final List<String> categoryList = [
                   hint: const Text("Select Category"),
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                   icon: const Icon(Icons.keyboard_arrow_down),
                   items: categoryList.map((item) {
                     return DropdownMenuItem(value: item, child: Text(item));
                   }).toList(),
-                  onChanged: (value) => setState(() => selectedCategory = value),
+                  onChanged: (value) =>
+                      setState(() => selectedCategory = value),
                 ),
 
                 SizedBox(height: size.height * 0.02),
@@ -196,7 +208,9 @@ final List<String> categoryList = [
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     hintText: "Enter amount",
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
 
@@ -213,10 +227,16 @@ final List<String> categoryList = [
                         child: Container(
                           height: 45,
                           decoration: BoxDecoration(
-                            border: Border.all(color: selectedPayment == "CASH" ? Colors.blue : AppColors.border2),
+                            border: Border.all(
+                              color: selectedPayment == "CASH"
+                                  ? Colors.blue
+                                  : AppColors.border2,
+                            ),
                             borderRadius: BorderRadius.circular(8),
                             // ignore: deprecated_member_use
-                            color: selectedPayment == "CASH" ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+                            color: selectedPayment == "CASH"
+                                ? Colors.blue.withOpacity(0.1)
+                                : Colors.transparent,
                           ),
                           child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -236,10 +256,16 @@ final List<String> categoryList = [
                         child: Container(
                           height: 45,
                           decoration: BoxDecoration(
-                            border: Border.all(color: selectedPayment == "UPI" ? Colors.blue : Colors.grey),
+                            border: Border.all(
+                              color: selectedPayment == "UPI"
+                                  ? Colors.blue
+                                  : Colors.grey,
+                            ),
                             borderRadius: BorderRadius.circular(8),
                             // ignore: deprecated_member_use
-                            color: selectedPayment == "UPI" ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+                            color: selectedPayment == "UPI"
+                                ? Colors.blue.withOpacity(0.1)
+                                : Colors.transparent,
                           ),
                           child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -259,10 +285,16 @@ final List<String> categoryList = [
                         child: Container(
                           height: 45,
                           decoration: BoxDecoration(
-                            border: Border.all(color: selectedPayment == "BANK" ? Colors.blue : Colors.grey),
+                            border: Border.all(
+                              color: selectedPayment == "BANK"
+                                  ? Colors.blue
+                                  : Colors.grey,
+                            ),
                             borderRadius: BorderRadius.circular(8),
                             // ignore: deprecated_member_use
-                            color: selectedPayment == "CARD" ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+                            color: selectedPayment == "CARD"
+                                ? Colors.blue.withOpacity(0.1)
+                                : Colors.transparent,
                           ),
                           child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -288,51 +320,68 @@ final List<String> categoryList = [
                   maxLines: 3,
                   decoration: InputDecoration(
                     hintText: "Enter description",
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
 
                 SizedBox(height: size.height * 0.02),
 
                 // Attachment
-                RichText(
-                  text: const TextSpan(
-                    text: "Attachment ",
-                    style: TextStyle(color: Colors.black, fontSize: 16),
-                    children: [TextSpan(text: "(Optional)", style: TextStyle(color: Colors.grey))],
-                  ),
-                ),
-                SizedBox(height: size.height * 0.01),
-                InkWell(
-                  onTap: pickFile,
-                  child: Container(
-                    height: 100,
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.upload_file),
-                            const SizedBox(width: 8),
-                            Flexible(child: Text(fileName, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis)),
-                          ],
-                        ),
-                        const Text("PDF, JPG, PNG (Max 5MB)", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-                const Divider(),
+                // RichText(
+                //   text: const TextSpan(
+                //     text: "Attachment ",
+                //     style: TextStyle(color: Colors.black, fontSize: 16),
+                //     children: [TextSpan(text: "(Optional)", style: TextStyle(color: Colors.grey))],
+                //   ),
+                // ),
+                // SizedBox(height: size.height * 0.01),
+                // InkWell(
+                //   onTap: pickFile,
+                //   child: Container(
+                //     height: 100,
+                //     width: double.infinity,
+                //     padding: const EdgeInsets.symmetric(
+                //       horizontal: 12,
+                //       vertical: 8,
+                //     ),
+                //     decoration: BoxDecoration(
+                //       border: Border.all(color: Colors.grey),
+                //       borderRadius: BorderRadius.circular(8),
+                //     ),
+                //     child: Column(
+                //       mainAxisAlignment: MainAxisAlignment.center,
+                //       children: [
+                //         Row(
+                //           mainAxisAlignment: MainAxisAlignment.center,
+                //           children: [
+                //             const Icon(Icons.upload_file),
+                //             const SizedBox(width: 8),
+                //             Flexible(
+                //               child: Text(
+                //                 fileName,
+                //                 textAlign: TextAlign.center,
+                //                 overflow: TextOverflow.ellipsis,
+                //               ),
+                //             ),
+                //           ],
+                //         ),
+                //         const Text(
+                //           "PDF, JPG, PNG (Max 5MB)",
+                //           textAlign: TextAlign.center,
+                //           style: TextStyle(color: Colors.grey, fontSize: 12),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
+                // const SizedBox(height: 6),
+                // const Divider(),
                 SizedBox(height: size.height * 0.02),
 
                 // Action Buttons
@@ -356,7 +405,10 @@ final List<String> categoryList = [
                             border: Border.all(color: Colors.grey),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Text("Reset", style: TextStyle(fontWeight: FontWeight.w500)),
+                          child: const Text(
+                            "Reset",
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
                         ),
                       ),
                     ),
@@ -368,9 +420,14 @@ final List<String> categoryList = [
                             context: context,
                             builder: (_) => AlertDialog(
                               title: const Text("Confirm"),
-                              content: const Text("Are you sure you want to save this expense?"),
+                              content: const Text(
+                                "Are you sure you want to save this expense?",
+                              ),
                               actions: [
-                                TextButton(onPressed: () => Navigator.pop(context), child: const Text("No")),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("No"),
+                                ),
                                 TextButton(
                                   onPressed: () {
                                     Navigator.pop(context);
@@ -393,8 +450,21 @@ final List<String> categoryList = [
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: isSubmitting
-                                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                  : const Text("Save Expense", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text(
+                                      "Save Expense",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                             );
                           },
                         ),

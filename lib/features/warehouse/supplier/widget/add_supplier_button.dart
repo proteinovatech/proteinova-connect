@@ -406,7 +406,8 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                                       phone: phoneController.text.trim(),
                                       email: emailController.text.trim(),
                                       active: status == 'Active',
-                                      gstNumber: gstController.text.trim().isEmpty
+                                      gstNumber:
+                                          gstController.text.trim().isEmpty
                                           ? null
                                           : gstController.text.trim(),
                                     );

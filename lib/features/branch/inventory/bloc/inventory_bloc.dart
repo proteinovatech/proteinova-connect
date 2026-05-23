@@ -29,9 +29,16 @@ class InventoryBloc
       final String baseUrl =
           dotenv.env['BASE_URL'] ?? "";
 
+      int branchId = 1;
+      if (event is FetchInventoryEvent && event.branchId != null) {
+        branchId = event.branchId!;
+      } else if (event is RefreshInventoryEvent && event.branchId != null) {
+        branchId = event.branchId!;
+      }
+
       final response = await http.get(
         Uri.parse(
-          "$baseUrl/api/branch/incoming-stock/1",
+          "$baseUrl/api/branch/incoming-stock/$branchId",
         ),
       );
 

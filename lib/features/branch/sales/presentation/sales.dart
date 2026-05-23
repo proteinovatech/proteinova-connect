@@ -1,6 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:proteinova_connect/core/services/sales_receipt_service.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
@@ -20,19 +24,42 @@ class Sales extends StatefulWidget {
 class _SalesState extends State<Sales> {
   Size get size => MediaQuery.of(context).size;
   int branchId = 0;
+  String userRole = "Staff";
   final SalesRepository _repository = SalesRepository();
+  late final SalesBloc _salesBloc;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchTerm = "";
 
   @override
   void initState() {
     super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchTerm = _searchController.text.toLowerCase();
+      });
+    });
+    _salesBloc = SalesBloc();
     loadBranchData();
   }
 
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _salesBloc.close();
+    super.dispose();
+  }
+
   Future<void> loadBranchData() async {
-    // TEMP STATIC ID - replace later with login user branch id
-    branchId = 1;
+    final prefs = await SharedPreferences.getInstance();
     if (mounted) {
-      setState(() {});
+      setState(() {
+        branchId = prefs.getInt('branch_id') ?? 1;
+        final roleStr = prefs.getString('role') ?? 'staff';
+        userRole = roleStr.isNotEmpty
+            ? '${roleStr[0].toUpperCase()}${roleStr.substring(1)}'
+            : 'Staff';
+      });
+      _salesBloc.add(FetchSalesDashboard(branchId: branchId));
     }
   }
 
@@ -63,9 +90,8 @@ class _SalesState extends State<Sales> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) =>
-          SalesBloc()..add(FetchSalesDashboard(branchId: branchId)),
+    return BlocProvider.value(
+      value: _salesBloc,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
@@ -73,20 +99,6 @@ class _SalesState extends State<Sales> {
           scrolledUnderElevation: 0,
           elevation: 0,
           title: Text("Sales Overview", style: AppTextStyles.headingText22),
-          actions: [
-            // IconButton(
-            //   onPressed: () {},
-            //   icon: const Icon(Icons.notifications_none_outlined, color: Colors.black54),
-            // ),
-            // const SizedBox(width: 8),
-            // const Padding(
-            //   padding: EdgeInsets.only(right: 16),
-            //   child: CircleAvatar(
-            //     radius: 16,
-            //     backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=Branch+User&background=6366f1&color=fff'),
-            //   ),
-            // ),
-          ],
         ),
         body: BlocBuilder<SalesBloc, SalesState>(
           builder: (context, state) {
@@ -111,7 +123,7 @@ class _SalesState extends State<Sales> {
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () => context.read<SalesBloc>().add(
+                      onPressed: () => _salesBloc.add(
                         FetchSalesDashboard(branchId: branchId),
                       ),
                       child: const Text("Retry"),
@@ -125,10 +137,25 @@ class _SalesState extends State<Sales> {
               final dashboardData = state.dashboardData;
               final salesOrders = state.salesOrders;
 
+              final filteredOrders = salesOrders.where((order) {
+                if (_searchTerm.isEmpty) return true;
+                final orderId = (order['order_id'] ?? '')
+                    .toString()
+                    .toLowerCase();
+                final customer = (order['customer'] ?? '')
+                    .toString()
+                    .toLowerCase();
+                final status = (order['order_status'] ?? '')
+                    .toString()
+                    .toLowerCase();
+                return orderId.contains(_searchTerm) ||
+                    customer.contains(_searchTerm) ||
+                    status.contains(_searchTerm);
+              }).toList();
+
               return RefreshIndicator(
-                onRefresh: () async => context.read<SalesBloc>().add(
-                  FetchSalesDashboard(branchId: branchId),
-                ),
+                onRefresh: () async =>
+                    _salesBloc.add(FetchSalesDashboard(branchId: branchId)),
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(16),
@@ -141,9 +168,11 @@ class _SalesState extends State<Sales> {
                       const SizedBox(height: 24),
                       _buildDashboardGrid(dashboardData['cards'] ?? {}),
                       const SizedBox(height: 32),
-                      _buildRecentOrdersHeader(context),
+                      _buildRecentOrdersHeader(context, dashboardData),
                       const SizedBox(height: 16),
-                      _buildRecentOrdersTable(salesOrders),
+                      _buildSearchBar(),
+                      const SizedBox(height: 16),
+                      _buildRecentOrdersTable(filteredOrders),
                     ],
                   ),
                 ),
@@ -177,11 +206,11 @@ class _SalesState extends State<Sales> {
                 const Icon(
                   Icons.verified_user,
                   size: 14,
-                  color: Color(0xFFF59E0B),
+                  color: Color(0xFF16A34A),
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  "Branch Staff Account",
+                  "Role: $userRole",
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontSize: 13,
@@ -213,79 +242,291 @@ class _SalesState extends State<Sales> {
     );
   }
 
+  Widget _buildSearchBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: TextField(
+        controller: _searchController,
+        decoration: const InputDecoration(
+          prefixIcon: Icon(Icons.search, color: Color(0xFF94A3B8)),
+          hintText: "Search orders...",
+          hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(vertical: 12),
+        ),
+      ),
+    );
+  }
+
+  void _openDetailsModal(String title, List<Map<String, String>> modalData) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 8,
+          backgroundColor: Colors.white,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            "Detailed breakdown of the selected metric",
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close, color: Color(0xFF64748B)),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 8),
+                if (modalData.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 30),
+                    child: Center(
+                      child: Text(
+                        "No detailed data available for this metric today.",
+                        style: TextStyle(
+                          color: Color(0xFF64748B),
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  )
+                else
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Table(
+                        columnWidths: const {
+                          0: FlexColumnWidth(2.0),
+                          1: FlexColumnWidth(1.2),
+                          2: FlexColumnWidth(1.5),
+                        },
+                        children: [
+                          TableRow(
+                            decoration: const BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                            children: const [
+                              Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8),
+                                child: Text(
+                                  "Item / Category",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8),
+                                child: Text(
+                                  "Value",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8),
+                                child: Text(
+                                  "Notes",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  textAlign: TextAlign.left,
+                                ),
+                              ),
+                            ],
+                          ),
+                          ...modalData.map((row) {
+                            return TableRow(
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(color: Color(0xFFF1F5F9)),
+                                ),
+                              ),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  child: Text(
+                                    row['label'] ?? "",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  child: Text(
+                                    row['value'] ?? "",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.right,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  child: Text(
+                                    row['sub'] ?? "",
+                                    style: const TextStyle(
+                                      color: Color(0xFF64748B),
+                                    ),
+                                    textAlign: TextAlign.left,
+                                  ),
+                                ),
+                              ],
+                            );
+                          }).toList(),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildDashboardGrid(Map<String, dynamic> cards) {
     final width = MediaQuery.of(context).size.width;
-
     final bool isTablet = width >= 700;
 
     return GridView.count(
       shrinkWrap: true,
-
       physics: const NeverScrollableScrollPhysics(),
-
       crossAxisCount: isTablet ? 4 : 2,
-
       mainAxisSpacing: isTablet ? 12 : 16,
-
       crossAxisSpacing: isTablet ? 12 : 16,
-
       childAspectRatio: isTablet ? 1.55 : 1.3,
-
       children: [
         _buildStatCard(
           "Total Sales",
-
           "₹${((cards['total_sales']?['value'] ?? 0) as num).toLocaleString()}",
-
           "Lifetime Revenue",
-
           Icons.currency_rupee,
-
           const Color(0xFFFFFBEB),
-
           const Color(0xFFD97706),
+          onTap: () {
+            final breakdown =
+                cards['payments_breakdown'] as List<dynamic>? ?? [];
+            final modalData = breakdown
+                .map(
+                  (p) => {
+                    'label': p['payment_method']?.toString() ?? "N/A",
+                    'value': "₹${((p['amount'] ?? 0) as num).toLocaleString()}",
+                    'sub': "${p['count'] ?? 0} Orders",
+                  },
+                )
+                .toList();
+            _openDetailsModal("Payment Method Breakdown", modalData);
+          },
         ),
-
         _buildStatCard(
           "Total Orders",
-
           "${cards['total_orders']?['value'] ?? 0}",
-
           "Total Transactions",
-
           Icons.shopping_bag_outlined,
-
           const Color(0xFFF1F6FF),
-
           const Color(0xFF2563EB),
+          onTap: () {
+            _openDetailsModal("Order Volume Details", [
+              {
+                'label': "Total Transactions",
+                'value': "${cards['total_orders']?['value'] ?? 0}",
+                'sub': "Total unique sales generated lifetime",
+              },
+            ]);
+          },
         ),
-
         _buildStatCard(
-          "Eggs Sold",
-
+          "Eggs Sold (Today)",
           "${((cards['total_sales_eggs']?['value'] ?? 0) as num).toLocaleString()}",
-
           "Today's Volume",
-
           Icons.egg_outlined,
-
           const Color(0xFFEFF6FF),
-
           const Color(0xFF3B82F6),
+          onTap: () {
+            final breakdown = cards['eggs_breakdown'] as List<dynamic>? ?? [];
+            final modalData = breakdown
+                .map(
+                  (e) => {
+                    'label': e['egg_category_grade']?.toString() ?? "N/A",
+                    'value':
+                        "${((e['eggs'] ?? 0) as num).toLocaleString()} Eggs",
+                    'sub': "${e['trays'] ?? 0} Trays Sold",
+                  },
+                )
+                .toList();
+            _openDetailsModal("Egg Sales Breakdown", modalData);
+          },
         ),
-
         _buildStatCard(
           "Today's Sales",
-
           "₹${((cards['total_sales']?['today'] ?? 0) as num).toLocaleString()}",
-
           "Recorded Today",
-
           Icons.trending_up,
-
           const Color(0xFFF0FDF4),
-
           const Color(0xFF16A34A),
+          onTap: () {
+            final breakdown =
+                cards['today_payments_breakdown'] as List<dynamic>? ?? [];
+            final modalData = breakdown
+                .map(
+                  (p) => {
+                    'label': p['payment_method']?.toString() ?? "N/A",
+                    'value': "₹${((p['amount'] ?? 0) as num).toLocaleString()}",
+                    'sub': "${p['count'] ?? 0} Orders Today",
+                  },
+                )
+                .toList();
+            _openDetailsModal("Today's Sales Breakdown", modalData);
+          },
         ),
       ],
     );
@@ -297,73 +538,81 @@ class _SalesState extends State<Sales> {
     String sub,
     IconData icon,
     Color bg,
-    Color iconColor,
-  ) {
+    Color iconColor, {
+    VoidCallback? onTap,
+  }) {
     final isTablet = MediaQuery.of(context).size.width >= 700;
-    return Container(
-      padding: EdgeInsets.all(isTablet ? 8 : 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.grey.shade600,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: bg,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, size: 18, color: iconColor),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF1E293B),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: EdgeInsets.all(isTablet ? 8 : 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFF1F5F9)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            sub,
-            style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.grey.shade600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: bg,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, size: 18, color: iconColor),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF1E293B),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              sub,
+              style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildRecentOrdersHeader(BuildContext context) {
+  Widget _buildRecentOrdersHeader(
+    BuildContext context,
+    Map<String, dynamic> dashboardData,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const Text(
-          "Recent Orders",
+          "Recent Sales Orders",
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -371,13 +620,153 @@ class _SalesState extends State<Sales> {
           ),
         ),
         TextButton.icon(
-          onPressed: () {},
+          onPressed: () => _handleExport(dashboardData),
           icon: const Icon(Icons.ios_share, size: 16),
           label: const Text("Export"),
           style: TextButton.styleFrom(foregroundColor: const Color(0xFF6366F1)),
         ),
       ],
     );
+  }
+
+  Future<void> _handleExport(Map<String, dynamic> dashboardData) async {
+    final recentOrders = dashboardData['recent_orders'] as List<dynamic>?;
+    if (recentOrders == null || recentOrders.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No recent orders to export.")),
+      );
+      return;
+    }
+
+    try {
+      final headers = [
+        "Order ID",
+        "Date",
+        "Customer",
+        "Items",
+        "Amount",
+        "Status",
+      ];
+      final rows = recentOrders.map((o) {
+        String dateFormatted = "";
+        if (o['date'] != null) {
+          try {
+            dateFormatted = DateFormat(
+              'dd/MM/yyyy',
+            ).format(DateTime.parse(o['date'].toString()));
+          } catch (_) {
+            dateFormatted = o['date'].toString();
+          }
+        }
+        return [
+          o['order_id']?.toString() ?? "",
+          dateFormatted,
+          o['customer']?.toString() ?? "",
+          o['items_qty']?.toString() ?? "",
+          o['amount']?.toString() ?? "",
+          o['order_status']?.toString() ?? "",
+        ];
+      }).toList();
+
+      String csvContent = headers.join(",") + "\n";
+      for (var row in rows) {
+        csvContent +=
+            row
+                .map((field) => '"${field.toString().replaceAll('"', '""')}"')
+                .join(",") +
+            "\n";
+      }
+
+      final directory = await getTemporaryDirectory();
+      final dateStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final file = File('${directory.path}/sales_report_$dateStr.csv');
+      await file.writeAsString(csvContent);
+
+      await OpenFilex.open(file.path);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Export failed: $e")));
+    }
+  }
+
+  void _handlePrintReceipt(dynamic orderId) async {
+    showDialog(
+      context: context,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+    try {
+      final order = await _repository.fetchSingleSale(orderId.toString());
+      if (mounted) {
+        Navigator.pop(context);
+        final orderData = order['data'] ?? order;
+        SalesReceiptService.generateAndPrintFromMap(orderData, isThermal: true);
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      }
+    }
+  }
+
+  void _handleCancelOrder(dynamic orderId) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Cancel Order"),
+        content: const Text(
+          "Are you sure you want to cancel this pending order?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("No"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              "Yes, Cancel",
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final intId = int.tryParse(orderId.toString());
+      if (intId != null) {
+        await _repository.rejectSale(approvalId: intId);
+      } else {
+        throw Exception("Invalid order ID for cancellation");
+      }
+
+      if (mounted) {
+        Navigator.pop(context); // Remove loader
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Order cancelled successfully.")),
+        );
+        _salesBloc.add(FetchSalesDashboard(branchId: branchId));
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Remove loader
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Cancellation failed: $e")));
+      }
+    }
   }
 
   Widget _buildRecentOrdersTable(List<dynamic> orders) {
@@ -433,74 +822,119 @@ class _SalesState extends State<Sales> {
       status,
       orderId: order['order_id']?.toString(),
     );
+    final orderId = order['id'] ?? order['order_id'];
 
-    return InkWell(
-      onTap: () => _showOrderDetails(order['id'] ?? order['order_id']),
-      borderRadius: BorderRadius.circular(20),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.receipt_long_outlined,
-                color: statusColor,
-                size: 20,
-              ),
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: statusColor.withOpacity(0.1),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              flex: 3,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    order['customer']?.toString() ?? "Walk-in Customer",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: Color(0xFF1E293B),
+            child: Icon(
+              Icons.receipt_long_outlined,
+              color: statusColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  order['customer']?.toString() ?? "Walk-in Customer",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "${order['order_id']} • ${DateFormat('dd MMM').format(DateTime.parse(order['date']))}",
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  "₹${((order['amount'] ?? 0) as num).toLocaleString()}",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                    color: Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "${order['items_qty']} Eggs",
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          _statusBadge(status, statusColor),
+          const SizedBox(width: 8),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Color(0xFF64748B)),
+            onSelected: (value) {
+              if (value == 'view') {
+                _showOrderDetails(orderId);
+              } else if (value == 'print') {
+                _handlePrintReceipt(orderId);
+              } else if (value == 'cancel') {
+                _handleCancelOrder(orderId);
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'view',
+                child: ListTile(
+                  leading: Icon(Icons.visibility_outlined, size: 20),
+                  title: Text('View Details'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'print',
+                child: ListTile(
+                  leading: Icon(Icons.print_outlined, size: 20),
+                  title: Text('Print Receipt'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              if (status.toLowerCase() == 'pending approval' ||
+                  status.toLowerCase() == 'pending_review')
+                const PopupMenuItem<String>(
+                  value: 'cancel',
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.cancel_outlined,
+                      color: Colors.red,
+                      size: 20,
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "${order['order_id']} • ${DateFormat('dd MMM').format(DateTime.parse(order['date']))}",
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              flex: 2,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    "₹${((order['amount'] ?? 0) as num).toLocaleString()}",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 14,
-                      color: Color(0xFF1E293B),
+                    title: Text(
+                      'Cancel Order',
+                      style: TextStyle(color: Colors.red),
                     ),
+                    contentPadding: EdgeInsets.zero,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "${order['items_qty']} Eggs",
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            _statusBadge(status, statusColor),
-          ],
-        ),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }
