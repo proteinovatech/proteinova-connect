@@ -141,52 +141,117 @@ class _DailyClosingState extends State<DailyClosing> {
                 double.tryParse(_countedCashController.text) ?? 0;
             final difference = countedCash - systemClosing;
 
+            final width = MediaQuery.of(context).size.width;
+
             return SingleChildScrollView(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Action Bar
-                  _buildActionBar(data),
-                  const SizedBox(height: 16),
 
-                  // Stock Summary
-                  _buildStockSummary(data),
-                  const SizedBox(height: 16),
+              child: width >= 700
+                  // Tablet
+                  ? Wrap(
+                      spacing: 16,
+                      runSpacing: 16,
 
-                  // Cash Summary
-                  _buildCashSummary(data, isClosed, difference),
-                  const SizedBox(height: 16),
+                      children: [
+                        SizedBox(width: width, child: _buildActionBar(data!)),
 
-                  // Online Summary
-                  _buildOnlineSummary(data),
-                  const SizedBox(height: 16),
+                        SizedBox(
+                          width: (width - 48) / 2,
 
-                  // Sales & Expense Summary
-                  _buildSalesExpenseSummary(data),
-                  const SizedBox(height: 16),
+                          child: _buildStockSummary(data),
+                        ),
 
-                  // Closing Stock Value
-                  _buildClosingStockValue(data),
-                  const SizedBox(height: 16),
+                        SizedBox(
+                          width: (width - 48) / 2,
 
-                  // Notes & Checklist
-                  _buildNotesChecklist(data, isClosed),
-                  const SizedBox(height: 16),
+                          child: _buildCashSummary(data, isClosed, difference),
+                        ),
 
-                  // Today's Summary
-                  _buildTodaysSummary(data),
-                  const SizedBox(height: 24),
+                        SizedBox(
+                          width: (width - 48) / 2,
 
-                  // Footer Actions
-                  _buildFooterActions(
-                    data,
-                    isClosed,
-                    state is DailyClosingSubmitting,
-                  ),
-                  const SizedBox(height: 32),
-                ],
-              ),
+                          child: _buildOnlineSummary(data),
+                        ),
+
+                        SizedBox(
+                          width: (width - 48) / 2,
+
+                          child: _buildSalesExpenseSummary(data),
+                        ),
+
+                        SizedBox(
+                          width: (width - 48) / 2,
+
+                          child: _buildClosingStockValue(data),
+                        ),
+
+                        SizedBox(
+                          width: (width - 48) / 2,
+
+                          child: _buildNotesChecklist(data, isClosed),
+                        ),
+
+                        SizedBox(
+                          width: width,
+
+                          child: _buildTodaysSummary(data),
+                        ),
+
+                        SizedBox(
+                          width: width,
+
+                          child: _buildFooterActions(
+                            data,
+                            isClosed,
+                            state is DailyClosingSubmitting,
+                          ),
+                        ),
+                      ],
+                    )
+                  // Mobile
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+
+                      children: [
+                        _buildActionBar(data),
+
+                        const SizedBox(height: 16),
+
+                        _buildStockSummary(data),
+
+                        const SizedBox(height: 16),
+
+                        _buildCashSummary(data, isClosed, difference),
+
+                        const SizedBox(height: 16),
+
+                        _buildOnlineSummary(data),
+
+                        const SizedBox(height: 16),
+
+                        _buildSalesExpenseSummary(data),
+
+                        const SizedBox(height: 16),
+
+                        _buildClosingStockValue(data),
+
+                        const SizedBox(height: 16),
+
+                        _buildNotesChecklist(data, isClosed),
+
+                        const SizedBox(height: 16),
+
+                        _buildTodaysSummary(data),
+
+                        const SizedBox(height: 24),
+
+                        _buildFooterActions(
+                          data,
+                          isClosed,
+                          state is DailyClosingSubmitting,
+                        ),
+                      ],
+                    ),
             );
           },
         ),
@@ -257,69 +322,131 @@ class _DailyClosingState extends State<DailyClosing> {
   Widget _buildStockSummary(DailyClosingModel data) {
     return _buildCard(
       title: "Stock Summary",
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          columnSpacing: 20,
-          horizontalMargin: 0,
-          headingRowHeight: 40,
-          columns: const [
-            DataColumn(
-              label: Text(
-                "Item",
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minWidth: constraints.maxWidth),
+
+              child: DataTable(
+                columnSpacing: 6,
+
+                horizontalMargin: 8,
+
+                headingRowHeight: 42,
+
+                dataRowMinHeight: 48,
+
+                dataRowMaxHeight: 52,
+
+                columns: const [
+                  DataColumn(
+                    label: SizedBox(
+                      width: 90,
+
+                      child: Text(
+                        "Item",
+
+                        style: TextStyle(
+                          fontSize: 12,
+
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  DataColumn(
+                    label: Text(
+                      "Opening",
+                      style: TextStyle(
+                        fontSize: 12,
+
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+
+                  DataColumn(
+                    label: Text(
+                      "Received",
+                      style: TextStyle(
+                        fontSize: 12,
+
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+
+                  DataColumn(
+                    label: Text(
+                      "Sold",
+                      style: TextStyle(
+                        fontSize: 12,
+
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+
+                  DataColumn(
+                    label: Text(
+                      "Closing",
+                      style: TextStyle(
+                        fontSize: 12,
+
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+
+                rows: [
+                  _buildStockRow(
+                    "Trays",
+
+                    data.stockSummary.totalOpening,
+
+                    data.stockSummary.totalReceived,
+
+                    data.stockSummary.totalSold,
+
+                    data.stockSummary.totalClosing,
+                  ),
+
+                  _buildStockRow(
+                    "All Stocks Eggs",
+
+                    data.stockSummary.totalOpeningEggs,
+
+                    data.stockSummary.totalReceivedEggs,
+
+                    data.stockSummary.totalSoldEggs,
+
+                    data.stockSummary.totalClosingEggs,
+                  ),
+
+                  _buildStockRow(
+                    "Total",
+
+                    data.stockSummary.totalOpening,
+
+                    data.stockSummary.totalReceived,
+
+                    data.stockSummary.totalSold,
+
+                    data.stockSummary.totalClosing,
+
+                    isBold: true,
+                  ),
+                ],
               ),
             ),
-            DataColumn(
-              label: Text(
-                "Opening",
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-            ),
-            DataColumn(
-              label: Text(
-                "Received",
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-            ),
-            DataColumn(
-              label: Text(
-                "Sold",
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-            ),
-            DataColumn(
-              label: Text(
-                "Closing",
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-          rows: [
-            _buildStockRow(
-              "Trays",
-              data.stockSummary.totalOpening,
-              data.stockSummary.totalReceived,
-              data.stockSummary.totalSold,
-              data.stockSummary.totalClosing,
-            ),
-            _buildStockRow(
-              "All Stocks Eggs",
-              data.stockSummary.totalOpeningEggs,
-              data.stockSummary.totalReceivedEggs,
-              data.stockSummary.totalSoldEggs,
-              data.stockSummary.totalClosingEggs,
-            ),
-            _buildStockRow(
-              "Total",
-              data.stockSummary.totalOpening,
-              data.stockSummary.totalReceived,
-              data.stockSummary.totalSold,
-              data.stockSummary.totalClosing,
-              isBold: true,
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -339,18 +466,10 @@ class _DailyClosingState extends State<DailyClosing> {
     return DataRow(
       cells: [
         DataCell(Text(item, style: style)),
-        DataCell(
-          Text(op.toStringAsFixed(1), style: style),
-        ),
-        DataCell(
-          Text(rec.toStringAsFixed(1), style: style),
-        ),
-        DataCell(
-          Text(sold.toStringAsFixed(1), style: style),
-        ),
-        DataCell(
-          Text(cls.toStringAsFixed(1), style: style),
-        ),
+        DataCell(Text(op.toStringAsFixed(1), style: style)),
+        DataCell(Text(rec.toStringAsFixed(1), style: style)),
+        DataCell(Text(sold.toStringAsFixed(1), style: style)),
+        DataCell(Text(cls.toStringAsFixed(1), style: style)),
       ],
     );
   }
@@ -571,7 +690,11 @@ class _DailyClosingState extends State<DailyClosing> {
             title: "Checklist",
             child: Column(
               children: [
-                _buildCheckItem("Verified all Sales entries", "sales", isClosed),
+                _buildCheckItem(
+                  "Verified all Sales entries",
+                  "sales",
+                  isClosed,
+                ),
                 _buildCheckItem("Counted Physical Cash", "cash", isClosed),
                 _buildCheckItem("Checked stock level", "stock", isClosed),
               ],

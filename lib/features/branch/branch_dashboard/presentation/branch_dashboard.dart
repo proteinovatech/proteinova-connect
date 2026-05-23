@@ -436,10 +436,26 @@ class _BranchDashboardState extends State<BranchDashboard> {
                       GridView.count(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: getCrossAxisCountGroup1(width),
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: width > 680 ? 1.6 : (width > 400 ? 1.3 : 1.1),
+
+                        // Mobile → 2
+                        // Tablet → 3
+                        // Desktop → 4
+                        crossAxisCount: width >= 400
+                            ? 3
+                            : width >= 400
+                            ? 2
+                            : 1,
+
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+
+                        // Tablet → more compact
+                        childAspectRatio: width >= 700
+                            ? 1.65
+                            : width >= 400
+                            ? 1.25
+                            : 1.0,
+
                         children: [
                           // Opening Stocks
                           _buildMetricCard(
@@ -451,6 +467,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                             icon: Icons.inventory_2_outlined,
                             iconColor: const Color(0xFF3B82F6),
                             iconBgColor: const Color(0xFFEFF6FF),
+
                             onTap: () {
                               final data = dashboardModel.stockSummary
                                   .map(
@@ -461,12 +478,14 @@ class _BranchDashboardState extends State<BranchDashboard> {
                                     },
                                   )
                                   .toList();
+
                               _openDetailsModal(
                                 context,
                                 "Opening Stock Breakdown",
                                 data,
                               );
                             },
+
                             footer: Row(
                               children: [
                                 Container(
@@ -481,18 +500,23 @@ class _BranchDashboardState extends State<BranchDashboard> {
                                   child: Text(
                                     "+2.5%",
                                     style: TextStyle(
-                                      fontSize: width < 400 ? 9 : 11,
+                                      fontSize: width < 700 ? 10 : 9,
                                       color: const Color(0xFF16A34A),
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
+
                                 const SizedBox(width: 6),
-                                Text(
-                                  "from last week",
-                                  style: TextStyle(
-                                    fontSize: width < 400 ? 9 : 11,
-                                    color: const Color(0xFF64748B),
+
+                                Expanded(
+                                  child: Text(
+                                    "from last week",
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: width < 700 ? 10 : 9,
+                                      color: const Color(0xFF64748B),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -509,6 +533,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                             icon: Icons.local_shipping_outlined,
                             iconColor: const Color(0xFFF97316),
                             iconBgColor: const Color(0xFFFFF7ED),
+
                             onTap: () {
                               final data = dashboardModel.incomingShipments
                                   .map(
@@ -521,12 +546,14 @@ class _BranchDashboardState extends State<BranchDashboard> {
                                     },
                                   )
                                   .toList();
+
                               _openDetailsModal(
                                 context,
                                 "Incoming Shipments",
                                 data,
                               );
                             },
+
                             footer: Row(
                               children: [
                                 Container(
@@ -541,18 +568,23 @@ class _BranchDashboardState extends State<BranchDashboard> {
                                   child: Text(
                                     "In Transit",
                                     style: TextStyle(
-                                      fontSize: width < 400 ? 9 : 11,
+                                      fontSize: width < 700 ? 10 : 9,
                                       color: const Color(0xFFF97316),
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
+
                                 const SizedBox(width: 6),
-                                Text(
-                                  "${dashboardModel.incomingShipments.length} shipments",
-                                  style: TextStyle(
-                                    fontSize: width < 400 ? 9 : 11,
-                                    color: const Color(0xFF64748B),
+
+                                Expanded(
+                                  child: Text(
+                                    "${dashboardModel.incomingShipments.length} shipments",
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: width < 700 ? 10 : 9,
+                                      color: const Color(0xFF64748B),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -569,6 +601,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                             icon: Icons.warning_amber_rounded,
                             iconColor: const Color(0xFFEF4444),
                             iconBgColor: const Color(0xFFFEF2F2),
+
                             onTap: () {
                               final data = dashboardModel.damagedDetails
                                   .map(
@@ -579,12 +612,14 @@ class _BranchDashboardState extends State<BranchDashboard> {
                                     },
                                   )
                                   .toList();
+
                               _openDetailsModal(
                                 context,
                                 "Damaged Stock Breakdown",
                                 data,
                               );
                             },
+
                             footer: Row(
                               children: [
                                 Container(
@@ -599,18 +634,23 @@ class _BranchDashboardState extends State<BranchDashboard> {
                                   child: Text(
                                     "Attention",
                                     style: TextStyle(
-                                      fontSize: width < 400 ? 9 : 11,
+                                      fontSize: width < 700 ? 10 : 9,
                                       color: const Color(0xFFDC2626),
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
+
                                 const SizedBox(width: 6),
-                                Text(
-                                  "Action required",
-                                  style: TextStyle(
-                                    fontSize: width < 400 ? 9 : 11,
-                                    color: const Color(0xFF64748B),
+
+                                Expanded(
+                                  child: Text(
+                                    "Action required",
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: width < 700 ? 10 : 9,
+                                      color: const Color(0xFF64748B),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -625,10 +665,25 @@ class _BranchDashboardState extends State<BranchDashboard> {
                       GridView.count(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: getCrossAxisCountGroup2(width),
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: width > 550 ? 1.5 : (width > 400 ? 1.1 : 0.9),
+
+                        // Mobile → 2
+                        // Tablet → 3
+                        // Desktop → 4
+                        crossAxisCount: width >= 400
+                            ? 3
+                            : width >= 400
+                            ? 2
+                            : 1,
+
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+
+                        // Tablet → more compact
+                        childAspectRatio: width >= 700
+                            ? 1.65
+                            : width >= 400
+                            ? 1.25
+                            : 1.0,
                         children: [
                           // Sales Today
                           _buildMetricCard(
@@ -828,13 +883,30 @@ class _BranchDashboardState extends State<BranchDashboard> {
                       GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
+
                         itemCount: dashboardModel.stockSummary.length,
+
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: width > 750 ? 3 : 1,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: width > 750 ? 1.3 : 1.6,
+                          // Mobile → 1
+                          // Tablet → 2
+                          // Large tablet → 3
+                          crossAxisCount: width >= 1000
+                              ? 3
+                              : width >= 600
+                              ? 2
+                              : 1,
+
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+
+                          // Overflow fix
+                          childAspectRatio: width >= 700
+                              ? 1.55
+                              : width >= 600
+                              ? 1.55
+                              : 1.20,
                         ),
+
                         itemBuilder: (context, index) {
                           return _buildStockSummaryCard(
                             dashboardModel.stockSummary[index],
@@ -845,22 +917,27 @@ class _BranchDashboardState extends State<BranchDashboard> {
                       const SizedBox(height: 32),
 
                       // Low Stock Alerts & Offers Grid
-                      if (width > 800)
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: _buildActiveOffers(
-                                dashboardModel.activeOffers,
+                      if (width >= 500)
+                        SizedBox(
+                          height: 140,
+
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: _buildActiveOffers(
+                                  dashboardModel.activeOffers,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 24),
-                            Expanded(
-                              child: _buildLowStockAlerts(
-                                dashboardModel.lowStockAlerts,
+
+                              const SizedBox(width: 12),
+
+                              Expanded(
+                                child: _buildLowStockAlerts(
+                                  dashboardModel.lowStockAlerts,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         )
                       else
                         Column(
@@ -874,7 +951,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                       const SizedBox(height: 32),
 
                       // Bar Graph & Recent Activity section
-                      if (width > 850)
+                      if (width > 800)
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -1098,7 +1175,11 @@ class _BranchDashboardState extends State<BranchDashboard> {
                     color: iconBgColor,
                     borderRadius: BorderRadius.circular(isSmallScreen ? 8 : 10),
                   ),
-                  child: Icon(icon, color: iconColor, size: isSmallScreen ? 14 : 20),
+                  child: Icon(
+                    icon,
+                    color: iconColor,
+                    size: isSmallScreen ? 14 : 20,
+                  ),
                 ),
               ],
             ),
@@ -1121,7 +1202,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
     final bool isReturnable = item.trayGroup.toLowerCase() == 'returnable';
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -1138,7 +1219,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                 child: Text(
                   item.eggCategoryGrade,
                   style: const TextStyle(
-                    fontSize: 15,
+                    fontSize: 13,
                     fontWeight: FontWeight.w800,
                     color: Color(0xFF1E293B),
                   ),
@@ -1182,7 +1263,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
@@ -1207,7 +1288,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                       Text(
                         "${item.trays}",
                         style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 16,
                           fontWeight: FontWeight.w800,
                           color: Color(0xFF0F172A),
                         ),
@@ -1240,7 +1321,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                       Text(
                         "${item.eggs}",
                         style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 16,
                           fontWeight: FontWeight.w800,
                           color: Color(0xFF92400E),
                         ),

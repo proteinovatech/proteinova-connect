@@ -223,7 +223,7 @@ class _InventoryState extends State<Inventory> {
               final bool isDesktop = constraints.maxWidth >= 900;
 
               return Scaffold(
-                backgroundColor: const Color(0xFFF8FAFC),
+                backgroundColor: Colors.white,
                 body: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -233,7 +233,7 @@ class _InventoryState extends State<Inventory> {
                         horizontal: 24,
                         vertical: 16,
                       ),
-                      color: AppColors.background,
+                      color: AppColors.white,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

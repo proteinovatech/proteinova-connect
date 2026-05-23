@@ -424,10 +424,10 @@ class _TrayRecordsState extends State<TrayRecords> {
                         });
                       },
                       child: Container(
-                        height: getHeight(context, 45),
+                        height: getHeight(context, 65),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
-                          vertical: 8,
+                          vertical: 4,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -470,13 +470,13 @@ class _TrayRecordsState extends State<TrayRecords> {
                         );
                       },
                       child: Container(
-                        height: getHeight(context, 45),
+                        height: getHeight(context, 85),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color:AppColors.amber600,
+                          color: AppColors.amber600,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: AppColors.border2),
                         ),
@@ -507,7 +507,7 @@ class _TrayRecordsState extends State<TrayRecords> {
                     ),
                   ],
                 ),
-                SizedBox(height: size.height * 0.02),
+                SizedBox(height: size.height * 0.10),
               ],
             ),
           ),

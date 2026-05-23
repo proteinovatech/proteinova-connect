@@ -56,9 +56,12 @@ class SalesReceiptService {
     final logo = pw.MemoryImage(
       (await rootBundle.load('assets/Logo@3x.png')).buffer.asUint8List(),
     );
-    final fontData = await rootBundle.load("assets/fonts/NotoSans-Regular.ttf");
-
-    final ttf = pw.Font.ttf(fontData);
+    final ttfRegular = await PdfGoogleFonts.notoSansRegular();
+    final ttfBold = await PdfGoogleFonts.notoSansBold();
+    final theme = pw.ThemeData.withFont(
+      base: ttfRegular,
+      bold: ttfBold,
+    );
     if (!isThermal) {
       final pdfBytes = await generateReceiptPdf(
         saleId: saleId,
@@ -79,7 +82,7 @@ class SalesReceiptService {
       return;
     }
 
-    final pdf = pw.Document();
+    final pdf = pw.Document(theme: theme);
 
     pdf.addPage(
       pw.Page(
@@ -234,7 +237,9 @@ class SalesReceiptService {
                   ),
                   pw.Text(
                     "₹ ${total.toStringAsFixed(2)}",
-                    style: pw.TextStyle(font: ttf),
+                    style: pw.TextStyle(
+                      fontWeight: pw.FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -279,7 +284,13 @@ class SalesReceiptService {
     required String paymentMethod,
     String? branchName,
   }) async {
-    final pdf = pw.Document();
+    final ttfRegular = await PdfGoogleFonts.notoSansRegular();
+    final ttfBold = await PdfGoogleFonts.notoSansBold();
+    final theme = pw.ThemeData.withFont(
+      base: ttfRegular,
+      bold: ttfBold,
+    );
+    final pdf = pw.Document(theme: theme);
 
     pdf.addPage(
       pw.Page(

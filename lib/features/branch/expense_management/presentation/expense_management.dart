@@ -49,20 +49,31 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
         listener: (context, state) {
           if (state is ExpenseError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
             );
           }
           if (state is ExpenseSubmitSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: Colors.green),
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.green,
+              ),
             );
             if (branchId != null) {
-              context.read<ExpenseBloc>().add(FetchExpenses(branchId: branchId!));
+              context.read<ExpenseBloc>().add(
+                FetchExpenses(branchId: branchId!),
+              );
             }
           }
         },
         builder: (context, state) {
-          final isLoading = state is ExpenseLoading || state is ExpenseInitial || state is ExpenseSubmitting;
+          final isLoading =
+              state is ExpenseLoading ||
+              state is ExpenseInitial ||
+              state is ExpenseSubmitting;
           final expenses = state is ExpenseLoaded ? state.expenses : [];
           final total = _getTotal(expenses);
 
@@ -79,13 +90,16 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
                         icon: const Icon(Icons.arrow_back),
                         onPressed: () => Navigator.pop(context),
                       ),
-                      Text("Expense Management", style: AppTextStyles.headingText22),
+                      Text(
+                        "Expense Management",
+                        style: AppTextStyles.headingText22,
+                      ),
                     ],
                   ),
-                   SizedBox(height:getHeight(context, 10)),
+                  SizedBox(height: getHeight(context, 10)),
                   const Divider(),
                   if (isLoading) const LinearProgressIndicator(minHeight: 2),
-                  SizedBox(height:getHeight(context, 10)),
+                  SizedBox(height: getHeight(context, 10)),
                   // Summary Cards
                   Row(
                     children: [
@@ -96,7 +110,7 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
                           icon: Icons.currency_rupee,
                         ),
                       ),
-                     SizedBox(width:getWidth(context, 10)),
+                      SizedBox(width: getWidth(context, 10)),
                       Expanded(
                         child: _expenseCard(
                           title: "Total Records",
@@ -106,7 +120,7 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
                       ),
                     ],
                   ),
-                 SizedBox(height:getHeight(context, 15)),
+                  SizedBox(height: getHeight(context, 15)),
 
                   // Add Expense Button
                   GestureDetector(
@@ -116,7 +130,9 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
                         MaterialPageRoute(builder: (_) => const Addexpense()),
                       );
                       if (result == true && branchId != null) {
-                        context.read<ExpenseBloc>().add(FetchExpenses(branchId: branchId!));
+                        context.read<ExpenseBloc>().add(
+                          FetchExpenses(branchId: branchId!),
+                        );
                       }
                     },
                     child: Container(
@@ -130,14 +146,17 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.add, color: AppColors.dark),
-                          SizedBox(width:getWidth(context, 8)),
-                          Text("Add Expense", style: AppTextStyles.headingText20),
+                          SizedBox(width: getWidth(context, 8)),
+                          Text(
+                            "Add Expense",
+                            style: AppTextStyles.headingText20,
+                          ),
                         ],
                       ),
                     ),
                   ),
 
-                  SizedBox(height:getHeight(context, 15)),
+                  SizedBox(height: getHeight(context, 15)),
 
                   // Category Grid
                   Container(
@@ -150,29 +169,39 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Expense Categories", style: AppTextStyles.headingText22),
-                        SizedBox(height:getHeight(context, 10)),
+                        Text(
+                          "Expense Categories",
+                          style: AppTextStyles.headingText22,
+                        ),
+                        SizedBox(height: getHeight(context, 10)),
                         const Divider(),
-                       SizedBox(height:getHeight(context, 10)),
+                        SizedBox(height: getHeight(context, 10)),
                         _buildCategoryGrid(),
                       ],
                     ),
                   ),
 
-                  SizedBox(height:getHeight(context, 15)),
+                  SizedBox(height: getHeight(context, 15)),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Recent Expenses", style: AppTextStyles.headingText20),
-                     
+                      const Text(
+                        "Recent Expenses",
+                        style: AppTextStyles.headingText20,
+                      ),
                     ],
                   ),
 
-                  SizedBox(height:getHeight(context, 10)),
+                  SizedBox(height: getHeight(context, 10)),
 
                   if (isLoading)
-                    const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()))
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
                   else if (expenses.isEmpty)
                     const Center(
                       child: Padding(
@@ -188,43 +217,75 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
                       itemBuilder: (context, index) {
                         final item = expenses[index];
                         return Card(
-                          color: AppColors.background,
+                          color: AppColors.white,
                           margin: const EdgeInsets.only(bottom: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           child: Padding(
                             padding: const EdgeInsets.all(15),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(item.category, style:AppTextStyles.bodyText16),
-                                    Text("₹${item.amount}", style: AppTextStyles.bodyText16),
+                                    Text(
+                                      item.category,
+                                      style: AppTextStyles.bodyText16,
+                                    ),
+                                    Text(
+                                      "₹${item.amount}",
+                                      style: AppTextStyles.bodyText16,
+                                    ),
                                   ],
                                 ),
-                                SizedBox(height: getHeight(context, 8),),
+                                SizedBox(height: getHeight(context, 8)),
                                 Text(item.description),
-                                 SizedBox(height: getHeight(context, 8),),
+                                SizedBox(height: getHeight(context, 8)),
                                 Row(
                                   children: [
-                                    const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-                                     SizedBox(width: getWidth(context, 4),),
-                                    Text(item.expenseDate, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                                    const Icon(
+                                      Icons.calendar_today,
+                                      size: 14,
+                                      color: Colors.grey,
+                                    ),
+                                    SizedBox(width: getWidth(context, 4)),
+                                    Text(
+                                      item.expenseDate,
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 13,
+                                      ),
+                                    ),
                                   ],
                                 ),
-                                SizedBox(height: getHeight(context, 8),),
+                                SizedBox(height: getHeight(context, 8)),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                      decoration: BoxDecoration(color: Colors.orange.shade100, borderRadius: BorderRadius.circular(8)),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 5,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange.shade100,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
                                       child: Text(item.paymentMethod),
                                     ),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                      decoration: BoxDecoration(color: Colors.green.shade100, borderRadius: BorderRadius.circular(8)),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 5,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.shade100,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
                                       child: Text(item.status),
                                     ),
                                   ],
@@ -236,7 +297,7 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
                       },
                     ),
 
-                  SizedBox(height: getHeight(context, 20),),
+                  SizedBox(height: getHeight(context, 20)),
                 ],
               ),
             ),
@@ -246,7 +307,11 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
     );
   }
 
-  Widget _expenseCard({required String title, required String value, required IconData icon}) {
+  Widget _expenseCard({
+    required String title,
+    required String value,
+    required IconData icon,
+  }) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -258,17 +323,29 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: const Color(0xFFE6EBF0), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE6EBF0),
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Icon(icon, size: 20, color: Colors.grey.shade700),
           ),
-           SizedBox(width: getWidth(context, 10),),
+          SizedBox(width: getWidth(context, 10)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                 SizedBox(height: getHeight(context, 4),),
-                Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text(
+                  title,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                SizedBox(height: getHeight(context, 4)),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),
@@ -311,8 +388,12 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(cat["icon"] as IconData, color: Colors.grey.shade700),
-               SizedBox(height: getHeight(context, 4),),
-              Text(cat["title"] as String, style: const TextStyle(fontSize: 12), textAlign: TextAlign.center),
+              SizedBox(height: getHeight(context, 4)),
+              Text(
+                cat["title"] as String,
+                style: const TextStyle(fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         );
