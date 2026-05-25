@@ -4,7 +4,7 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/admin/data/model/dashboard_model.dart';
 import 'package:proteinova_connect/features/admin/data/services/dashboard_service.dart';
-import 'package:proteinova_connect/features/admin/skeletonloader/admin_dashboard_skeleton_loader.dart';
+import 'package:proteinova_connect/features/warehouse/skeletonloader/dashboard_skelton_loader.dart';
 
 // Navigation target imports
 import 'package:proteinova_connect/features/purchase_dashboard/presentation/newpurchase.dart';

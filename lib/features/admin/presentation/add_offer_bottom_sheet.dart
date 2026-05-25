@@ -213,10 +213,19 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                             const SizedBox(height: 10),
                             buildDropdown(
                               value: selectedProduct,
-                              items: [
+                              items: const [
                                 "Select Egg Category",
-                                "Brown Eggs",
-                                "White Eggs",
+                                "All Products",
+                                "White large",
+                                "White correct size",
+                                "white export",
+                                "white medium",
+                                "white pullet",
+                                "white small eggs",
+                                "Brown eggs",
+                                "country eggs",
+                                "quail eggs",
+                                "duck eggs",
                               ],
                               onChanged: (val) =>
                                   setState(() => selectedProduct = val!),
@@ -580,3 +589,266 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
     }
   }
 }
+
+class AddPriceMatrixScreen extends StatefulWidget {
+  const AddPriceMatrixScreen({super.key});
+
+  @override
+  State<AddPriceMatrixScreen> createState() => _AddPriceMatrixScreenState();
+}
+
+class _AddPriceMatrixScreenState extends State<AddPriceMatrixScreen> {
+  final List<Map<String, dynamic>> products = [];
+  bool loading = false;
+  bool fetching = true;
+
+  final List<String> productList = [
+    "White large",
+    "White correct size",
+    "white export",
+    "white medium",
+    "white pullet",
+    "white small eggs",
+    "Brown eggs",
+    "country eggs",
+    "quail eggs",
+    "duck eggs"
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCurrentPrices();
+  }
+
+  @override
+  void dispose() {
+    for (final item in products) {
+      (item["controller"] as TextEditingController).dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _fetchCurrentPrices() async {
+    setState(() {
+      fetching = true;
+    });
+    try {
+      final dbPrices = await OfferService.getCurrentPrices();
+      final List<Map<String, dynamic>> fetchedProducts = [];
+      for (final name in productList) {
+        final found = dbPrices.firstWhere(
+          (p) => (p["product_name"] ?? "").toString().toLowerCase() == name.toLowerCase(),
+          orElse: () => null,
+        );
+        final price = found != null ? found["price_per_egg"] : "";
+        fetchedProducts.add({
+          "product_name": name,
+          "controller": TextEditingController(text: price?.toString() ?? ""),
+        });
+      }
+      setState(() {
+        for (final item in products) {
+          (item["controller"] as TextEditingController).dispose();
+        }
+        products.clear();
+        products.addAll(fetchedProducts);
+        fetching = false;
+      });
+    } catch (error) {
+      print("Error fetching prices: $error");
+      setState(() {
+        fetching = false;
+      });
+    }
+  }
+
+  Future<void> _handleSaveAll() async {
+    setState(() {
+      loading = true;
+    });
+    try {
+      final List<Map<String, dynamic>> payload = products.map((item) {
+        return {
+          "product_name": item["product_name"],
+          "price_per_egg": (item["controller"] as TextEditingController).text.trim(),
+        };
+      }).toList();
+
+      final success = await OfferService.bulkUpdatePrices(payload);
+      if (success) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Pricing Matrix Updated Successfully.")),
+          );
+          Navigator.pop(context, true);
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Error saving data.")),
+          );
+        }
+      }
+    } catch (error) {
+      print("Error saving prices: $error");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error saving data.")),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final activeCount = products.where((p) => (p["controller"] as TextEditingController).text.isNotEmpty).length;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: const Text("Pricing Matrix", style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
+      body: Column(
+        children: [
+          // Header Card
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Global Market Rates",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "$activeCount Active Products",
+                      style: const TextStyle(fontSize: 13, color: Colors.green, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text("Discard", style: TextStyle(color: Colors.black)),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: loading ? null : _handleSaveAll,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.amber600,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        elevation: 0,
+                      ),
+                      child: loading
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                            )
+                          : const Text("Update All", style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: Color(0xFFE2E8F0)),
+          // Main Body
+          Expanded(
+            child: fetching
+                ? const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.amber600)),
+                        SizedBox(height: 16),
+                        Text("Fetching master data...", style: TextStyle(color: Colors.grey)),
+                      ],
+                    ),
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: products.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final item = products[index];
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Text(
+                                item["product_name"],
+                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              flex: 2,
+                              child: Container(
+                                height: 42,
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFFCBD5E1)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Text("₹", style: TextStyle(fontSize: 16, color: Colors.grey)),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: TextField(
+                                        controller: item["controller"],
+                                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                        decoration: const InputDecoration(
+                                          border: InputBorder.none,
+                                          hintText: "0.00",
+                                          isCollapsed: true,
+                                        ),
+                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

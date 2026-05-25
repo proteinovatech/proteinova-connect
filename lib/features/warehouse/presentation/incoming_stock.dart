@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
-import 'package:proteinova_connect/features/admin/presentation/receive_stockscreen.dart';
-import 'package:proteinova_connect/features/admin/skeletonloader/admin_incoming_stock_queue_skeleton_loader.dart';
-import 'package:proteinova_connect/features/admin/widget/incoming_widget.dart';
+import 'package:proteinova_connect/features/warehouse/presentation/receive_stock_screen.dart';
+import 'package:proteinova_connect/features/warehouse/skeletonloader/incoming_stock_skeleton_loader.dart';
+import 'package:proteinova_connect/features/warehouse/widget/incoming_widget.dart';
 import 'package:proteinova_connect/features/warehouse/inventory/data/models/inventory_model.dart';
 import 'package:proteinova_connect/features/warehouse/inventory/data/inventory_repository.dart';
 

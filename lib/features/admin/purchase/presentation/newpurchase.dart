@@ -1,19 +1,22 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/network/dio_client.dart';
 
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/product_specificationcard.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/supplier_locationcard.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/purchase_employeecard.dart';
-
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/purchase/purchase_bloc.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/purchase/purchase_event.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/purchase/purchase_state.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/purchase_model.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/product_input_model.dart';
-import 'package:proteinova_connect/purchase_bottom_navigator.dart';
+import '../bloc/purchase/purchase_bloc.dart';
+import '../bloc/purchase/purchase_event.dart';
+import '../bloc/purchase/purchase_state.dart';
+import '../data/models/purchase_model.dart';
+import '../data/models/product_input_model.dart';
+import '../widget/add_supplier_pop.dart';
+import '../bloc/supplier/supplier_bloc.dart';
+import '../bloc/supplier/supplier_event.dart';
+import '../bloc/supplier/supplier_state.dart';
+import '../data/models/supplier_model.dart';
 
 class Newpurchase extends StatefulWidget {
   final bool isEdit;
@@ -27,57 +30,123 @@ class Newpurchase extends StatefulWidget {
 
 class _NewpurchaseState extends State<Newpurchase> {
   // Supplier & Location details
-  String selectedSupplierName = "";
+  SupplierModel? selectedSupplier;
   String originLocation = "";
-  int selectedSupplierId = 0;
   DateTime? expectedArrivalDate;
-
   final TextEditingController brokerNameController = TextEditingController();
   final TextEditingController brokerNumController = TextEditingController();
 
   // Product specification
   List<ProductInput> products = [ProductInput()];
 
-  // Additional costs / Expenses
-  final TextEditingController loadingController = TextEditingController(
-    text: "0",
-  );
-  final TextEditingController unloadingController = TextEditingController(
-    text: "0",
-  );
-  final TextEditingController transportController = TextEditingController(
-    text: "0",
-  );
+  // Additional costs
+  final TextEditingController loadingController = TextEditingController(text: "0");
+  final TextEditingController unloadingController = TextEditingController(text: "0");
+  final TextEditingController transportController = TextEditingController(text: "0");
   final TextEditingController miscController = TextEditingController(text: "0");
+  final TextEditingController brokerFeeController = TextEditingController(text: "0");
 
   // Purchase employee details
   final TextEditingController driverController = TextEditingController();
-  final TextEditingController branchController = TextEditingController();
-  final TextEditingController numberController = TextEditingController();
-  final TextEditingController typeController = TextEditingController();
-  final TextEditingController contactController = TextEditingController();
+  final TextEditingController reachingWarehouseController = TextEditingController();
+  final TextEditingController vehicleNumberController = TextEditingController();
+  final TextEditingController vehicleTypeController = TextEditingController();
+  final TextEditingController driverContactController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
 
-  // Payment Selection state
-  String activePaymentTab = "UPI"; // "UPI", "COD", "RTGS"
-  String selectedUpiApp =
-      "Google Pay"; // "Google Pay", "PhonePe", "Paytm", "Other"
-  final TextEditingController otherUpiDetailsController =
-      TextEditingController();
-  final TextEditingController paymentAmountController = TextEditingController(
-    text: "0",
-  );
-  final TextEditingController debtAmountController = TextEditingController(
-    text: "0",
-  );
+  // Dynamic Payments
+  List<Map<String, dynamic>> payments = [
+    {
+      "id": "1",
+      "method": "Cash",
+      "amount": "",
+      "app": "",
+      "reference": "",
+      "notes": ""
+    }
+  ];
 
-  // Summaries
-  double getProductTotal() {
+  // Namakkal Stocks
+  int namakkalStock = 0;
+  int namakkalPaperStock = 0;
+
+  final List<String> eggCategories = [
+    "White large",
+    "White correct size",
+    "white export",
+    "white medium",
+    "white pullet",
+    "white small eggs",
+    "Brown eggs",
+    "country eggs",
+    "quail eggs",
+    "duck eggs"
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTrayStock();
+    context.read<SupplierBloc>().add(FetchSuppliers());
+
+    loadingController.addListener(_refresh);
+    unloadingController.addListener(_refresh);
+    transportController.addListener(_refresh);
+    miscController.addListener(_refresh);
+    brokerFeeController.addListener(_refresh);
+  }
+
+  @override
+  void dispose() {
+    loadingController.dispose();
+    unloadingController.dispose();
+    transportController.dispose();
+    miscController.dispose();
+    brokerFeeController.dispose();
+    brokerNameController.dispose();
+    brokerNumController.dispose();
+    driverController.dispose();
+    reachingWarehouseController.dispose();
+    vehicleNumberController.dispose();
+    vehicleTypeController.dispose();
+    driverContactController.dispose();
+    descriptionController.dispose();
+    super.dispose();
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _fetchTrayStock() async {
+    try {
+      final res = await DioClient().dio.get("/api/tray-inventory/get-inventory");
+      if (res.data != null && res.data["success"] == true) {
+        final data = res.data["data"] as List;
+        final namakkal = data.firstWhere(
+          (item) => item["location_name"] == "Namakkal",
+          orElse: () => null,
+        );
+        if (namakkal != null) {
+          setState(() {
+            namakkalStock = int.tryParse(namakkal["plastic_tray_count"].toString()) ?? 0;
+            namakkalPaperStock = int.tryParse(namakkal["paper_tray_count"].toString()) ?? 0;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching tray stock: $e");
+    }
+  }
+
+  double getProductSubtotal() {
     double total = 0;
     for (var p in products) {
       final qty = double.tryParse(p.quantity) ?? 0;
-      final rate = double.tryParse(p.rate) ?? 0;
-      total += qty * 30 * rate;
+      final necc = double.tryParse(p.necc) ?? 0;
+      final minus = double.tryParse(p.minus) ?? 0;
+      final finalRate = necc - minus;
+      total += qty * 30 * finalRate;
     }
     return total;
   }
@@ -87,103 +156,124 @@ class _NewpurchaseState extends State<Newpurchase> {
     final unload = double.tryParse(unloadingController.text) ?? 0;
     final trans = double.tryParse(transportController.text) ?? 0;
     final misc = double.tryParse(miscController.text) ?? 0;
-    return load + unload + trans + misc;
+    final broker = double.tryParse(brokerFeeController.text) ?? 0;
+    return load + unload + trans + misc + broker;
   }
 
-  double getTotalCost() {
-    return getProductTotal() + getAdditionalTotal();
+  double getTotalAmount() {
+    return getProductSubtotal() + getAdditionalTotal();
   }
 
-  double getTotalTrays() {
-    double total = 0;
-    for (var p in products) {
-      total += double.tryParse(p.quantity) ?? 0;
-    }
-    return total;
+  double getPaidAmount() {
+    return payments
+        .where((p) => p["method"] != "Credit")
+        .fold(0.0, (sum, p) => sum + (double.tryParse(p["amount"].toString()) ?? 0.0));
   }
 
-  double getCostPerTray() {
-    final trays = getTotalTrays();
-    return trays == 0 ? 0 : getTotalCost() / trays;
+  double getDebtAmount() {
+    return payments
+        .where((p) => p["method"] == "Credit")
+        .fold(0.0, (sum, p) => sum + (double.tryParse(p["amount"].toString()) ?? 0.0));
   }
 
-  @override
-  void initState() {
-    super.initState();
-
-    loadingController.addListener(_refresh);
-    unloadingController.addListener(_refresh);
-    transportController.addListener(_refresh);
-    miscController.addListener(_refresh);
-
-    paymentAmountController.addListener(_refresh);
-    debtAmountController.addListener(_refresh);
+  double getBalanceAmount() {
+    return getTotalAmount() - getPaidAmount();
   }
 
-  void _refresh() {
-    if (mounted) {
-      setState(() {});
+  void _addPaymentRow() {
+    setState(() {
+      payments.add({
+        "id": DateTime.now().millisecondsSinceEpoch.toString(),
+        "method": "Cash",
+        "amount": "",
+        "app": "",
+        "reference": "",
+        "notes": ""
+      });
+    });
+  }
+
+  void _removePaymentRow(String id) {
+    if (payments.length > 1) {
+      setState(() {
+        payments.removeWhere((p) => p["id"] == id);
+      });
     }
   }
 
   void _submitForm(bool isDraft) {
-    if (selectedSupplierId == 0) {
+    if (selectedSupplier == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please select a supplier"),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text("Please select a supplier"), backgroundColor: Colors.red),
       );
       return;
     }
 
-    if (products.isEmpty ||
-        products.any(
-          (p) => p.category.isEmpty || (double.tryParse(p.quantity) ?? 0) <= 0,
-        )) {
+    if (products.isEmpty || products.any((p) => p.category.isEmpty || (double.tryParse(p.quantity) ?? 0) <= 0)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please specify products with quantity"),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text("Please specify products with quantity"), backgroundColor: Colors.red),
       );
       return;
     }
+
+    final String brokerNum = brokerNumController.text.trim();
+    if (brokerNum.isNotEmpty && brokerNum.length != 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Broker number must be exactly 10 digits"), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    final String driverNum = driverContactController.text.trim();
+    if (driverNum.isNotEmpty && driverNum.length != 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Driver number must be exactly 10 digits"), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    final isSplit = payments.length > 1;
+    final finalMethod = isSplit ? "SPLIT" : payments[0]["method"];
+    final upiApp = (!isSplit && payments[0]["method"] == "UPI") ? payments[0]["app"] : null;
+    final otherUpi = jsonEncode(payments);
 
     final purchase = PurchaseRequest(
-      supplierId: selectedSupplierId,
-      supplierName: selectedSupplierName,
+      supplierId: selectedSupplier!.id,
+      supplierName: selectedSupplier!.companyName,
       location: originLocation,
-      warehouseLocation: branchController.text,
+      warehouseLocation: reachingWarehouseController.text,
       expectedArrival: expectedArrivalDate != null
-          ? expectedArrivalDate!.toIso8601String().split('T')[0]
-          : DateTime.now().toIso8601String().split('T')[0],
+          ? DateFormat('yyyy-MM-dd').format(expectedArrivalDate!)
+          : DateFormat('yyyy-MM-dd').format(DateTime.now()),
       driverName: driverController.text,
-      driverNumber: contactController.text,
-      vehicleNumber: numberController.text,
-      vehicleType: typeController.text,
+      driverNumber: driverNum,
+      vehicleNumber: vehicleNumberController.text,
+      vehicleType: vehicleTypeController.text,
       loadingCharge: double.tryParse(loadingController.text) ?? 0,
       unloadingCharge: double.tryParse(unloadingController.text) ?? 0,
       transportCharge: double.tryParse(transportController.text) ?? 0,
       miscExpense: double.tryParse(miscController.text) ?? 0,
       purchaseStatus: isDraft ? "PENDING" : "PURCHASED",
-      brokerFee: 0.0,
-      brokerNumber: brokerNumController.text,
+      brokerFee: double.tryParse(brokerFeeController.text) ?? 0,
+      brokerNumber: brokerNum,
       brokerName: brokerNameController.text,
       description: descriptionController.text,
-      paymentMethod: activePaymentTab,
-      upiApp: activePaymentTab == "UPI" ? selectedUpiApp : null,
-      otherUpiDetails: otherUpiDetailsController.text,
-      paymentAmount: double.tryParse(paymentAmountController.text) ?? 0.0,
-      debtAmount: double.tryParse(debtAmountController.text) ?? 0.0,
+      paymentMethod: finalMethod,
+      upiApp: upiApp,
+      otherUpiDetails: otherUpi,
+      paymentAmount: getPaidAmount(),
+      debtAmount: getDebtAmount(),
       items: products.map((p) {
+        final double necc = double.tryParse(p.necc) ?? 0.0;
+        final double minus = double.tryParse(p.minus) ?? 0.0;
+        final double finalRate = necc - minus;
         return PurchaseItem(
           eggCategoryGrade: p.category,
           trays: int.tryParse(p.quantity) ?? 0,
           capacity: 30,
-          perEggPrice: double.tryParse(p.rate) ?? 0.0,
-          marketPriceMinus: double.tryParse(p.minus) ?? 0.0,
-          neccRate: double.tryParse(p.necc) ?? 0.0,
+          perEggPrice: finalRate,
+          marketPriceMinus: minus,
+          neccRate: necc,
           trayType: p.trayType,
         );
       }).toList(),
@@ -192,161 +282,19 @@ class _NewpurchaseState extends State<Newpurchase> {
     context.read<PurchaseBloc>().add(SubmitPurchaseEvent(purchase));
   }
 
-  void _showSuccessPopup(bool isDraft, String orderRef, double totalCost) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isDraft
-                        ? AppColors.amber600.withValues(alpha: 0.2)
-                        : Colors.green.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    isDraft
-                        ? Icons.assignment_turned_in_outlined
-                        : Icons.check_circle_outline,
-                    color: isDraft ? AppColors.amber600 : Colors.green,
-                    size: 48,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  isDraft ? "Draft Saved!" : "Purchase Entry Submitted!",
-                  style: AppTextStyles.headingText22,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  isDraft
-                      ? "Your purchase draft has been successfully saved."
-                      : "Your purchase entry has been successfully recorded and added to incoming stock queue.",
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.bodyText14,
-                ),
-                const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 12),
-                _buildPopupRow("Order ID", orderRef),
-                _buildPopupRow(
-                  "Total Eggs",
-                  (getTotalTrays() * 30).toInt().toString(),
-                ),
-                _buildPopupRow(
-                  "Estimated Cost",
-                  "₹ ${totalCost.toStringAsFixed(2)}",
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    if (!isDraft) ...[
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Bill download started..."),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.download_outlined, size: 16),
-                          label: const FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text("Bill", style: TextStyle(fontSize: 12)),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context); // Close dialog
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const PurchaseBottomNavigator(),
-                            ),
-                            (route) => false,
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.amber600,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: const FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text("Dashboard"),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPopupRow(String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: AppTextStyles.formInputs15),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: AppTextStyles.bodyText16,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
+    final bool isWide = size.width >= 1000;
 
     return BlocListener<PurchaseBloc, PurchaseState>(
       listener: (context, state) {
         if (state is PurchaseSubmitSuccess) {
-          final isDraft =
-              activePaymentTab == "UPI" &&
-              paymentAmountController.text == "0" &&
-              debtAmountController.text == "0";
-          _showSuccessPopup(
-            isDraft,
-            "PO-${DateTime.now().millisecondsSinceEpoch % 100000}",
-            getTotalCost(),
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PaymentSuccessfulScreen(purchaseId: state.purchaseId),
+            ),
           );
         } else if (state is PurchaseSubmitFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -355,485 +303,139 @@ class _NewpurchaseState extends State<Newpurchase> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.background1,
+        backgroundColor: const Color(0xFFF8FAFC),
         appBar: AppBar(
-          backgroundColor: AppColors.background,
-          title: Text("New Purchase", style: AppTextStyles.headingText25),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text(
+            "New Purchase Entry",
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),
+          ),
         ),
         body: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: size.width * 0.04),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: size.height * 0.02),
-                Padding(
-                  padding: EdgeInsets.only(left: size.width * 0.02),
-                  child: Text(
-                    "Record new form procurement and stock.",
-                    style: AppTextStyles.bodyText16,
-                  ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Manage and receive incoming shipments from suppliers to update inventory",
+                style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+              if (isWide)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: _buildFormFields(),
+                    ),
+                    const SizedBox(width: 24),
+                    Expanded(
+                      flex: 2,
+                      child: _buildSummaryCard(),
+                    ),
+                  ],
+                )
+              else
+                Column(
+                  children: [
+                    _buildFormFields(),
+                    const SizedBox(height: 24),
+                    _buildSummaryCard(),
+                  ],
                 ),
-                SizedBox(height: size.height * 0.02),
-
-                // Supplier & Location Card
-                SupplierLocationCard(
-                  brokerNameController: brokerNameController,
-                  brokerNumController: brokerNumController,
-                  onDateChanged: (date) {
-                    setState(() {
-                      expectedArrivalDate = date;
-                    });
-                  },
-                  onChanged: (sup, loc, supId) {
-                    setState(() {
-                      selectedSupplierName = sup;
-                      originLocation = loc;
-                      selectedSupplierId = supId;
-                    });
-                  },
-                ),
-                SizedBox(height: size.height * 0.02),
-
-                // Product Specification Card
-                ProductSpecificationCard(
-                  onProductsChanged: (list) {
-                    setState(() {
-                      products = list;
-                    });
-                  },
-                  onCategoryChanged: (_) {},
-                  trayController: TextEditingController(),
-                  quantityController: TextEditingController(),
-                  countController: TextEditingController(),
-                  neccController: TextEditingController(),
-                  minusController: TextEditingController(),
-                  rateController: TextEditingController(),
-                  loadingController: loadingController,
-                  unloadingController: unloadingController,
-                  transportController: transportController,
-                  miscController: miscController,
-                ),
-                SizedBox(height: size.height * 0.02),
-
-                // Purchase Employee Card
-                PurchaseEmployeecard(
-                  driverController: driverController,
-                  branchController: branchController,
-                  numberController: numberController,
-                  typeController: typeController,
-                  contactController: contactController,
-                  descriptionController: descriptionController,
-                ),
-                SizedBox(height: size.height * 0.02),
-
-                // Choose Payment Section
-                _buildChoosePaymentSection(size),
-                SizedBox(height: size.height * 0.02),
-
-                // Summary Section
-                _buildPurchaseSummaryCard(size),
-                SizedBox(height: size.height * 0.04),
-              ],
-            ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildChoosePaymentSection(Size size) {
+  Widget _buildFormFields() {
+    return Column(
+      children: [
+        _buildSupplierDetailsCard(),
+        const SizedBox(height: 24),
+        _buildProductCard(),
+        const SizedBox(height: 24),
+        _buildEmployeeDetailsCard(),
+        const SizedBox(height: 24),
+        _buildPaymentDetailsCard(),
+      ],
+    );
+  }
+
+  Widget _buildSupplierDetailsCard() {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: [
-              const Icon(Icons.payment_outlined, color: AppColors.blueAccent),
-              SizedBox(width: size.width * 0.02),
-              const Text("Choose Payment", style: AppTextStyles.headingText20),
-            ],
-          ),
-          SizedBox(height: size.height * 0.02),
-          const Divider(),
-          SizedBox(height: size.height * 0.01),
-
-          // Payment Method Tabs
-          Row(
-            children: [
-              Expanded(
-                child: _buildPaymentTab("UPI", Icons.phone_android_outlined),
-              ),
-              const SizedBox(width: 8),
-              Expanded(child: _buildPaymentTab("COD", Icons.money)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildPaymentTab("RTGS", Icons.account_balance_outlined),
-              ),
-            ],
-          ),
-          SizedBox(height: size.height * 0.02),
-
-          // Conditional UI based on active tab
-          if (activePaymentTab == "UPI") ...[
-            const Text("Select UPI App", style: AppTextStyles.buttonText16),
-            SizedBox(height: size.height * 0.01),
-            Row(
-              children: [
-                Expanded(child: _buildUpiAppButton("Google Pay")),
-                const SizedBox(width: 6),
-                Expanded(child: _buildUpiAppButton("PhonePe")),
-                const SizedBox(width: 6),
-                Expanded(child: _buildUpiAppButton("Paytm")),
-                const SizedBox(width: 6),
-                Expanded(child: _buildUpiAppButton("Other")),
-              ],
-            ),
-            SizedBox(height: size.height * 0.02),
-            const Text(
-              "Transaction Reference",
-              style: AppTextStyles.buttonText16,
-            ),
-            SizedBox(height: size.height * 0.01),
-            _buildTextField(
-              controller: otherUpiDetailsController,
-              hint: "UPI ID or Reference No.",
-              icon: Icons.vpn_key_outlined,
-            ),
-            SizedBox(height: size.height * 0.02),
-          ],
-
-          if (activePaymentTab == "RTGS") ...[
-            const Text(
-              "Transaction Reference",
-              style: AppTextStyles.buttonText16,
-            ),
-            SizedBox(height: size.height * 0.01),
-            _buildTextField(
-              controller: otherUpiDetailsController,
-              hint: "RTGS/NEFT Transaction ID",
-              icon: Icons.receipt_long_outlined,
-            ),
-            SizedBox(height: size.height * 0.02),
-          ],
-
-          // Payment amount and debt inputs
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        "Payment Amount",
-                        style: AppTextStyles.buttonText16,
-                      ),
-                    ),
-                    SizedBox(height: size.height * 0.01),
-                    _buildTextField(
-                      controller: paymentAmountController,
-                      hint: "Enter amount paid",
-                      isNumeric: true,
-                      prefixText: "₹ ",
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        "Debt (Optional)",
-                        style: AppTextStyles.buttonText16,
-                      ),
-                    ),
-                    SizedBox(height: size.height * 0.01),
-                    _buildTextField(
-                      controller: debtAmountController,
-                      hint: "Enter remaining debt",
-                      isNumeric: true,
-                      prefixText: "₹ ",
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentTab(String title, IconData icon) {
-    final bool isSelected = activePaymentTab == title;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          activePaymentTab = title;
-        });
-      },
-      child: Container(
-        height: 50,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.amber600 : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.amber600 : Colors.grey.shade300,
-          ),
-        ),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  icon,
-                  size: 16,
-                  color: isSelected ? Colors.white : Colors.black87,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  title,
-                  style: AppTextStyles.bodyText13.copyWith(
-                    color: isSelected ? Colors.white : Colors.black87,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildUpiAppButton(String title) {
-    final bool isSelected = selectedUpiApp == title;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedUpiApp = title;
-        });
-      },
-      child: Container(
-        height: 40,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.blueAccent : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected ? AppColors.blueAccent : Colors.grey.shade300,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              title,
-              style: AppTextStyles.bodyText13.copyWith(
-                color: isSelected ? Colors.white : Colors.black87,
-                fontSize: 11,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hint,
-    bool isNumeric = false,
-    String? prefixText,
-    IconData? icon,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: AppColors.containerColor,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: TextField(
-        controller: controller,
-        keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
-        inputFormatters: isNumeric
-            ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))]
-            : [],
-        style: AppTextStyles.bodyText14dark,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: AppTextStyles.formInputs15,
-          border: InputBorder.none,
-          prefixText: prefixText,
-          prefixStyle: AppTextStyles.bodyText14dark,
-          prefixIcon: icon != null
-              ? Icon(icon, color: AppColors.light, size: 18)
-              : null,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPurchaseSummaryCard(Size size) {
-    final double _ = getProductTotal();
-    final double additionalTotal = getAdditionalTotal();
-    final double totalCost = getTotalCost();
-    final double _ = getTotalTrays();
-    final double perTray = getCostPerTray();
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("Purchase Summary", style: AppTextStyles.headingText25),
-          SizedBox(height: size.height * 0.01),
-          _buildRow("Supplier", selectedSupplierName),
-          _buildRow("Location", originLocation),
-          const Divider(),
-          Text("Products Summary", style: AppTextStyles.formInputs15dark),
-          SizedBox(height: size.height * 0.01),
-          ...products.map((p) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                children: [
-                  _buildRow("Category", p.category),
-                  _buildRow("Trays", p.quantity),
-                  _buildRow("Rate per Egg", "₹ ${p.rate}"),
-                ],
-              ),
-            );
-          }).toList(),
-          const Divider(),
-          Text("Additional Costs", style: AppTextStyles.formInputs15dark),
-          _buildRow("Loading Charges", "₹ ${loadingController.text}"),
-          _buildRow("Unloading Charges", "₹ ${unloadingController.text}"),
-          _buildRow("Transport Charges", "₹ ${transportController.text}"),
-          _buildRow("Misc Expense", "₹ ${miscController.text}"),
-          _buildRow(
-            "Total Additional Cost",
-            "₹ ${additionalTotal.toStringAsFixed(2)}",
-          ),
-          _buildRow("Cost per Tray", "₹ ${perTray.toStringAsFixed(2)}"),
-          const SizedBox(height: 12),
-          Row(
-            children: List.generate(
-              30,
-              (index) => Expanded(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 1),
-                  height: 1,
-                  color: index % 2 == 0 ? Colors.grey : Colors.transparent,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: size.height * 0.01),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("Total Estimated Cost", style: AppTextStyles.headingText22),
+            children: const [
+              Icon(Icons.local_shipping_outlined, color: AppColors.blueAccent),
+              SizedBox(width: 8),
               Text(
-                "₹ ${totalCost.toStringAsFixed(2)}",
-                style: AppTextStyles.blueText2,
+                "Supplier & Location Details",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B)),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-
-          // Submit Buttons
-          BlocBuilder<PurchaseBloc, PurchaseState>(
+          const SizedBox(height: 20),
+          BlocBuilder<SupplierBloc, SupplierState>(
             builder: (context, state) {
-              if (state is PurchaseSubmitting) {
-                return const Center(child: CircularProgressIndicator());
+              List<SupplierModel> suppliers = [];
+              if (state is SupplierLoaded) {
+                suppliers = state.suppliers.map((s) => SupplierModel(
+                  id: s.id,
+                  companyName: s.companyName,
+                  supplierName: s.supplierName,
+                  email: s.email,
+                  phoneNumber: s.phoneNumber,
+                  location: s.location,
+                  status: s.status,
+                )).toList();
               }
+
               return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const Text("Supplier Name", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  const SizedBox(height: 8),
                   Container(
-                    width: double.infinity,
-                    height: 50,
-                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      color: AppColors.amber600,
+                      color: const Color(0xFFF8FAFC),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: ElevatedButton.icon(
-                      onPressed: () => _submitForm(false),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      icon: Icon(
-                        Icons.check_circle_outline,
-                        color: AppColors.dark,
-                      ),
-                      label: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          "Submit Purchase Entry",
-                          style: AppTextStyles.headingText20,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: double.infinity,
-                    height: 50,
-                    margin: const EdgeInsets.symmetric(vertical: 6),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.border),
-                      borderRadius: BorderRadius.circular(5),
-                      color: AppColors.containerColor,
-                    ),
-                    child: ElevatedButton.icon(
-                      onPressed: () => _submitForm(true),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      icon: Icon(Icons.save_outlined, color: AppColors.dark),
-                      label: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          "Save as Draft",
-                          style: AppTextStyles.headingText20,
-                        ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<SupplierModel>(
+                        value: selectedSupplier,
+                        isExpanded: true,
+                        hint: const Text("Select Supplier"),
+                        items: suppliers.map((s) {
+                          return DropdownMenuItem(
+                            value: s,
+                            child: Text(s.companyName),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            selectedSupplier = val;
+                            originLocation = val?.location ?? "";
+                          });
+                        },
                       ),
                     ),
                   ),
@@ -841,19 +443,119 @@ class _NewpurchaseState extends State<Newpurchase> {
               );
             },
           ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                Icons.info_outline,
-                color: AppColors.textSecondary,
-                size: 18,
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                await showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => const AddSupplierPopup(),
+                );
+                // Refresh list
+                if (mounted) {
+                  context.read<SupplierBloc>().add(FetchSuppliers());
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1E293B),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
-              const SizedBox(width: 6),
+              icon: const Icon(Icons.add, size: 16),
+              label: const Text("Add New Supplier"),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
               Expanded(
-                child: Text(
-                  "Stock will be marked as 'incoming' upon submission",
-                  style: AppTextStyles.formInputs15,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Origin Location", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        originLocation.isEmpty ? "Auto-filled based on supplier" : originLocation,
+                        style: TextStyle(color: originLocation.isEmpty ? Colors.grey : Colors.black),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Expected Arrival Date", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                    const SizedBox(height: 8),
+                    InkWell(
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime(2100),
+                        );
+                        if (picked != null) {
+                          setState(() {
+                            expectedArrivalDate = picked;
+                          });
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              expectedArrivalDate == null
+                                  ? "Select Date"
+                                  : DateFormat('yyyy-MM-dd').format(expectedArrivalDate!),
+                            ),
+                            const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _buildInputField("Broker Name", brokerNameController, hint: "Enter Broker Name"),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildInputField(
+                  "Broker Number",
+                  brokerNumController,
+                  hint: "Enter Broker Number",
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(10)
+                  ],
                 ),
               ),
             ],
@@ -863,22 +565,964 @@ class _NewpurchaseState extends State<Newpurchase> {
     );
   }
 
-  Widget _buildRow(String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildProductCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: AppTextStyles.formInputs15),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              value.isEmpty ? "--" : value,
-              textAlign: TextAlign.end,
-              style: AppTextStyles.bodyText16,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: const [
+                  Icon(Icons.inventory_2_outlined, color: AppColors.blueAccent),
+                  SizedBox(width: 8),
+                  Text(
+                    "Product Specifications",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B)),
+                  ),
+                ],
+              ),
+              IconButton(
+                icon: const Icon(Icons.add_circle, color: Color(0xFF2563EB), size: 28),
+                onPressed: () {
+                  setState(() {
+                    products.add(ProductInput());
+                  });
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: products.length,
+            itemBuilder: (context, idx) {
+              final p = products[idx];
+              final totalEggs = (int.tryParse(p.quantity) ?? 0) * 30;
+              final double necc = double.tryParse(p.necc) ?? 0.0;
+              final double minus = double.tryParse(p.minus) ?? 0.0;
+              final double finalRate = necc - minus;
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 24),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Product ${idx + 1}",
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+                        ),
+                        if (products.length > 1)
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              setState(() {
+                                products.removeAt(idx);
+                              });
+                            },
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("Egg Category & Grade", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                              const SizedBox(height: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    value: p.category.isEmpty ? null : p.category,
+                                    isExpanded: true,
+                                    hint: const Text("Select Category"),
+                                    items: eggCategories.map((c) {
+                                      return DropdownMenuItem(value: c, child: Text(c));
+                                    }).toList(),
+                                    onChanged: (val) {
+                                      setState(() {
+                                        p.category = val ?? "";
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("Number Trays", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                              const SizedBox(height: 6),
+                              TextField(
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                decoration: InputDecoration(
+                                  hintText: "Trays",
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                ),
+                                onChanged: (val) {
+                                  setState(() {
+                                    p.quantity = val;
+                                    p.totalEggs = ((int.tryParse(val) ?? 0) * 30).toString();
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("Total Eggs (Auto)", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                              const SizedBox(height: 6),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEDF2F7),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                                ),
+                                child: Text(totalEggs.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("NECC Rate (₹)", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                              const SizedBox(height: 6),
+                              TextField(
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+                                decoration: InputDecoration(
+                                  hintText: "Rate",
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                ),
+                                onChanged: (val) {
+                                  setState(() {
+                                    p.necc = val;
+                                    p.rate = (finalRate).toStringAsFixed(2);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("Market Minus (₹)", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                              const SizedBox(height: 6),
+                              TextField(
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+                                decoration: InputDecoration(
+                                  hintText: "Minus",
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                ),
+                                onChanged: (val) {
+                                  setState(() {
+                                    p.minus = val;
+                                    p.rate = (finalRate).toStringAsFixed(2);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("Final Rate (₹)", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                              const SizedBox(height: 6),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEDF2F7),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                                ),
+                                child: Text("₹ ${finalRate.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Tray Type", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: p.trayType.isEmpty ? null : p.trayType,
+                              isExpanded: true,
+                              hint: const Text("Select Tray Type"),
+                              items: [
+                                DropdownMenuItem(value: "Paper Tray", child: Text("Paper Tray (Stock: $namakkalPaperStock)")),
+                                DropdownMenuItem(value: "Plastic Tray", child: Text("Plastic Tray (Stock: $namakkalStock)")),
+                              ],
+                              onChanged: (val) {
+                                setState(() {
+                                  p.trayType = val ?? "";
+                                });
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmployeeDetailsCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(Icons.person_pin_outlined, color: AppColors.blueAccent),
+              SizedBox(width: 8),
+              Text(
+                "Purchase Employee Details",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _buildInputField("Driver Name", driverController, hint: "Enter driver name"),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildInputField("Reaching Warehouse", reachingWarehouseController, hint: "Enter warehouse location"),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildInputField("Vehicle Number", vehicleNumberController, hint: "e.g. TN 01 AB 1234"),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildInputField("Vehicle Type", vehicleTypeController, hint: "e.g. Truck"),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildInputField(
+            "Driver Contact Number",
+            driverContactController,
+            hint: "Enter 10-digit number",
+            keyboardType: TextInputType.phone,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10)
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildInputField("Additional Notes", descriptionController, hint: "Enter notes"),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentDetailsCard() {
+    final double totalAmt = getTotalAmount();
+    final double paidAmt = getPaidAmount();
+    final double balanceAmt = getBalanceAmount();
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: const [
+                  Icon(Icons.payment, color: AppColors.blueAccent),
+                  SizedBox(width: 8),
+                  Text(
+                    "Payment Details",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B)),
+                  ),
+                ],
+              ),
+              ElevatedButton.icon(
+                onPressed: _addPaymentRow,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFEEF2F6),
+                  foregroundColor: const Color(0xFF4338CA),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                icon: const Icon(Icons.add, size: 16),
+                label: const Text("Add Payment"),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Column(
+                  children: [
+                    const Text("TOTAL AMOUNT", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey)),
+                    const SizedBox(height: 4),
+                    Text("₹ ${totalAmt.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  ],
+                ),
+                Container(width: 1, height: 30, color: Colors.grey.shade300),
+                Column(
+                  children: [
+                    const Text("PAID AMOUNT", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey)),
+                    const SizedBox(height: 4),
+                    Text("₹ ${paidAmt.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.green)),
+                  ],
+                ),
+                Container(width: 1, height: 30, color: Colors.grey.shade300),
+                Column(
+                  children: [
+                    const Text("BALANCE / DEBT", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey)),
+                    const SizedBox(height: 4),
+                    Text("₹ ${balanceAmt.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.red)),
+                  ],
+                ),
+              ],
             ),
           ),
+          const SizedBox(height: 20),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: payments.length,
+            itemBuilder: (context, index) {
+              final pay = payments[index];
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Stack(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text("Method", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                                  const SizedBox(height: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<String>(
+                                        value: pay["method"],
+                                        isExpanded: true,
+                                        items: ["Cash", "UPI", "Card", "RTGS/NEFT", "Credit"].map((m) {
+                                          return DropdownMenuItem(value: m, child: Text(m));
+                                        }).toList(),
+                                        onChanged: (val) {
+                                          setState(() {
+                                            pay["method"] = val ?? "Cash";
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text("Amount (₹)", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                                  const SizedBox(height: 6),
+                                  TextField(
+                                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+                                    decoration: InputDecoration(
+                                      hintText: "0.00",
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                    ),
+                                    onChanged: (val) {
+                                      setState(() {
+                                        pay["amount"] = val;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (pay["method"] == "UPI") ...[
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text("UPI App", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                                    const SizedBox(height: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: DropdownButtonHideUnderline(
+                                        child: DropdownButton<String>(
+                                          value: pay["app"].toString().isEmpty ? null : pay["app"],
+                                          isExpanded: true,
+                                          hint: const Text("Select App"),
+                                          items: ["Google Pay", "PhonePe", "Paytm", "Other"].map((app) {
+                                            return DropdownMenuItem(value: app, child: Text(app));
+                                          }).toList(),
+                                          onChanged: (val) {
+                                            setState(() {
+                                              pay["app"] = val ?? "";
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text("Reference No.", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                                    const SizedBox(height: 6),
+                                    TextField(
+                                      decoration: InputDecoration(
+                                        hintText: "Txn ID",
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                      ),
+                                      onChanged: (val) {
+                                        setState(() {
+                                          pay["reference"] = val;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                        if (pay["method"] == "RTGS/NEFT" || pay["method"] == "Card") ...[
+                          const SizedBox(height: 12),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("Reference No.", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                              const SizedBox(height: 6),
+                              TextField(
+                                decoration: InputDecoration(
+                                  hintText: "Txn ID or Ref",
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                ),
+                                onChanged: (val) {
+                                  setState(() {
+                                    pay["reference"] = val;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                        if (pay["method"] == "Credit") ...[
+                          const SizedBox(height: 12),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("Debt Notes", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                              const SizedBox(height: 6),
+                              TextField(
+                                decoration: InputDecoration(
+                                  hintText: "Notes",
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                ),
+                                onChanged: (val) {
+                                  setState(() {
+                                    pay["notes"] = val;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (payments.length > 1)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: InkWell(
+                          onTap: () => _removePaymentRow(pay["id"]),
+                          child: const Icon(Icons.close, color: Colors.red, size: 20),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryCard() {
+    final double subtotal = getProductSubtotal();
+    final double addTotal = getAdditionalTotal();
+    final double grandTotal = getTotalAmount();
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Purchase Summary", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF1E293B))),
+          const SizedBox(height: 16),
+          _buildSummaryRow("Supplier", selectedSupplier?.companyName ?? "-"),
+          _buildSummaryRow("Location", originLocation.isEmpty ? "-" : originLocation),
+          const Divider(height: 24),
+          const Text("Products", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.grey)),
+          const SizedBox(height: 8),
+          ...products.map((p) {
+            final qty = int.tryParse(p.quantity) ?? 0;
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(child: Text(p.category.isEmpty ? "Egg Product" : p.category, style: const TextStyle(fontSize: 13))),
+                  Text("$qty Trays (${qty * 30} Eggs)", style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                ],
+              ),
+            );
+          }).toList(),
+          const Divider(height: 24),
+          _buildSummaryRow("Subtotal", "₹ ${subtotal.toStringAsFixed(2)}"),
+          if (addTotal > 0)
+            _buildSummaryRow("Additional Charges", "₹ ${addTotal.toStringAsFixed(2)}"),
+          const Divider(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Total Cost", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B))),
+              Text("₹ ${grandTotal.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF2563EB))),
+            ],
+          ),
+          const SizedBox(height: 32),
+          BlocBuilder<PurchaseBloc, PurchaseState>(
+            builder: (context, state) {
+              if (state is PurchaseSubmitting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              return Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () => _submitForm(false),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        elevation: 0,
+                      ),
+                      child: const Text("Submit Purchase Entry", style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton(
+                      onPressed: () => _submitForm(true),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.black87,
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text("Save as Draft", style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryRow(String label, String val) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+          Text(val, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1E293B))),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputField(
+    String label,
+    TextEditingController controller, {
+    String? hint,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          decoration: InputDecoration(
+            hintText: hint,
+            filled: true,
+            fillColor: const Color(0xFFF8FAFC),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class PaymentSuccessfulScreen extends StatefulWidget {
+  final int purchaseId;
+  const PaymentSuccessfulScreen({super.key, required this.purchaseId});
+
+  @override
+  State<PaymentSuccessfulScreen> createState() => _PaymentSuccessfulScreenState();
+}
+
+class _PaymentSuccessfulScreenState extends State<PaymentSuccessfulScreen> {
+  Map<String, dynamic>? purchase;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPurchase();
+  }
+
+  Future<void> _fetchPurchase() async {
+    try {
+      final res = await DioClient().dio.get("/api/purchase/${widget.purchaseId}");
+      if (res.data != null && res.data["data"] != null) {
+        setState(() {
+          purchase = res.data["data"];
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching purchase details: $e");
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final totalTrays = int.tryParse(purchase?["total_trays"]?.toString() ?? "0") ?? 0;
+    final totalEggs = totalTrays * (int.tryParse(purchase?["capacity"]?.toString() ?? "30") ?? 30);
+    final finalRate = (double.tryParse(purchase?["per_egg_price"]?.toString() ?? "0.0") ?? 0.0) -
+        (double.tryParse(purchase?["market_price_minus"]?.toString() ?? "0.0") ?? 0.0);
+
+    final double loadingCharge = double.tryParse(purchase?["loading_charge"]?.toString() ?? "0.0") ?? 0.0;
+    final double unloadingCharge = double.tryParse(purchase?["unloading_charge"]?.toString() ?? "0.0") ?? 0.0;
+    final double transportCharge = double.tryParse(purchase?["transport_charge"]?.toString() ?? "0.0") ?? 0.0;
+    final double miscExpense = double.tryParse(purchase?["misc_expense"]?.toString() ?? "0.0") ?? 0.0;
+
+    final additionalCost = loadingCharge + unloadingCharge + transportCharge + miscExpense;
+    final totalAmount = totalEggs * finalRate + additionalCost;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 500),
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 4)),
+              ],
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFDCFCE7),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.check, color: Color(0xFF16A34A), size: 40),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  "Purchase Order Created",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: Color(0xFF1E293B)),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  "Your purchase entry has been successfully recorded and added to the incoming stock queue.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                ),
+                const SizedBox(height: 32),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildRow("Order Reference", "PO-${purchase?["id"] ?? widget.purchaseId}"),
+                      _buildRow("Supplier", purchase?["supplier_company_name"] ?? "-"),
+                      _buildRow("Product", purchase?["egg_category_grade"] ?? "-"),
+                      _buildRow("Total Quantity", "$totalTrays Tray"),
+                      const Divider(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text("Total Cost", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                          Text("₹ ${totalAmount.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B))),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E293B),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 0,
+                    ),
+                    child: const Text("Back to Dashboard", style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const Newpurchase()),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.black87,
+                      side: const BorderSide(color: Color(0xFFCBD5E1)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Text("Create Another Purchase", style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRow(String label, String val) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+          Text(val, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1E293B))),
         ],
       ),
     );

@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/cache/hive_service/purchase_hive_service.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/purchase_repository.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/supplier_repository.dart';
+import 'package:proteinova_connect/features/admin/purchase/data/repository/purchase_repository.dart';
+import 'package:proteinova_connect/features/admin/purchase/data/repository/supplier_repository.dart';
 import 'purchase_event.dart';
 import 'purchase_state.dart';
  class PurchaseBloc extends Bloc<PurchaseEvent, PurchaseState> {
@@ -112,14 +112,15 @@ on<SearchPurchaseEvent>((event, emit) {
   try {
     emit(PurchaseSubmitting());
 
-    await purchaseRepository.postPurchase(event.purchase);
+    final res = await purchaseRepository.postPurchase(event.purchase);
+    final int purchaseId = int.tryParse(res?['data']?['id']?.toString() ?? '0') ?? 0;
 
     // refresh purchase list
     final updatedList = await purchaseRepository.getPurchases();
 
     _allPurchases = updatedList;
 
-    emit(PurchaseSubmitSuccess());
+    emit(PurchaseSubmitSuccess(purchaseId));
 
     emit(
       PurchaseLoaded(

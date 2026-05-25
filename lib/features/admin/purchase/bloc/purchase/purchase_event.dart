@@ -1,4 +1,4 @@
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/purchase_model.dart';
+import 'package:proteinova_connect/features/admin/purchase/data/models/purchase_model.dart';
 
 abstract class PurchaseEvent {}
 

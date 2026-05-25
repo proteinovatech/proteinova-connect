@@ -26,7 +26,10 @@ class PurchaseLoaded extends PurchaseState {
 }
 class PurchaseSubmitting extends PurchaseState {}
 
-class PurchaseSubmitSuccess extends PurchaseState {}
+class PurchaseSubmitSuccess extends PurchaseState {
+  final int purchaseId;
+  PurchaseSubmitSuccess(this.purchaseId);
+}
 
 class PurchaseSubmitFailure extends PurchaseState {
   final String message;

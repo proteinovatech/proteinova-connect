@@ -53,7 +53,7 @@ Future<void> main() async {
 
   final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
 
-  final String role = prefs.getString('role') ?? '';
+  final String role = (prefs.getString('role') ?? '').toLowerCase();
 
   Widget startScreen;
 

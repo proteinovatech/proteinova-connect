@@ -6,18 +6,18 @@ import 'package:proteinova_connect/core/network/dio_client.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_bloc.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_event.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/purchase_repository.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/supplier_repository.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/presentation/newpurchase.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/purchase/purchase_bloc.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/purchase/purchase_event.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/purchase/purchase_state.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/purchase_model.dart';
+import 'package:proteinova_connect/features/admin/purchase/bloc/supplier/supplier_bloc.dart';
+import 'package:proteinova_connect/features/admin/purchase/bloc/supplier/supplier_event.dart';
+import 'package:proteinova_connect/features/admin/purchase/data/repository/purchase_repository.dart';
+import 'package:proteinova_connect/features/admin/purchase/data/repository/supplier_repository.dart';
+import 'package:proteinova_connect/features/admin/purchase/presentation/newpurchase.dart';
+import 'package:proteinova_connect/features/admin/purchase/bloc/purchase/purchase_bloc.dart';
+import 'package:proteinova_connect/features/admin/purchase/bloc/purchase/purchase_event.dart';
+import 'package:proteinova_connect/features/admin/purchase/bloc/purchase/purchase_state.dart';
+import 'package:proteinova_connect/features/admin/purchase/data/models/purchase_model.dart';
 import 'package:proteinova_connect/features/purchase/orders/presentation/checkout.dart';
 
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/purchase_dashboard_shimmer.dart';
+import 'package:proteinova_connect/features/admin/purchase/widget/purchase_dashboard_shimmer.dart';
 
 class Purchase extends StatefulWidget {
   const Purchase({super.key});

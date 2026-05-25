@@ -7,10 +7,10 @@ import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/purchase/orders/widget/checkout_summary.dart';
 import 'package:proteinova_connect/features/purchase/orders/widget/payment_method.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/purchase/purchase_bloc.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/purchase_model.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/purchase_repository.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/supplier_repository.dart';
+import 'package:proteinova_connect/features/admin/purchase/bloc/purchase/purchase_bloc.dart';
+import 'package:proteinova_connect/features/admin/purchase/data/models/purchase_model.dart';
+import 'package:proteinova_connect/features/admin/purchase/data/repository/purchase_repository.dart';
+import 'package:proteinova_connect/features/admin/purchase/data/repository/supplier_repository.dart';
 
 class Checkout extends StatefulWidget {
   final PurchaseRequest purchase;

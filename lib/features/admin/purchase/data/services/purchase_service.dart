@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:proteinova_connect/core/network/dio_client.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/purchase_model.dart';
+import 'package:proteinova_connect/features/admin/purchase/data/models/purchase_model.dart';
 
 class PurchaseService {
   final Dio dio = DioClient().dio;
 
-  Future<void> postPurchase(PurchaseRequest purchase) async {
+  Future<Map<String, dynamic>> postPurchase(PurchaseRequest purchase) async {
     try {
       final response = await dio.post(
         "/api/purchase",
@@ -13,6 +13,7 @@ class PurchaseService {
       );
 
       print("SUCCESS: ${response.data}");
+      return response.data;
     } catch (e) {
       print("ERROR: $e");
       rethrow;

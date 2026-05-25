@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/supplier_model.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/supplier_repository.dart';
+import 'package:proteinova_connect/features/admin/purchase/data/repository/supplier_repository.dart';
 import 'supplier_event.dart';
 import 'supplier_state.dart';
 

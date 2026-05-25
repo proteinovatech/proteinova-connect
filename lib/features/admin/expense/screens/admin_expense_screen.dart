@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bloc.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_event.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_state.dart';
 import 'package:proteinova_connect/features/admin/expense/data/models/branch_expense_dashboard_model.dart';
-
+import 'package:proteinova_connect/features/admin/expense/data/models/location_model.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_expense_management_skeleton_loader.dart';
 
 import '../data/repository/expense_repository.dart';
-
 import '../widgets/expense_category_item.dart';
 import '../widgets/expense_summary_card.dart';
 import '../widgets/expense_table_header.dart';
@@ -33,26 +33,32 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
   String selectedCategory = "Transport";
   String selectedPayment = "Cash";
   String selectedStatus = "Paid";
-  int selectedBranchId = 1; // Default branch ID
-  String selectedMonth = "2025-05"; // Default month
-
-  Map<int, String> branches = {};
+  
+  int? selectedLocationId;
+  String selectedLocationType = "branch"; // 'branch' or 'warehouse'
+  String selectedMonth = "";
 
   Future<void> _fetchData() async {
-    context.read<BranchExpenseBloc>().add(
-      LoadDashboardEvent(branchId: selectedBranchId, month: selectedMonth),
-    );
+    if (selectedLocationId != null) {
+      context.read<BranchExpenseBloc>().add(
+        LoadDashboardEvent(
+          locationId: selectedLocationId!,
+          locationType: selectedLocationType,
+          month: selectedMonth,
+        ),
+      );
+    }
   }
 
   bool isSaving = false;
-  BranchExpenseDashboardModel? dashboardData;
 
-  double _getCategoryAmount(String categoryName) {
+  double _getCategoryAmount(BranchExpenseDashboardModel? dashboardData, String categoryName) {
     if (dashboardData == null) return 0.0;
     try {
-      return dashboardData!.categories
+      final upper = categoryName.toUpperCase().replaceAll(' ', '_');
+      return dashboardData.categories
           .firstWhere(
-            (e) => e.category.toUpperCase() == categoryName.toUpperCase(),
+            (e) => e.category.toUpperCase().replaceAll(' ', '_') == upper,
           )
           .amount;
     } catch (_) {
@@ -63,26 +69,37 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
   @override
   void initState() {
     super.initState();
-    dateController.text = DateTime.now().toString().split(' ')[0];
+    final now = DateTime.now();
+    selectedMonth = DateFormat('yyyy-MM').format(now);
+    dateController.text = DateFormat('yyyy-MM-dd').format(now);
     Future.microtask(() {
-      context.read<BranchExpenseBloc>().add(LoadBranchesEvent());
+      context.read<BranchExpenseBloc>().add(LoadLocationsEvent());
     });
   }
 
   Future<void> _saveExpense() async {
-    if (amountController.text.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Please enter amount")));
+    if (selectedLocationId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select a location first")),
+      );
+      return;
+    }
+    if (amountController.text.isEmpty ||
+        double.tryParse(amountController.text) == null ||
+        double.parse(amountController.text) <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a valid amount greater than 0")),
+      );
       return;
     }
 
     setState(() => isSaving = true);
     try {
-      await _repository.createBranchExpense(
-        branchId: selectedBranchId,
+      await _repository.createExpense(
+        branchId: selectedLocationType == 'branch' ? selectedLocationId : null,
+        warehouseId: selectedLocationType == 'warehouse' ? selectedLocationId : null,
         expenseDate: dateController.text,
-        category: selectedCategory.toUpperCase(),
+        category: selectedCategory.toUpperCase().replaceAll(' ', '_'),
         amount: double.parse(amountController.text),
         paymentMethod: selectedPayment.toUpperCase(),
         description: descriptionController.text,
@@ -97,9 +114,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
           const SnackBar(content: Text("Expense saved successfully")),
         );
       }
-      context.read<BranchExpenseBloc>().add(
-        LoadDashboardEvent(branchId: selectedBranchId, month: selectedMonth),
-      );
+      _fetchData();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -111,33 +126,62 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
     }
   }
 
+  String formatCategory(String category) {
+    final upper = category.toUpperCase().replaceAll(' ', '_');
+    switch (upper) {
+      case 'RENT':
+        return 'Rent';
+      case 'SALARY':
+        return 'Salary';
+      case 'ELECTRICITY':
+        return 'Electricity';
+      case 'MISCELLANEOUS':
+        return 'Miscellaneous';
+      case 'TRANSPORT':
+        return 'Transport';
+      case 'PACKING':
+        return 'Packing';
+      case 'MAINTENANCE':
+        return 'Maintenance';
+      case 'OTHER_EXPENSES':
+        return 'Other Expenses';
+      default:
+        return category;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.lightGrey,
-      // body: isLoading
-      //     ? const AdminExpenseManagementSkeletonLoader()
-      //     : RefreshIndicator(
-      //         onRefresh: _fetchData,
-      // backgroundColor:AppColors.lightGrey,
       body: BlocBuilder<BranchExpenseBloc, BranchExpenseState>(
         builder: (context, state) {
           final dashboardData = state.dashboardData;
-          final branches = state.branches;
+          final locations = state.locations;
           final isLoading = state.isLoading;
-          if (state.isLoading && state.dashboardData == null) {
+
+          // Auto-select first location if not set yet
+          if (selectedLocationId == null && locations.isNotEmpty) {
+            final firstLoc = locations.first;
+            selectedLocationId = firstLoc.id;
+            selectedLocationType = firstLoc.type;
+            Future.microtask(() {
+              context.read<BranchExpenseBloc>().add(
+                LoadDashboardEvent(
+                  locationId: selectedLocationId!,
+                  locationType: selectedLocationType,
+                  month: selectedMonth,
+                ),
+              );
+            });
+          }
+
+          if (isLoading && dashboardData == null) {
             return const AdminExpenseManagementSkeletonLoader();
           }
 
           return RefreshIndicator(
-            onRefresh: () async {
-              context.read<BranchExpenseBloc>().add(
-                LoadDashboardEvent(
-                  branchId: selectedBranchId,
-                  month: selectedMonth,
-                ),
-              );
-            },
+            onRefresh: _fetchData,
             child: SafeArea(
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -157,9 +201,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                           },
                           icon: const Icon(Icons.arrow_back),
                         ),
-
                         const SizedBox(width: 8),
-
                         const Expanded(
                           child: Text(
                             "Expense Management",
@@ -169,7 +211,6 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             ),
                           ),
                         ),
-
                         Container(
                           padding: EdgeInsets.symmetric(
                             horizontal: getWidth(context, 14),
@@ -209,11 +250,11 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                               border: Border.all(color: Colors.grey.shade300),
                             ),
                             child: DropdownButtonHideUnderline(
-                              child: DropdownButton<int>(
-                                value: branches.containsKey(selectedBranchId)
-                                    ? selectedBranchId
+                              child: DropdownButton<Location>(
+                                value: locations.any((l) => l.id == selectedLocationId && l.type == selectedLocationType)
+                                    ? locations.firstWhere((l) => l.id == selectedLocationId && l.type == selectedLocationType)
                                     : null,
-                                hint: const Text("Select Branch"),
+                                hint: const Text("Select Location"),
                                 isExpanded: true,
                                 icon: const Icon(Icons.arrow_drop_down),
                                 style: const TextStyle(
@@ -221,20 +262,28 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
                                 ),
-                                items: branches.entries.map((entry) {
-                                  return DropdownMenuItem<int>(
-                                    value: entry.key,
-                                    child: Text(entry.value),
+                                items: locations.map((loc) {
+                                  final label = loc.type == 'branch'
+                                      ? "Branch: ${loc.name}"
+                                      : "Warehouse: ${loc.name}";
+                                  return DropdownMenuItem<Location>(
+                                    value: loc,
+                                    child: Text(
+                                      label,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   );
                                 }).toList(),
-                                onChanged: (value) {
-                                  if (value != null) {
+                                onChanged: (loc) {
+                                  if (loc != null) {
                                     setState(() {
-                                      selectedBranchId = value;
+                                      selectedLocationId = loc.id;
+                                      selectedLocationType = loc.type;
                                     });
                                     context.read<BranchExpenseBloc>().add(
                                       LoadDashboardEvent(
-                                        branchId: selectedBranchId,
+                                        locationId: selectedLocationId!,
+                                        locationType: selectedLocationType,
                                         month: selectedMonth,
                                       ),
                                     );
@@ -261,12 +310,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                   selectedMonth =
                                       "${picked.year}-${picked.month.toString().padLeft(2, '0')}";
                                 });
-                                context.read<BranchExpenseBloc>().add(
-                                  LoadDashboardEvent(
-                                    branchId: selectedBranchId,
-                                    month: selectedMonth,
-                                  ),
-                                );
+                                _fetchData();
                               }
                             },
                             child: dropdownBox(selectedMonth),
@@ -276,14 +320,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                         SizedBox(width: getWidth(context, 10)),
 
                         InkWell(
-                          onTap: () async {
-                            context.read<BranchExpenseBloc>().add(
-                              LoadDashboardEvent(
-                                branchId: selectedBranchId,
-                                month: selectedMonth,
-                              ),
-                            );
-                          },
+                          onTap: _fetchData,
                           child: Container(
                             height: getHeight(context, 50),
                             padding: EdgeInsets.symmetric(
@@ -330,9 +367,9 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                               "₹${dashboardData?.cards.totalExpensesMtd.toStringAsFixed(2) ?? "0.00"}",
                           icon: Icons.currency_rupee,
                           iconBg: AppColors.blue100,
-
                           onTap: () {
                             showExpenseDetailsBottomSheet(
+                              dashboardData,
                               "Total Expenses (MTD)",
                             );
                           },
@@ -347,7 +384,10 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                           icon: Icons.person_outline,
                           iconBg: AppColors.blue100,
                           onTap: () {
-                            showExpenseDetailsBottomSheet("Salary / Payroll");
+                            showExpenseDetailsBottomSheet(
+                              dashboardData,
+                              "Salary / Payroll",
+                            );
                           },
                         ),
                       ],
@@ -364,7 +404,10 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                           icon: Icons.apartment,
                           iconBg: AppColors.violet100,
                           onTap: () {
-                            showExpenseDetailsBottomSheet("Rent");
+                            showExpenseDetailsBottomSheet(
+                              dashboardData,
+                              "Rent & Facilities",
+                            );
                           },
                         ),
 
@@ -377,7 +420,10 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                           icon: Icons.local_shipping_outlined,
                           iconBg: AppColors.green100,
                           onTap: () {
-                            showExpenseDetailsBottomSheet("Transport");
+                            showExpenseDetailsBottomSheet(
+                              dashboardData,
+                              "Transport & Fuel",
+                            );
                           },
                         ),
                       ],
@@ -390,11 +436,14 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                         ExpenseSummaryCard(
                           title: "Electricity",
                           amount:
-                              "₹${_getCategoryAmount("ELECTRICITY").toStringAsFixed(2)}",
+                              "₹${_getCategoryAmount(dashboardData, "ELECTRICITY").toStringAsFixed(2)}",
                           icon: Icons.bolt,
                           iconBg: AppColors.amber100,
                           onTap: () {
-                            showExpenseDetailsBottomSheet("Electricity");
+                            showExpenseDetailsBottomSheet(
+                              dashboardData,
+                              "Electricity",
+                            );
                           },
                         ),
 
@@ -403,11 +452,14 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                         ExpenseSummaryCard(
                           title: "Miscellaneous",
                           amount:
-                              "₹${_getCategoryAmount("MISCELLANEOUS").toStringAsFixed(2)}",
+                              "₹${_getCategoryAmount(dashboardData, "MISCELLANEOUS").toStringAsFixed(2)}",
                           icon: Icons.more_horiz,
                           iconBg: AppColors.lightGrey,
                           onTap: () {
-                            showExpenseDetailsBottomSheet("Miscellaneous");
+                            showExpenseDetailsBottomSheet(
+                              dashboardData,
+                              "Miscellaneous",
+                            );
                           },
                         ),
                       ],
@@ -420,11 +472,14 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                         ExpenseSummaryCard(
                           title: "Maintenance",
                           amount:
-                              "₹${_getCategoryAmount("MAINTENANCE").toStringAsFixed(2)}",
+                              "₹${_getCategoryAmount(dashboardData, "MAINTENANCE").toStringAsFixed(2)}",
                           icon: Icons.build,
                           iconBg: AppColors.red100,
                           onTap: () {
-                            showExpenseDetailsBottomSheet("Maintenance");
+                            showExpenseDetailsBottomSheet(
+                              dashboardData,
+                              "Maintenance",
+                            );
                           },
                         ),
 
@@ -433,11 +488,14 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                         ExpenseSummaryCard(
                           title: "Other Expenses",
                           amount:
-                              "₹${_getCategoryAmount("OTHER_EXPENSES").toStringAsFixed(2)}",
+                              "₹${_getCategoryAmount(dashboardData, "OTHER_EXPENSES").toStringAsFixed(2)}",
                           icon: Icons.groups,
                           iconBg: AppColors.teal100,
                           onTap: () {
-                            showExpenseDetailsBottomSheet("Other_Expenses");
+                            showExpenseDetailsBottomSheet(
+                              dashboardData,
+                              "Other Expenses",
+                            );
                           },
                         ),
                       ],
@@ -446,7 +504,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                     SizedBox(height: getHeight(context, 24)),
 
                     /// CATEGORY BREAKDOWN TABLE
-                    Text(
+                    const Text(
                       "Category Breakdown",
                       style: TextStyle(
                         fontSize: 20,
@@ -472,7 +530,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             ),
                             decoration: BoxDecoration(
                               color: Colors.grey.shade50,
-                              borderRadius: BorderRadius.vertical(
+                              borderRadius: const BorderRadius.vertical(
                                 top: Radius.circular(16),
                               ),
                             ),
@@ -523,7 +581,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                     Expanded(
                                       flex: 3,
                                       child: Text(
-                                        cat.category,
+                                        formatCategory(cat.category),
                                         style: const TextStyle(
                                           fontWeight: FontWeight.w500,
                                         ),
@@ -567,23 +625,20 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: const Color(0xffE5E7EB)),
                       ),
-
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-
                         children: [
-                          Row(
+                          const Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
+                              Text(
                                 "Add Expense",
                                 style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
-
-                              const Icon(Icons.keyboard_arrow_down),
+                              Icon(Icons.keyboard_arrow_down),
                             ],
                           ),
 
@@ -603,9 +658,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                               );
                               if (picked != null) {
                                 setState(() {
-                                  dateController.text = picked.toString().split(
-                                    ' ',
-                                  )[0];
+                                  dateController.text = DateFormat('yyyy-MM-dd').format(picked);
                                 });
                               }
                             },
@@ -646,13 +699,9 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                           Row(
                             children: [
                               paymentButton("Cash"),
-
                               SizedBox(width: getWidth(context, 14)),
-
                               paymentButton("UPI"),
-
                               SizedBox(width: getWidth(context, 14)),
-
                               paymentButton("Card"),
                             ],
                           ),
@@ -666,9 +715,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                           Row(
                             children: [
                               statusButton("Paid"),
-
                               SizedBox(width: getWidth(context, 14)),
-
                               statusButton("Pending"),
                             ],
                           ),
@@ -729,7 +776,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                         ? SizedBox(
                                             width: getWidth(context, 20),
                                             height: getHeight(context, 20),
-                                            child: CircularProgressIndicator(
+                                            child: const CircularProgressIndicator(
                                               color: Colors.black,
                                               strokeWidth: 2,
                                             ),
@@ -754,10 +801,8 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: const Color(0xffE5E7EB)),
                       ),
-
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-
                         children: [
                           Text(
                             "Expense Categories",
@@ -773,10 +818,8 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             crossAxisCount: 4,
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-
                             mainAxisSpacing: 0,
                             crossAxisSpacing: 2,
-
                             childAspectRatio: 0.70,
                             children: [
                               InkWell(
@@ -896,10 +939,8 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: const Color(0xffE5E7EB)),
                       ),
-
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-
                         children: [
                           Text(
                             "Recent Expenses",
@@ -927,9 +968,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                     size: 80,
                                     color: Colors.grey.shade300,
                                   ),
-
                                   SizedBox(height: getHeight(context, 12)),
-
                                   const Text(
                                     "No expenses found for this branch & month.",
                                     style: TextStyle(color: Color(0xff6B7280)),
@@ -978,7 +1017,6 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
             ),
           ),
-
           const Icon(Icons.keyboard_arrow_down),
         ],
       ),
@@ -996,31 +1034,28 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
       child: Row(
         children: [
           const Icon(Icons.local_shipping_outlined),
-
           SizedBox(width: getWidth(context, 10)),
-
           Expanded(
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: selectedCategory,
                 isExpanded: true,
-                items:
-                    [
-                          "Rent",
-                          "Salary",
-                          "Electricity",
-                          "Miscellaneous",
-                          "Transport",
-                          "Packing",
-                          "Maintenance",
-                          "Other Expenses",
-                        ]
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                        .toList(),
+                items: [
+                  "Rent",
+                  "Salary",
+                  "Electricity",
+                  "Miscellaneous",
+                  "Transport",
+                  "Packing",
+                  "Maintenance",
+                  "Other Expenses",
+                ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
                 onChanged: (value) {
-                  setState(() {
-                    selectedCategory = value!;
-                  });
+                  if (value != null) {
+                    setState(() {
+                      selectedCategory = value;
+                    });
+                  }
                 },
               ),
             ),
@@ -1040,18 +1075,15 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
             selectedPayment = text;
           });
         },
-
         child: Container(
           height: getHeight(context, 48),
           alignment: Alignment.center,
-
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: isSelected ? Colors.blue : const Color(0xffE5E7EB),
             ),
           ),
-
           child: Text(
             text.toUpperCase(),
             style: TextStyle(
@@ -1074,18 +1106,15 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
             selectedStatus = text;
           });
         },
-
         child: Container(
           height: getHeight(context, 48),
           alignment: Alignment.center,
-
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: isSelected ? Colors.blue : const Color(0xffE5E7EB),
             ),
           ),
-
           child: Text(
             text.toUpperCase(),
             style: TextStyle(
@@ -1098,27 +1127,22 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
     );
   }
 
-  //show expense details
-  void showExpenseDetailsBottomSheet(String title) {
+  void showExpenseDetailsBottomSheet(BranchExpenseDashboardModel? dashboardData, String title) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-
       builder: (context) {
         return Container(
           height: MediaQuery.of(context).size.height * 0.72,
-
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(34)),
           ),
-
           child: Column(
             children: [
               /// HANDLE
               SizedBox(height: getHeight(context, 20)),
-
               Container(
                 width: getWidth(context, 70),
                 height: getHeight(context, 6),
@@ -1127,7 +1151,6 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
               ),
-
               SizedBox(height: getHeight(context, 16)),
 
               /// HEADER
@@ -1135,7 +1158,6 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                 padding: EdgeInsets.symmetric(
                   horizontal: getWidth(context, 24),
                 ),
-
                 child: Row(
                   children: [
                     Expanded(
@@ -1147,12 +1169,10 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                         ),
                       ),
                     ),
-
                     InkWell(
                       onTap: () {
                         Navigator.pop(context);
                       },
-
                       child: const Icon(Icons.close, size: 30),
                     ),
                   ],
@@ -1167,25 +1187,20 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                   padding: EdgeInsets.symmetric(
                     horizontal: getWidth(context, 24),
                   ),
-
                   child: Container(
                     width: double.infinity,
-
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: const Color(0xffE5E7EB)),
                     ),
-
                     child: Column(
                       children: [
                         /// HORIZONTAL TABLE
                         Expanded(
                           child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
-
                             child: SizedBox(
                               width: getWidth(context, 500),
-
                               child: Column(
                                 children: [
                                   /// HEADER
@@ -1194,25 +1209,18 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                       horizontal: getWidth(context, 18),
                                       vertical: getHeight(context, 18),
                                     ),
-
                                     decoration: const BoxDecoration(
                                       color: Color(0xffF9FAFB),
-
                                       borderRadius: BorderRadius.vertical(
                                         top: Radius.circular(20),
                                       ),
                                     ),
-
                                     child: Row(
                                       children: [
                                         headerItem("Date", 80),
-
                                         headerItem("Category", 80),
-
-                                        headerItem("Description", 80),
-
-                                        headerItem("Amount", 80),
-
+                                        headerItem("Description", 140),
+                                        headerItem("Amount", 100),
                                         headerItem("Status", 80),
                                       ],
                                     ),
@@ -1222,57 +1230,39 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                   if (dashboardData != null)
                                     Expanded(
                                       child: ListView.builder(
-                                        itemCount: dashboardData!.recentExpenses
-                                            .where(
-                                              (e) =>
-                                                  title ==
-                                                      "Total Expenses (MTD)" ||
-                                                  e.category.toUpperCase() ==
-                                                      title.toUpperCase() ||
-                                                  (title ==
-                                                          "Salary / Payroll" &&
-                                                      e.category
-                                                              .toUpperCase() ==
-                                                          "SALARY") ||
-                                                  (title ==
-                                                          "Rent & Facilities" &&
-                                                      e.category
-                                                              .toUpperCase() ==
-                                                          "RENT") ||
-                                                  (title ==
-                                                          "Transport & Fuel" &&
-                                                      e.category
-                                                              .toUpperCase() ==
-                                                          "TRANSPORT"),
-                                            )
+                                        itemCount: dashboardData.recentExpenses
+                                            .where((e) {
+                                              final cat = e.category.toUpperCase().replaceAll(' ', '_');
+                                              if (title == "Total Expenses (MTD)") return true;
+                                              if (title == "Salary / Payroll") return cat == "SALARY";
+                                              if (title == "Rent & Facilities") return cat == "RENT";
+                                              if (title == "Transport & Fuel") return cat == "TRANSPORT";
+                                              if (title == "Electricity") return cat == "ELECTRICITY";
+                                              if (title == "Miscellaneous") return cat == "MISCELLANEOUS";
+                                              if (title == "Maintenance") return cat == "MAINTENANCE";
+                                              if (title == "Other Expenses") return cat == "OTHER_EXPENSES";
+                                              return cat == title.toUpperCase().replaceAll(' ', '_');
+                                            })
                                             .length,
                                         itemBuilder: (context, index) {
-                                          final filteredList = dashboardData!
-                                              .recentExpenses
-                                              .where(
-                                                (e) =>
-                                                    title ==
-                                                        "Total Expenses (MTD)" ||
-                                                    e.category.toUpperCase() ==
-                                                        title.toUpperCase() ||
-                                                    (title ==
-                                                            "Salary / Payroll" &&
-                                                        e.category
-                                                                .toUpperCase() ==
-                                                            "SALARY") ||
-                                                    (title ==
-                                                            "Rent & Facilities" &&
-                                                        e.category
-                                                                .toUpperCase() ==
-                                                            "RENT") ||
-                                                    (title ==
-                                                            "Transport & Fuel" &&
-                                                        e.category
-                                                                .toUpperCase() ==
-                                                            "TRANSPORT"),
-                                              )
+                                          final filteredList = dashboardData.recentExpenses
+                                              .where((e) {
+                                                final cat = e.category.toUpperCase().replaceAll(' ', '_');
+                                                if (title == "Total Expenses (MTD)") return true;
+                                                if (title == "Salary / Payroll") return cat == "SALARY";
+                                                if (title == "Rent & Facilities") return cat == "RENT";
+                                                if (title == "Transport & Fuel") return cat == "TRANSPORT";
+                                                if (title == "Electricity") return cat == "ELECTRICITY";
+                                                if (title == "Miscellaneous") return cat == "MISCELLANEOUS";
+                                                if (title == "Maintenance") return cat == "MAINTENANCE";
+                                                if (title == "Other Expenses") return cat == "OTHER_EXPENSES";
+                                                return cat == title.toUpperCase().replaceAll(' ', '_');
+                                              })
                                               .toList();
                                           final e = filteredList[index];
+                                          final amountVal = double.tryParse(e.amount);
+                                          final formattedAmount = amountVal != null ? "₹${amountVal.toStringAsFixed(2)}" : e.amount;
+
                                           return Container(
                                             padding: EdgeInsets.symmetric(
                                               horizontal: getWidth(context, 18),
@@ -1288,9 +1278,9 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                             child: Row(
                                               children: [
                                                 headerItem(e.expenseDate, 80),
-                                                headerItem(e.category, 80),
-                                                headerItem(e.description, 80),
-                                                headerItem(e.amount, 80),
+                                                headerItem(formatCategory(e.category), 80),
+                                                headerItem(e.description.isNotEmpty ? e.description : '—', 140),
+                                                headerItem(formattedAmount, 100),
                                                 headerItem(e.status, 80),
                                               ],
                                             ),
@@ -1304,16 +1294,13 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                         child: Column(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
-
                                           children: [
                                             Icon(
                                               Icons.receipt_long,
                                               size: 90,
                                               color: Colors.grey.shade300,
                                             ),
-
                                             const SizedBox(height: 20),
-
                                             const Text(
                                               "No records found.",
                                               style: TextStyle(
@@ -1321,11 +1308,9 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                                 fontWeight: FontWeight.w700,
                                               ),
                                             ),
-
                                             const SizedBox(height: 14),
-
                                             const Text(
-                                              "There are no expense records for this branch\nin the selected month.",
+                                              "There are no expense records in the selected month.",
                                               textAlign: TextAlign.center,
                                               style: TextStyle(
                                                 fontSize: 16,
@@ -1351,24 +1336,19 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
               /// CLOSE BUTTON
               Padding(
                 padding: const EdgeInsets.all(24),
-
                 child: SizedBox(
                   width: double.infinity,
                   height: getHeight(context, 58),
-
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
-
                       side: const BorderSide(color: Color(0xffE5E7EB)),
                     ),
-
                     onPressed: () {
                       Navigator.pop(context);
                     },
-
                     child: const Text(
                       "Close",
                       style: TextStyle(
@@ -1390,7 +1370,6 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
   Widget headerItem(String text, double width) {
     return SizedBox(
       width: width,
-
       child: Text(
         text,
         style: const TextStyle(

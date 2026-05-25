@@ -213,10 +213,19 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                             const SizedBox(height: 10),
                             buildDropdown(
                               value: selectedProduct,
-                              items: [
+                              items: const [
                                 "Select Egg Category",
-                                "Brown Eggs",
-                                "White Eggs",
+                                "All Products",
+                                "White large",
+                                "White correct size",
+                                "white export",
+                                "white medium",
+                                "white pullet",
+                                "white small eggs",
+                                "Brown eggs",
+                                "country eggs",
+                                "quail eggs",
+                                "duck eggs",
                               ],
                               onChanged: (val) =>
                                   setState(() => selectedProduct = val!),

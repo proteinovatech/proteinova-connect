@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/purchase_model.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/services/purchase_service.dart';
+import 'package:proteinova_connect/features/admin/purchase/data/models/purchase_model.dart';
+import 'package:proteinova_connect/features/admin/purchase/data/services/purchase_service.dart';
 import 'package:proteinova_connect/core/cache/hive_service/purchase_hive_service.dart';
 
 class PurchaseRepository {
@@ -32,7 +32,7 @@ Future<Map<String, dynamic>> updateArrival(
 
   return response.data;
 }
-Future<void> postPurchase(PurchaseRequest purchase) async {
-  await purchaseService.postPurchase(purchase);
+Future<Map<String, dynamic>> postPurchase(PurchaseRequest purchase) async {
+  return await purchaseService.postPurchase(purchase);
 }
 }

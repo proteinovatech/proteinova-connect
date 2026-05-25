@@ -3,17 +3,19 @@ import 'package:http/http.dart' as http;
 import 'package:proteinova_connect/core/network/api_constants.dart';
 import 'package:proteinova_connect/features/admin/expense/data/models/branch_expense_dashboard_model.dart';
 import 'package:proteinova_connect/features/admin/expense/data/models/expense_model.dart';
-
+import 'package:proteinova_connect/features/admin/expense/data/models/location_model.dart';
 
 class ExpenseRepository {
-  Future<BranchExpenseDashboardModel> fetchBranchExpenses({
-    required int branchId,
+  Future<BranchExpenseDashboardModel> fetchExpenses({
+    int? branchId,
+    int? warehouseId,
     String? month,
-    int limit = 10,
+    int limit = 20,
   }) async {
     try {
       final queryParameters = {
-        'branch_id': branchId.toString(),
+        if (branchId != null) 'branch_id': branchId.toString(),
+        if (warehouseId != null) 'warehouse_id': warehouseId.toString(),
         if (month != null) 'month': month,
         'limit': limit.toString(),
       };
@@ -32,15 +34,16 @@ class ExpenseRepository {
         return BranchExpenseDashboardModel.fromJson(data);
       } else {
         final errorData = jsonDecode(response.body);
-        throw Exception(errorData['error'] ?? "Failed to load branch expenses");
+        throw Exception(errorData['error'] ?? "Failed to load expenses");
       }
     } catch (e) {
-      throw Exception("Error fetching branch expenses: $e");
+      throw Exception("Error fetching expenses: $e");
     }
   }
 
-  Future<ExpenseModel> createBranchExpense({
-    required int branchId,
+  Future<ExpenseModel> createExpense({
+    int? branchId,
+    int? warehouseId,
     required String expenseDate,
     required String category,
     required double amount,
@@ -52,7 +55,8 @@ class ExpenseRepository {
   }) async {
     try {
       final body = {
-        "branch_id": branchId,
+        if (branchId != null) "branch_id": branchId,
+        if (warehouseId != null) "warehouse_id": warehouseId,
         "expense_date": expenseDate,
         "category": category,
         "amount": amount,
@@ -78,34 +82,56 @@ class ExpenseRepository {
       } else {
         final errorData = jsonDecode(response.body);
         throw Exception(
-          errorData['error'] ?? "Failed to create branch expense",
+          errorData['error'] ?? "Failed to create expense",
         );
       }
     } catch (e) {
-      throw Exception("Error creating branch expense: $e");
+      throw Exception("Error creating expense: $e");
     }
   }
 
-  Future<Map<int, String>> fetchBranches() async {
+  Future<List<Location>> fetchLocations() async {
     try {
-      final response = await http.get(
+      final List<Location> locations = [];
+
+      // Concurrently fetch branches and warehouses
+      final branchFuture = http.get(
         Uri.parse(ApiConstants.branches),
         headers: {"Accept": "application/json"},
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> branchesList = data['data'];
-        final Map<int, String> branchesMap = {};
+      final warehouseFuture = http.get(
+        Uri.parse("${ApiConstants.baseUrl}/api/warehouses"),
+        headers: {"Accept": "application/json"},
+      );
+
+      final results = await Future.wait([branchFuture, warehouseFuture]);
+      final branchResponse = results[0];
+      final warehouseResponse = results[1];
+
+      if (branchResponse.statusCode == 200) {
+        final data = jsonDecode(branchResponse.body);
+        final List<dynamic> branchesList = data['data'] ?? [];
         for (var branch in branchesList) {
-          branchesMap[branch['id']] = branch['branch_name'] ?? branch['id'].toString();
+          locations.add(Location.fromJson(branch, 'branch'));
         }
-        return branchesMap;
       } else {
         throw Exception("Failed to load branches");
       }
+
+      if (warehouseResponse.statusCode == 200) {
+        final data = jsonDecode(warehouseResponse.body);
+        final List<dynamic> warehousesList = data['data'] ?? [];
+        for (var warehouse in warehousesList) {
+          locations.add(Location.fromJson(warehouse, 'warehouse'));
+        }
+      } else {
+        throw Exception("Failed to load warehouses");
+      }
+
+      return locations;
     } catch (e) {
-      throw Exception("Error fetching branches: $e");
+      throw Exception("Error fetching locations: $e");
     }
   }
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
-import 'package:proteinova_connect/features/admin/presentation/active_offer_details_bottom_sheet.dart';
-import 'package:proteinova_connect/features/admin/presentation/add_offer_bottom_sheet.dart';
-import 'package:proteinova_connect/features/admin/skeletonloader/admin_offers_prices_skeleton_loader.dart';
+import 'package:proteinova_connect/features/warehouse/presentation/active_offer_details.dart';
+import 'package:proteinova_connect/features/warehouse/presentation/add_offer_button.dart';
+import 'package:proteinova_connect/features/warehouse/skeletonloader/offer_prices_skeleton_loader.dart';
 import 'package:proteinova_connect/features/admin/widget/offer_price_widget.dart';
 import 'package:proteinova_connect/services/offer_service.dart';
 

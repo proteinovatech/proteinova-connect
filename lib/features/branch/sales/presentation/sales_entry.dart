@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/services/sales_receipt_service.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
@@ -30,13 +32,21 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   List<OfferModel> offers = [];
   List<SalesItem> salesItems = [SalesItem()];
   List<SaleTray> saleTrays = [SaleTray()];
+  List<Map<String, dynamic>> payments = [
+    {
+      "id": "1",
+      "method": "Cash",
+      "amount": "",
+      "app": "",
+      "reference": "",
+      "notes": ""
+    }
+  ];
 
   bool isLoading = true;
   bool isSubmitting = false;
   String? customerStatus; // 'found', 'not_found', null
 
-  String selectedPaymentMethod = "CASH";
-  String selectedUpiApp = "";
   List<dynamic> branches = [];
   String selectedBranchId = "warehouse";
   String soldLocation = "Warehouse";
@@ -45,14 +55,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   final TextEditingController customerNumberController =
       TextEditingController();
   final TextEditingController customerNameController = TextEditingController();
-  final TextEditingController cashReceivedController = TextEditingController();
-  final TextEditingController debtController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
   final TextEditingController searchController = TextEditingController();
-  final TextEditingController cashReceivedByController = TextEditingController();
-  final TextEditingController cashContactNumberController = TextEditingController();
-  final TextEditingController otherUpiDetailsController = TextEditingController();
 
   final BranchSalesRemoteDatasource datasource = BranchSalesRemoteDatasource();
   List<ProductDetail> filteredProducts = [];
@@ -104,14 +109,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   void dispose() {
     customerNumberController.dispose();
     customerNameController.dispose();
-    cashReceivedController.dispose();
-    debtController.dispose();
     notesController.dispose();
     dateController.dispose();
     searchController.dispose();
-    cashReceivedByController.dispose();
-    cashContactNumberController.dispose();
-    otherUpiDetailsController.dispose();
     super.dispose();
   }
 
@@ -217,8 +217,8 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ? (salesItems.isNotEmpty ? salesItems.first.price : 0.0)
             : (matchingItem?.price ?? 0.0);
 
-        final double buyEggs = offer.buyQty * 30;
-        final double freeEggs = offer.freeQty * 30;
+        final double buyEggs = offer.buyQty;
+        final double freeEggs = offer.freeQty;
 
         if (relevantEggs >= buyEggs && buyEggs > 0) {
           final double freeEggsCount =
@@ -242,8 +242,22 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   }
 
   double get totalAmount => subtotal - totalDiscount;
-  double get credit =>
-      totalAmount - (double.tryParse(cashReceivedController.text) ?? 0);
+
+  double get paidAmount {
+    return payments
+        .where((p) => p["method"] != "Credit")
+        .fold(0.0, (sum, p) => sum + (double.tryParse(p["amount"].toString()) ?? 0.0));
+  }
+
+  double get debtAmount {
+    return payments
+        .where((p) => p["method"] == "Credit")
+        .fold(0.0, (sum, p) => sum + (double.tryParse(p["amount"].toString()) ?? 0.0));
+  }
+
+  double get balance {
+    return totalAmount - paidAmount;
+  }
 
   // --- Actions ---
   void addItem() {
@@ -335,6 +349,27 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     });
   }
 
+  void _addPaymentRow() {
+    setState(() {
+      payments.add({
+        "id": DateTime.now().millisecondsSinceEpoch.toString(),
+        "method": "Cash",
+        "amount": "",
+        "app": "",
+        "reference": "",
+        "notes": ""
+      });
+    });
+  }
+
+  void _removePaymentRow(String id) {
+    if (payments.length > 1) {
+      setState(() {
+        payments.removeWhere((p) => p["id"] == id);
+      });
+    }
+  }
+
   Future<void> handlePayment() async {
     final cName = customerNameController.text.trim();
     final cNumber = customerNumberController.text.trim();
@@ -342,26 +377,6 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     if (cName.isEmpty && cNumber.isEmpty) {
       _showError("Please enter Customer Name or Number");
       return;
-    }
-
-    if (selectedPaymentMethod == "CASH") {
-      final cashReceivedBy = cashReceivedByController.text.trim();
-      final cashContactNumber = cashContactNumberController.text.trim();
-
-      if (cashReceivedBy.isEmpty) {
-        _showError("Please enter Cash Received By name");
-        return;
-      }
-
-      if (cashContactNumber.isEmpty) {
-        _showError("Please enter Cash Contact Number");
-        return;
-      }
-
-      if (cashContactNumber.length != 10 || double.tryParse(cashContactNumber) == null) {
-        _showError("Cash Contact Number must be a valid 10-digit number");
-        return;
-      }
     }
 
     final validItems = salesItems
@@ -384,29 +399,26 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
     setState(() => isSubmitting = true);
     try {
+      final isSplit = payments.length > 1;
+      final finalMethod = isSplit ? "SPLIT" : payments[0]["method"].toString().toUpperCase();
+      final String? upiApp = (!isSplit && payments[0]["method"] == "UPI") ? payments[0]["app"] : null;
+      final otherUpi = jsonEncode(payments);
+
       final payload = {
         "login_user_id": loginUserId.toString(),
         "sales_happen": salesHappen,
         "sold_location_id": selectedBranchId,
         "customer_name": cName.isEmpty ? "Unknown Customer" : cName,
         "customer_number": cNumber.isEmpty ? "N/A" : cNumber,
-        "customer_debit": double.tryParse(debtController.text) ?? 0,
+        "customer_debit": debtAmount,
         "dispatch_date": dateController.text,
         "sales_date": dateController.text,
-        "payment_method": selectedPaymentMethod.toUpperCase(),
-        "cash_received": double.tryParse(cashReceivedController.text) ?? 0,
-        "cash_received_by": selectedPaymentMethod == "CASH"
-            ? cashReceivedByController.text.trim()
-            : null,
-        "cash_contact_number": selectedPaymentMethod == "CASH"
-            ? cashContactNumberController.text.trim()
-            : null,
-        "upi_app": selectedPaymentMethod == "UPI"
-            ? (selectedUpiApp.isEmpty ? "Other" : selectedUpiApp)
-            : null,
-        "other_upi_details": selectedPaymentMethod == "UPI"
-            ? otherUpiDetailsController.text.trim()
-            : null,
+        "payment_method": finalMethod,
+        "cash_received": paidAmount,
+        "cash_received_by": null,
+        "cash_contact_number": null,
+        "upi_app": upiApp,
+        "other_upi_details": otherUpi,
         "total_amount": totalAmount,
         "offer_discount": totalDiscount,
         "applied_offers": offers
@@ -556,16 +568,24 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         items: finalItems,
         discount: totalDiscount,
         subtotal: subtotal,
-        paymentMethod: selectedPaymentMethod,
+        paymentMethod: payments.length > 1 ? "SPLIT" : payments[0]["method"].toString().toUpperCase(),
         onNextSale: () {
           Navigator.pop(context);
           setState(() {
             salesItems = [SalesItem()];
             saleTrays = [SaleTray()];
+            payments = [
+              {
+                "id": "1",
+                "method": "Cash",
+                "amount": "",
+                "app": "",
+                "reference": "",
+                "notes": ""
+              }
+            ];
             customerNameController.clear();
             customerNumberController.clear();
-            cashReceivedController.clear();
-            debtController.clear();
             notesController.clear();
             customerStatus = null;
             for (var o in offers) {
@@ -1850,8 +1870,8 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                             o.category.toLowerCase(),
                 )
                 .fold(0, (sum, i) => sum + i.eggs);
-            isEligible = totalEggs >= (o.buyTrays * 30);
-            message = "Need ${o.buyTrays} trays";
+            isEligible = totalEggs >= o.buyQty;
+            message = "Need ${o.buyQty.toInt()} eggs";
           } else {
             isEligible = matchingItem;
             message = isAllProducts ? "Add any product" : "Add product";
@@ -1932,193 +1952,317 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   }
 
   Widget _buildPaymentAndSummaryGrid() {
-    final isTablet = MediaQuery.of(context).size.width >= 700;
     return Column(
       children: [
         _buildCard(
-          title: "Payment Method",
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Sidebar-like payment selector
-                Container(
-                  width: isTablet ? 70 : 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade200),
-                  ),
-                  child: Column(
-                    children: [
-                      _sidebarMethodBtn("CASH"),
-                      _sidebarMethodBtn("UPI"),
-                      _sidebarMethodBtn("CARD"),
-                    ],
-                  ),
+          title: "Payment Details",
+          trailing: ElevatedButton.icon(
+            onPressed: _addPaymentRow,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2563EB),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+            icon: const Icon(Icons.add, size: 16),
+            label: const Text("Add Payment", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
-                SizedBox(width: isTablet ? 10 : 15),
-                // Payment content
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (selectedPaymentMethod == "UPI") ...[
-                        const Text(
-                          "Select UPI App",
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF374151),
-                          ),
-                        ),
-                        SizedBox(height: isTablet ? 10 : 15),
-                        Wrap(
-                          spacing: isTablet ? 8 : 4,
-                          runSpacing: isTablet ? 8 : 4,
-                          children: ["Google Pay", "PhonePe", "Paytm"]
-                              .map(
-                                (app) => ChoiceChip(
-                                  label: Text(
-                                    app,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: selectedUpiApp == app
-                                          ? Colors.white
-                                          : Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  selected: selectedUpiApp == app,
-                                  onSelected: (v) =>
-                                      setState(() => selectedUpiApp = app),
-                                  selectedColor: const Color(0xFF2563EB),
-                                  backgroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    side: BorderSide(
-                                      color: selectedUpiApp == app
-                                          ? const Color(0xFF2563EB)
-                                          : Colors.grey.shade300,
-                                    ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          const Text("TOTAL AMOUNT", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.grey)),
+                          const SizedBox(height: 4),
+                          Text("₹ ${totalAmount.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        ],
+                      ),
+                    ),
+                    Container(width: 1, height: 30, color: Colors.grey.shade300),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          const Text("PAID AMOUNT", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.grey)),
+                          const SizedBox(height: 4),
+                          Text("₹ ${paidAmount.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.green)),
+                        ],
+                      ),
+                    ),
+                    Container(width: 1, height: 30, color: Colors.grey.shade300),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          const Text("BALANCE / DEBT", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.grey)),
+                          const SizedBox(height: 4),
+                          Text("₹ ${balance.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.red)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: payments.length,
+                itemBuilder: (context, index) {
+                  final pay = payments[index];
+                  return Container(
+                    key: ValueKey(pay["id"]),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Stack(
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text("Method", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                                      const SizedBox(height: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: DropdownButtonHideUnderline(
+                                          child: DropdownButton<String>(
+                                            value: pay["method"],
+                                            isExpanded: true,
+                                            items: ["Cash", "UPI", "Card", "Credit"].map((m) {
+                                              return DropdownMenuItem(value: m, child: Text(m));
+                                            }).toList(),
+                                            onChanged: (val) {
+                                              setState(() {
+                                                pay["method"] = val ?? "Cash";
+                                                if (pay["method"] != "UPI") {
+                                                  pay["app"] = "";
+                                                  pay["reference"] = "";
+                                                }
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              )
-                              .toList(),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text("Amount (₹)", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                                      const SizedBox(height: 6),
+                                      TextField(
+                                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+                                        decoration: InputDecoration(
+                                          hintText: "0.00",
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                        ),
+                                        controller: TextEditingController.fromValue(
+                                          TextEditingValue(
+                                            text: pay["amount"] ?? "",
+                                            selection: TextSelection.collapsed(offset: (pay["amount"] ?? "").length),
+                                          ),
+                                        ),
+                                        onChanged: (val) {
+                                          setState(() {
+                                            pay["amount"] = val;
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (pay["method"] == "UPI") ...[
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text("UPI App", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                                        const SizedBox(height: 6),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButton<String>(
+                                              value: pay["app"].toString().isEmpty ? null : pay["app"],
+                                              isExpanded: true,
+                                              hint: const Text("Select App"),
+                                              items: ["Google Pay", "PhonePe", "Paytm", "Other"].map((app) {
+                                                return DropdownMenuItem(value: app, child: Text(app));
+                                              }).toList(),
+                                              onChanged: (val) {
+                                                setState(() {
+                                                  pay["app"] = val ?? "";
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text("Reference No.", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                                        const SizedBox(height: 6),
+                                        TextField(
+                                          decoration: InputDecoration(
+                                            hintText: "Txn ID",
+                                            filled: true,
+                                            fillColor: Colors.white,
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                          ),
+                                          controller: TextEditingController.fromValue(
+                                            TextEditingValue(
+                                              text: pay["reference"] ?? "",
+                                              selection: TextSelection.collapsed(offset: (pay["reference"] ?? "").length),
+                                            ),
+                                          ),
+                                          onChanged: (val) {
+                                            setState(() {
+                                              pay["reference"] = val;
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                            if (pay["method"] == "Card") ...[
+                              const SizedBox(height: 12),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text("Reference No.", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                                  const SizedBox(height: 6),
+                                  TextField(
+                                    decoration: InputDecoration(
+                                      hintText: "Txn ID or Ref",
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                    ),
+                                    controller: TextEditingController.fromValue(
+                                      TextEditingValue(
+                                        text: pay["reference"] ?? "",
+                                        selection: TextSelection.collapsed(offset: (pay["reference"] ?? "").length),
+                                      ),
+                                    ),
+                                    onChanged: (val) {
+                                      setState(() {
+                                        pay["reference"] = val;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                            if (pay["method"] == "Credit") ...[
+                              const SizedBox(height: 12),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text("Debt Notes", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                                  const SizedBox(height: 6),
+                                  TextField(
+                                    decoration: InputDecoration(
+                                      hintText: "Notes",
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                    ),
+                                    controller: TextEditingController.fromValue(
+                                      TextEditingValue(
+                                        text: pay["notes"] ?? "",
+                                        selection: TextSelection.collapsed(offset: (pay["notes"] ?? "").length),
+                                      ),
+                                    ),
+                                    onChanged: (val) {
+                                      setState(() {
+                                        pay["notes"] = val;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
                         ),
-                        SizedBox(height: isTablet ? 10 : 15),
-                        _buildInput(
-                          "Other UPI Details (Optional)",
-                          otherUpiDetailsController,
-                        ),
-                        SizedBox(height: isTablet ? 10 : 15),
-                      ],
-                      if (selectedPaymentMethod == "CASH") ...[
-                        _buildInput(
-                          "Cash Received Person Name *",
-                          cashReceivedByController,
-                          hint: "Name",
-                        ),
-                        SizedBox(height: isTablet ? 10 : 15),
-                        _buildInput(
-                          "Cash Contact Number *",
-                          cashContactNumberController,
-                          hint: "10-digit mobile",
-                          keyboardType: TextInputType.phone,
-                        ),
-                        SizedBox(height: isTablet ? 10 : 15),
-                        _buildInput(
-                          "Customer Debt (Optional)",
-                          debtController,
-                          keyboardType: TextInputType.number,
-                          hint: "0",
-                        ),
-                        SizedBox(height: isTablet ? 10 : 15),
-                      ],
-                      if (selectedPaymentMethod == "CARD") ...[
-                        _buildInput(
-                          "Customer Debt (Optional)",
-                          debtController,
-                          keyboardType: TextInputType.number,
-                          hint: "0",
-                        ),
-                        SizedBox(height: isTablet ? 10 : 15),
-                      ],
-                      _buildInput(
-                        "Enter Amount Received",
-                        cashReceivedController,
-                        keyboardType: TextInputType.number,
-                        hint: "0.00",
-                        prefix: const Padding(
-                          padding: EdgeInsets.only(left: 24, top: 10),
-                          child: Text(
-                            "₹",
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                        if (payments.length > 1)
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: InkWell(
+                              onTap: () => _removePaymentRow(pay["id"]),
+                              child: const Icon(Icons.close, color: Colors.red, size: 20),
+                            ),
                           ),
-                        ),
-                        onChanged: (v) => setState(() {}),
-                      ),
-                      SizedBox(height: isTablet ? 10 : 15),
-                      _buildInput(
-                        "Notes",
-                        notesController,
-                        hint: "Add internal notes",
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+              _buildInput(
+                "Notes",
+                notesController,
+                hint: "Add internal notes",
+              ),
+            ],
           ),
         ),
-
-        // const SizedBox(height: 16),
-        // _buildCard(
-        //   title: "Bill Summary",
-        //   child: Column(
-        //     children: [
-        //       _summaryRow("Subtotal", "₹${subtotal.toStringAsFixed(2)}"),
-        //       _summaryRow(
-        //         "Discount",
-        //         "-₹${totalDiscount.toStringAsFixed(2)}",
-        //         color: const Color(0xFFEF4444),
-        //       ),
-        //       const Divider(height: 40),
-        //       _summaryRow(
-        //         "Total",
-        //         "₹${totalAmount.toStringAsFixed(2)}",
-        //         isBold: true,
-        //       ),
-        //       const SizedBox(height: 25),
-        //       SizedBox(
-        //         width: double.infinity,
-        //         height: 55,
-        //         child: ElevatedButton(
-        //           onPressed: isSubmitting ? null : handlePayment,
-        //           style: ElevatedButton.styleFrom(
-        //             backgroundColor: AppColors.blueAccent,
-        //             shape: RoundedRectangleBorder(
-        //               borderRadius: BorderRadius.circular(15),
-        //             ),
-        //             elevation: 4,
-        //           ),
-        //           child: isSubmitting
-        //               ? const CircularProgressIndicator(color: Colors.white)
-        //               : const Text(
-        //                   "Complete Sale",
-        //                   style: TextStyle(
-        //                     color: Colors.white,
-        //                     fontSize: 16,
-        //                     fontWeight: FontWeight.w800,
-        //                   ),
-        //                 ),
-        //         ),
-        //       ),
-        //     ],
-        //   ),
-        // ),
       ],
     );
   }
@@ -2180,31 +2324,6 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _sidebarMethodBtn(String method) {
-    bool active = selectedPaymentMethod == method;
-    return Expanded(
-      child: InkWell(
-        onTap: () => setState(() => selectedPaymentMethod = method),
-        child: Container(
-          width: double.infinity,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: active ? const Color(0xFF2563EB) : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            method,
-            style: TextStyle(
-              color: active ? Colors.white : Colors.grey.shade700,
-              fontWeight: FontWeight.w900,
-              fontSize: 12,
-            ),
-          ),
-        ),
       ),
     );
   }

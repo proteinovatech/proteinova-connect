@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/purchase_model.dart';
+import 'package:proteinova_connect/features/admin/purchase/data/models/purchase_model.dart';
 
 class PurchaseSummaryCard extends StatelessWidget {
    final PurchaseRequest purchase; 

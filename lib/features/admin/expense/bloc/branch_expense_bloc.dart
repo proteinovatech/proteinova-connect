@@ -4,62 +4,32 @@ import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_st
 import 'package:proteinova_connect/features/admin/expense/data/repository/expense_repository.dart';
 
 class BranchExpenseBloc
-    extends Bloc<
-        BranchExpenseEvent,
-        BranchExpenseState> {
+    extends Bloc<BranchExpenseEvent, BranchExpenseState> {
 
-  final ExpenseRepository
-      repository;
+  final ExpenseRepository repository;
 
   BranchExpenseBloc(this.repository)
-      : super(
-          const BranchExpenseState(),
-        ) {
+      : super(const BranchExpenseState()) {
 
-    on<LoadBranchesEvent>(
-      _onLoadBranches,
-    );
-
-    on<LoadDashboardEvent>(
-      _onLoadDashboard,
-    );
-
-    on<SaveExpenseEvent>(
-      _onSaveExpense,
-    );
+    on<LoadLocationsEvent>(_onLoadLocations);
+    on<LoadDashboardEvent>(_onLoadDashboard);
+    on<SaveExpenseEvent>(_onSaveExpense);
   }
 
-  /// LOAD BRANCHES
-  Future<void> _onLoadBranches(
-
-    LoadBranchesEvent event,
-
-    Emitter<BranchExpenseState>
-        emit,
-
+  Future<void> _onLoadLocations(
+    LoadLocationsEvent event,
+    Emitter<BranchExpenseState> emit,
   ) async {
-
-    emit(
-      state.copyWith(
-        isLoading: true,
-      ),
-    );
-
+    emit(state.copyWith(isLoading: true, saveSuccess: false));
     try {
-
-      final branches =
-          await repository
-              .fetchBranches();
-
+      final locations = await repository.fetchLocations();
       emit(
         state.copyWith(
           isLoading: false,
-          branches: branches,
+          locations: locations,
         ),
       );
-
     } catch (e) {
-
       emit(
         state.copyWith(
           isLoading: false,
@@ -69,38 +39,20 @@ class BranchExpenseBloc
     }
   }
 
-  /// LOAD DASHBOARD
   Future<void> _onLoadDashboard(
-
     LoadDashboardEvent event,
-
-    Emitter<BranchExpenseState>
-        emit,
-
+    Emitter<BranchExpenseState> emit,
   ) async {
-
-    emit(
-      state.copyWith(
-        isLoading: true,
-      ),
-    );
-
+    emit(state.copyWith(isLoading: true, saveSuccess: false));
     try {
-
-      final data =
-          await repository
-              .fetchBranchExpenses(
-
-        branchId: event.branchId,
-
+      final data = await repository.fetchExpenses(
+        branchId: event.locationType == 'branch' ? event.locationId : null,
+        warehouseId: event.locationType == 'warehouse' ? event.locationId : null,
         month: event.month,
       );
 
       data.recentExpenses.sort(
-        (a, b) =>
-            b.expenseDate.compareTo(
-              a.expenseDate,
-            ),
+        (a, b) => b.expenseDate.compareTo(a.expenseDate),
       );
 
       emit(
@@ -109,9 +61,7 @@ class BranchExpenseBloc
           dashboardData: data,
         ),
       );
-
     } catch (e) {
-
       emit(
         state.copyWith(
           isLoading: false,
@@ -121,44 +71,22 @@ class BranchExpenseBloc
     }
   }
 
-  /// SAVE EXPENSE
   Future<void> _onSaveExpense(
-
     SaveExpenseEvent event,
-
-    Emitter<BranchExpenseState>
-        emit,
-
+    Emitter<BranchExpenseState> emit,
   ) async {
-
-    emit(
-      state.copyWith(
-        isSaving: true,
-        saveSuccess: false,
-      ),
-    );
-
+    emit(state.copyWith(isSaving: true, saveSuccess: false));
     try {
-
-      await repository
-          .createBranchExpense(
-
-        branchId: event.branchId,
-
-        expenseDate:
-            event.expenseDate,
-
+      await repository.createExpense(
+        branchId: event.locationType == 'branch' ? event.locationId : null,
+        warehouseId: event.locationType == 'warehouse' ? event.locationId : null,
+        expenseDate: event.expenseDate,
         category: event.category,
-
         amount: event.amount,
-
-        paymentMethod:
-            event.paymentMethod,
-
-        description:
-            event.description,
-
+        paymentMethod: event.paymentMethod,
+        description: event.description,
         status: event.status,
+        loginUserId: event.loginUserId,
       );
 
       emit(
@@ -167,9 +95,7 @@ class BranchExpenseBloc
           saveSuccess: true,
         ),
       );
-
     } catch (e) {
-
       emit(
         state.copyWith(
           isSaving: false,

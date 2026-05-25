@@ -4,7 +4,7 @@ import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/purchase/orders/presentation/checkout.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/product_summary_model.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/purchase_model.dart';
+import 'package:proteinova_connect/features/admin/purchase/data/models/purchase_model.dart';
 
 class PurchaseSummaryCard extends StatelessWidget {
   final String supplier;

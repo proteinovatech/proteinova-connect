@@ -22,11 +22,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (result != null && result['user'] != null) {
           final prefs = await SharedPreferences.getInstance();
 
-          // await prefs.setBool('isLoggedIn', true);
-          // await prefs.setString('role', result['user']['role']);
           await prefs.setBool('isLoggedIn', true);
 
-          await prefs.setString('role', result['user']['role']);
+          final String userRole = (result['user']['role'] ?? '').toString().trim().toLowerCase();
+          await prefs.setString('role', userRole);
+
           if (result['user']['email'] != null) {
             await prefs.setString('email', result['user']['email']);
           }
@@ -42,24 +42,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           await prefs.setInt('branch_id', branchId ?? 0);
           await prefs.setInt('user_id', userId ?? 0);
 
-          //         if (result['user']['role'] == "purchase") {
-          //           emit(AuthSuccessPurchase());
-          //         } else {
-          //           emit(AuthSuccessBranch());
-          //         }
-          //       } else {
-          //         emit(AuthFailure("Login failed"));
-          //       }
-          //     } catch (e) {
-          //       emit(AuthFailure("Something went wrong"));
-          //     }
-          //   });
-          // }
-          if (result['user']['role'] == "purchase") {
+          if (userRole == "purchase") {
             emit(AuthSuccessPurchase());
-          } else if (result['user']['role'] == "branch") {
+          } else if (userRole == "branch") {
             emit(AuthSuccessBranch());
-          } else if (result['user']['role'] == "admin") {
+          } else if (userRole == "admin") {
             emit(AuthSuccessAdmin());
           } else {
             emit(AuthFailure("Invalid role"));

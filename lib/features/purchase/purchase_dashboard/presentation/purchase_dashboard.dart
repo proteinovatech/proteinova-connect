@@ -14,7 +14,7 @@ import 'package:proteinova_connect/features/purchase/purchase_dashboard/presenta
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/purchase/purchase_bloc.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/purchase/purchase_event.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/purchase/purchase_state.dart';
-import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/purchase_model.dart';
+import 'package:proteinova_connect/features/admin/purchase/data/models/purchase_model.dart';
 import 'package:proteinova_connect/features/purchase/orders/presentation/checkout.dart';
 
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/purchase_dashboard_shimmer.dart';
