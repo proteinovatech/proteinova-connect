@@ -44,7 +44,7 @@ class _TrayReturnState extends State<TrayReturn> {
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
-
+    final width = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: AppColors.background1,
       body: BlocConsumer<TrayReturnBloc, TrayReturnState>(
@@ -326,7 +326,9 @@ class _TrayReturnState extends State<TrayReturn> {
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: DataTable(
-                      columnSpacing: 20,
+                      columnSpacing: width >= 600
+                          ? 60 // Tablet
+                          : 20, // Mobile
                       // ignore: deprecated_member_use
                       headingRowColor: MaterialStateProperty.all(
                         Colors.grey.shade100,

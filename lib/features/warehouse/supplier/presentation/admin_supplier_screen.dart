@@ -8,7 +8,6 @@ import 'package:proteinova_connect/features/warehouse/supplier/widget/supplier_c
 
 import '../models/supplier_model.dart';
 
-
 class AdminSuppliersScreen extends StatefulWidget {
   const AdminSuppliersScreen({super.key});
 
@@ -82,7 +81,7 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return AddSupplierBottomSheet(supplierToEdit: supplier);
+        return AddSupplierBottomSheet();
       },
     ).then((_) {
       fetchSuppliers(); // Refresh after editing

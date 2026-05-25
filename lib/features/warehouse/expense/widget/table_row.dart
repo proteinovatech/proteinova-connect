@@ -4,6 +4,7 @@ import 'package:proteinova_connect/features/admin/expense/data/models/expense_mo
 
 
 
+
 class ExpenseTableRow extends StatelessWidget {
   final ExpenseModel expense;
 

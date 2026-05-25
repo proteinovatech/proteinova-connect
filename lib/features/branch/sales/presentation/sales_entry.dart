@@ -58,6 +58,15 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   final TextEditingController notesController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
   final TextEditingController searchController = TextEditingController();
+<<<<<<< HEAD
+=======
+  final TextEditingController cashReceivedByController =
+      TextEditingController();
+  final TextEditingController cashContactNumberController =
+      TextEditingController();
+  final TextEditingController otherUpiDetailsController =
+      TextEditingController();
+>>>>>>> b66a218e5de472e3c988b6ce113336a0dfd3a9c0
 
   final BranchSalesRemoteDatasource datasource = BranchSalesRemoteDatasource();
   List<ProductDetail> filteredProducts = [];
@@ -66,6 +75,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
   int loginUserId = 0;
   int branchId = 0;
+  double _lastTotalAmount = 0.0;
 
   double? selectedDozen;
 
@@ -179,7 +189,6 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     }
   }
 
-
   // --- Calculations ---
   double get subtotal => salesItems.fold(0.0, (sum, item) => sum + item.total);
 
@@ -234,7 +243,8 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         discount += double.parse(
           (relevantTotal * offer.discountValue / 100).toStringAsFixed(2),
         );
-      } else if (offer.offerType == 'fixed' || offer.offerType == 'fixed_amount') {
+      } else if (offer.offerType == 'fixed' ||
+          offer.offerType == 'fixed_amount') {
         discount += offer.discountValue;
       }
     }
@@ -379,6 +389,30 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       return;
     }
 
+<<<<<<< HEAD
+=======
+    if (selectedPaymentMethod == "CASH") {
+      final cashReceivedBy = cashReceivedByController.text.trim();
+      final cashContactNumber = cashContactNumberController.text.trim();
+
+      if (cashReceivedBy.isEmpty) {
+        _showError("Please enter Cash Received By name");
+        return;
+      }
+
+      if (cashContactNumber.isEmpty) {
+        _showError("Please enter Cash Contact Number");
+        return;
+      }
+
+      if (cashContactNumber.length != 10 ||
+          double.tryParse(cashContactNumber) == null) {
+        _showError("Cash Contact Number must be a valid 10-digit number");
+        return;
+      }
+    }
+
+>>>>>>> b66a218e5de472e3c988b6ce113336a0dfd3a9c0
     final validItems = salesItems
         .where((i) => i.eggCategoryGrade.isNotEmpty)
         .toList();
@@ -1952,6 +1986,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   }
 
   Widget _buildPaymentAndSummaryGrid() {
+<<<<<<< HEAD
     return Column(
       children: [
         _buildCard(
@@ -2070,6 +2105,99 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                                       ),
                                     ],
                                   ),
+=======
+    final currentTotal = totalAmount;
+    final entered = double.tryParse(cashReceivedController.text);
+    if (cashReceivedController.text.isEmpty || entered == _lastTotalAmount) {
+      cashReceivedController.text = currentTotal.toStringAsFixed(2);
+
+      cashReceivedController.selection = TextSelection.fromPosition(
+        TextPosition(offset: cashReceivedController.text.length),
+      );
+    }
+
+    _lastTotalAmount = currentTotal;
+
+    final isTablet = MediaQuery.of(context).size.width >= 500;
+    return Column(
+      children: [
+        _buildCard(
+          title: "Payment Method",
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Sidebar-like payment selector
+                Container(
+                  width: isTablet ? 60 : 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      _sidebarMethodBtn("CASH"),
+                      _sidebarMethodBtn("UPI"),
+                      _sidebarMethodBtn("CARD"),
+                    ],
+                  ),
+                ),
+                SizedBox(width: isTablet ? 6 : 15),
+                // Payment content
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (selectedPaymentMethod == "UPI") ...[
+                        // 1. Select UPI App
+                        const Text(
+                          "Select UPI App",
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF374151),
+                          ),
+                        ),
+
+                        SizedBox(height: isTablet ? 10 : 15),
+
+                        Wrap(
+                          spacing: isTablet ? 6 : 4,
+
+                          runSpacing: isTablet ? 6 : 4,
+
+                          children: ["Google Pay", "PhonePe", "Paytm"]
+                              .map(
+                                (app) => ChoiceChip(
+                                  label: Text(
+                                    app,
+
+                                    style: TextStyle(
+                                      fontSize: 11,
+
+                                      color: selectedUpiApp == app
+                                          ? Colors.white
+                                          : Colors.black,
+
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+
+                                  selected: selectedUpiApp == app,
+
+                                  onSelected: (v) {
+                                    setState(() {
+                                      selectedUpiApp = app;
+                                    });
+                                  },
+
+                                  selectedColor: const Color(0xFF2563EB),
+
+                                  backgroundColor: Colors.white,
+>>>>>>> b66a218e5de472e3c988b6ce113336a0dfd3a9c0
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -2240,6 +2368,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                             ],
                           ],
                         ),
+<<<<<<< HEAD
                         if (payments.length > 1)
                           Positioned(
                             right: 0,
@@ -2261,6 +2390,91 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
                 hint: "Add internal notes",
               ),
             ],
+=======
+
+                        SizedBox(height: isTablet ? 10 : 15),
+
+                        // 2. Amount
+                        _buildInput(
+                          "Enter Amount Received",
+
+                          cashReceivedController,
+
+                          keyboardType: TextInputType.number,
+
+                          hint: "0.00",
+
+                          prefix: const Padding(
+                            padding: EdgeInsets.only(left: 24, top: 10),
+
+                            child: Text(
+                              "₹",
+
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+
+                          onChanged: (v) {
+                            setState(() {});
+                          },
+                        ),
+                        SizedBox(height: isTablet ? 10 : 15),
+
+                        // 3. Optional Details
+                        _buildInput(
+                          "Other UPI Details (Optional)",
+
+                          otherUpiDetailsController,
+
+                          hint: "Transaction ID / Notes",
+                        ),
+
+                        SizedBox(height: isTablet ? 10 : 15),
+                      ],
+                      // CASH
+                      if (selectedPaymentMethod == "CASH") ...[
+                        _buildInput(
+                          "Enter Amount Received",
+                          cashReceivedController,
+
+                          keyboardType: TextInputType.number,
+
+                          hint: "0.00",
+                        ),
+
+                        SizedBox(height: isTablet ? 10 : 15),
+
+                        _buildInput("Customer Debt (Optional)", debtController),
+                      ],
+
+                      // CARD
+                      if (selectedPaymentMethod == "CARD") ...[
+                        _buildInput(
+                          "Enter Amount Received",
+                          cashReceivedController,
+
+                          keyboardType: TextInputType.number,
+
+                          hint: "0.00",
+                        ),
+
+                        SizedBox(height: isTablet ? 10 : 15),
+
+                        _buildInput("Customer Debt (Optional)", debtController),
+                      ],
+
+                      SizedBox(height: isTablet ? 10 : 15),
+                      _buildInput(
+                        "Notes",
+                        notesController,
+                        hint: "Add internal notes",
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+>>>>>>> b66a218e5de472e3c988b6ce113336a0dfd3a9c0
           ),
         ),
       ],
@@ -2482,7 +2696,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     bool readOnly = false,
     VoidCallback? onTap,
   }) {
-    final isTablet = MediaQuery.of(context).size.width >= 700;
+    final width = MediaQuery.of(context).size.width;
+
+    final compactTablet = width >= 600 && width < 1000;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2501,7 +2717,10 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
           keyboardType: keyboardType,
           readOnly: readOnly,
           onTap: onTap,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: compactTablet ? 12 : 14,
+          ),
           decoration: InputDecoration(
             hintText: hint,
             suffixIcon: suffix,
@@ -2521,10 +2740,11 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
               borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
             ),
             contentPadding: EdgeInsets.symmetric(
-              horizontal: 16,
-
-              vertical: isTablet ? 10 : 14,
+              horizontal: 10,
+              vertical: compactTablet ? 4 : 12,
             ),
+
+            constraints: BoxConstraints(minHeight: compactTablet ? 42 : 52),
           ),
         ),
       ],
@@ -2597,35 +2817,46 @@ class _SuccessDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+
+    final isTablet = width >= 600;
+
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      backgroundColor: Colors.white,
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: isTablet ? 120 : 20,
+        vertical: isTablet ? 20 : 24,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(isTablet ? 20 : 30),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(40),
+        padding: EdgeInsets.all(isTablet ? 22 : 40),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(25),
+              padding: EdgeInsets.all(isTablet ? 18 : 25),
               decoration: BoxDecoration(
                 color: isPending
-                    ? const Color(0xFFFFF7ED)
+                    ? const Color.fromARGB(255, 255, 255, 255)
                     : const Color(0xFFF0FDF4),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 isPending ? Icons.timer_outlined : Icons.check_circle_outline,
-                size: 70,
+                size: isTablet ? 40 : 70,
                 color: isPending
                     ? const Color(0xFFF97316)
                     : const Color(0xFF22C55E),
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: isTablet ? 13 : 22),
             Text(
               isPending ? "Approval Requested" : "Payment Successful!",
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 24,
+              style: TextStyle(
+                fontSize: isTablet ? 18 : 24,
                 fontWeight: FontWeight.w900,
                 color: Color(0xFF1E293B),
               ),
@@ -2642,60 +2873,168 @@ class _SuccessDialog extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: isTablet ? 13 : 32),
             _infoBox(
               isPending ? "Request ID:" : "Sale ID:",
               "#$saleId",
               isPending ? "REQ" : "S",
             ),
             _infoBox("Amount Paid:", "₹${amount.toStringAsFixed(2)}", "INR"),
-            const SizedBox(height: 32),
+            SizedBox(height: isTablet ? 8 : 32),
             if (!isPending)
               Row(
                 children: [
                   Expanded(
-                    child: _actionBtn(
-                      Icons.file_download_outlined,
-                      "PDF",
-                      () async {
-                        await SalesReceiptService.generateAndPrintReceipt(
-                          saleId: saleId,
-                          customerName: customerName,
-                          customerNumber: customerNumber,
-                          date: date,
-                          items: items,
-                          subtotal: subtotal,
-                          discount: discount,
-                          total: amount,
-                          paymentMethod: paymentMethod,
-                          isThermal: false,
-                        );
-                      },
+                    child: Material(
+                      color: Colors.transparent,
+
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+
+                        splashColor: Colors.amber.withOpacity(0.30),
+
+                        highlightColor: Colors.yellow.withOpacity(0.15),
+
+                        onTap: () async {
+                          await SalesReceiptService.generateAndPrintReceipt(
+                            saleId: saleId,
+                            customerName: customerName,
+                            customerNumber: customerNumber,
+                            date: date,
+                            items: items,
+                            subtotal: subtotal,
+                            discount: discount,
+                            total: amount,
+                            paymentMethod: paymentMethod,
+                            isThermal: false,
+                          );
+                        },
+
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+
+                            borderRadius: BorderRadius.circular(16),
+
+                            border: Border.all(color: Colors.blue, width: 1.5),
+                          ),
+
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+
+                            mainAxisAlignment: MainAxisAlignment.center,
+
+                            children: [
+                              Icon(
+                                Icons.file_download_outlined,
+
+                                color: Colors.blue,
+
+                                size: 20,
+                              ),
+
+                              const SizedBox(width: 8),
+
+                              const Text(
+                                "PDF",
+
+                                style: TextStyle(
+                                  color: Colors.blue,
+
+                                  fontWeight: FontWeight.w800,
+
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 15),
                   Expanded(
-                    child: _actionBtn(Icons.print_outlined, "Print", () async {
-                      await SalesReceiptService.generateAndPrintReceipt(
-                        saleId: saleId,
-                        customerName: customerName,
-                        customerNumber: customerNumber,
-                        date: date,
-                        items: items,
-                        subtotal: subtotal,
-                        discount: discount,
-                        total: amount,
-                        paymentMethod: paymentMethod,
-                        isThermal: true,
-                      );
-                    }),
+                    child: Material(
+                      color: Colors.transparent,
+
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+
+                        splashColor: Colors.orange.withOpacity(0.30),
+
+                        highlightColor: Colors.amber.withOpacity(0.15),
+
+                        onTap: () async {
+                          await SalesReceiptService.generateAndPrintReceipt(
+                            saleId: saleId,
+                            customerName: customerName,
+                            customerNumber: customerNumber,
+                            date: date,
+                            items: items,
+                            subtotal: subtotal,
+                            discount: discount,
+                            total: amount,
+                            paymentMethod: paymentMethod,
+                            isThermal: true,
+                          );
+                        },
+
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+
+                            borderRadius: BorderRadius.circular(16),
+
+                            border: Border.all(color: Colors.blue, width: 1.5),
+                          ),
+
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+
+                            mainAxisAlignment: MainAxisAlignment.center,
+
+                            children: [
+                              Icon(
+                                Icons.print_outlined,
+
+                                color: Colors.white,
+
+                                size: 20,
+                              ),
+
+                              const SizedBox(width: 8),
+
+                              const Text(
+                                "Print",
+
+                                style: TextStyle(
+                                  color: Colors.white,
+
+                                  fontWeight: FontWeight.w800,
+
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
-            const SizedBox(height: 24),
+            SizedBox(height: isTablet ? 13 : 32),
             SizedBox(
               width: double.infinity,
-              height: 55,
+              height: isTablet ? 40 : 55,
               child: ElevatedButton(
                 onPressed: onNextSale,
                 style: ElevatedButton.styleFrom(
