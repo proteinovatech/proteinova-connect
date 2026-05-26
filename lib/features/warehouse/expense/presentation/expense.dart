@@ -13,6 +13,8 @@ import 'package:proteinova_connect/features/warehouse/expense/data/expense_repos
 import 'package:proteinova_connect/features/warehouse/expense/widget/expense_category.dart';
 import 'package:proteinova_connect/features/warehouse/expense/widget/summary_card.dart';
 import 'package:proteinova_connect/features/warehouse/expense/widget/table_header.dart';
+import 'package:proteinova_connect/features/warehouse/expense/widget/table_row.dart';
+
 import 'package:proteinova_connect/features/warehouse/expense/widget/textfield.dart';
 
 
