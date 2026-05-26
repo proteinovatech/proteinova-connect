@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:proteinova_connect/features/branch/inventory/widget/branch_inventory_skeleton.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:proteinova_connect/core/theme/app_colors.dart';
@@ -170,30 +171,7 @@ class _InventoryState extends State<Inventory> {
     return BlocBuilder<InventoryBloc, InventoryState>(
       builder: (context, state) {
         if (state is InventoryLoading) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        if (state is InventoryError) {
-          return Scaffold(
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Error: ${state.message}",
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _loadUserData,
-                    child: const Text("Retry"),
-                  ),
-                ],
-              ),
-            ),
-          );
+          return const Scaffold(body: Center(child: BranchInventorySkeleton()));
         }
 
         if (state is InventoryLoaded) {
@@ -228,6 +206,7 @@ class _InventoryState extends State<Inventory> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Header Bar
+                    const SizedBox(height: 52),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
@@ -353,11 +332,15 @@ class _InventoryState extends State<Inventory> {
   }
 
   Widget _buildMetricCards(Map<dynamic, dynamic> cards, double width) {
-    final double cardWidth = width >= 900
-        ? (width - 120) / 4
+    final int columns = width >= 1000
+        ? 4
         : width >= 600
-        ? (width - 70) / 2
-        : width - 48;
+        ? 2
+        : 2;
+
+    final double spacing = 16;
+
+    final double cardWidth = (width - ((columns - 1) * spacing) - 48) / columns;
 
     return Wrap(
       spacing: 16,

@@ -417,572 +417,548 @@ class _BranchDashboardState extends State<BranchDashboard> {
                 onRefresh: () async {
                   dashboardBloc.add(FetchDashboardEvent());
                 },
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 36),
+                child: MediaQuery.removePadding(
+                  context: context,
+                  removeTop: true,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 36),
 
-                      // Header Row (title + status)
-                      _buildHeader(dashboardModel),
+                        // Header Row (title + status)
+                        _buildHeader(dashboardModel),
 
-                      const SizedBox(height: 16),
-                      const Divider(color: Color(0xFFE2E8F0)),
-                      const SizedBox(height: 24),
+                        SizedBox(height: width < 700 ? 6 : 16),
+                        const Divider(color: Color(0xFFE2E8F0)),
+                        const SizedBox(height: 14),
+                        GridView.count(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
 
-                      // Top Metric Cards (Group 1 - Opening, Incoming, Damaged)
-                      GridView.count(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
+                          // Mobile → 2
+                          // Tablet → 3
+                          // Desktop → 4
+                          crossAxisCount: width >= 1000
+                              ? 4
+                              : width >= 700
+                              ? 3
+                              : 2,
 
-                        // Mobile → 2
-                        // Tablet → 3
-                        // Desktop → 4
-                        crossAxisCount: width >= 400
-                            ? 3
-                            : width >= 400
-                            ? 2
-                            : 1,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
 
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
+                          childAspectRatio: width >= 1000
+                              ? 1.65
+                              : width >= 700
+                              ? 1.35
+                              : 1.05,
+                          children: [
+                            // Sales Today
+                            _buildMetricCard(
+                              title: "OPENING STOCKS",
+                              value: formatNumber(
+                                dashboardModel.cards.openingStocks,
+                              ),
+                              valueUnit: "Eggs",
+                              icon: Icons.inventory_2_outlined,
+                              iconColor: const Color(0xFF3B82F6),
+                              iconBgColor: const Color(0xFFEFF6FF),
 
-                        // Tablet → more compact
-                        childAspectRatio: width >= 700
-                            ? 1.65
-                            : width >= 400
-                            ? 1.25
-                            : 1.0,
+                              onTap: () {
+                                final data = dashboardModel.stockSummary
+                                    .map(
+                                      (s) => {
+                                        "label": s.eggCategoryGrade,
+                                        "value": "${s.trays} Trays",
+                                        "sub": "${s.eggs} Eggs",
+                                      },
+                                    )
+                                    .toList();
 
-                        children: [
-                          // Opening Stocks
-                          _buildMetricCard(
-                            title: "OPENING STOCKS",
-                            value: formatNumber(
-                              dashboardModel.cards.openingStocks,
+                                _openDetailsModal(
+                                  context,
+                                  "Opening Stock Breakdown",
+                                  data,
+                                );
+                              },
+
+                              footer: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF0FDF4),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      "+2.5%",
+                                      style: TextStyle(
+                                        fontSize: width < 700 ? 10 : 9,
+                                        color: const Color(0xFF16A34A),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: 6),
+
+                                  Expanded(
+                                    child: Text(
+                                      "from last week",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: width < 700 ? 10 : 9,
+                                        color: const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            valueUnit: "Eggs",
-                            icon: Icons.inventory_2_outlined,
-                            iconColor: const Color(0xFF3B82F6),
-                            iconBgColor: const Color(0xFFEFF6FF),
 
-                            onTap: () {
-                              final data = dashboardModel.stockSummary
-                                  .map(
-                                    (s) => {
-                                      "label": s.eggCategoryGrade,
-                                      "value": "${s.trays} Trays",
-                                      "sub": "${s.eggs} Eggs",
-                                    },
-                                  )
-                                  .toList();
+                            // Incoming Stock
+                            _buildMetricCard(
+                              title: "INCOMING STOCK",
+                              value: formatNumber(
+                                dashboardModel.cards.incomingStockInTransit,
+                              ),
+                              valueUnit: "Eggs",
+                              icon: Icons.local_shipping_outlined,
+                              iconColor: const Color(0xFFF97316),
+                              iconBgColor: const Color(0xFFFFF7ED),
 
-                              _openDetailsModal(
-                                context,
-                                "Opening Stock Breakdown",
-                                data,
-                              );
-                            },
+                              onTap: () {
+                                final data = dashboardModel.incomingShipments
+                                    .map(
+                                      (s) => {
+                                        "label": "Dispatch #DS-${s.id}",
+                                        "value": "${s.totalTrays} Trays",
+                                        "sub": s.arrivalDate != null
+                                            ? "Arrival: ${formatDateTime(s.arrivalDate!)}"
+                                            : "Arrival: Pending",
+                                      },
+                                    )
+                                    .toList();
 
-                            footer: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
+                                _openDetailsModal(
+                                  context,
+                                  "Incoming Shipments",
+                                  data,
+                                );
+                              },
+
+                              footer: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFF7ED),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      "In Transit",
+                                      style: TextStyle(
+                                        fontSize: width < 700 ? 10 : 9,
+                                        color: const Color(0xFFF97316),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF0FDF4),
-                                    borderRadius: BorderRadius.circular(20),
+
+                                  const SizedBox(width: 6),
+
+                                  Expanded(
+                                    child: Text(
+                                      "${dashboardModel.incomingShipments.length} shipments",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: width < 700 ? 10 : 9,
+                                        color: const Color(0xFF64748B),
+                                      ),
+                                    ),
                                   ),
-                                  child: Text(
-                                    "+2.5%",
+                                ],
+                              ),
+                            ),
+
+                            // Damaged Stock
+                            _buildMetricCard(
+                              title: "DAMAGED STOCK",
+                              value: formatNumber(
+                                dashboardModel.cards.damagedStock,
+                              ),
+                              valueUnit: "Trays",
+                              icon: Icons.warning_amber_rounded,
+                              iconColor: const Color(0xFFEF4444),
+                              iconBgColor: const Color(0xFFFEF2F2),
+
+                              onTap: () {
+                                final data = dashboardModel.damagedDetails
+                                    .map(
+                                      (d) => {
+                                        "label": d.eggCategoryGrade,
+                                        "value": "${d.trays} Trays",
+                                        "sub": "Damaged Trays",
+                                      },
+                                    )
+                                    .toList();
+
+                                _openDetailsModal(
+                                  context,
+                                  "Damaged Stock Breakdown",
+                                  data,
+                                );
+                              },
+
+                              footer: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFEF2F2),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      "Attention",
+                                      style: TextStyle(
+                                        fontSize: width < 700 ? 10 : 9,
+                                        color: const Color(0xFFDC2626),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: 6),
+
+                                  Expanded(
+                                    child: Text(
+                                      "Action required",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: width < 700 ? 10 : 9,
+                                        color: const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            _buildMetricCard(
+                              title: "SALES TODAY",
+                              value:
+                                  "₹${formatNumber(dashboardModel.cards.salesToday)}",
+                              valueUnit: "",
+                              icon: Icons.currency_rupee_outlined,
+                              iconColor: const Color(0xFFD97706),
+                              iconBgColor: const Color(0xFFFFFBEB),
+                              onTap: () {
+                                final data = dashboardModel.recentActivity
+                                    .where((a) => a.tag.toLowerCase() == 'sale')
+                                    .map(
+                                      (a) => {
+                                        "label": a.title,
+                                        "value": a.amount != null
+                                            ? "₹${formatNumber(a.amount!)}"
+                                            : "₹0",
+                                        "sub": a.description,
+                                      },
+                                    )
+                                    .toList();
+                                _openDetailsModal(
+                                  context,
+                                  "Recent Sales Details",
+                                  data,
+                                );
+                              },
+                              footer: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.trending_up,
+                                    color: Color(0xFF16A34A),
+                                    size: 14,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    "+14.4%",
                                     style: TextStyle(
-                                      fontSize: width < 700 ? 10 : 9,
+                                      fontSize: width < 400 ? 9 : 11,
                                       color: const Color(0xFF16A34A),
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                ),
-
-                                const SizedBox(width: 6),
-
-                                Expanded(
-                                  child: Text(
-                                    "from last week",
-                                    overflow: TextOverflow.ellipsis,
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    "vs yesterday",
                                     style: TextStyle(
-                                      fontSize: width < 700 ? 10 : 9,
+                                      fontSize: width < 400 ? 9 : 11,
                                       color: const Color(0xFF64748B),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // Incoming Stock
-                          _buildMetricCard(
-                            title: "INCOMING STOCK",
-                            value: formatNumber(
-                              dashboardModel.cards.incomingStockInTransit,
-                            ),
-                            valueUnit: "Eggs",
-                            icon: Icons.local_shipping_outlined,
-                            iconColor: const Color(0xFFF97316),
-                            iconBgColor: const Color(0xFFFFF7ED),
-
-                            onTap: () {
-                              final data = dashboardModel.incomingShipments
-                                  .map(
-                                    (s) => {
-                                      "label": "Dispatch #DS-${s.id}",
-                                      "value": "${s.totalTrays} Trays",
-                                      "sub": s.arrivalDate != null
-                                          ? "Arrival: ${formatDateTime(s.arrivalDate!)}"
-                                          : "Arrival: Pending",
-                                    },
-                                  )
-                                  .toList();
-
-                              _openDetailsModal(
-                                context,
-                                "Incoming Shipments",
-                                data,
-                              );
-                            },
-
-                            footer: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFFF7ED),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    "In Transit",
-                                    style: TextStyle(
-                                      fontSize: width < 700 ? 10 : 9,
-                                      color: const Color(0xFFF97316),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-
-                                const SizedBox(width: 6),
-
-                                Expanded(
-                                  child: Text(
-                                    "${dashboardModel.incomingShipments.length} shipments",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: width < 700 ? 10 : 9,
-                                      color: const Color(0xFF64748B),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // Damaged Stock
-                          _buildMetricCard(
-                            title: "DAMAGED STOCK",
-                            value: formatNumber(
-                              dashboardModel.cards.damagedStock,
-                            ),
-                            valueUnit: "Trays",
-                            icon: Icons.warning_amber_rounded,
-                            iconColor: const Color(0xFFEF4444),
-                            iconBgColor: const Color(0xFFFEF2F2),
-
-                            onTap: () {
-                              final data = dashboardModel.damagedDetails
-                                  .map(
-                                    (d) => {
-                                      "label": d.eggCategoryGrade,
-                                      "value": "${d.trays} Trays",
-                                      "sub": "Damaged Trays",
-                                    },
-                                  )
-                                  .toList();
-
-                              _openDetailsModal(
-                                context,
-                                "Damaged Stock Breakdown",
-                                data,
-                              );
-                            },
-
-                            footer: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFEF2F2),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    "Attention",
-                                    style: TextStyle(
-                                      fontSize: width < 700 ? 10 : 9,
-                                      color: const Color(0xFFDC2626),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-
-                                const SizedBox(width: 6),
-
-                                Expanded(
-                                  child: Text(
-                                    "Action required",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: width < 700 ? 10 : 9,
-                                      color: const Color(0xFF64748B),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Second Row of Metric Cards (Group 2 - Sales, Expense, Sold, Closing)
-                      GridView.count(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-
-                        // Mobile → 2
-                        // Tablet → 3
-                        // Desktop → 4
-                        crossAxisCount: width >= 400
-                            ? 3
-                            : width >= 400
-                            ? 2
-                            : 1,
-
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-
-                        // Tablet → more compact
-                        childAspectRatio: width >= 700
-                            ? 1.65
-                            : width >= 400
-                            ? 1.25
-                            : 1.0,
-                        children: [
-                          // Sales Today
-                          _buildMetricCard(
-                            title: "SALES TODAY",
-                            value:
-                                "₹${formatNumber(dashboardModel.cards.salesToday)}",
-                            valueUnit: "",
-                            icon: Icons.currency_rupee_outlined,
-                            iconColor: const Color(0xFFD97706),
-                            iconBgColor: const Color(0xFFFFFBEB),
-                            onTap: () {
-                              final data = dashboardModel.recentActivity
-                                  .where((a) => a.tag.toLowerCase() == 'sale')
-                                  .map(
-                                    (a) => {
-                                      "label": a.title,
-                                      "value": a.amount != null
-                                          ? "₹${formatNumber(a.amount!)}"
-                                          : "₹0",
-                                      "sub": a.description,
-                                    },
-                                  )
-                                  .toList();
-                              _openDetailsModal(
-                                context,
-                                "Recent Sales Details",
-                                data,
-                              );
-                            },
-                            footer: Row(
-                              children: [
-                                const Icon(
-                                  Icons.trending_up,
-                                  color: Color(0xFF16A34A),
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  "+14.4%",
-                                  style: TextStyle(
-                                    fontSize: width < 400 ? 9 : 11,
-                                    color: const Color(0xFF16A34A),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  "vs yesterday",
-                                  style: TextStyle(
-                                    fontSize: width < 400 ? 9 : 11,
-                                    color: const Color(0xFF64748B),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // Today Expense
-                          _buildMetricCard(
-                            title: "TODAY EXPENSE",
-                            value:
-                                "₹${formatNumber(dashboardModel.cards.todayExpense)}",
-                            valueUnit: "",
-                            icon: Icons.trending_down_outlined,
-                            iconColor: const Color(0xFFDC2626),
-                            iconBgColor: const Color(0xFFFEF2F2),
-                            onTap: () {
-                              final data = dashboardModel.todayExpensesList
-                                  .map(
-                                    (e) => {
-                                      "label": e.category,
-                                      "value": "₹${formatNumber(e.amount)}",
-                                      "sub": e.description ?? "No description",
-                                    },
-                                  )
-                                  .toList();
-                              _openDetailsModal(
-                                context,
-                                "Today's Expenses",
-                                data,
-                              );
-                            },
-                            footer: Text(
-                              "Recorded today",
-                              style: TextStyle(
-                                fontSize: width < 400 ? 9 : 11,
-                                color: const Color(0xFF64748B),
+                                ],
                               ),
                             ),
-                          ),
 
-                          // Eggs Sold Today
-                          _buildMetricCard(
-                            title: "EGGS SOLD TODAY",
-                            value: formatNumber(
-                              dashboardModel.cards.todayTraySold,
-                            ),
-                            valueUnit: dashboardModel.cards.todayTraySold == 1
-                                ? "Egg"
-                                : "Eggs",
-                            icon: Icons.check_circle_outline,
-                            iconColor: const Color(0xFF16A34A),
-                            iconBgColor: const Color(0xFFF0FDF4),
-                            onTap: () {
-                              final data = [
-                                {
-                                  "label": "Total Eggs Sold",
-                                  "value":
-                                      "${dashboardModel.cards.todayTraySold} Eggs",
-                                  "sub": "Today's sales count",
-                                },
-                              ];
-                              _openDetailsModal(
-                                context,
-                                "Today's Eggs Sold",
-                                data,
-                              );
-                            },
-                            footer: Row(
-                              children: [
-                                const Icon(
-                                  Icons.check_circle_outline,
-                                  color: Color(0xFF16A34A),
-                                  size: 14,
+                            // Today Expense
+                            _buildMetricCard(
+                              title: "TODAY EXPENSE",
+                              value:
+                                  "₹${formatNumber(dashboardModel.cards.todayExpense)}",
+                              valueUnit: "",
+                              icon: Icons.trending_down_outlined,
+                              iconColor: const Color(0xFFDC2626),
+                              iconBgColor: const Color(0xFFFEF2F2),
+                              onTap: () {
+                                final data = dashboardModel.todayExpensesList
+                                    .map(
+                                      (e) => {
+                                        "label": e.category,
+                                        "value": "₹${formatNumber(e.amount)}",
+                                        "sub":
+                                            e.description ?? "No description",
+                                      },
+                                    )
+                                    .toList();
+                                _openDetailsModal(
+                                  context,
+                                  "Today's Expenses",
+                                  data,
+                                );
+                              },
+                              footer: Text(
+                                "Recorded today",
+                                style: TextStyle(
+                                  fontSize: width < 400 ? 9 : 11,
+                                  color: const Color(0xFF64748B),
                                 ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  "Completed transactions",
-                                  style: TextStyle(
-                                    fontSize: width < 400 ? 9 : 11,
-                                    color: const Color(0xFF64748B),
+                              ),
+                            ),
+
+                            // Eggs Sold Today
+                            _buildMetricCard(
+                              title: "EGGS SOLD TODAY",
+                              value: formatNumber(
+                                dashboardModel.cards.todayTraySold,
+                              ),
+                              valueUnit: dashboardModel.cards.todayTraySold == 1
+                                  ? "Egg"
+                                  : "Eggs",
+                              icon: Icons.check_circle_outline,
+                              iconColor: const Color(0xFF16A34A),
+                              iconBgColor: const Color(0xFFF0FDF4),
+                              onTap: () {
+                                final data = [
+                                  {
+                                    "label": "Total Eggs Sold",
+                                    "value":
+                                        "${dashboardModel.cards.todayTraySold} Eggs",
+                                    "sub": "Today's sales count",
+                                  },
+                                ];
+                                _openDetailsModal(
+                                  context,
+                                  "Today's Eggs Sold",
+                                  data,
+                                );
+                              },
+                              footer: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.check_circle_outline,
+                                    color: Color(0xFF16A34A),
+                                    size: 14,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    "Completed transactions",
+                                    style: TextStyle(
+                                      fontSize: width < 400 ? 9 : 11,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // Closing Stock
+                            _buildMetricCard(
+                              title: "CLOSING STOCK",
+                              value: formatNumber(
+                                dashboardModel.cards.closingStock,
+                              ),
+                              valueUnit: "Eggs",
+                              icon: Icons.access_time_outlined,
+                              iconColor: const Color(0xFF475569),
+                              iconBgColor: const Color(0xFFF8FAFC),
+                              onTap: () {
+                                final data = dashboardModel.stockSummary
+                                    .map(
+                                      (s) => {
+                                        "label": s.eggCategoryGrade,
+                                        "value": "${s.trays} Trays",
+                                        "sub": "${s.eggs} Eggs",
+                                      },
+                                    )
+                                    .toList();
+                                _openDetailsModal(
+                                  context,
+                                  "Closing Stock Breakdown",
+                                  data,
+                                );
+                              },
+                              footer: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.access_time,
+                                    color: Color(0xFF64748B),
+                                    size: 14,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    "Real-time update",
+                                    style: TextStyle(
+                                      fontSize: width < 400 ? 9 : 11,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // Stock Summary Section
+                        const Text(
+                          "Stock Summary",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+
+                          itemCount: dashboardModel.stockSummary.length,
+
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                // Mobile → 1
+                                // Tablet → 2
+                                // Large tablet → 3
+                                crossAxisCount: width >= 1000
+                                    ? 3
+                                    : width >= 600
+                                    ? 2
+                                    : 1,
+
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 10,
+
+                                // Overflow fix
+                                childAspectRatio: width >= 700
+                                    ? 1.55
+                                    : width >= 600
+                                    ? 1.55
+                                    : 1.20,
+                              ),
+
+                          itemBuilder: (context, index) {
+                            return _buildStockSummaryCard(
+                              dashboardModel.stockSummary[index],
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        // Low Stock Alerts & Offers Grid
+                        if (width >= 600)
+                          SizedBox(
+                            height: 180,
+
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _buildActiveOffers(
+                                    dashboardModel.activeOffers,
+                                  ),
+                                ),
+
+                                const SizedBox(width: 12),
+
+                                Expanded(
+                                  child: _buildLowStockAlerts(
+                                    dashboardModel.lowStockAlerts,
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-
-                          // Closing Stock
-                          _buildMetricCard(
-                            title: "CLOSING STOCK",
-                            value: formatNumber(
-                              dashboardModel.cards.closingStock,
-                            ),
-                            valueUnit: "Eggs",
-                            icon: Icons.access_time_outlined,
-                            iconColor: const Color(0xFF475569),
-                            iconBgColor: const Color(0xFFF8FAFC),
-                            onTap: () {
-                              final data = dashboardModel.stockSummary
-                                  .map(
-                                    (s) => {
-                                      "label": s.eggCategoryGrade,
-                                      "value": "${s.trays} Trays",
-                                      "sub": "${s.eggs} Eggs",
-                                    },
-                                  )
-                                  .toList();
-                              _openDetailsModal(
-                                context,
-                                "Closing Stock Breakdown",
-                                data,
-                              );
-                            },
-                            footer: Row(
-                              children: [
-                                const Icon(
-                                  Icons.access_time,
-                                  color: Color(0xFF64748B),
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  "Real-time update",
-                                  style: TextStyle(
-                                    fontSize: width < 400 ? 9 : 11,
-                                    color: const Color(0xFF64748B),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // Stock Summary Section
-                      const Text(
-                        "Stock Summary",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF1E293B),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-
-                        itemCount: dashboardModel.stockSummary.length,
-
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          // Mobile → 1
-                          // Tablet → 2
-                          // Large tablet → 3
-                          crossAxisCount: width >= 1000
-                              ? 3
-                              : width >= 600
-                              ? 2
-                              : 1,
-
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
-
-                          // Overflow fix
-                          childAspectRatio: width >= 700
-                              ? 1.55
-                              : width >= 600
-                              ? 1.55
-                              : 1.20,
-                        ),
-
-                        itemBuilder: (context, index) {
-                          return _buildStockSummaryCard(
-                            dashboardModel.stockSummary[index],
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // Low Stock Alerts & Offers Grid
-                      if (width >= 500)
-                        SizedBox(
-                          height: 140,
-
-                          child: Row(
+                          )
+                        else
+                          Column(
                             children: [
-                              Expanded(
-                                child: _buildActiveOffers(
-                                  dashboardModel.activeOffers,
-                                ),
-                              ),
-
-                              const SizedBox(width: 12),
-
-                              Expanded(
-                                child: _buildLowStockAlerts(
-                                  dashboardModel.lowStockAlerts,
-                                ),
+                              _buildActiveOffers(dashboardModel.activeOffers),
+                              const SizedBox(height: 24),
+                              _buildLowStockAlerts(
+                                dashboardModel.lowStockAlerts,
                               ),
                             ],
                           ),
-                        )
-                      else
-                        Column(
-                          children: [
-                            _buildActiveOffers(dashboardModel.activeOffers),
-                            const SizedBox(height: 24),
-                            _buildLowStockAlerts(dashboardModel.lowStockAlerts),
-                          ],
-                        ),
 
-                      const SizedBox(height: 32),
+                        const SizedBox(height: 32),
 
-                      // Bar Graph & Recent Activity section
-                      if (width > 800)
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              flex: 3,
-                              child: _buildDailySalesVolumeChart(
+                        // Bar Graph & Recent Activity section
+                        if (width > 800)
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: _buildDailySalesVolumeChart(
+                                  dashboardModel.dailySalesVolume,
+                                ),
+                              ),
+                              const SizedBox(width: 24),
+                              Expanded(
+                                flex: 2,
+                                child: _buildRecentActivity(
+                                  dashboardModel.recentActivity,
+                                ),
+                              ),
+                            ],
+                          )
+                        else
+                          Column(
+                            children: [
+                              _buildDailySalesVolumeChart(
                                 dashboardModel.dailySalesVolume,
                               ),
-                            ),
-                            const SizedBox(width: 24),
-                            Expanded(
-                              flex: 2,
-                              child: _buildRecentActivity(
+                              const SizedBox(height: 24),
+                              _buildRecentActivity(
                                 dashboardModel.recentActivity,
                               ),
-                            ),
-                          ],
-                        )
-                      else
-                        Column(
-                          children: [
-                            _buildDailySalesVolumeChart(
-                              dashboardModel.dailySalesVolume,
-                            ),
-                            const SizedBox(height: 24),
-                            _buildRecentActivity(dashboardModel.recentActivity),
-                          ],
-                        ),
+                            ],
+                          ),
 
-                      const SizedBox(height: 40),
-                    ],
+                        const SizedBox(height: 40),
+                      ],
+                    ),
                   ),
                 ),
               ),

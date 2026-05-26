@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/services/notification_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:proteinova_connect/features/admin/Receiving%20branch/presentation/receiving_branch.dart';
 import 'package:proteinova_connect/features/admin/dailyclosing/screen/dailyclosing.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bloc.dart';
 import 'package:proteinova_connect/features/admin/expense/data/repository/expense_repository.dart';
@@ -12,8 +11,6 @@ import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_re
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/data/services/tray_receive_service.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/bloc/sales_dashboard_event.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/data/datasource/sales_remote_datasource.dart';
-import 'package:proteinova_connect/features/admin/menu/branch_management/bloc/branch_bloc/branch_bloc.dart';
-import 'package:proteinova_connect/features/admin/menu/branch_management/data/services/branch_service.dart';
 import 'package:proteinova_connect/features/admin/purchase/presentation/purchase.dart';
 import 'package:proteinova_connect/features/admin/purchase/bloc/purchase/purchase_bloc.dart';
 import 'package:proteinova_connect/features/admin/purchase/bloc/purchase/purchase_event.dart';
@@ -22,7 +19,6 @@ import 'package:proteinova_connect/features/admin/purchase/data/repository/suppl
     as admin_supplier;
 import 'package:proteinova_connect/core/cache/hive_service/purchase_hive_service.dart';
 import 'package:proteinova_connect/core/network/dio_client.dart';
-import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
 import 'package:proteinova_connect/features/admin/supplier/bloc/supplier_bloc.dart';
 import 'package:proteinova_connect/features/admin/supplier/data/services/supplier_service.dart';
@@ -36,11 +32,9 @@ import 'package:proteinova_connect/features/admin/addprice/presentation/add_pric
 import 'package:proteinova_connect/features/admin/approval/screens/approvals_queue_screen.dart';
 import 'package:proteinova_connect/features/admin/expense/screens/admin_expense_screen.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/presentation/asset_management_page.dart';
-import 'package:proteinova_connect/features/admin/menu/branch_management/presentation/branch_management.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/presentation/receive_trays_screen.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/presentation/sales_dashoard.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
-import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
 import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
 import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
 import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
