@@ -18,6 +18,9 @@ class AuthService {
     print(email);
     print(password);
     print(role);
+     print("STATUS CODE => ${response.statusCode}");
+  print("BODY => ${response.body}");
+
 
     if (response.statusCode == 200) {
       print("wwww");

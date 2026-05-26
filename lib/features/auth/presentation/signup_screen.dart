@@ -132,6 +132,11 @@ class _SignupScreenState extends State<SignupScreen> {
 
                     child: BlocListener<AuthBloc, AuthState>(
                       listener: (context, state) {
+                        if (state is AuthFailure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(state.message)),
+      );
+    }
                         if (state is AuthSuccessPurchase) {
                           Navigator.pushReplacement(
                             context,
