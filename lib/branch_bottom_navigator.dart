@@ -6,6 +6,7 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch/addexpense/presentation/expense_management/presentation/expense_management.dart';
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
+import 'package:proteinova_connect/features/branch/customer_trays/presentation/customer_trays.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/presentation/daily_closing.dart';
 import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_bloc.dart';
 import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_event.dart';
@@ -200,6 +201,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                   _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
 
                   _menuTile(Icons.money, "Expenses", ExpenseManagement()),
+                   _menuTile( Icons.inventory_2_outlined, "Customer trays", CustomerTrays()),
 
                   //  _menuTile(Icons.money, "Admin in", AdminInventory()),
                   const SizedBox(height: 20),

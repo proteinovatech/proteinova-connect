@@ -1,5 +1,4 @@
-import 'package:proteinova_connect/features/admin/expense/data/models/expense_model.dart';
-
+import 'expense_model.dart';
 
 class BranchExpenseDashboardModel {
   final int branchId;

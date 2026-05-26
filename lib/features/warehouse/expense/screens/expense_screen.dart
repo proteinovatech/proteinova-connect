@@ -9,13 +9,13 @@ import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_st
 import 'package:proteinova_connect/features/admin/expense/data/models/branch_expense_dashboard_model.dart';
 import 'package:proteinova_connect/features/admin/expense/data/models/location_model.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_expense_management_skeleton_loader.dart';
-import 'package:proteinova_connect/features/warehouse/expense/data/expense_repository.dart';
-import 'package:proteinova_connect/features/warehouse/expense/widget/expense_category.dart';
-import 'package:proteinova_connect/features/warehouse/expense/widget/summary_card.dart';
-import 'package:proteinova_connect/features/warehouse/expense/widget/table_header.dart';
-import 'package:proteinova_connect/features/warehouse/expense/widget/textfield.dart';
 
-
+import '../data/repository/expense_repository.dart';
+import '../widgets/expense_category_item.dart';
+import '../widgets/expense_summary_card.dart';
+import '../widgets/expense_table_header.dart';
+import '../widgets/expense_table_row.dart';
+import '../widgets/expense_textfield.dart';
 
 class AdminExpenseScreen extends StatefulWidget {
   const AdminExpenseScreen({super.key});
@@ -95,9 +95,9 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
 
     setState(() => isSaving = true);
     try {
-      await _repository.createExpense(
-        branchId: selectedLocationType == 'branch' ? selectedLocationId : null,
-        warehouseId: selectedLocationType == 'warehouse' ? selectedLocationId : null,
+      await _repository.createBranchExpense(
+        branchId: selectedLocationId!,
+        
         expenseDate: dateController.text,
         category: selectedCategory.toUpperCase().replaceAll(' ', '_'),
         amount: double.parse(amountController.text),
@@ -157,14 +157,14 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
       body: BlocBuilder<BranchExpenseBloc, BranchExpenseState>(
         builder: (context, state) {
           final dashboardData = state.dashboardData;
-          final locations = state.locations;
+          final locations = state.branches;
           final isLoading = state.isLoading;
 
           // Auto-select first location if not set yet
           if (selectedLocationId == null && locations.isNotEmpty) {
-            final firstLoc = locations.first;
-            selectedLocationId = firstLoc.id;
-            selectedLocationType = firstLoc.type;
+            final firstLoc = locations.entries.first.key;
+            selectedLocationId = locations.entries.first.key;
+            selectedLocationType = 'branch';
             Future.microtask(() {
               context.read<BranchExpenseBloc>().add(
                 LoadDashboardEvent(
@@ -250,9 +250,9 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                               border: Border.all(color: Colors.grey.shade300),
                             ),
                             child: DropdownButtonHideUnderline(
-                              child: DropdownButton<Location>(
-                                value: locations.any((l) => l.id == selectedLocationId && l.type == selectedLocationType)
-                                    ? locations.firstWhere((l) => l.id == selectedLocationId && l.type == selectedLocationType)
+                              child: DropdownButton<int>(
+                               value: locations.containsKey(selectedLocationId)
+                                    ? selectedLocationId
                                     : null,
                                 hint: const Text("Select Location"),
                                 isExpanded: true,
@@ -262,23 +262,20 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
                                 ),
-                                items: locations.map((loc) {
-                                  final label = loc.type == 'branch'
-                                      ? "Branch: ${loc.name}"
-                                      : "Warehouse: ${loc.name}";
-                                  return DropdownMenuItem<Location>(
-                                    value: loc,
-                                    child: Text(
-                                      label,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  );
-                                }).toList(),
+                               items: locations.entries.map((entry) {
+  return DropdownMenuItem<int>(
+    value: entry.key,
+    child: Text(
+      entry.value,
+      overflow: TextOverflow.ellipsis,
+    ),
+  );
+}).toList(),
                                 onChanged: (loc) {
                                   if (loc != null) {
                                     setState(() {
-                                      selectedLocationId = loc.id;
-                                      selectedLocationType = loc.type;
+                                      selectedLocationId = loc;
+                                      selectedLocationType = "branch";
                                     });
                                     context.read<BranchExpenseBloc>().add(
                                       LoadDashboardEvent(

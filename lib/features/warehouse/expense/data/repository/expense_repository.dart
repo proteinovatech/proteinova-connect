@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:proteinova_connect/core/network/api_constants.dart';
+import 'package:proteinova_connect/features/admin/expense/data/models/branch_expense_dashboard_model.dart';
 import 'package:proteinova_connect/features/admin/expense/data/models/expense_model.dart';
-import 'package:proteinova_connect/features/warehouse/expense/models/branch_expense_model.dart';
 
 
 class ExpenseRepository {
