@@ -1,7 +1,5 @@
 import 'package:proteinova_connect/features/warehouse/tray_management/models/tray_inventory_model.dart';
 
-
-
 class TrayManagementState {
   final bool isLoading;
   final bool isAdding;
