@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
@@ -8,6 +9,10 @@ import 'package:proteinova_connect/features/branch/addexpense/presentation/expen
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 import 'package:proteinova_connect/features/branch/customer_trays/presentation/customer_trays.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/presentation/daily_closing.dart';
+import 'package:proteinova_connect/features/branch/damage_entry/bloc/damage_bloc.dart';
+import 'package:proteinova_connect/features/branch/damage_entry/bloc/damage_event.dart';
+import 'package:proteinova_connect/features/branch/damage_entry/data/repository/damage_repository.dart';
+import 'package:proteinova_connect/features/branch/damage_entry/presentations/damage_entry_screen.dart';
 import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_bloc.dart';
 import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_event.dart';
 import 'package:proteinova_connect/features/branch/inventory/presentation/inventory.dart';
@@ -202,6 +207,15 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
 
                   _menuTile(Icons.money, "Expenses", ExpenseManagement()),
                    _menuTile( Icons.inventory_2_outlined, "Customer trays", CustomerTrays()),
+
+                  _menuTile(Icons.money, "Damage Entry", BlocProvider(
+  create: (_) => DamageBloc(
+    DamageRepository(Dio()),
+  )..add(
+      FetchDamageCategoriesEvent(branchId: 1),
+    ),
+  child: const DamageEntryScreen(),
+)), 
 
                   //  _menuTile(Icons.money, "Admin in", AdminInventory()),
                   const SizedBox(height: 20),

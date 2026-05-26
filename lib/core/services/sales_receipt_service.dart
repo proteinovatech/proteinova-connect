@@ -36,6 +36,7 @@ class SalesReceiptService {
       total: (order['net_amount'] ?? order['amount'] ?? 0).toDouble(),
       paymentMethod: order['payment_method'] ?? "CASH",
       branchName: order['branch_name'] ?? order['sold_location'],
+      trayCharges: (order['tray_charges'] ?? 0).toDouble(),
       isThermal: isThermal,
     );
   }
@@ -51,6 +52,7 @@ class SalesReceiptService {
     required double total,
     required String paymentMethod,
     String? branchName,
+    double trayCharges = 0.0,
     bool isThermal = true,
   }) async {
     final logo = pw.MemoryImage(
@@ -58,10 +60,7 @@ class SalesReceiptService {
     );
     final ttfRegular = await PdfGoogleFonts.notoSansRegular();
     final ttfBold = await PdfGoogleFonts.notoSansBold();
-    final theme = pw.ThemeData.withFont(
-      base: ttfRegular,
-      bold: ttfBold,
-    );
+    final theme = pw.ThemeData.withFont(base: ttfRegular, bold: ttfBold);
     if (!isThermal) {
       final pdfBytes = await generateReceiptPdf(
         saleId: saleId,
@@ -74,6 +73,7 @@ class SalesReceiptService {
         total: total,
         paymentMethod: paymentMethod,
         branchName: branchName,
+        trayCharges: trayCharges,
       );
       await Printing.layoutPdf(
         onLayout: (format) async => pdfBytes,
@@ -210,6 +210,14 @@ class SalesReceiptService {
                   pw.Text("₹ ${discount.toStringAsFixed(2)}"),
                 ],
               ),
+              if (trayCharges > 0)
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text("Tray Charges:"),
+                    pw.Text("₹ ${trayCharges.toStringAsFixed(2)}"),
+                  ],
+                ),
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
@@ -236,10 +244,8 @@ class SalesReceiptService {
                     ),
                   ),
                   pw.Text(
-                    "₹ ${total.toStringAsFixed(2)}",
-                    style: pw.TextStyle(
-                      fontWeight: pw.FontWeight.bold,
-                    ),
+                    "₹ ${(total.ceilToDouble()).toStringAsFixed(2)}",
+                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                   ),
                 ],
               ),
@@ -283,13 +289,11 @@ class SalesReceiptService {
     required double total,
     required String paymentMethod,
     String? branchName,
+    double trayCharges = 0.0,
   }) async {
     final ttfRegular = await PdfGoogleFonts.notoSansRegular();
     final ttfBold = await PdfGoogleFonts.notoSansBold();
-    final theme = pw.ThemeData.withFont(
-      base: ttfRegular,
-      bold: ttfBold,
-    );
+    final theme = pw.ThemeData.withFont(base: ttfRegular, bold: ttfBold);
     final pdf = pw.Document(theme: theme);
 
     pdf.addPage(
@@ -441,9 +445,13 @@ class SalesReceiptService {
                       pw.Text(
                         "Offer Discount: -₹ ${discount.toStringAsFixed(2)}",
                       ),
+                      if (trayCharges > 0)
+                        pw.Text(
+                          "Tray Charges: ₹ ${trayCharges.toStringAsFixed(2)}",
+                        ),
                       pw.Divider(color: PdfColors.grey400),
                       pw.Text(
-                        "Grand Total: ₹ ${total.toStringAsFixed(2)}",
+                        "Grand Total: ₹ ${(total.ceilToDouble()).toStringAsFixed(2)}",
                         style: pw.TextStyle(
                           fontSize: 16,
                           fontWeight: pw.FontWeight.bold,

@@ -86,6 +86,56 @@ class ExpenseRepository {
     }
   }
 
+  /// Generic method to create an expense for either a branch or a warehouse.
+  /// If `branchId` is provided, it will be sent as `branch_id`.
+  /// If `warehouseId` is provided, it will be sent as `warehouse_id`.
+  /// At least one of the IDs must be non‑null.
+  Future<ExpenseModel> createExpense({
+    int? branchId,
+    int? warehouseId,
+    required String expenseDate,
+    required String category,
+    required double amount,
+    required String paymentMethod,
+    String? description,
+    String status = "PAID",
+    String? attachmentUrl,
+    int? loginUserId,
+  }) async {
+    if (branchId == null && warehouseId == null) {
+      throw ArgumentError('Either branchId or warehouseId must be provided');
+    }
+    final body = {
+      if (branchId != null) "branch_id": branchId,
+      if (warehouseId != null) "warehouse_id": warehouseId,
+      "expense_date": expenseDate,
+      "category": category,
+      "amount": amount,
+      "payment_method": paymentMethod,
+      "description": description,
+      "status": status,
+      "attachment_url": attachmentUrl,
+      "login_user_id": loginUserId,
+    };
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.branchExpenses),
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      return ExpenseModel.fromJson(data['expense']);
+    } else {
+      final errorData = jsonDecode(response.body);
+      throw Exception(errorData['error'] ?? "Failed to create expense");
+    }
+  }
+
   Future<Map<int, String>> fetchBranches() async {
     try {
       final response = await http.get(
