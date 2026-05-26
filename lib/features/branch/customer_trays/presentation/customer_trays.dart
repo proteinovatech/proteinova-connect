@@ -77,24 +77,35 @@ CustomerTray? selectedTray;
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 25,),
-            Row(
-              children: const [
-                Icon(
-                  Icons.inventory_2_outlined,
-                  size: 20,
-                  color: Colors.orange,
-                ),
-                SizedBox(width: 8),
-                Text(
-                  "Customer Trays Ledger",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-                    const SizedBox(height: 4),
+          Row(
+  children: [
+    IconButton(
+      onPressed: () {
+        Navigator.pop(context);
+      },
+      icon: const Icon(
+        Icons.arrow_back_ios_new,
+        size: 20,
+      ),
+    ),
+
+    const Icon(
+      Icons.inventory_2_outlined,
+      size: 20,
+      color: Colors.orange,
+    ),
+
+    const SizedBox(width: 8),
+
+    const Text(
+      "Customer Trays Ledger",
+      style: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  ],
+),  const SizedBox(height: 4),
                     Text(
               "Track empty trays given to customers during sale.",
               style: TextStyle(
