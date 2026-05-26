@@ -1,12 +1,13 @@
 import 'package:proteinova_connect/features/admin/expense/data/models/branch_expense_dashboard_model.dart';
-import 'package:proteinova_connect/features/admin/expense/data/models/location_model.dart';
 
 class BranchExpenseState {
   final bool isLoading;
   final bool isSaving;
   final String? error;
   final bool saveSuccess;
-  final List<Location> locations;
+
+  final Map<int, String> branches;
+
   final BranchExpenseDashboardModel? dashboardData;
 
   const BranchExpenseState({
@@ -14,7 +15,9 @@ class BranchExpenseState {
     this.isSaving = false,
     this.error,
     this.saveSuccess = false,
-    this.locations = const [],
+
+    this.branches = const {},
+
     this.dashboardData,
   });
 
@@ -23,7 +26,9 @@ class BranchExpenseState {
     bool? isSaving,
     String? error,
     bool? saveSuccess,
-    List<Location>? locations,
+
+    Map<int, String>? branches,
+
     BranchExpenseDashboardModel? dashboardData,
   }) {
     return BranchExpenseState(
@@ -31,7 +36,9 @@ class BranchExpenseState {
       isSaving: isSaving ?? this.isSaving,
       error: error,
       saveSuccess: saveSuccess ?? this.saveSuccess,
-      locations: locations ?? this.locations,
+
+      branches: branches ?? this.branches,
+
       dashboardData: dashboardData ?? this.dashboardData,
     );
   }
