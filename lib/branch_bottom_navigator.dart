@@ -1,6 +1,7 @@
-import 'package:dio/dio.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proteinova_connect/core/network/dio_client.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
@@ -208,9 +209,9 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
 
                   _menuTile(Icons.money, "Damage Entry", BlocProvider(
   create: (_) => DamageBloc(
-    DamageRepository(Dio()),
+    DamageRepository(DioClient().dio),
   )..add(
-      FetchDamageCategoriesEvent(branchId: 1),
+      FetchDamageCategoriesEvent(branchId: 11),
     ),
   child: const DamageEntryScreen(),
 )), 

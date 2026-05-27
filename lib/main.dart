@@ -45,6 +45,7 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Firebase.initializeApp();
   await dotenv.load(fileName: ".env");
+  print(dotenv.env['BASE_URL']);
   await Hive.initFlutter();
 
   await Hive.openBox('purchaseBox');

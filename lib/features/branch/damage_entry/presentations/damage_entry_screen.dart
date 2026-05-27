@@ -39,7 +39,58 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
           elevation: 0,
           title: Text("Global Damage Entry", style: AppTextStyles.headingText22),
           ),
-          body:  BlocBuilder<DamageBloc, DamageState>(
+          body:  BlocListener<DamageBloc, DamageState>(
+            listenWhen: (previous, current) {
+
+    return previous.isSubmitting && !current.isSubmitting;
+  },
+
+  listener: (context, state) {
+    
+    if (!state.isSubmitting && state.error == null) {
+
+      if (eggController.text.isNotEmpty) {
+
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text("Success"),
+            content: const Text("Damage reported successfully"),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          ),
+        );
+
+        eggController.clear();
+      }
+    }
+
+    if (state.error != null) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("Error"),
+          content: Text(state.error!),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+    }
+  },
+
+  child:BlocBuilder<DamageBloc, DamageState>(
   builder: (context, state) {
 
    if (state.isLoadingCategories && state.categories.isEmpty) {
@@ -52,35 +103,37 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
               child: Column(
                 children: [
                  
-                  /// LEFT CONTAINER
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(color: Colors.grey.shade200),
+                       boxShadow: [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.1),
+      blurRadius: 10,
+      spreadRadius: 2,
+      offset: const Offset(0, 4),
+    ),
+  ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                   
-                        const Center(
+                         Center(
               child: Text(
                 "Report Damage",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTextStyles.headingText20
               ),
                         ),
                   
                         const SizedBox(height: 20),
                   
-                        const Text(
+                         Text(
               "Egg Category *",
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTextStyles.buttonText16,
                         ),
                   
                         const SizedBox(height: 8),
@@ -101,46 +154,42 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
       }
 
       final categories = state.categories;
+      print(state.selectedCategory);
+print(categories.length);
+return DropdownButton<String>(
+  isExpanded: true,
+  underline: const SizedBox(),
 
-    
+  value: state.selectedCategory,
 
-      return DropdownButton<String>(
-        isExpanded: true,
-        underline: const SizedBox(),
+  hint: const Text("Select Category"),
 
-        hint: const Text("Select Category"),
+  items: categories.map((category) {
+    return DropdownMenuItem<String>(
+      value: category.eggCategoryGrade,
+      child: Text(
+        "${category.eggCategoryGrade} (${category.eggsAvailable} eggs available)",
+      ),
+    );
+  }).toList(),
 
-        value: (state.selectedCategory != null &&
-                categories.any((c) => c.eggCategoryGrade == state.selectedCategory))
-            ? state.selectedCategory
-            : null,
-
-        items: categories.map((category) {
-          return DropdownMenuItem<String>(
-            value: category.eggCategoryGrade,
-            child: Text(
-              "${category.eggCategoryGrade} (${category.eggsAvailable} eggs available)",
-            ),
+  onChanged: (value) {
+    if (value != null) {
+      context.read<DamageBloc>().add(
+            SelectCategoryEvent(value),
           );
-        }).toList(),
-
-        onChanged: (value) {
-          context.read<DamageBloc>().add(
-        SelectCategoryEvent(value!),
-      );
-        },
-      );
+    }
+  },
+);
     },
   ),
 ),
                   
                         const SizedBox(height: 20),
                   
-                        const Text(
+                         Text(
               "Number of Damaged Eggs *",
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTextStyles.buttonText16,
                         ),
                   
                         const SizedBox(height: 8),
@@ -183,7 +232,7 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
                onPressed: state.isSubmitting
     ? null
     : () {
-         // better move outside UI
+        
 
         if (state.selectedCategory == null || eggController.text.isEmpty) return;
 
@@ -213,6 +262,14 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(color: Colors.grey.shade200),
+                       boxShadow: [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.1),
+      blurRadius: 10,
+      spreadRadius: 2,
+      offset: const Offset(0, 4),
+    ),
+  ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,10 +278,7 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
                         const Center(
               child: Text(
                 "Damage History",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTextStyles.headingText20
               ),
                         ),
                   
@@ -238,8 +292,14 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
   )
 
 
-                    :Column(
-  children: state.history.map((item) {
+                    :ListView.builder(
+  shrinkWrap: true,
+  physics: const NeverScrollableScrollPhysics(),
+  itemCount: state.history.length,
+  itemBuilder: (context, index) {
+
+    final item = state.history[index];
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -255,18 +315,15 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
             alignment: Alignment.centerRight,
             child: Text(
               item.date,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              style: AppTextStyles.bodyText16,
             ),
           ),
           const SizedBox(height: 6),
           Align(
-            alignment: Alignment.centerRight,
+            alignment: Alignment.centerLeft,
             child: Text(
               item.category,
-              style: const TextStyle(
-                color: Colors.grey,
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppTextStyles.headingText16
             ),
           ),
           const SizedBox(height: 10),
@@ -294,7 +351,7 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
                 ),
                 Row(
                   children: [
-                    const Icon(Icons.inventory_2, size: 16),
+                    const Icon(Icons.inventory_2_outlined, size: 16),
                     const SizedBox(width: 4),
                     Text("${item.trays} Trays"),
                   ],
@@ -305,9 +362,8 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
         ],
       ),
     );
-  }).toList(),
-                      )
-                    
+  
+  },)          
                       ],
                     ),
                   ),
@@ -315,6 +371,6 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
                 ],
               ),
             ),);
-   } ));
+   } )));
    }
   }

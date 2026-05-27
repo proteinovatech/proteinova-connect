@@ -9,7 +9,7 @@ class DamageState {
   final String? selectedCategory;
   final List<DamageHistoryModel> history;
   final bool isSubmitting;
-  
+ final bool isSuccess; 
 final bool isLoadingCategories;
 final bool isLoadingHistory;
   const DamageState({
@@ -19,6 +19,7 @@ final bool isLoadingHistory;
     this.selectedCategory,
     this.history = const [],
     this.isSubmitting = false,
+    this.isSuccess = false,
     this.isLoadingCategories=false,
     this.isLoadingHistory=false,
 
@@ -28,6 +29,7 @@ final bool isLoadingHistory;
     bool? isLoading,
      bool? isLoadingCategories,
     bool? isLoadingHistory,
+    bool? isSuccess,
     List<DamageCategoryModel>? categories,
      String? selectedCategory,
     String? error,
@@ -36,6 +38,7 @@ final bool isLoadingHistory;
   }) {
     return DamageState(
       isLoading: isLoading ?? this.isLoading,
+      isSuccess: isSuccess ?? this.isSuccess,
        isLoadingCategories:
           isLoadingCategories ?? this.isLoadingCategories,
       isLoadingHistory:
