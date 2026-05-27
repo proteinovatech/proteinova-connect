@@ -9,17 +9,6 @@ import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_st
 import 'package:proteinova_connect/features/admin/expense/data/models/branch_expense_dashboard_model.dart';
 import 'package:proteinova_connect/features/admin/expense/data/models/location_model.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_expense_management_skeleton_loader.dart';
-<<<<<<< HEAD:lib/features/warehouse/expense/screens/expense_screen.dart
-=======
-import 'package:proteinova_connect/features/warehouse/expense/data/expense_repository.dart';
-import 'package:proteinova_connect/features/warehouse/expense/widget/expense_category.dart';
-import 'package:proteinova_connect/features/warehouse/expense/widget/summary_card.dart';
-import 'package:proteinova_connect/features/warehouse/expense/widget/table_header.dart';
-import 'package:proteinova_connect/features/warehouse/expense/widget/table_row.dart';
-
-import 'package:proteinova_connect/features/warehouse/expense/widget/textfield.dart';
-
->>>>>>> 118169d4cb9d9b7b743289e87396b8f351c09c66:lib/features/warehouse/expense/presentation/expense.dart
 
 import '../data/repository/expense_repository.dart';
 import '../widgets/expense_category_item.dart';
