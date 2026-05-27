@@ -11,6 +11,7 @@ import 'package:proteinova_connect/features/auth/bloc/auth_state.dart';
 import 'package:proteinova_connect/features/auth/widget/custom_textfield.dart';
 import 'package:proteinova_connect/features/auth/widget/role_toggle.dart';
 import 'package:proteinova_connect/purchase_bottom_navigator.dart';
+import 'package:proteinova_connect/warehouse_bottom_navigator.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -158,10 +159,20 @@ class _SignupScreenState extends State<SignupScreen> {
                               builder: (_) => const AdminBottomNavigator(),
                             ),
                           );
-                        } else if (state is AuthFailure) {
+                        } 
+                        else if (state is AuthSuccessWarehouse) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const WarehouseBottomNavigator(),
+                            ),
+                          );
+                        }
+                        else if (state is AuthFailure) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text(state.message)),
                           );
+                          print("Login failed: ${state.message}");
                         }
                       },
 

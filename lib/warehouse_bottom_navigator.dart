@@ -45,14 +45,14 @@ import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart
 import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
 import '../features/admin/menu/SalesDashboard/bloc/sales_dashboard_bloc.dart';
 
-class AdminBottomNavigator extends StatefulWidget {
-  const AdminBottomNavigator({super.key});
+class WarehouseBottomNavigator extends StatefulWidget {
+  const WarehouseBottomNavigator({super.key});
 
   @override
-  State<AdminBottomNavigator> createState() => _BranchBottomNavigatorState();
+  State<WarehouseBottomNavigator> createState() => _WarehouseBottomNavigatorState();
 }
 
-class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
+class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
   @override
   void initState() {
     super.initState();
