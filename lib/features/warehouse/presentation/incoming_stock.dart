@@ -3,7 +3,7 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/features/warehouse/presentation/receive_stock_screen.dart';
 import 'package:proteinova_connect/features/warehouse/skeletonloader/incoming_stock_skeleton_loader.dart';
 import 'package:proteinova_connect/features/warehouse/widget/incoming_widget.dart';
-import 'package:proteinova_connect/features/warehouse/inventory/data/models/inventory_model.dart';
+import 'package:proteinova_connect/features/warehouse/inventory/models/inventory_model.dart';
 import 'package:proteinova_connect/features/warehouse/inventory/data/inventory_repository.dart';
 
 
@@ -528,11 +528,7 @@ class _IncomingStockState extends State<IncomingStock> {
                 /// TOP BAR
                 Row(
                   children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-                    ),
-                    const SizedBox(width: 8),
+                  
                     const Expanded(
                       child: Text(
                         "Inventory Overview",

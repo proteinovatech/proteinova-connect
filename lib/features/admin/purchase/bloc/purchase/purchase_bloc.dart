@@ -121,7 +121,7 @@ on<SearchPurchaseEvent>((event, emit) {
     emit(PurchaseSubmitting());
 
     final res = await purchaseRepository.postPurchase(event.purchase);
-    final int purchaseId = int.tryParse(res?['data']?['id']?.toString() ?? '0') ?? 0;
+    final int purchaseId = int.tryParse(res['data']?['id']?.toString() ?? '0') ?? 0;
 
     // refresh purchase list
     final updatedList = await purchaseRepository.getPurchases();

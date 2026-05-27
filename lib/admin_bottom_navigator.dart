@@ -13,6 +13,7 @@ import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_re
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/data/services/tray_receive_service.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/bloc/sales_dashboard_event.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/data/datasource/sales_remote_datasource.dart';
+import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
 import 'package:proteinova_connect/features/admin/purchase/presentation/purchase.dart';
 import 'package:proteinova_connect/features/admin/purchase/bloc/purchase/purchase_bloc.dart';
 import 'package:proteinova_connect/features/admin/purchase/bloc/purchase/purchase_event.dart';
@@ -233,6 +234,11 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                     Icons.local_shipping_outlined,
                     "Incoming Stock",
                     IncomingStock(),
+                  ),
+                    _menuTile(
+                    Icons.local_shipping_outlined,
+                    "Incoming Stock",
+                    AdminInventory(),
                   ),
 
                   //Purchase Expenses

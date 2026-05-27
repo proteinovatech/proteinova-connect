@@ -195,13 +195,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                     /// HEADER
                     Row(
                       children: [
-                        IconButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          icon: const Icon(Icons.arrow_back),
-                        ),
-                        const SizedBox(width: 8),
+                       
                         const Expanded(
                           child: Text(
                             "Expense Management",

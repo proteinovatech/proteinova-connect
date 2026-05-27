@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:proteinova_connect/core/network/api_constants.dart';
-import 'package:proteinova_connect/features/warehouse/inventory/data/models/inventory_model.dart';
+import 'package:proteinova_connect/features/warehouse/inventory/models/inventory_model.dart';
 
 class InventoryRepository {
   Future<AdminInventoryModel> fetchInventoryData({int? branchId}) async {

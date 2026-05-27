@@ -7,7 +7,6 @@ import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bl
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_event.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_state.dart';
 import 'package:proteinova_connect/features/admin/expense/data/models/branch_expense_dashboard_model.dart';
-import 'package:proteinova_connect/features/admin/expense/data/models/location_model.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_expense_management_skeleton_loader.dart';
 
 import '../data/repository/expense_repository.dart';
@@ -162,7 +161,6 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
 
           // Auto-select first location if not set yet
           if (selectedLocationId == null && locations.isNotEmpty) {
-            final firstLoc = locations.entries.first.key;
             selectedLocationId = locations.entries.first.key;
             selectedLocationType = 'branch';
             Future.microtask(() {
