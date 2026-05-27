@@ -38,61 +38,87 @@ class DamageBloc extends Bloc<DamageEvent, DamageState> {
   }
 });
 on<ReportDamageEvent>((event, emit) async {
-  emit(state.copyWith(isSubmitting: true, error: null));
+
+  emit(
+    state.copyWith(
+      isSubmitting: true,
+      error: null,
+    ),
+  );
 
   try {
+
     await repository.reportDamage(
       branchId: event.branchId,
       category: event.category,
       damagedEggs: event.damagedEggs,
     );
 
-    emit(state.copyWith(isSubmitting: false));
-
-    // 🔥 refresh history correctly
-    final history = await repository.getDamageHistory(
+    /// FETCH UPDATED HISTORY
+    final updatedHistory = await repository.getDamageHistory(
       branchId: event.branchId,
     );
 
-    emit(state.copyWith(history: history));
+    emit(
+      state.copyWith(
+        isSubmitting: false,
+        history: updatedHistory,
+        error: null,
+      ),
+    );
 
   } catch (e) {
-    emit(state.copyWith(
-      isSubmitting: false,
-      error: e.toString(),
-    ));
+
+    emit(
+      state.copyWith(
+        isSubmitting: false,
+        error: e.toString(),
+      ),
+    );
   }
-});
+});  
   }
   
   Future<void> _fetchCategories(
   FetchDamageCategoriesEvent event,
   Emitter<DamageState> emit,
 ) async {
-  emit(state.copyWith(isLoadingHistory: true));
+  print("FETCH CATEGORY EVENT BRANCH ID: ${event.branchId}");
+  emit(state.copyWith(
+    isLoadingCategories: true,
+  ));
 
   try {
+
     final categories = await repository.getDamageCategories(
       branchId: event.branchId,
     );
 
+    print("CATEGORIES API DATA:");
+    print(categories.length);
+
     emit(
       state.copyWith(
-        isLoading: false,
+        isLoadingCategories: false,
         categories: categories,
         selectedCategory: categories.isNotEmpty
             ? categories.first.eggCategoryGrade
             : null,
       ),
     );
+
   } catch (e) {
+
+    print("CATEGORY ERROR:");
+    print(e);
+
     emit(
       state.copyWith(
-        isLoading: false,
+        isLoadingCategories: false,
         error: e.toString(),
       ),
     );
   }
 }
-  
 }
+  
