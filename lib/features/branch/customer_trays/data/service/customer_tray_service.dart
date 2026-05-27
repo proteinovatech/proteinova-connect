@@ -21,9 +21,7 @@ class CustomerTrayService {
 
       final List sales = data['sales'] ?? [];
 
-      return sales
-          .map((item) => CustomerTray.fromJson(item))
-          .toList();
+      return sales.map((item) => CustomerTray.fromJson(item)).toList();
     }
 
     throw Exception('Failed to load customer trays');

@@ -16,7 +16,12 @@ import 'purchase_state.dart';
     on<FetchPurchaseInitData>((event, emit) async {
       emit(PurchaseLoading());
       try {
-        final suppliers = await supplierRepository.fetchSuppliers();
+        List<dynamic> suppliers = [];
+        try {
+          suppliers = await supplierRepository.fetchSuppliers();
+        } catch (e) {
+          // Supplier fetch failed; continue loading purchases so the main list still shows
+        }
         final purchases = await purchaseRepository.getPurchases();
         _allPurchases = purchases;
         await cache.savePurchases(purchases);
