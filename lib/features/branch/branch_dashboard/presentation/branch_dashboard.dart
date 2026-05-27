@@ -1690,7 +1690,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
           Row(
             children: [
               _buildLegendItem(const Color(0xFFFFD560), "Retail Sales (Units)"),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               _buildLegendItem(
                 const Color(0xFF0B74FF),
                 "Wholesale Sales (Units)",

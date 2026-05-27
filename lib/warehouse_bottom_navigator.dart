@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/services/notification_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:proteinova_connect/features/admin/Receiving%20branch/presentation/receiving_branch.dart';
-import 'package:proteinova_connect/features/admin/add%20branch/presentation/add_branch.dart';
 import 'package:proteinova_connect/features/admin/dailyclosing/screen/dailyclosing.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bloc.dart';
 import 'package:proteinova_connect/features/admin/expense/data/repository/expense_repository.dart';
@@ -25,7 +23,6 @@ import 'package:proteinova_connect/features/admin/settings/screens/admin_setting
 import 'package:proteinova_connect/features/admin/supplier/bloc/supplier_bloc.dart';
 import 'package:proteinova_connect/features/admin/supplier/data/services/supplier_service.dart';
 import 'package:proteinova_connect/features/admin/tray_management/screen/tray_management.dart';
-import 'package:proteinova_connect/features/admin/admin Damage Entry/presentation/admin_damage_entry.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
@@ -45,9 +42,8 @@ import 'package:proteinova_connect/features/admin/purchase_expense/screens/purch
 import 'package:proteinova_connect/features/admin/purchase_expense/bloc/purchase_bloc.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/data/repository/purchase_expense_repository.dart';
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
-import 'package:proteinova_connect/features/admin/admin customertrays/presentation/admin_customer_trays.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
-import 'features/admin/menu/SalesDashboard/bloc/sales_dashboard_bloc.dart';
+import '../features/admin/menu/SalesDashboard/bloc/sales_dashboard_bloc.dart';
 
 class AdminBottomNavigator extends StatefulWidget {
   const AdminBottomNavigator({super.key});
@@ -228,44 +224,25 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   ///Warehouse
                   _sectionTitle("Warehouse"),
 
-                  //Incoming Stock
-                  _menuTile(
-                    Icons.local_shipping_outlined,
-                    "Incoming Stock",
-                    IncomingStock(),
-                  ),
+                  //Inventory
+                  // _menuTile(
+                  //   Icons.store,
+                  //   "Branch Management",
+                  //   BlocProvider(
+                  //     create: (_) =>
+                  //         BranchBloc(BranchService())..add(LoadBranchesEvent()),
 
-                  //Purchase Expenses
-                  _menuTile(
-                    Icons.account_balance_wallet_outlined,
-                    "Purchase Expenses",
-                    BlocProvider(
-                      create: (_) =>
-                          PurchaseExpenseBloc(PurchaseExpenseRepository()),
-                      child: const PurchaseExpenseScreen(),
-                    ),
-                  ),
+                  //     child: BranchManagement(),
+                  //   ),
+                  // ),
 
-                  _menuTile(
-                    Icons.inventory_2_outlined,
-                    "Tray Management",
-                    TrayManagementScreen(),
-                  ),
-
-                  //ReceiveTrays
-                  _menuTile(
-                    Icons.reply,
-                    "ReceiveTrays",
-                    BlocProvider(
-                      create: (_) =>
-                          TrayReceiveBloc(TrayReceiveService())
-                            ..add(FetchTrayReceiveNotes()),
-
-                      child: const ReceiveTraysScreen(),
-                    ),
-                  ),
-
-                  //Asset Management
+                  // _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
+                  // _menuTile(Icons.money, "Expenses", AdminExpenseScreen()),
+                  // _menuTile(
+                  //   Icons.local_shipping_rounded,
+                  //   "Supplier",
+                  //   AdminSuppliersScreen(),
+                  // ),
                   _menuTile(
                     Icons.account_balance_wallet_outlined,
                     "Asset Management",
@@ -287,6 +264,17 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                     ),
                   ),
 
+                  //Purchase Expenses
+                  _menuTile(
+                    Icons.account_balance_wallet_outlined,
+                    "Purchase Expenses",
+                    BlocProvider(
+                      create: (_) =>
+                          PurchaseExpenseBloc(PurchaseExpenseRepository()),
+                      child: const PurchaseExpenseScreen(),
+                    ),
+                  ),
+
                   //Offers & Prices
                   _menuTile(
                     Icons.sell_outlined,
@@ -294,17 +282,31 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                     OfferPrice(),
                   ),
 
+                  //Incoming Stock
                   _menuTile(
-                    Icons.error_outline_rounded,
-                    "Damage Entry",
-                    const AdminDamageEntryPage(),
+                    Icons.local_shipping_outlined,
+                    "Incoming Stock",
+                    IncomingStock(),
+                  ),
+
+                  //ReceiveTrays
+                  _menuTile(
+                    Icons.reply,
+                    "ReceiveTrays",
+                    BlocProvider(
+                      create: (_) =>
+                          TrayReceiveBloc(TrayReceiveService())
+                            ..add(FetchTrayReceiveNotes()),
+
+                      child: const ReceiveTraysScreen(),
+                    ),
                   ),
 
                   //TrayManagement
                   _menuTile(
                     Icons.inventory_2_outlined,
-                    "Customer Trays",
-                    const AdminCustomerTrays(),
+                    "TrayManagement",
+                    TrayManagementScreen(),
                   ),
 
                   ///Purchase Section
@@ -342,13 +344,6 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   ///Branch Section
                   _sectionTitle("Branch Section"),
 
-                  //Add Branch
-                  _menuTile(
-                    Icons.add_circle_outline,
-                    "Add Branch",
-                    AddBranchPage(),
-                  ),
-
                   //Sales
                   _menuTile(
                     Icons.shopping_cart_outlined,
@@ -363,13 +358,45 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   ),
 
                   //ReceivingBranchScreen
-                  _menuTile(
-                    Icons.groups_outlined,
-                    "Receiving From Branch",
-                    ReceivingBranchDashboardPage(),
-                  ),
+                  // _menuTile(
+                  //   Icons.groups_outlined,
+                  //   "Receiving From Branch",
+                  //   ReceivingBranchScreen(),
+                  // ),
 
-                  //Daily Closing
+                  //Branch Management
+                  // _menuTile(
+                  //   Icons.store,
+                  //   "Branch Management",
+                  //   BlocProvider(
+                  //     create: (_) =>
+                  //         BranchBloc(BranchService())..add(LoadBranchesEvent()),
+
+                  //     child: BranchManagement(),
+                  //   ),
+                  // ),
+
+                  // _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
+
+                  // _menuTile(
+                  //   Icons.agriculture,
+                  //   "SalesDashboard",
+                  //   SalesDashboardPage(),
+                  // ),
+                  // _menuTile(Icons.inventory, "Incoming Stock", IncomingStock()),
+                  // _menuTile(Icons.sell, "Purchase", AdminSuppliersScreen()),
+                  // _menuTile(
+                  //   Icons.account_balance_wallet,
+                  //   "Purchase Expenses",
+                  //   const PurchaseExpenseScreen(),
+                  // ),
+
+                  // _menuTile(
+                  //   Icons.sell_outlined,
+
+                  //   "Offers & Prices",
+                  //   OfferPrice(),
+                  // ),
                   _menuTile(
                     Icons.storefront_outlined,
                     "Daily Closing",
@@ -382,15 +409,13 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   ///ADMINISTRATION
                   _sectionTitle("ADMINISTRATION"),
 
-                  //setting
-                  _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
-
-                  //Report
                   // _menuTile(
                   //   Icons.report,
                   //   "Report",
                   //   AdminReportDashboardScreen(),
                   // ),
+                  _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
+                  // _menuTile(Icons.money, "Expenses", ExpenseManagement()),
                   const SizedBox(height: 20),
                   Divider(),
                   ListTile(

@@ -148,7 +148,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                     },
 
                     child: Container(
-                      height: 38,
+                      height: 35,
                       width: double.infinity,
 
                       decoration: BoxDecoration(
@@ -162,7 +162,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                           children: [
                             Icon(Icons.add_circle_outline),
 
-                            SizedBox(width: 10),
+                            SizedBox(width: 5),
 
                             Text(
                               "New Sales Entry",

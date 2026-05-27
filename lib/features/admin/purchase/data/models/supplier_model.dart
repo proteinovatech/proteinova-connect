@@ -19,13 +19,13 @@ class SupplierModel {
 
   factory SupplierModel.fromJson(Map<String, dynamic> json) {
     return SupplierModel(
-      id: json['id'],
-      companyName: json['supplier_company_name'],
-      supplierName: json['supplier_name'],
-      email: json['email'],
-      phoneNumber: json['phone_number'],
-      location: json['supplier_location'],
-      status: json['status'],
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      companyName: json['supplier_company_name'] as String? ?? '',
+      supplierName: json['supplier_name'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+      phoneNumber: json['phone_number'] as String? ?? '',
+      location: json['supplier_location'] as String? ?? '',
+      status: json['status'] as String? ?? '',
     );
   }
 }
