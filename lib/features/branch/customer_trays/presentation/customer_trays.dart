@@ -4,7 +4,21 @@ import 'package:proteinova_connect/features/branch/customer_trays/data/model/cus
 import 'package:proteinova_connect/features/branch/customer_trays/data/service/customer_tray_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+abstract class CustomerTrayEvent {}
+abstract class CustomerTrayState {}
+
+class CustomerTrayInitial extends CustomerTrayState {}
+
+class CustomerTrayLoading extends CustomerTrayState {}
+
+class CustomerTrayLoaded extends CustomerTrayState {
+  final List<CustomerTray> trays;
+
+  CustomerTrayLoaded(this.trays);
+}
 class CustomerTrays extends StatefulWidget {
+  
+  
   const CustomerTrays({super.key});
 
   @override
@@ -12,6 +26,9 @@ class CustomerTrays extends StatefulWidget {
 }
 
 class _CustomerTraysState extends State<CustomerTrays> {
+  
+ 
+  
   final TextEditingController searchController =
     TextEditingController();
 

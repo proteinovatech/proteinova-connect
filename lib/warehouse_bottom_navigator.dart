@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/services/notification_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:proteinova_connect/features/admin/dailyclosing/screen/dailyclosing.dart';
+import 'package:proteinova_connect/features/admin/admin%20Damage%20Entry/presentation/admin_damage_entry.dart';
+import 'package:proteinova_connect/features/admin/admin%20customertrays/presentation/admin_customer_trays.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bloc.dart';
 import 'package:proteinova_connect/features/admin/expense/data/repository/expense_repository.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/bloc/asset_bloc.dart';
@@ -9,20 +10,7 @@ import 'package:proteinova_connect/features/admin/menu/AssetManagement/data/asse
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_receive_bloc.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_receive_event.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/data/services/tray_receive_service.dart';
-import 'package:proteinova_connect/features/admin/menu/SalesDashboard/bloc/sales_dashboard_event.dart';
-import 'package:proteinova_connect/features/admin/menu/SalesDashboard/data/datasource/sales_remote_datasource.dart';
-import 'package:proteinova_connect/features/admin/purchase/presentation/purchase.dart';
-import 'package:proteinova_connect/features/admin/purchase/bloc/purchase/purchase_bloc.dart';
-import 'package:proteinova_connect/features/admin/purchase/bloc/purchase/purchase_event.dart';
-import 'package:proteinova_connect/features/admin/purchase/data/repository/purchase_repository.dart';
-import 'package:proteinova_connect/features/admin/purchase/data/repository/supplier_repository.dart'
-    as admin_supplier;
-import 'package:proteinova_connect/core/cache/hive_service/purchase_hive_service.dart';
-import 'package:proteinova_connect/core/network/dio_client.dart';
-import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
-import 'package:proteinova_connect/features/admin/supplier/bloc/supplier_bloc.dart';
 
-import 'package:proteinova_connect/features/admin/supplier/data/services/supplier_service.dart';
 import 'package:proteinova_connect/features/admin/tray_management/screen/tray_management.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
@@ -32,17 +20,13 @@ import 'package:proteinova_connect/features/admin/Distribution/presentation/dist
 import 'package:proteinova_connect/features/admin/expense/screens/admin_expense_screen.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/presentation/asset_management_page.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/presentation/receive_trays_screen.dart';
-import 'package:proteinova_connect/features/admin/menu/SalesDashboard/presentation/sales_dashoard.dart';
 import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
-import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
 import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/screens/purchase_expense_screen.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/bloc/purchase_bloc.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/data/repository/purchase_expense_repository.dart';
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
-import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_inventory.dart';
-import '../features/admin/menu/SalesDashboard/bloc/sales_dashboard_bloc.dart';
 
 class WarehouseBottomNavigator extends StatefulWidget {
   const WarehouseBottomNavigator({super.key});
@@ -317,6 +301,16 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
                     Icons.inventory_2_outlined,
                     "TrayManagement",
                     TrayManagementScreen(),
+                  ),
+                    _menuTile(
+                    Icons.inventory_2_outlined,
+                    "Customer trays",
+                    AdminCustomerTrays(),
+                  ),
+                   _menuTile(
+                    Icons.inventory_2_outlined,
+                    "Damage entry",
+                  AdminDamageEntryPage(),
                   ),
 
                   // //Purchase

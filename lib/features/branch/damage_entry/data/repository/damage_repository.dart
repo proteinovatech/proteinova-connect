@@ -1,8 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:proteinova_connect/core/config/api_config.dart';
 import 'package:proteinova_connect/features/branch/damage_entry/data/model/damage_category_model.dart';
 import 'package:proteinova_connect/features/branch/damage_entry/data/model/damage_history_model.dart';
-import 'package:http/http.dart' as http;
 import 'package:proteinova_connect/features/branch/damage_entry/data/services/damage_service.dart';
 
 class DamageRepository {

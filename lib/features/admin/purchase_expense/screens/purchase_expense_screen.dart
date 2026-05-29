@@ -26,7 +26,7 @@ class _PurchaseExpenseScreenState extends State<PurchaseExpenseScreen> {
   String _selectedSupplierId = "All";
   int _currentPage = 1;
   final int _recordsPerPage = 10;
-
+String role = ""; // or "WAREHOUSE"
  
   bool _isSubmitting = false;
 
@@ -153,19 +153,26 @@ class _PurchaseExpenseScreenState extends State<PurchaseExpenseScreen> {
       backgroundColor: AppColors.lightGrey,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0.5,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.dark),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "Purchase Expenses",
-          style: TextStyle(
+        elevation: 0,
+  leading: role == "ADMIN"
+      ? IconButton(
+          icon: const Icon(
+            Icons.arrow_back,
             color: AppColors.dark,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
           ),
-        ),
+          onPressed: () => Navigator.pop(context),
+        )
+      : null,
+
+  title: const Text(
+    "Purchase Expenses",
+    style: TextStyle(
+      color: AppColors.dark,
+      fontWeight: FontWeight.bold,
+      fontSize: 20,
+    ),
+  ),
+
         actions: [
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
