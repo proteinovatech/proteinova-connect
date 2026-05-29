@@ -1195,96 +1195,233 @@ class _PurchaseState extends State<Purchase> {
                                 ),
 
                                 // Pagination footer
-                                Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        "Showing $startRecord - $endRecord of $totalRecords records",
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Color(0xFF64748B),
-                                        ),
-                                      ),
-                                      Row(
-                                        children: [
-                                          OutlinedButton(
-                                            onPressed: currentPage > 1
-                                                ? () {
-                                                    setState(() {
-                                                      currentPage--;
-                                                    });
-                                                  }
-                                                : null,
-                                            style: OutlinedButton.styleFrom(
-                                              side: BorderSide(
-                                                color: currentPage > 1
-                                                    ? Colors.grey.shade300
-                                                    : Colors.grey.shade100,
-                                              ),
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 12,
-                                                    vertical: 8,
-                                                  ),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(6),
-                                              ),
-                                            ),
-                                            child: Text(
-                                              "Previous",
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: currentPage > 1
-                                                    ? Colors.black
-                                                    : Colors.grey.shade400,
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          OutlinedButton(
-                                            onPressed: currentPage < totalPages
-                                                ? () {
-                                                    setState(() {
-                                                      currentPage++;
-                                                    });
-                                                  }
-                                                : null,
-                                            style: OutlinedButton.styleFrom(
-                                              side: BorderSide(
-                                                color: currentPage < totalPages
-                                                    ? Colors.grey.shade300
-                                                    : Colors.grey.shade100,
-                                              ),
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 12,
-                                                    vertical: 8,
-                                                  ),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(6),
-                                              ),
-                                            ),
-                                            child: Text(
-                                              "Next",
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: currentPage < totalPages
-                                                    ? Colors.black
-                                                    : Colors.grey.shade400,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                            Padding(
+  padding: const EdgeInsets.all(16.0),
+
+  child: LayoutBuilder(
+    builder: (context, constraints) {
+      final isMobile = constraints.maxWidth < 600;
+
+      return isMobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Showing $startRecord - $endRecord of $totalRecords records",
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF64748B),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: currentPage > 1
+                            ? () {
+                                setState(() {
+                                  currentPage--;
+                                });
+                              }
+                            : null,
+
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(0, 38),
+
+                          tapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+
+                          side: BorderSide(
+                            color: currentPage > 1
+                                ? Colors.grey.shade300
+                                : Colors.grey.shade100,
+                          ),
+
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 6,
+                          ),
+
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            "Previous",
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: currentPage > 1
+                                  ? Colors.black
+                                  : Colors.grey.shade400,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 8),
+
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: currentPage < totalPages
+                            ? () {
+                                setState(() {
+                                  currentPage++;
+                                });
+                              }
+                            : null,
+
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(0, 38),
+
+                          tapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+
+                          side: BorderSide(
+                            color: currentPage < totalPages
+                                ? Colors.grey.shade300
+                                : Colors.grey.shade100,
+                          ),
+
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 6,
+                          ),
+
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            "Next",
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: currentPage < totalPages
+                                  ? Colors.black
+                                  : Colors.grey.shade400,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            )
+
+          : Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween,
+
+              children: [
+                Expanded(
+                  child: Text(
+                    "Showing $startRecord - $endRecord of $totalRecords records",
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                Row(
+                  children: [
+                    OutlinedButton(
+                      onPressed: currentPage > 1
+                          ? () {
+                              setState(() {
+                                currentPage--;
+                              });
+                            }
+                          : null,
+
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: currentPage > 1
+                              ? Colors.grey.shade300
+                              : Colors.grey.shade100,
+                        ),
+
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(6),
+                        ),
+                      ),
+
+                      child: Text(
+                        "Previous",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: currentPage > 1
+                              ? Colors.black
+                              : Colors.grey.shade400,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 8),
+
+                    OutlinedButton(
+                      onPressed: currentPage < totalPages
+                          ? () {
+                              setState(() {
+                                currentPage++;
+                              });
+                            }
+                          : null,
+
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: currentPage < totalPages
+                              ? Colors.grey.shade300
+                              : Colors.grey.shade100,
+                        ),
+
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(6),
+                        ),
+                      ),
+
+                      child: Text(
+                        "Next",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: currentPage < totalPages
+                              ? Colors.black
+                              : Colors.grey.shade400,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+    },
+  ),
+)  ],
                             ),
                           ),
                           const SizedBox(height: 20),

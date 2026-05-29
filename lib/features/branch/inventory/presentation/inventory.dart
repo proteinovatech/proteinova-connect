@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/branch/inventory/widget/branch_inventory_skeleton.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -452,47 +453,102 @@ class _InventoryState extends State<Inventory> {
           // Pagination UI
           Divider(color: Colors.grey.shade200),
           const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Showing ${shipments.length} records",
-                style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+       Row(
+  mainAxisAlignment:
+      MainAxisAlignment.spaceBetween,
+
+  children: [
+    Expanded(
+      child: Text(
+        "Showing ${shipments.length} records",
+
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+
+        style: TextStyle(
+          color: const Color(0xFF64748B),
+          fontSize: getWidth(context, 13),
+        ),
+      ),
+    ),
+
+    SizedBox(width: getWidth(context, 6)),
+
+    Row(
+      mainAxisSize: MainAxisSize.min,
+
+      children: [
+        OutlinedButton(
+          onPressed: null,
+
+          style: OutlinedButton.styleFrom(
+            minimumSize: Size(
+              getWidth(context, 72),
+              getHeight(context, 38),
+            ),
+
+            padding: EdgeInsets.symmetric(
+              horizontal: getWidth(context, 10),
+              vertical: getHeight(context, 8),
+            ),
+
+            shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.circular(
+                getWidth(context, 8),
               ),
-              Row(
-                children: [
-                  OutlinedButton(
-                    onPressed: null,
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                    ),
-                    child: const Text("Previous"),
-                  ),
-                  const SizedBox(width: 8),
-                  OutlinedButton(
-                    onPressed: () {},
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                    ),
-                    child: const Text("Next"),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
-        ],
+
+          child: FittedBox(
+            child: Text(
+              "Previous",
+              style: TextStyle(
+                fontSize:
+                    getWidth(context, 11),
+              ),
+            ),
+          ),
+        ),
+
+        SizedBox(width: getWidth(context, 6)),
+
+        OutlinedButton(
+          onPressed: () {},
+
+          style: OutlinedButton.styleFrom(
+            minimumSize: Size(
+              getWidth(context, 65),
+              getHeight(context, 38),
+            ),
+
+            padding: EdgeInsets.symmetric(
+              horizontal: getWidth(context, 10),
+              vertical: getHeight(context, 8),
+            ),
+
+            shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.circular(
+                getWidth(context, 8),
+              ),
+            ),
+          ),
+
+          child: FittedBox(
+            child: Text(
+              "Next",
+              style: TextStyle(
+                fontSize:
+                    getWidth(context, 11),
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  ],
+) ],
       ),
     );
   }

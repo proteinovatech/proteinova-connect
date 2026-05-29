@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/network/dio_client.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 import '../bloc/purchase/purchase_bloc.dart';
 import '../bloc/purchase/purchase_event.dart';
@@ -941,58 +942,147 @@ class _NewpurchaseState extends State<Newpurchase> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B)),
                   ),
                 ],
+              ),SizedBox(width: 6,
               ),
-              ElevatedButton.icon(
-                onPressed: _addPaymentRow,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFEEF2F6),
-                  foregroundColor: const Color(0xFF4338CA),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          Flexible(
+  child: ElevatedButton.icon(
+    onPressed: _addPaymentRow,
+
+    style: ElevatedButton.styleFrom(
+      minimumSize: const Size(0, 40),
+
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+
+      backgroundColor: const Color(0xFFEEF2F6),
+      foregroundColor: const Color(0xFF4338CA),
+
+      elevation: 0,
+
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 8,
+      ),
+
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ),
+
+    icon: const Icon(
+      Icons.add,
+      size: 14,
+    ),
+
+    label: const FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text(
+        "Add Payment",
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(fontSize: 12),
+      ),
+    ),
+  ),
+)  ],
+          ),
+          const SizedBox(height: 20),
+         Container(
+  padding: const EdgeInsets.all(16),
+
+  decoration: BoxDecoration(
+    color: const Color(0xFFF8FAFC),
+    borderRadius: BorderRadius.circular(12),
+    border: Border.all(
+      color: const Color(0xFFE2E8F0),
+    ),
+  ),
+
+  child: LayoutBuilder(
+    builder: (context, constraints) {
+      final isMobile = constraints.maxWidth < 600;
+
+      Widget buildItem(
+        String title,
+        String value,
+        Color valueColor,
+      ) {
+        return Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey,
+                  ),
                 ),
-                icon: const Icon(Icons.add, size: 16),
-                label: const Text("Add Payment"),
+              ),
+
+              SizedBox(height: getHeight(context, 4)),
+
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: isMobile ? 13 : 16,
+                    color: valueColor,
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Column(
-                  children: [
-                    const Text("TOTAL AMOUNT", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey)),
-                    const SizedBox(height: 4),
-                    Text("₹ ${totalAmt.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  ],
-                ),
-                Container(width: 1, height: 30, color: Colors.grey.shade300),
-                Column(
-                  children: [
-                    const Text("PAID AMOUNT", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey)),
-                    const SizedBox(height: 4),
-                    Text("₹ ${paidAmt.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.green)),
-                  ],
-                ),
-                Container(width: 1, height: 30, color: Colors.grey.shade300),
-                Column(
-                  children: [
-                    const Text("BALANCE / DEBT", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey)),
-                    const SizedBox(height: 4),
-                    Text("₹ ${balanceAmt.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.red)),
-                  ],
-                ),
-              ],
-            ),
+        );
+      }
+
+      return Row(
+        children: [
+          buildItem(
+            "TOTAL AMOUNT",
+            "₹ ${totalAmt.toStringAsFixed(2)}",
+            Colors.black,
           ),
-          const SizedBox(height: 20),
+
+          Container(
+            width: 1,
+            height: 32,
+            margin: const EdgeInsets.symmetric(horizontal: 8),
+            color: Colors.grey.shade300,
+          ),
+
+          buildItem(
+            "PAID AMOUNT",
+            "₹ ${paidAmt.toStringAsFixed(2)}",
+            Colors.green,
+          ),
+
+          Container(
+            width: 1,
+            height: 32,
+            margin: const EdgeInsets.symmetric(horizontal: 8),
+            color: Colors.grey.shade300,
+          ),
+
+          buildItem(
+            "BALANCE / DEBT",
+            "₹ ${balanceAmt.toStringAsFixed(2)}",
+            Colors.red,
+          ),
+        ],
+      );
+    },
+  ),
+),
+ const SizedBox(height: 20),
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),

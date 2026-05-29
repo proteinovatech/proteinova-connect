@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
@@ -221,25 +222,49 @@ class _SalesState extends State<Sales> {
             ),
           ],
         ),
-        ElevatedButton.icon(
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const SalesEntryPage()),
-          ).then((_) => loadBranchData()),
-          icon: const Icon(Icons.add, size: 20),
-          label: const Text("New Entry"),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.amber600,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            elevation: 0,
-          ),
+      Expanded(
+  child: ElevatedButton.icon(
+    onPressed: () => Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const SalesEntryPage(),
+      ),
+    ).then((_) => loadBranchData()),
+
+    icon: Icon(
+      Icons.add,
+      size: getWidth(context, 18),
+    ),
+
+    label: FittedBox(
+      child: Text(
+        "New Entry",
+        style: TextStyle(
+          fontSize: getWidth(context, 12),
+          fontWeight: FontWeight.w600,
         ),
-      ],
-    );
+      ),
+    ),
+
+    style: ElevatedButton.styleFrom(
+      backgroundColor: AppColors.amber600,
+      foregroundColor: Colors.white,
+
+      padding: EdgeInsets.symmetric(
+        horizontal: getWidth(context, 8),
+        vertical: getHeight(context, 12),
+      ),
+
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(
+          getWidth(context, 12),
+        ),
+      ),
+
+      elevation: 0,
+    ),
+  ),
+),]);
   }
 
   Widget _buildSearchBar() {
@@ -532,78 +557,122 @@ class _SalesState extends State<Sales> {
     );
   }
 
-  Widget _buildStatCard(
-    String title,
-    String value,
-    String sub,
-    IconData icon,
-    Color bg,
-    Color iconColor, {
-    VoidCallback? onTap,
-  }) {
-    final isTablet = MediaQuery.of(context).size.width >= 700;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: EdgeInsets.all(isTablet ? 8 : 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFF1F5F9)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+ Widget _buildStatCard(
+  String title,
+  String value,
+  String sub,
+  IconData icon,
+  Color bg,
+  Color iconColor, {
+  VoidCallback? onTap,
+}) {
+  return InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(
+      getWidth(context, 20),
+    ),
+
+    child: Container(
+      padding: EdgeInsets.all(
+        getWidth(context, 14),
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(
+          getWidth(context, 20),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
+        border: Border.all(
+          color: const Color(0xFFF1F5F9),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: getWidth(context, 10),
+            offset: Offset(
+              0,
+              getHeight(context, 4),
+            ),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
                   title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize:
+                        getWidth(context, 12),
                     fontWeight: FontWeight.w700,
                     color: Colors.grey.shade600,
-                    letterSpacing: 0.5,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: bg,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, size: 18, color: iconColor),
+              ),
+              SizedBox(
+                width: getWidth(context, 6),
+              ),
+              Container(
+                padding: EdgeInsets.all(
+                  getWidth(context, 8),
                 ),
-              ],
-            ),
-            const Spacer(),
-            Text(
+                decoration: BoxDecoration(
+                  color: bg,
+                  borderRadius:
+                      BorderRadius.circular(
+                    getWidth(context, 10),
+                  ),
+                ),
+                child: Icon(
+                  icon,
+                  size: getWidth(context, 18),
+                  color: iconColor,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(
+            height: getHeight(context, 12),
+          ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 22,
+              style: TextStyle(
+                fontSize:
+                    getWidth(context, 20),
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF1E293B),
+                color:
+                    const Color(0xFF1E293B),
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              sub,
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+          ),
+          SizedBox(
+            height: getHeight(context, 4),
+          ),
+          Text(
+            sub,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: getWidth(context, 10),
+              color: Colors.grey.shade500,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
-
+    ),
+  );
+}
   Widget _buildRecentOrdersHeader(
     BuildContext context,
     Map<String, dynamic> dashboardData,

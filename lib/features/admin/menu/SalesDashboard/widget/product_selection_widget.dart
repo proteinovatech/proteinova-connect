@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 class ProductSelectionWidget extends StatelessWidget {
   final TextEditingController searchController;
@@ -192,7 +193,7 @@ class ProductSelectionWidget extends StatelessWidget {
                 );
               }
 
-              // ── Product Grid ─────────────────────────────────
+         
               return GridView.builder(
                 shrinkWrap: true,
 
@@ -207,7 +208,11 @@ class ProductSelectionWidget extends StatelessWidget {
 
                   mainAxisSpacing: 12,
 
-                  childAspectRatio: constraints.maxWidth < 600 ? 0.78 : 0.72,
+              childAspectRatio: constraints.maxWidth < 600
+    ? 0.52
+    : constraints.maxWidth < 1000
+        ? 0.72
+        : 0.85,
                 ),
 
                 itemBuilder: (context, index) {
@@ -280,108 +285,103 @@ class ProductSelectionWidget extends StatelessWidget {
                             ],
                           ),
 
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                       child: Column(
+  mainAxisSize: MainAxisSize.min,
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    /// PRODUCT NAME
+    SizedBox(
+      height: 36,
+      child: Text(
+        productName,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 13,
+        ),
+      ),
+    ),
 
-                            children: [
-                              /// PRODUCT NAME
-                              SizedBox(
-                                height: 40,
+    SizedBox(height: getHeight(context, 6)),
 
-                                child: Text(
-                                  productName,
+    /// RATE
+    FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerLeft,
+      child: Text(
+        "₹ ${eggRate.toStringAsFixed(2)}",
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
 
-                                  maxLines: 2,
+    SizedBox(height: getHeight(context, 2)),
 
-                                  overflow: TextOverflow.ellipsis,
+    const Text(
+      "/ Per Egg",
+      style: TextStyle(
+        color: Colors.grey,
+        fontSize: 11,
+      ),
+    ),
 
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
+    SizedBox(height: getHeight(context, 10)),
 
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
+    /// STOCK BADGE
+    Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: stockEggs > 0
+            ? Colors.green.shade50
+            : Colors.red.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: stockEggs > 0
+              ? Colors.green.shade200
+              : Colors.red.shade200,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            stockEggs > 0
+                ? Icons.check_circle_outline
+                : Icons.cancel_outlined,
+            size: 11,
+            color: stockEggs > 0
+                ? Colors.green
+                : Colors.red,
+          ),
+          const SizedBox(width: 4),
 
-                              const SizedBox(height: 12),
-
-                              /// RATE
-                              Text(
-                                "₹ ${eggRate.toStringAsFixed(2)}",
-
-                                style: const TextStyle(
-                                  fontSize: 24,
-
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-
-                              const SizedBox(height: 4),
-
-                              const Text(
-                                "/ Per Egg",
-
-                                style: TextStyle(
-                                  color: Colors.grey,
-
-                                  fontSize: 12,
-                                ),
-                              ),
-
-                              const Spacer(),
-
-                              /// STOCK BADGE
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: stockEggs > 0
-                                      ? Colors.green.shade50
-                                      : Colors.red.shade50,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: stockEggs > 0
-                                        ? Colors.green.shade200
-                                        : Colors.red.shade200,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      stockEggs > 0
-                                          ? Icons.check_circle_outline
-                                          : Icons.cancel_outlined,
-                                      size: 11,
-                                      color: stockEggs > 0
-                                          ? Colors.green
-                                          : Colors.red,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Flexible(
-                                      child: Text(
-                                        stockEggs > 0
-                                            ? "$stockEggs eggs"
-                                            : "No Stock",
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color: stockEggs > 0
-                                              ? Colors.green
-                                              : Colors.red,
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 11,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+          Flexible(
+            child: Text(
+              stockEggs > 0
+                  ? "$stockEggs eggs"
+                  : "No Stock",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: stockEggs > 0
+                    ? Colors.green
+                    : Colors.red,
+                fontWeight: FontWeight.w600,
+                fontSize: 10,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  ],
+),  ),
                       ),
                     ),
                   );

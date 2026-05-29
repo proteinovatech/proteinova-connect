@@ -741,104 +741,146 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     );
   }
 
-  Widget _buildProductSelectionCard() {
-    return _buildCard(
-      title: "Product Selection",
-      child: Column(
-        children: [
-          TextField(
-            controller: searchController,
-            onChanged: (v) {
-              setState(() {
-                filteredProducts = products
-                    .where(
-                      (p) =>
-                          p.productName.toLowerCase().contains(v.toLowerCase()),
-                    )
-                    .toList();
-              });
-            },
-            decoration: InputDecoration(
-              hintText: "Search product by name",
-              prefixIcon: const Icon(Icons.search),
-              filled: true,
-              fillColor: Colors.grey.shade50,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.grey.shade200),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.grey.shade200),
-              ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 0),
+ Widget _buildProductSelectionCard() {
+  return _buildCard(
+    title: "Product Selection",
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextField(
+          controller: searchController,
+          onChanged: (v) {
+            setState(() {
+              filteredProducts = products
+                  .where(
+                    (p) => p.productName
+                        .toLowerCase()
+                        .contains(v.toLowerCase()),
+                  )
+                  .toList();
+            });
+          },
+          decoration: InputDecoration(
+            hintText: "Search product by name",
+            prefixIcon: const Icon(Icons.search),
+            filled: true,
+            fillColor: Colors.grey.shade50,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
             ),
           ),
-          const SizedBox(height: 15),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: filteredProducts.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 1.6,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-            ),
-            itemBuilder: (context, index) {
-              final p = filteredProducts[index];
-              final isOutOfStock = p.stockEggs <= 0;
-              return InkWell(
-                onTap: isOutOfStock ? null : () => addProductFromCard(p),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade200),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
+        ),
+
+        const SizedBox(height: 15),
+
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: filteredProducts.length,
+
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+
+            // FIXED
+            childAspectRatio: 1.35,
+
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+
+            // FIXED
+            mainAxisExtent: 120,
+          ),
+
+          itemBuilder: (context, index) {
+            final p = filteredProducts[index];
+            final isOutOfStock = p.stockEggs <= 0;
+
+            return InkWell(
+              onTap: isOutOfStock
+                  ? null
+                  : () => addProductFromCard(p),
+
+              borderRadius: BorderRadius.circular(12),
+
+              child: Container(
+                padding: const EdgeInsets.all(10),
+
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+
+                  // FIXED
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+
+                  mainAxisSize: MainAxisSize.min,
+
+                  children: [
+                    Flexible(
+                      child: Text(
                         p.productName,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 13,
+                          height: 1.2,
                         ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    Text(
+                      "₹${(p.perTrayPrice / 30).toStringAsFixed(2)} / Egg",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.blue,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+
+                    const SizedBox(height: 2),
+
+                    Flexible(
+                      child: Text(
+                        "Stock: ${p.stockEggs} eggs",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        "₹${(p.perTrayPrice / 30).toStringAsFixed(2)} / Egg",
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.blue,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        "Stock: ${p.stockEggs} eggs",
                         style: TextStyle(
-                          fontSize: 11,
-                          color: isOutOfStock ? Colors.red : Colors.green,
+                          fontSize: 10,
+                          color: isOutOfStock
+                              ? Colors.red
+                              : Colors.green,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
+              ),
+            );
+          },
+        ),
+      ],
+    ),
+  );
+}
   Widget _buildSalesItemsCard(bool isWide) {
     return _buildCard(
       title: "Sales Items",

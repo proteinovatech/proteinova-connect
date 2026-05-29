@@ -502,47 +502,66 @@ class _DamageEntryBodyState extends State<DamageEntryBody> {
               ),
             ),
             const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFCBD5E1)),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButtonFormField<String>(
-                  value: _selectedCategory,
-                  validator: (v) =>
-                      v == null || v.isEmpty ? 'Category is required' : null,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  hint: const Text(
-                    "-- Select Available Category --",
-                    style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-                  ),
-                  onChanged: (cat) {
-                    setState(() {
-                      _selectedCategory = cat;
-                      _eggsController.clear();
-                    });
-                  },
-                  items: categories.map((cat) {
-                    return DropdownMenuItem<String>(
-                      value: cat.eggCategoryGrade,
-                      child: Text(
-                        "${cat.eggCategoryGrade} (${cat.eggsAvailable} eggs available)",
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFF1E293B),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
+          Container(
+  padding: const EdgeInsets.symmetric(horizontal: 10),
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(8),
+    border: Border.all(color: const Color(0xFFCBD5E1)),
+  ),
+  child: DropdownButtonHideUnderline(
+    child: DropdownButtonFormField<String>(
+      isExpanded: true,
+
+      value: _selectedCategory,
+
+      validator: (v) =>
+          v == null || v.isEmpty
+              ? 'Category is required'
+              : null,
+
+      decoration: const InputDecoration(
+        border: InputBorder.none,
+        isDense: true,
+        contentPadding: EdgeInsets.symmetric(vertical: 12),
+      ),
+
+      hint: const Text(
+        "-- Select Available Category --",
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: Color(0xFF94A3B8),
+          fontSize: 12,
+        ),
+      ),
+
+      onChanged: (cat) {
+        setState(() {
+          _selectedCategory = cat;
+          _eggsController.clear();
+        });
+      },
+
+      items: categories.map((cat) {
+        return DropdownMenuItem<String>(
+          value: cat.eggCategoryGrade,
+
+          child: Text(
+            "${cat.eggCategoryGrade} (${cat.eggsAvailable} eggs available)",
+
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFF1E293B),
             ),
-            const SizedBox(height: 16),
+          ),
+        );
+      }).toList(),
+    ),
+  ),
+), const SizedBox(height: 16),
 
             // Number of eggs damaged
             const Text(

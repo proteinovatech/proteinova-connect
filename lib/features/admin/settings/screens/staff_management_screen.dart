@@ -731,83 +731,93 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
               ),
               const Divider(height: 40),
 
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: isWide ? 2 : 1,
-                crossAxisSpacing: 20,
-                mainAxisSpacing: 20,
-                childAspectRatio: isWide ? 3.5 : 3.2,
-                children: [
-                  RoleTextField(
-                    label: "Full Name",
-                    hint: "e.g. Santhosh",
-                    controller: nameController,
-                  ),
-                  RoleTextField(
-                    label: "Email Address",
-                    hint: "e.g. manager@proteinova.com",
-                    controller: emailController,
-                  ),
-                  RoleTextField(
-                    label: editingUserId != null
-                        ? "Password (Leave blank)"
-                        : "Password",
-                    hint: "Min 6 characters",
-                    controller: passwordController,
-                    isPassword: true,
-                  ),
-                  _buildDropdown(
-                    "Role",
-                    selectedRole,
-                    (formOptions['roles'] as List)
-                        .map((r) => r.toString())
-                        .toList(),
-                    (val) {
-                      setState(() {
-                        selectedRole = val;
-                        selectedBranch = null;
-                        selectedWarehouse = null;
-                      });
-                    },
-                  ),
+          LayoutBuilder(
+  builder: (context, constraints) {
+    final bool isMobile = constraints.maxWidth < 700;
 
-                  if (selectedRole?.toLowerCase() == "branch")
-                    _buildDropdown(
-                      "Assigned Branch",
-                      selectedBranch,
-                      (formOptions['branches'] as List)
-                          .map((b) => b['id'].toString())
-                          .toList(),
-                      (val) {
-                        setState(() => selectedBranch = val);
-                      },
-                      itemLabels: (formOptions['branches'] as List)
-                          .map((b) => b['branch_name'].toString())
-                          .toList(),
-                    ),
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: isMobile ? 1 : 2,
 
-                  if ([
-                    "admin",
-                    "ware house",
-                    "purchase",
-                  ].contains(selectedRole?.toLowerCase()))
-                    _buildDropdown(
-                      "Assigned Warehouse",
-                      selectedWarehouse,
-                      (formOptions['warehouses'] as List)
-                          .map((w) => w['id'].toString())
-                          .toList(),
-                      (val) {
-                        setState(() => selectedWarehouse = val);
-                      },
-                      itemLabels: (formOptions['warehouses'] as List)
-                          .map((w) => w['warehouse_name'].toString())
-                          .toList(),
-                    ),
-                ],
-              ),
-            ],
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      childAspectRatio: isMobile ? 2.8 : 3.4,
+
+      children: [
+        RoleTextField(
+          label: "Full Name",
+          hint: "e.g. Santhosh",
+          controller: nameController,
+        ),
+
+        RoleTextField(
+          label: "Email Address",
+          hint: "e.g. manager@proteinova.com",
+          controller: emailController,
+        ),
+
+        RoleTextField(
+          label: editingUserId != null
+              ? "Password (Leave blank)"
+              : "Password",
+          hint: "Min 6 characters",
+          controller: passwordController,
+          isPassword: true,
+        ),
+
+        _buildDropdown(
+          "Role",
+          selectedRole,
+          (formOptions['roles'] as List)
+              .map((r) => r.toString())
+              .toList(),
+          (val) {
+            setState(() {
+              selectedRole = val;
+              selectedBranch = null;
+              selectedWarehouse = null;
+            });
+          },
+        ),
+
+        if (selectedRole?.toLowerCase() == "branch")
+          _buildDropdown(
+            "Assigned Branch",
+            selectedBranch,
+            (formOptions['branches'] as List)
+                .map((b) => b['id'].toString())
+                .toList(),
+            (val) {
+              setState(() => selectedBranch = val);
+            },
+            itemLabels: (formOptions['branches'] as List)
+                .map((b) => b['branch_name'].toString())
+                .toList(),
+          ),
+
+        if ([
+          "admin",
+          "ware house",
+          "purchase",
+        ].contains(selectedRole?.toLowerCase()))
+          _buildDropdown(
+            "Assigned Warehouse",
+            selectedWarehouse,
+            (formOptions['warehouses'] as List)
+                .map((w) => w['id'].toString())
+                .toList(),
+            (val) {
+              setState(() => selectedWarehouse = val);
+            },
+            itemLabels: (formOptions['warehouses'] as List)
+                .map((w) => w['warehouse_name'].toString())
+                .toList(),
+          ),
+      ],
+    );
+  },
+),  ],
           ),
         ),
       ],

@@ -603,30 +603,53 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
 
                           const SizedBox(height: 18),
 
-                          const Row(
-                            children: [
-                              Icon(Icons.square, color: Colors.blue, size: 14),
+                          const Wrap(
+  crossAxisAlignment: WrapCrossAlignment.center,
+  spacing: 14,
+  runSpacing: 6,
 
-                              SizedBox(width: 6),
+  children: [
+    Row(
+      mainAxisSize: MainAxisSize.min,
+      children: const [
+        Icon(
+          Icons.square,
+          color: Colors.blue,
+          size: 12,
+        ),
 
-                              Text("Operating Expenses"),
+        SizedBox(width: 4),
 
-                              SizedBox(width: 18),
+        Text(
+          "Operating Expenses",
+          style: TextStyle(
+            fontSize: 12,
+          ),
+        ),
+      ],
+    ),
 
-                              Icon(
-                                Icons.square,
+    Row(
+      mainAxisSize: MainAxisSize.min,
+      children: const [
+        Icon(
+          Icons.square,
+          color: Color(0xffE5E7EB),
+          size: 12,
+        ),
 
-                                color: Color(0xffE5E7EB),
+        SizedBox(width: 4),
 
-                                size: 14,
-                              ),
-
-                              SizedBox(width: 6),
-
-                              Text("Capital Expenditures"),
-                            ],
-                          ),
-
+        Text(
+          "Capital Expenditures",
+          style: TextStyle(
+            fontSize: 12,
+          ),
+        ),
+      ],
+    ),
+  ],
+),
                           const SizedBox(height: 30),
 
                           SizedBox(
@@ -1054,7 +1077,7 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
   }) {
     return Container(
       height: 56,
-      width: 150,
+      width: 135,
 
       decoration: BoxDecoration(
         color: bgColor,
@@ -1228,106 +1251,121 @@ class ExpenseStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xffE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            // ignore: deprecated_member_use
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+   return Container(
+  padding: const EdgeInsets.all(14), // reduced padding
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(12),
+    border: Border.all(color: const Color(0xffE5E7EB)),
+    boxShadow: [
+      BoxShadow(
+        // ignore: deprecated_member_use
+        color: Colors.black.withOpacity(0.02),
+        blurRadius: 10,
+        offset: const Offset(0, 4),
       ),
-      child: Column(
+    ],
+  ),
+
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    mainAxisSize: MainAxisSize.min,
+
+    children: [
+      /// TOP SECTION
+      Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-
-                  maxLines: 2,
-
-                  overflow: TextOverflow.ellipsis,
-
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xff4B5563),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+          Expanded(
+            child: Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 12, // reduced
+                height: 1.2,
+                color: Color(0xff4B5563),
+                fontWeight: FontWeight.w600,
               ),
-
-              const SizedBox(width: 8),
-
-              Container(
-                padding: const EdgeInsets.all(6),
-
-                decoration: BoxDecoration(
-                  color: iconBg,
-
-                  borderRadius: BorderRadius.circular(8),
-                ),
-
-                child: Icon(icon, color: iconColor, size: 18),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Text(
-            amount,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 8),
-          Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 4,
-            runSpacing: 4,
 
-            children: [
-              if (growth != "-")
-                Icon(
-                  growth.contains("-")
-                      ? Icons.trending_down
-                      : Icons.trending_up,
+          const SizedBox(width: 6),
 
-                  size: 16,
-                  color: growthColor,
-                ),
-
-              Text(
-                growth == "-" ? "No change" : growth,
-
-                style: TextStyle(
-                  color: growth == "-" ? const Color(0xff9CA3AF) : growthColor,
-
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-
-              if (growth != "-")
-                const Text(
-                  "vs last period",
-
-                  style: TextStyle(color: Color(0xff9CA3AF), fontSize: 12),
-                ),
-            ],
+          Container(
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: iconBg,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 16, // reduced
+            ),
           ),
         ],
       ),
-    );
-  }
+
+      const SizedBox(height: 10),
+
+      /// AMOUNT
+      Flexible(
+        child: Text(
+          amount,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 20, // reduced
+            fontWeight: FontWeight.w800,
+            color: Colors.black87,
+          ),
+        ),
+      ),
+
+      const SizedBox(height: 6),
+
+      /// GROWTH
+      Flexible(
+        child: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 3,
+          runSpacing: 2,
+          children: [
+            if (growth != "-")
+              Icon(
+                growth.contains("-")
+                    ? Icons.trending_down
+                    : Icons.trending_up,
+                size: 14, // reduced
+                color: growthColor,
+              ),
+
+            Text(
+              growth == "-" ? "No change" : growth,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: growth == "-"
+                    ? const Color(0xff9CA3AF)
+                    : growthColor,
+                fontSize: 11, // reduced
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+
+            if (growth != "-")
+              const Text(
+                "vs last period",
+                style: TextStyle(
+                  color: Color(0xff9CA3AF),
+                  fontSize: 11,
+                ),
+              ),
+          ],
+        ),
+      ),
+    ],
+  ),
+); }
 }

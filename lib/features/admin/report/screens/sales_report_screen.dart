@@ -603,7 +603,7 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
   }) {
     return Container(
       height: 56,
-      width: 150,
+      width: 135,
 
       decoration: BoxDecoration(
         color: bgColor,
@@ -678,24 +678,53 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
 
           const SizedBox(height: 18),
 
-          const Row(
-            children: [
-              Icon(Icons.square, color: Color(0xffE5E7EB), size: 14),
+          const Wrap(
+  crossAxisAlignment: WrapCrossAlignment.center,
+  spacing: 14,
+  runSpacing: 6,
 
-              SizedBox(width: 6),
+  children: [
+    Row(
+      mainAxisSize: MainAxisSize.min,
+      children: const [
+        Icon(
+          Icons.square,
+          color: Colors.blue,
+          size: 12,
+        ),
 
-              Text("Retail Sales (Units)"),
+        SizedBox(width: 4),
 
-              SizedBox(width: 18),
-
-              Icon(Icons.square, color: Colors.blue, size: 14),
-
-              SizedBox(width: 6),
-
-              Text("Wholesale Sales (Units)"),
-            ],
+        Text(
+          "Retail Sales(Units)",
+          style: TextStyle(
+            fontSize: 12,
           ),
+        ),
+      ],
+    ),
 
+    Row(
+      mainAxisSize: MainAxisSize.min,
+      children: const [
+        Icon(
+          Icons.square,
+          color: Color(0xffE5E7EB),
+          size: 12,
+        ),
+
+        SizedBox(width: 4),
+
+        Text(
+          "Wholesale Sales(Units)",
+          style: TextStyle(
+            fontSize: 12,
+          ),
+        ),
+      ],
+    ),
+  ],
+),
           const SizedBox(height: 28),
 
           SizedBox(
@@ -979,83 +1008,117 @@ class SalesStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xffE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            // ignore: deprecated_member_use
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
+  padding: const EdgeInsets.all(14), // reduced padding
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(12),
+    border: Border.all(color: const Color(0xffE5E7EB)),
+    boxShadow: [
+      BoxShadow(
+        // ignore: deprecated_member_use
+        color: Colors.black.withOpacity(0.02),
+        blurRadius: 10,
+        offset: const Offset(0, 4),
       ),
-      child: Column(
+    ],
+  ),
+
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    mainAxisSize: MainAxisSize.min,
+
+    children: [
+      /// HEADER
+      Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  maxLines: 2,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xff4B5563),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+          Expanded(
+            child: Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 12,
+                height: 1.2,
+                color: Color(0xff4B5563),
+                fontWeight: FontWeight.w600,
               ),
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: iconBg,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: iconColor, size: 18),
-              ),
-            ],
+            ),
           ),
-          const Spacer(),
-          Text(
-            amount,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.black87),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              if (growth != "-")
-                Icon(
-                  growth.contains("-") ? Icons.trending_down : Icons.trending_up,
-                  size: 16,
-                  color: growthColor,
-                ),
-              if (growth != "-") const SizedBox(width: 4),
-              Text(
-                growth == "-" ? "- 0.0% vs last period" : growth,
-                style: TextStyle(
-                  color: growth == "-" ? const Color(0xff9CA3AF) : growthColor,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              if (growth != "-") const SizedBox(width: 4),
-              if (growth != "-")
-                const Expanded(
-                  child: Text(
-                    "vs last period",
-                    style: TextStyle(color: Color(0xff9CA3AF), fontSize: 12),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-            ],
+
+          const SizedBox(width: 6),
+
+          Container(
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: iconBg,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 16,
+            ),
           ),
         ],
       ),
-    );
-  }
+
+      const SizedBox(height: 10),
+
+      /// AMOUNT
+      Flexible(
+        child: Text(
+          amount,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: Colors.black87,
+          ),
+        ),
+      ),
+
+      const SizedBox(height: 6),
+
+      /// GROWTH
+      Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 4,
+        runSpacing: 2,
+        children: [
+          if (growth != "-")
+            Icon(
+              growth.contains("-")
+                  ? Icons.trending_down
+                  : Icons.trending_up,
+              size: 14,
+              color: growthColor,
+            ),
+
+          Text(
+            growth == "-"
+                ? "- 0.0%"
+                : growth,
+            style: TextStyle(
+              color: growth == "-"
+                  ? const Color(0xff9CA3AF)
+                  : growthColor,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+
+          const Text(
+            "vs last period",
+            style: TextStyle(
+              color: Color(0xff9CA3AF),
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    ],
+  ),
+); }
 }
