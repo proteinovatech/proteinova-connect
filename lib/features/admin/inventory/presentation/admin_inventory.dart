@@ -574,54 +574,54 @@ String role = ""; // or "WAREHOUSE"
                         childAspectRatio: 1.45,
                         children: [
                           GestureDetector(
-                            onTap: () => _openDetailsModal("Expected Shipments Breakdown", inventoryStats["breakdowns"]["expected_today"], "count"),
+                            onTap: () => _openDetailsModal("Opening Stock Breakdown", inventoryStats["breakdowns"]["expected_today"], "count"),
                             child: InventoryCard(
                               title: "Opening Stock",
-                              value: "${inventoryStats['expected_today']} Shipments",
-                              subtitle: "View detailed breakdown",
-                              icon: Icons.calendar_today_outlined,
+                              value: " Eggs",
+                              subtitle: "Stock at start of day",
+                              icon: Icons.inventory_2_outlined,
                               iconColor: Colors.black87,
                             ),
                           ),
                           GestureDetector(
-                            onTap: () => _openDetailsModal("Ready for Unloading Breakdown", inventoryStats["breakdowns"]["ready_for_unloading"], "count"),
+                            onTap: () => _openDetailsModal("Closing Stock Breakdown", inventoryStats["breakdowns"]["ready_for_unloading"], "count"),
                             child: InventoryCard(
-                              title: "Ready for Unloading",
-                              value: "${inventoryStats['ready_for_unloading']} Shipments",
-                              subtitle: "Requires immediate actions",
+                              title: "Closing Stock",
+                              value: " Eggs",
+                              subtitle: "Current available stock",
                               icon: Icons.local_shipping_outlined,
                               iconColor: Colors.green,
                             ),
                           ),
                           GestureDetector(
-                            onTap: () => _openDetailsModal("Delayed Shipments Breakdown", inventoryStats["breakdowns"]["delayed_in_transit"], "count"),
+                            onTap: () => _openDetailsModal("Incoming Stock Breakdown", inventoryStats["breakdowns"]["delayed_in_transit"], "count"),
                             child: InventoryCard(
-                              title: "Delayed in Transit",
-                              value: "${inventoryStats['delayed_in_transit']} Shipments",
-                              subtitle: "View delayed shipments",
-                              icon: Icons.warning_amber_rounded,
-                              iconColor: Colors.red,
+                              title: "Total Incoming Stock",
+                              value: "Eggs",
+                              subtitle: "Stock in transit",
+                              icon: Icons.local_shipping_outlined,
+                              iconColor: Colors.green,
                             ),
                           ),
                           GestureDetector(
-                            onTap: () => _openDetailsModal("Current Stock Breakdown", inventoryStats["breakdowns"]["current_stock"], "count"),
+                            onTap: () => _openDetailsModal("Sales Today Breakdown", inventoryStats["breakdowns"]["current_stock"], "count"),
+                            child: InventoryCard(
+                              title: "Sales Today",
+                              value: "Eggs",
+                              subtitle: "Total eggs sold today",
+                              icon: Icons.send_outlined,
+                              iconColor: Colors.black87,
+                              
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => _openDetailsModal("Current Stock Breakdown", inventoryStats["breakdowns"]["damaged_stock"] ?? inventoryStats["breakdowns"]["damaged_trays"], "count"),
                             child: InventoryCard(
                               title: "Current Stock",
-                              value: "${(inventoryStats['current_stock'] as int).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} units",
-                              subtitle: "+2.4% from last week",
+                              value: " Eggs",
+                              subtitle: "View detailed breakdown",
                               icon: Icons.inventory_2_outlined,
                               iconColor: Colors.black87,
-                              isPositive: true,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () => _openDetailsModal("Damaged Stock Breakdown", inventoryStats["breakdowns"]["damaged_stock"] ?? inventoryStats["breakdowns"]["damaged_trays"], "count"),
-                            child: InventoryCard(
-                              title: "Damaged Stock",
-                              value: "${(inventoryStats['damaged_trays'] as int).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} Eggs",
-                              subtitle: "0.6% damage rate (Target: < 1%)",
-                              icon: Icons.warning_amber_rounded,
-                              iconColor: Colors.red,
                             ),
                           ),
                           GestureDetector(

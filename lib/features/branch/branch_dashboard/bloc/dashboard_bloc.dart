@@ -20,8 +20,6 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     try {
       final result = await repository.fetchDashboardData();
 
-emit(DashboardLoaded(result));
-
       emit(DashboardLoaded(result));
     } catch (e) {
       emit(DashboardError(e.toString()));
