@@ -53,6 +53,9 @@ if (result != null && result['user'] != null) {
             emit(AuthSuccessBranch());
           } else if (userRole == "admin") {
             emit(AuthSuccessAdmin());
+          }
+            else if (userRole == "warehouse" || userRole == "ware house") {
+              emit(AuthSuccessWarehouse());
           } else {
             emit(AuthFailure("Invalid role"));
           }

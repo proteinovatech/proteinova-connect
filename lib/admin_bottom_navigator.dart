@@ -7,6 +7,7 @@ import 'package:proteinova_connect/features/admin/admin%20branch/presentation/ad
 import 'package:proteinova_connect/features/admin/dailyclosing/screen/dailyclosing.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bloc.dart';
 import 'package:proteinova_connect/features/admin/expense/data/repository/expense_repository.dart';
+import 'package:proteinova_connect/features/admin/inventory/presentation/admin_inventory.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/bloc/asset_bloc.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/data/asset_repository.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_receive_bloc.dart';
@@ -14,6 +15,7 @@ import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_re
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/data/services/tray_receive_service.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/bloc/sales_dashboard_event.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/data/datasource/sales_remote_datasource.dart';
+
 import 'package:proteinova_connect/features/admin/purchase/presentation/purchase.dart';
 import 'package:proteinova_connect/features/admin/purchase/bloc/purchase/purchase_bloc.dart';
 import 'package:proteinova_connect/features/admin/purchase/bloc/purchase/purchase_event.dart';
@@ -49,7 +51,7 @@ import 'package:proteinova_connect/features/admin/purchase_expense/data/reposito
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 import 'package:proteinova_connect/features/admin/admin customertrays/presentation/admin_customer_trays.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
-import 'package:proteinova_connect/features/warehouse/presentation/admin_inventory.dart';
+
 import 'features/admin/menu/SalesDashboard/bloc/sales_dashboard_bloc.dart';
 
 class AdminBottomNavigator extends StatefulWidget {
@@ -242,6 +244,7 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                     "Incoming Stock",
                     IncomingStock(),
                   ),
+                   
 
                   //Purchase Expenses
                   _menuTile(

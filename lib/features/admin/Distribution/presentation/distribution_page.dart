@@ -737,8 +737,8 @@ class _DistributionPageState extends State<DistributionPage> {
                           physics: const NeverScrollableScrollPhysics(),
                           crossAxisCount: crossAxisCount,
                           childAspectRatio: childAspectRatio,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 15,
+                          mainAxisSpacing: 15,
                           children: [
                             _buildStatCard(
                               title: "Today Sales (Branch)",

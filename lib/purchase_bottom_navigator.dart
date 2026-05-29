@@ -297,7 +297,6 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
     );
   }
 
-  // ignore: unused_element
   Widget _buildProfileTile({
     required IconData icon,
     required String title,
@@ -349,17 +348,14 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
   }) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-
       leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: const Color(0xfff8fafc),
           borderRadius: BorderRadius.circular(10),
         ),
-
         child: Icon(icon, color: isLogout ? Colors.red : Colors.black87),
       ),
-
       title: Text(
         title,
         style: TextStyle(
@@ -367,13 +363,10 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
           color: isLogout ? Colors.red : Colors.black,
         ),
       ),
-
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-
       onTap: onTap,
     );
   }
-
   final List<Widget> pages = [
     PurchaseDashboard(),
     SuppliersScreen(),
@@ -384,7 +377,6 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: pages[selectedIndex],
-
       bottomNavigationBar: Container(
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: const BoxDecoration(
@@ -432,7 +424,6 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
           ),
 
           const SizedBox(height: 4),
-
           // ✅ Show text ONLY when selected
           if (isSelected)
             Text(_getLabel(index), style: AppTextStyles.bodyText16),

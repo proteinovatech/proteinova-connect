@@ -326,6 +326,7 @@ class _ReceivingBranchDashboardBodyState extends State<ReceivingBranchDashboardB
             int selectedBranchId = 0;
             ReceivingDashboardData? dashboardData;
             bool isLoading = false;
+            // ignore: unused_local_variable
             int? loadingMarkId;
 
             if (state is ReceivingBranchLoading) {

@@ -42,7 +42,7 @@ class _AdminInventoryState extends State<AdminInventory> {
     "category_stock": [],
     "breakdowns": {}
   };
-
+String role = ""; // or "WAREHOUSE"
   @override
   void initState() {
     super.initState();
@@ -439,53 +439,57 @@ class _AdminInventoryState extends State<AdminInventory> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                InkWell(
-                                  onTap: () => Navigator.pop(context),
-                                  child: const Icon(Icons.arrow_back, size: 24),
-                                ),
-                                SizedBox(width: getWidth(context, 12)),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "Inventory Overview",
-                                      style: TextStyle(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(height: getHeight(context, 6)),
-                                    Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: getWidth(context, 10),
-                                        vertical: getHeight(context, 5),
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xffFFF3B0),
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(Icons.verified_user_outlined, size: 14),
-                                          SizedBox(width: getWidth(context, 5)),
-                                          Text(
-                                            "Role: Warehouse & Admin",
-                                            style: TextStyle(
-                                              fontSize: getWidth(context, 11),
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
+                        Row(
+  children: [
+    // Show back arrow only for Admin
+    if (role == "ADMIN")
+      InkWell(
+        onTap: () => Navigator.pop(context),
+        child: const Icon(Icons.arrow_back, size: 24),
+      ),
+
+    if (role == "ADMIN")
+      SizedBox(width: getWidth(context, 12)),
+
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Inventory Overview",
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: getHeight(context, 6)),
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: getWidth(context, 10),
+            vertical: getHeight(context, 5),
+          ),
+          decoration: BoxDecoration(
+            color: const Color(0xffFFF3B0),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.verified_user_outlined, size: 14),
+              SizedBox(width: getWidth(context, 5)),
+              Text(
+                "Role: $role",
+                style: TextStyle(
+                  fontSize: getWidth(context, 11),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  ],
+)   ],
                         ),
                       ),
                       

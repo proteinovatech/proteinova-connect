@@ -1,58 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/services/notification_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:proteinova_connect/features/admin/dailyclosing/screen/dailyclosing.dart';
+import 'package:proteinova_connect/features/admin/admin%20Damage%20Entry/presentation/admin_damage_entry.dart';
+import 'package:proteinova_connect/features/admin/admin%20customertrays/presentation/admin_customer_trays.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bloc.dart';
 import 'package:proteinova_connect/features/admin/expense/data/repository/expense_repository.dart';
+import 'package:proteinova_connect/features/admin/inventory/presentation/admin_inventory.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/bloc/asset_bloc.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/data/asset_repository.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_receive_bloc.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_receive_event.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/data/services/tray_receive_service.dart';
-import 'package:proteinova_connect/features/admin/menu/SalesDashboard/bloc/sales_dashboard_event.dart';
-import 'package:proteinova_connect/features/admin/menu/SalesDashboard/data/datasource/sales_remote_datasource.dart';
-import 'package:proteinova_connect/features/admin/purchase/presentation/purchase.dart';
-import 'package:proteinova_connect/features/admin/purchase/bloc/purchase/purchase_bloc.dart';
-import 'package:proteinova_connect/features/admin/purchase/bloc/purchase/purchase_event.dart';
-import 'package:proteinova_connect/features/admin/purchase/data/repository/purchase_repository.dart';
-import 'package:proteinova_connect/features/admin/purchase/data/repository/supplier_repository.dart'
-    as admin_supplier;
-import 'package:proteinova_connect/core/cache/hive_service/purchase_hive_service.dart';
-import 'package:proteinova_connect/core/network/dio_client.dart';
-import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
-import 'package:proteinova_connect/features/admin/supplier/bloc/supplier_bloc.dart';
-import 'package:proteinova_connect/features/admin/supplier/data/services/supplier_service.dart';
+
 import 'package:proteinova_connect/features/admin/tray_management/screen/tray_management.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/admin/Distribution/presentation/distribution_page.dart';
-import 'package:proteinova_connect/features/admin/addprice/presentation/add_price.dart';
-import 'package:proteinova_connect/features/admin/approval/screens/approvals_queue_screen.dart';
 import 'package:proteinova_connect/features/admin/expense/screens/admin_expense_screen.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/presentation/asset_management_page.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/presentation/receive_trays_screen.dart';
-import 'package:proteinova_connect/features/admin/menu/SalesDashboard/presentation/sales_dashoard.dart';
-import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
 import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
-import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
 import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/screens/purchase_expense_screen.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/bloc/purchase_bloc.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/data/repository/purchase_expense_repository.dart';
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
-import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
-import '../features/admin/menu/SalesDashboard/bloc/sales_dashboard_bloc.dart';
 
-class AdminBottomNavigator extends StatefulWidget {
-  const AdminBottomNavigator({super.key});
+
+class WarehouseBottomNavigator extends StatefulWidget {
+  const WarehouseBottomNavigator({super.key});
 
   @override
-  State<AdminBottomNavigator> createState() => _BranchBottomNavigatorState();
+  State<WarehouseBottomNavigator> createState() => _WarehouseBottomNavigatorState();
 }
 
-class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
+class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
   @override
   void initState() {
     super.initState();
@@ -123,11 +107,22 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
   int selectedIndex = 0;
 
   final List<Widget> pages = [
-    AdminDashboard(),
-    AddPriceScreen(),
-    DistributionPage(),
-    ApprovalsQueueScreen(),
-  ];
+  AdminInventory(),
+
+  BlocProvider(
+    create: (_) => BranchExpenseBloc(ExpenseRepository()),
+    child: const AdminExpenseScreen(),
+  ),
+
+  DistributionPage(),
+
+  BlocProvider(
+    create: (_) => PurchaseExpenseBloc(
+      PurchaseExpenseRepository(),
+    ),
+    child: const PurchaseExpenseScreen(),
+  ),
+];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -142,10 +137,10 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(Icons.dashboard_rounded, 0),
-            _buildNavItem(Icons.currency_rupee_rounded, 1),
+            _buildNavItem(Icons.inventory_2, 0),
+            _buildNavItem(Icons.money_outlined, 1),
             _buildNavItem(Icons.local_shipping_rounded, 2),
-            _buildNavItem(Icons.verified_rounded, 3),
+            _buildNavItem(Icons.account_balance_wallet_outlined, 3),
             _buildNavItem(Icons.menu_outlined, 4),
           ],
         ),
@@ -193,13 +188,13 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
   String _getLabel(int index) {
     switch (index) {
       case 0:
-        return "Dashboard";
+        return "Inventory";
       case 1:
-        return "Add Price";
+        return "expenses";
       case 2:
-        return "Distribution";
+        return "sales";
       case 3:
-        return "Approval";
+        return "Purchase Expenses";
       case 4:
         return "Menu";
       default:
@@ -308,54 +303,61 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                     "TrayManagement",
                     TrayManagementScreen(),
                   ),
-
-                  ///Purchase Section
-                  _sectionTitle("Purchase Section"),
-
-                  //Purchase
-                  _menuTile(
-                    Icons.local_shipping_outlined,
-                    "Purchase",
-                    BlocProvider(
-                      create: (_) => PurchaseBloc(
-                        admin_supplier.SupplierRepository(DioClient().dio),
-                        PurchaseRepository(
-                          DioClient().dio,
-                          PurchaseCacheService(),
-                        ),
-                        PurchaseCacheService(),
-                      )..add(FetchPurchaseInitData()),
-                      child: const Purchase(),
-                    ),
+                    _menuTile(
+                    Icons.inventory_2_outlined,
+                    "Customer trays",
+                    AdminCustomerTrays(),
                   ),
+                   _menuTile(
+                    Icons.inventory_2_outlined,
+                    "Damage entry",
+                  AdminDamageEntryPage(),
+                  ),
+
+                  // //Purchase
+                  // _menuTile(
+                  //   Icons.local_shipping_outlined,
+                  //   "Purchase",
+                  //   BlocProvider(
+                  //     create: (_) => PurchaseBloc(
+                  //       admin_supplier.SupplierRepository(DioClient().dio),
+                  //       PurchaseRepository(
+                  //         DioClient().dio,
+                  //         PurchaseCacheService(),
+                  //       ),
+                  //       PurchaseCacheService(),
+                  //     )..add(FetchPurchaseInitData()),
+                  //     child: const Purchase(),
+                  //   ),
+                  // ),
 
                   //Supplier
-                  _menuTile(
-                    Icons.groups_outlined,
-                    "Supplier",
-                    BlocProvider(
-                      create: (_) =>
-                          SupplierBloc(SupplierService())
-                            ..add(FetchSuppliersEvent()),
-                      child: const AdminSuppliersScreen(),
-                    ),
-                  ),
+                  // _menuTile(
+                  //   Icons.groups_outlined,
+                  //   "Supplier",
+                  //   BlocProvider(
+                  //     create: (_) =>
+                  //         SupplierBloc(SupplierService())
+                  //           ..add(FetchSuppliersEvent()),
+                  //     child: const AdminSuppliersScreen(),
+                  //   ),
+                  // ),
 
                   ///Branch Section
-                  _sectionTitle("Branch Section"),
+                  // _sectionTitle("Branch Section"),
 
                   //Sales
-                  _menuTile(
-                    Icons.shopping_cart_outlined,
-                    "Sales",
-                    BlocProvider(
-                      create: (_) =>
-                          SalesDashboardBloc(SalesRemoteDatasource())
-                            ..add(FetchSalesDashboard()),
+                  // _menuTile(
+                  //   Icons.shopping_cart_outlined,
+                  //   "Sales",
+                  //   BlocProvider(
+                  //     create: (_) =>
+                  //         SalesDashboardBloc(SalesRemoteDatasource())
+                  //           ..add(FetchSalesDashboard()),
 
-                      child: const SalesDashboardPage(),
-                    ),
-                  ),
+                  //     child: const SalesDashboardPage(),
+                  //   ),
+                  // ),
 
                   //ReceivingBranchScreen
                   // _menuTile(
@@ -397,26 +399,26 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   //   "Offers & Prices",
                   //   OfferPrice(),
                   // ),
-                  _menuTile(
-                    Icons.storefront_outlined,
-                    "Daily Closing",
-                    DailyClosingScreen(),
-                  ),
+                  // _menuTile(
+                  //   Icons.storefront_outlined,
+                  //   "Daily Closing",
+                  //   DailyClosingScreen(),
+                  // ),
 
-                  //Tray Return
-                  _menuTile(Icons.reply, "Tray Return", TrayReturn()),
+                  // //Tray Return
+                  // _menuTile(Icons.reply, "Tray Return", TrayReturn()),
 
-                  ///ADMINISTRATION
-                  _sectionTitle("ADMINISTRATION"),
+                  // ///ADMINISTRATION
+                  // _sectionTitle("ADMINISTRATION"),
 
                   // _menuTile(
                   //   Icons.report,
                   //   "Report",
                   //   AdminReportDashboardScreen(),
                   // ),
-                  _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
+                  // _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
                   // _menuTile(Icons.money, "Expenses", ExpenseManagement()),
-                  const SizedBox(height: 20),
+                  // const SizedBox(height: 20),
                   Divider(),
                   ListTile(
                     leading: Icon(Icons.logout, color: Colors.red),

@@ -9,6 +9,7 @@ class AuthSuccessPurchase extends AuthState {}
 class AuthSuccessBranch extends AuthState {}
 
 class AuthSuccessAdmin extends AuthState {}
+class AuthSuccessWarehouse extends AuthState {}
 
 class AuthSuccess extends AuthState {
   final Map<String, dynamic> user;

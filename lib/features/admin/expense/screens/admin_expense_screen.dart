@@ -7,7 +7,6 @@ import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bl
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_event.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_state.dart';
 import 'package:proteinova_connect/features/admin/expense/data/models/branch_expense_dashboard_model.dart';
-import 'package:proteinova_connect/features/admin/expense/data/models/location_model.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_expense_management_skeleton_loader.dart';
 
 import '../data/repository/expense_repository.dart';
@@ -33,7 +32,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
   String selectedCategory = "Transport";
   String selectedPayment = "Cash";
   String selectedStatus = "Paid";
-  
+  String role = ""; 
   int? selectedLocationId;
   String selectedLocationType = "branch"; // 'branch' or 'warehouse'
   String selectedMonth = "";
@@ -162,7 +161,6 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
 
           // Auto-select first location if not set yet
           if (selectedLocationId == null && locations.isNotEmpty) {
-            final firstLoc = locations.entries.first.key;
             selectedLocationId = locations.entries.first.key;
             selectedLocationType = 'branch';
             Future.microtask(() {
@@ -195,22 +193,28 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                     /// HEADER
                     Row(
                       children: [
-                        IconButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          icon: const Icon(Icons.arrow_back),
-                        ),
-                        const SizedBox(width: 8),
-                        const Expanded(
-                          child: Text(
-                            "Expense Management",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
+                       if (role == "ADMIN")
+      InkWell(
+        onTap: () => Navigator.pop(context),
+        child: const Icon(Icons.arrow_back, size: 24),
+      ),
+
+    if (role == "ADMIN")
+      SizedBox(width: getWidth(context, 12)),
+
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Expense Management",
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+       
+       ],
+    ),  SizedBox(width: getWidth(context, 10)),
                         Container(
                           padding: EdgeInsets.symmetric(
                             horizontal: getWidth(context, 14),
