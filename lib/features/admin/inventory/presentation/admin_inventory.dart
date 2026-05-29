@@ -3,8 +3,8 @@ import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_inventory_overview_skeleton_loader.dart';
 import 'package:proteinova_connect/features/admin/widget/inventory_card.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
-import '../inventory/data/inventory_repository.dart';
-import '../inventory/models/inventory_model.dart';
+import '../data/inventory_repository.dart';
+import '../models/inventory_model.dart';
 
 // Newly added imports for React compatibility
 import 'package:proteinova_connect/features/admin/supplier/data/services/supplier_service.dart';
@@ -572,7 +572,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                           GestureDetector(
                             onTap: () => _openDetailsModal("Expected Shipments Breakdown", inventoryStats["breakdowns"]["expected_today"], "count"),
                             child: InventoryCard(
-                              title: "Expected Today",
+                              title: "Opening Stock",
                               value: "${inventoryStats['expected_today']} Shipments",
                               subtitle: "View detailed breakdown",
                               icon: Icons.calendar_today_outlined,

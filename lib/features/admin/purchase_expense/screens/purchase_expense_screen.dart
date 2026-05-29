@@ -153,6 +153,7 @@ class _PurchaseExpenseScreenState extends State<PurchaseExpenseScreen> {
       backgroundColor: AppColors.lightGrey,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        scrolledUnderElevation: 0,
         elevation: 0.5,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.dark),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/admin Damage Entry/bloc/damage_entry_bloc.dart';
 import 'package:proteinova_connect/features/admin/admin Damage Entry/data/models/damage_location_model.dart';
 import 'package:proteinova_connect/features/admin/admin Damage Entry/data/models/damage_category_model.dart';
@@ -87,39 +88,81 @@ class _DamageEntryBodyState extends State<DamageEntryBody> {
         child: BlocListener<DamageEntryBloc, DamageEntryState>(
           listener: (context, state) {
             if (state is DamageReportingSuccess) {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: Row(
-                    children: const [
-                      Icon(Icons.check_circle, color: Colors.green),
-                      SizedBox(width: 8),
-                      Text("Success"),
-                    ],
-                  ),
-                  content: Text(state.message),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        setState(() {
-                          _selectedCategory = null;
-                          _eggsController.clear();
-                        });
-                      },
-                      child: const Text("OK"),
-                    ),
-                  ],
-                ),
-              );
-            } else if (state is DamageEntryError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: AppColors.redAccent,
-                ),
-              );
-            }
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(
+          getWidth(context, 16),
+        ),
+      ),
+      title: Row(
+        children: [
+          Icon(
+            Icons.check_circle,
+            color: Colors.green,
+            size: getWidth(context, 24),
+          ),
+
+          SizedBox(width: getWidth(context, 8)),
+
+          Text(
+            "Success",
+            style: TextStyle(
+              fontSize: getWidth(context, 18),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+      content: Text(
+        state.message,
+        style: TextStyle(
+          fontSize: getWidth(context, 14),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+
+            setState(() {
+              _selectedCategory = null;
+              _eggsController.clear();
+            });
+          },
+          child: Text(
+            "OK",
+            style: TextStyle(
+              fontSize: getWidth(context, 14),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+} else if (state is DamageEntryError) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        state.message,
+        style: TextStyle(
+          fontSize: getWidth(context, 14),
+        ),
+      ),
+      backgroundColor: AppColors.redAccent,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(
+          getWidth(context, 12),
+        ),
+      ),
+      margin: EdgeInsets.all(
+        getWidth(context, 16),
+      ),
+    ),
+  );
+}
           },
           child: BlocBuilder<DamageEntryBloc, DamageEntryState>(
             builder: (context, state) {
@@ -168,208 +211,241 @@ class _DamageEntryBodyState extends State<DamageEntryBody> {
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Back Nav Button
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.arrow_back, color: Colors.black, size: 28),
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.error_outline_rounded,
-                            color: Color(0xFFEF4444),
-                            size: 28,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  "Global Damage Entry",
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF1E293B),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    // Back Nav Button
+    GestureDetector(
+      onTap: () => Navigator.pop(context),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.arrow_back,
+            color: Colors.black,
+            size: getWidth(context, 28),
+          ),
 
-                    // Header Info
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              SizedBox(height: 4),
-                              Text(
-                                "Report eggs that were damaged at the warehouse or specific branches.",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF64748B),
-                                  height: 1.4,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
+          SizedBox(width: getWidth(context, 8)),
 
-                    // Target Location Selector Box
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.02),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: const [
-                              Icon(
-                                Icons.location_on_outlined,
-                                color: Color(0xFF334155),
-                                size: 18,
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                "Select Target Location",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
-                                  color: Color(0xFF334155),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          if (isLoadingLocations)
-                            const SizedBox(
-                              height: 45,
-                              child: Center(
-                                child: SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                ),
-                              ),
-                            )
-                          else
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: const Color(0xFFCBD5E1),
-                                ),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<DamageLocation>(
-                                  value: _selectedLocation == null
-                                      ? null
-                                      : locations.firstWhere(
-                                          (l) => l.id == _selectedLocation!.id,
-                                          orElse: () => _selectedLocation!,
-                                        ),
-                                  isExpanded: true,
-                                  hint: const Text(
-                                    "-- Choose Location --",
-                                    style: TextStyle(
-                                      color: Color(0xFF94A3B8),
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  onChanged: (loc) =>
-                                      _onLocationChanged(loc, context),
-                                  items: locations.map((loc) {
-                                    final bool isWarehouse =
-                                        loc.type == "WAREHOUSE";
-                                    return DropdownMenuItem<DamageLocation>(
-                                      value: loc,
-                                      child: Row(
-                                        children: [
-                                          Text(
-                                            isWarehouse ? "🏢 " : "🏪 ",
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            loc.name,
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              color: Color(0xFF1E293B),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
+          Icon(
+            Icons.error_outline_rounded,
+            color: const Color(0xFFEF4444),
+            size: getWidth(context, 28),
+          ),
 
-                    // Active report form & history
-                    if (_selectedLocation != null) ...[
-                      if (isLoadingData)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 40),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                AppColors.amber600,
-                              ),
-                            ),
-                          ),
-                        )
-                      else ...[
-                        // Report form Card
-                        _buildFormCard(
-                          context,
-                          categories,
-                          selectedCatData,
-                          isSubmitting,
-                        ),
-                        const SizedBox(height: 20),
+          SizedBox(width: getWidth(context, 8)),
 
-                        // History logs Card
-                        _buildHistoryCard(history),
-                      ],
-                    ],
-                  ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Global Damage Entry",
+                  style: TextStyle(
+                    fontSize: getWidth(context, 22),
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1E293B),
+                  ),
                 ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+
+    SizedBox(height: getHeight(context, 16)),
+
+    // Header Info
+    Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: getHeight(context, 4)),
+
+              Text(
+                "Report eggs that were damaged at the warehouse or specific branches.",
+                style: TextStyle(
+                  fontSize: getWidth(context, 12),
+                  color: const Color(0xFF64748B),
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+
+    SizedBox(height: getHeight(context, 20)),
+
+    // Target Location Selector Box
+    Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(
+        getWidth(context, 16),
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(
+          getWidth(context, 12),
+        ),
+        border: Border.all(
+          color: const Color(0xFFE2E8F0),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: getWidth(context, 4),
+            offset: Offset(
+              0,
+              getHeight(context, 2),
+            ),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.location_on_outlined,
+                color: const Color(0xFF334155),
+                size: getWidth(context, 18),
+              ),
+
+              SizedBox(width: getWidth(context, 8)),
+
+              Text(
+                "Select Target Location",
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: getWidth(context, 14),
+                  color: const Color(0xFF334155),
+                ),
+              ),
+            ],
+          ),
+
+          SizedBox(height: getHeight(context, 12)),
+
+          if (isLoadingLocations)
+            SizedBox(
+              height: getHeight(context, 45),
+              child: Center(
+                child: SizedBox(
+                  height: getWidth(context, 20),
+                  width: getWidth(context, 20),
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2,
+                  ),
+                ),
+              ),
+            )
+          else
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: getWidth(context, 12),
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(
+                  getWidth(context, 8),
+                ),
+                border: Border.all(
+                  color: const Color(0xFFCBD5E1),
+                ),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<DamageLocation>(
+                  value: _selectedLocation == null
+                      ? null
+                      : locations.firstWhere(
+                          (l) => l.id == _selectedLocation!.id,
+                          orElse: () => _selectedLocation!,
+                        ),
+                  isExpanded: true,
+                  hint: Text(
+                    "-- Choose Location --",
+                    style: TextStyle(
+                      color: const Color(0xFF94A3B8),
+                      fontSize: getWidth(context, 14),
+                    ),
+                  ),
+                  onChanged: (loc) =>
+                      _onLocationChanged(loc, context),
+                  items: locations.map((loc) {
+                    final bool isWarehouse =
+                        loc.type == "WAREHOUSE";
+
+                    return DropdownMenuItem<DamageLocation>(
+                      value: loc,
+                      child: Row(
+                        children: [
+                          Text(
+                            isWarehouse ? "🏢 " : "🏪 ",
+                            style: TextStyle(
+                              fontSize: getWidth(context, 16),
+                            ),
+                          ),
+
+                          SizedBox(width: getWidth(context, 8)),
+
+                          Text(
+                            loc.name,
+                            style: TextStyle(
+                              fontSize: getWidth(context, 14),
+                              color: const Color(0xFF1E293B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+        ],
+      ),
+    ),
+
+    SizedBox(height: getHeight(context, 20)),
+
+    // Active report form & history
+    if (_selectedLocation != null) ...[
+      if (isLoadingData)
+        Padding(
+          padding: EdgeInsets.symmetric(
+            vertical: getHeight(context, 40),
+          ),
+          child: const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(
+                AppColors.amber600,
+              ),
+            ),
+          ),
+        )
+      else ...[
+        // Report form Card
+        _buildFormCard(
+          context,
+          categories,
+          selectedCatData,
+          isSubmitting,
+        ),
+
+        SizedBox(height: getHeight(context, 20)),
+
+        // History logs Card
+        _buildHistoryCard(history),
+      ],
+    ],
+  ],
+),
               );
             },
           ),
@@ -566,175 +642,213 @@ class _DamageEntryBodyState extends State<DamageEntryBody> {
   }
 
   Widget _buildHistoryCard(List<DamageHistory> history) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+   return Container(
+  width: double.infinity,
+  padding: EdgeInsets.all(
+    getWidth(context, 20),
+  ),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(
+      getWidth(context, 12),
+    ),
+    border: Border.all(
+      color: const Color(0xFFE2E8F0),
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.02),
+        blurRadius: getWidth(context, 4),
+        offset: Offset(
+          0,
+          getHeight(context, 2),
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Damage History (${_selectedLocation!.name})",
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1E293B),
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Divider(color: Color(0xFFE2E8F0)),
-          const SizedBox(height: 12),
-          if (history.isEmpty)
-            _buildEmptyHistory()
-          else
-            _buildHistoryTable(history),
-        ],
+    ],
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        "Damage History (${_selectedLocation!.name})",
+        style: TextStyle(
+          fontSize: getWidth(context, 16),
+          fontWeight: FontWeight.bold,
+          color: const Color(0xFF1E293B),
+        ),
       ),
-    );
+
+      SizedBox(height: getHeight(context, 8)),
+
+      const Divider(
+        color: Color(0xFFE2E8F0),
+      ),
+
+      SizedBox(height: getHeight(context, 12)),
+
+      if (history.isEmpty)
+        _buildEmptyHistory()
+      else
+        _buildHistoryTable(history),
+    ],
+  ),
+);
   }
 
   Widget _buildEmptyHistory() {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 32),
-      child: Column(
-        children: const [
-          Icon(Icons.description_outlined, color: Color(0xFF94A3B8), size: 48),
-          SizedBox(height: 12),
-          Text(
-            "No manual damage reports found for this location.",
-            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-            textAlign: TextAlign.center,
-          ),
-        ],
+  width: double.infinity,
+  padding: EdgeInsets.symmetric(
+    vertical: getHeight(context, 32),
+  ),
+  child: Column(
+    children: [
+      Icon(
+        Icons.description_outlined,
+        color: const Color(0xFF94A3B8),
+        size: getWidth(context, 48),
       ),
-    );
+
+      SizedBox(height: getHeight(context, 12)),
+
+      Text(
+        "No manual damage reports found for this location.",
+        style: TextStyle(
+          color: const Color(0xFF94A3B8),
+          fontSize: getWidth(context, 13),
+        ),
+        textAlign: TextAlign.center,
+      ),
+    ],
+  ),
+);
   }
 
   Widget _buildHistoryTable(List<DamageHistory> history) {
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columnSpacing: 15,
-        headingRowHeight: 40,
-        dataRowHeight: 52,
-        horizontalMargin: 0,
-        columns: const [
-          DataColumn(
-            label: Text(
-              "Date",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                color: Color(0xFF475569),
+  scrollDirection: Axis.horizontal,
+  child: DataTable(
+    columnSpacing: getWidth(context, 15),
+    headingRowHeight: getHeight(context, 40),
+    dataRowHeight: getHeight(context, 52),
+    horizontalMargin: 0,
+    columns: [
+      DataColumn(
+        label: Text(
+          "Date",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: getWidth(context, 12),
+            color: const Color(0xFF475569),
+          ),
+        ),
+      ),
+
+      DataColumn(
+        label: Text(
+          "Category",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: getWidth(context, 12),
+            color: const Color(0xFF475569),
+          ),
+        ),
+      ),
+
+      DataColumn(
+        // numeric: true,
+        label: Text(
+          "Damaged \nEggs",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: getWidth(context, 12),
+            color: const Color(0xFF475569),
+          ),
+        ),
+      ),
+
+      DataColumn(
+        label: Text(
+          "Trays Marked\n Damaged",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: getWidth(context, 12),
+            color: const Color(0xFF475569),
+          ),
+        ),
+      ),
+    ],
+
+    rows: history.map((log) {
+      return DataRow(
+        cells: [
+          DataCell(
+            SizedBox(
+              width: getWidth(context, 120),
+              child: Text(
+                _formatDateTime(log.createdAt),
+                maxLines: 2,
+                softWrap: true,
+                style: TextStyle(
+                  fontSize: getWidth(context, 12),
+                  height: 1.4,
+                  color: const Color(0xFF334155),
+                ),
               ),
             ),
           ),
-          DataColumn(
-            label: Text(
-              "Category",
+
+          DataCell(
+            Text(
+              log.eggCategoryGrade,
               style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                color: Color(0xFF475569),
+                fontSize: getWidth(context, 12),
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF1E293B),
               ),
             ),
           ),
-          DataColumn(
-            label: Text(
-              "Damaged \nEggs",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                color: Color(0xFF475569),
+
+          DataCell(
+            Center(
+              child: Text(
+                log.damagedEggs.toString(),
+                style: TextStyle(
+                  fontSize: getWidth(context, 12),
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFFEF4444),
+                ),
               ),
             ),
-            numeric: true,
           ),
-          DataColumn(
-            label: Text(
-              "Trays Marked\n Damaged",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                color: Color(0xFF475569),
+
+          DataCell(
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: getWidth(context, 8),
+                vertical: getHeight(context, 4),
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEE2E2),
+                borderRadius: BorderRadius.circular(
+                  getWidth(context, 12),
+                ),
+              ),
+              child: Text(
+                "${log.damagedTrays} Trays",
+                style: TextStyle(
+                  fontSize: getWidth(context, 10),
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF991B1B),
+                ),
               ),
             ),
           ),
         ],
-        rows: history.map((log) {
-          return DataRow(
-            cells: [
-              DataCell(
-                SizedBox(
-                  width: 120,
-                  child: Text(
-                    _formatDateTime(log.createdAt),
-                    maxLines: 2,
-                    softWrap: true,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      height: 1.4,
-                      color: Color(0xFF334155),
-                    ),
-                  ),
-                ),
-              ),
-              DataCell(
-                Text(
-                  log.eggCategoryGrade,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF1E293B),
-                  ),
-                ),
-              ),
-              DataCell(
-                Text(
-                  log.damagedEggs.toString(),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFEF4444),
-                  ),
-                ),
-              ),
-              DataCell(
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEE2E2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    "${log.damagedTrays} Trays",
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF991B1B),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        }).toList(),
-      ),
-    );
+      );
+    }).toList(),
+  ),
+);
   }
+
 }

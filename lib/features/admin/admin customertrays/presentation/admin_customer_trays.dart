@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/admin customertrays/data/models/admin_customer_tray_model.dart';
 import 'package:proteinova_connect/features/admin/admin customertrays/data/repository/admin_customer_tray_service.dart';
 
@@ -104,134 +105,180 @@ class _AdminCustomerTraysState extends State<AdminCustomerTrays> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF1E293B), size: 20),
-          onPressed: () => Navigator.pop(context),
+  backgroundColor: Colors.white,
+  elevation: 0,
+  leading: IconButton(
+    icon: Icon(
+      Icons.arrow_back_ios_new,
+      color: const Color(0xFF1E293B),
+      size: getWidth(context, 20),
+    ),
+    onPressed: () => Navigator.pop(context),
+  ),
+  title: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        "Customer Trays Ledger",
+        style: TextStyle(
+          fontSize: getWidth(context, 18),
+          fontWeight: FontWeight.bold,
+          color: const Color(0xFF1E293B),
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Customer Trays Ledger",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1E293B),
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              widget.isBranch
-                  ? "Tracking trays given to customers in ${widget.branchName}"
-                  : "Track empty trays given to customers during sales",
-              style: const TextStyle(
-                fontSize: 11,
-                color: Color(0xFF64748B),
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF475569)),
-            onPressed: _fetchCustomerTrays,
-          ),
-        ],
       ),
+
+      SizedBox(height: getHeight(context, 2)),
+
+      Text(
+        widget.isBranch
+            ? "Tracking trays given to customers in ${widget.branchName}"
+            : "Track empty trays given to customers during sales",
+        style: TextStyle(
+          fontSize: getWidth(context, 11),
+          color: const Color(0xFF64748B),
+          fontWeight: FontWeight.normal,
+        ),
+      ),
+    ],
+  ),
+  centerTitle: false,
+  actions: [
+    IconButton(
+      icon: Icon(
+        Icons.refresh_rounded,
+        color: const Color(0xFF475569),
+        size: getWidth(context, 24),
+      ),
+      onPressed: _fetchCustomerTrays,
+    ),
+  ],
+
+  toolbarHeight: getHeight(context, 70),
+),
       body: Column(
-        children: [
-          // Search & Filter Panel
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-              ),
-              child: TextField(
-                controller: _searchController,
-                onChanged: _onSearchChanged,
-                decoration: const InputDecoration(
-                  hintText: "Search by customer name or number...",
-                  hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-                  prefixIcon: Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 20),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(vertical: 12),
-                ),
-                style: const TextStyle(color: Color(0xFF1E293B), fontSize: 14),
-              ),
+  children: [
+    // Search & Filter Panel
+    Container(
+      color: Colors.white,
+      padding: EdgeInsets.symmetric(
+        horizontal: getWidth(context, 16),
+        vertical: getHeight(context, 12),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(
+            getWidth(context, 8),
+          ),
+          border: Border.all(
+            color: const Color(0xFFE2E8F0),
+          ),
+        ),
+        child: TextField(
+          controller: _searchController,
+          onChanged: _onSearchChanged,
+          decoration: InputDecoration(
+            hintText: "Search by customer name or number...",
+            hintStyle: TextStyle(
+              color: const Color(0xFF94A3B8),
+              fontSize: getWidth(context, 13),
+            ),
+            prefixIcon: Icon(
+              Icons.search_rounded,
+              color: const Color(0xFF94A3B8),
+              size: getWidth(context, 20),
+            ),
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.symmetric(
+              vertical: getHeight(context, 12),
             ),
           ),
-
-          // Mini Stats Section
-          if (!_isLoading) _buildStatsCards(),
-
-          // Main list content
-          Expanded(
-            child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.amber600),
-                    ),
-                  )
-                : _salesData.isEmpty
-                    ? _buildEmptyState()
-                    : RefreshIndicator(
-                        onRefresh: _fetchCustomerTrays,
-                        color: AppColors.amber600,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _salesData.length,
-                          itemBuilder: (context, index) {
-                            final item = _salesData[index];
-                            return _buildLedgerCard(item, index);
-                          },
-                        ),
-                      ),
+          style: TextStyle(
+            color: const Color(0xFF1E293B),
+            fontSize: getWidth(context, 14),
           ),
-        ],
+        ),
       ),
+    ),
+
+    // Mini Stats Section
+    if (!_isLoading) _buildStatsCards(),
+
+    // Main list content
+    Expanded(
+      child: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  AppColors.amber600,
+                ),
+              ),
+            )
+          : _salesData.isEmpty
+              ? _buildEmptyState()
+              : RefreshIndicator(
+                  onRefresh: _fetchCustomerTrays,
+                  color: AppColors.amber600,
+                  child: ListView.builder(
+                    padding: EdgeInsets.all(
+                      getWidth(context, 16),
+                    ),
+                    itemCount: _salesData.length,
+                    itemBuilder: (context, index) {
+                      final item = _salesData[index];
+                      return _buildLedgerCard(item, index);
+                    },
+                  ),
+                ),
+    ),
+  ],
+),
     );
   }
 
   Widget _buildStatsCards() {
     return Container(
-      height: 76,
-      margin: const EdgeInsets.only(top: 8, bottom: 4),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        children: [
-          _buildStatCard(
-            title: "Given",
-            value: _totalGiven.toString(),
-            icon: Icons.unarchive_outlined,
-            color: const Color(0xFF3B82F6),
-            bgColor: const Color(0xFFEFF6FF),
-          ),
-          _buildStatCard(
-            title: "Returned",
-            value: _totalReturned.toString(),
-            icon: Icons.archive_outlined,
-            color: const Color(0xFF10B981),
-            bgColor: const Color(0xFFECFDF5),
-          ),
-          _buildStatCard(
-            title: "Balance",
-            value: _totalBalance.toString(),
-            icon: Icons.account_balance_wallet_outlined,
-            color: _totalBalance > 0 ? const Color(0xFFEF4444) : const Color(0xFF10B981),
-            bgColor: _totalBalance > 0 ? const Color(0xFFFEF2F2) : const Color(0xFFECFDF5),
-          ),
-        ],
+  height: getHeight(context, 76),
+  margin: EdgeInsets.only(
+    top: getHeight(context, 8),
+    bottom: getHeight(context, 4),
+  ),
+  child: ListView(
+    scrollDirection: Axis.horizontal,
+    padding: EdgeInsets.symmetric(
+      horizontal: getWidth(context, 12),
+    ),
+    children: [
+      _buildStatCard(
+        title: "Given",
+        value: _totalGiven.toString(),
+        icon: Icons.unarchive_outlined,
+        color: const Color(0xFF3B82F6),
+        bgColor: const Color(0xFFEFF6FF),
       ),
-    );
+
+      _buildStatCard(
+        title: "Returned",
+        value: _totalReturned.toString(),
+        icon: Icons.archive_outlined,
+        color: const Color(0xFF10B981),
+        bgColor: const Color(0xFFECFDF5),
+      ),
+
+      _buildStatCard(
+        title: "Balance",
+        value: _totalBalance.toString(),
+        icon: Icons.account_balance_wallet_outlined,
+        color: _totalBalance > 0
+            ? const Color(0xFFEF4444)
+            : const Color(0xFF10B981),
+        bgColor: _totalBalance > 0
+            ? const Color(0xFFFEF2F2)
+            : const Color(0xFFECFDF5),
+      ),
+    ],
+  ),
+);
   }
 
   Widget _buildStatCard({
@@ -242,103 +289,133 @@ class _AdminCustomerTraysState extends State<AdminCustomerTrays> {
     required Color bgColor,
   }) {
     return Container(
-      width: 120,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+  width: getWidth(context, 120),
+  margin: EdgeInsets.symmetric(
+    horizontal: getWidth(context, 4),
+  ),
+  padding: EdgeInsets.symmetric(
+    horizontal: getWidth(context, 12),
+    vertical: getHeight(context, 8),
+  ),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(
+      getWidth(context, 10),
+    ),
+    border: Border.all(
+      color: const Color(0xFFE2E8F0),
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.02),
+        blurRadius: getWidth(context, 4),
+        offset: Offset(
+          0,
+          getHeight(context, 2),
+        ),
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: bgColor,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 16),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 10,
-                    color: Color(0xFF64748B),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+    ],
+  ),
+  child: Row(
+    children: [
+      Container(
+        padding: EdgeInsets.all(
+          getWidth(context, 6),
+        ),
+        decoration: BoxDecoration(
+          color: bgColor,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          icon,
+          color: color,
+          size: getWidth(context, 16),
+        ),
       ),
-    );
+
+      SizedBox(width: getWidth(context, 8)),
+
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: getWidth(context, 10),
+                color: const Color(0xFF64748B),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+
+            SizedBox(height: getHeight(context, 2)),
+
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: getWidth(context, 14),
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+);
   }
 
   Widget _buildEmptyState() {
     return Center(
       child: SingleChildScrollView(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: Color(0xFFFEF3C7),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.inventory_2_outlined,
-                size: 48,
-                color: Color(0xFFD97706),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              "No tray records found",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1E293B),
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                "No records match your search or filters at this time.",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF64748B),
-                ),
-              ),
-            ),
-          ],
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
+    Container(
+      padding: EdgeInsets.all(
+        getWidth(context, 16),
+      ),
+      decoration: const BoxDecoration(
+        color: Color(0xFFFEF3C7),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        Icons.inventory_2_outlined,
+        size: getWidth(context, 48),
+        color: const Color(0xFFD97706),
+      ),
+    ),
+
+    SizedBox(height: getHeight(context, 16)),
+
+    Text(
+      "No tray records found",
+      style: TextStyle(
+        fontSize: getWidth(context, 16),
+        fontWeight: FontWeight.bold,
+        color: const Color(0xFF1E293B),
+      ),
+    ),
+
+    SizedBox(height: getHeight(context, 8)),
+
+    Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: getWidth(context, 32),
+      ),
+      child: Text(
+        "No records match your search or filters at this time.",
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: getWidth(context, 13),
+          color: const Color(0xFF64748B),
         ),
+      ),
+    ),
+  ],
+),
       ),
     );
   }
@@ -362,186 +439,237 @@ class _AdminCustomerTraysState extends State<AdminCustomerTrays> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
-            ),
-          ],
+  margin: EdgeInsets.only(
+    bottom: getHeight(context, 12),
+  ),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(
+      getWidth(context, 12),
+    ),
+    border: Border.all(
+      color: const Color(0xFFE2E8F0),
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.02),
+        blurRadius: getWidth(context, 6),
+        offset: Offset(
+          0,
+          getHeight(context, 3),
         ),
-        child: Column(
+      ),
+    ],
+  ),
+  child: Column(
+    children: [
+      // Top Customer header row
+      Padding(
+        padding: EdgeInsets.all(
+          getWidth(context, 16),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Customer header row
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
+            Expanded(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.customerName.isEmpty ? 'Walk-in' : item.customerName,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E293B),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            const Icon(Icons.phone_android, size: 12, color: Color(0xFF64748B)),
-                            const SizedBox(width: 4),
-                            Text(
-                              item.customerNumber.isEmpty ? '-' : item.customerNumber,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF64748B),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                  Text(
+                    item.customerName.isEmpty
+                        ? 'Walk-in'
+                        : item.customerName,
+                    style: TextStyle(
+                      fontSize: getWidth(context, 15),
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF1E293B),
                     ),
                   ),
-                  if (!widget.isBranch)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(6),
+
+                  SizedBox(height: getHeight(context, 4)),
+
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.phone_android,
+                        size: getWidth(context, 12),
+                        color: const Color(0xFF64748B),
                       ),
-                      child: Text(
-                        item.soldLocation.isEmpty ? 'Admin' : item.soldLocation,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF475569),
+
+                      SizedBox(width: getWidth(context, 4)),
+
+                      Text(
+                        item.customerNumber.isEmpty
+                            ? '-'
+                            : item.customerNumber,
+                        style: TextStyle(
+                          fontSize: getWidth(context, 12),
+                          color: const Color(0xFF64748B),
                         ),
                       ),
-                    ),
+                    ],
+                  ),
                 ],
               ),
             ),
-            const Divider(height: 1, color: Color(0xFFF1F5F9)),
-            // Bottom stats detail grid
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
+
+            if (!widget.isBranch)
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: getWidth(context, 8),
+                  vertical: getHeight(context, 4),
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(
+                    getWidth(context, 6),
+                  ),
+                ),
+                child: Text(
+                  item.soldLocation.isEmpty
+                      ? 'Admin'
+                      : item.soldLocation,
+                  style: TextStyle(
+                    fontSize: getWidth(context, 11),
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF475569),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+
+      const Divider(
+        height: 1,
+        color: Color(0xFFF1F5F9),
+      ),
+
+      // Bottom stats detail grid
+      Padding(
+        padding: EdgeInsets.all(
+          getWidth(context, 16),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    flex: 2,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "TRAY TYPE",
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Color(0xFF94A3B8),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          item.trayType,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF334155),
-                          ),
-                        ),
-                      ],
+                  Text(
+                    "TRAY TYPE",
+                    style: TextStyle(
+                      fontSize: getWidth(context, 10),
+                      color: const Color(0xFF94A3B8),
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "GIVEN",
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Color(0xFF94A3B8),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          item.traysGiven.toString(),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E293B),
-                          ),
-                        ),
-                      ],
+
+                  SizedBox(height: getHeight(context, 4)),
+
+                  Text(
+                    item.trayType,
+                    style: TextStyle(
+                      fontSize: getWidth(context, 13),
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF334155),
                     ),
                   ),
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "RETURNED",
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Color(0xFF94A3B8),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          item.traysReturned.toString(),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF10B981),
-                          ),
-                        ),
-                      ],
+                ],
+              ),
+            ),
+
+            Expanded(
+              flex: 1,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "GIVEN",
+                    style: TextStyle(
+                      fontSize: getWidth(context, 10),
+                      color: const Color(0xFF94A3B8),
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Expanded(
-                    flex: 2,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        const Text(
-                          "BALANCE",
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Color(0xFF94A3B8),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: balanceBg,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            item.balance.toString(),
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: balanceText,
-                            ),
-                          ),
-                        ),
-                      ],
+
+                  SizedBox(height: getHeight(context, 4)),
+
+                  Text(
+                    item.traysGiven.toString(),
+                    style: TextStyle(
+                      fontSize: getWidth(context, 14),
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF1E293B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "RETURNED",
+                    style: TextStyle(
+                      fontSize: getWidth(context, 10),
+                      color: const Color(0xFF94A3B8),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  SizedBox(height: getHeight(context, 4)),
+
+                  Text(
+                    item.traysReturned.toString(),
+                    style: TextStyle(
+                      fontSize: getWidth(context, 14),
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF10B981),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    "BALANCE",
+                    style: TextStyle(
+                      fontSize: getWidth(context, 10),
+                      color: const Color(0xFF94A3B8),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  SizedBox(height: getHeight(context, 4)),
+
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: getWidth(context, 10),
+                      vertical: getHeight(context, 4),
+                    ),
+                    decoration: BoxDecoration(
+                      color: balanceBg,
+                      borderRadius: BorderRadius.circular(
+                        getWidth(context, 12),
+                      ),
+                    ),
+                    child: Text(
+                      item.balance.toString(),
+                      style: TextStyle(
+                        fontSize: getWidth(context, 13),
+                        fontWeight: FontWeight.bold,
+                        color: balanceText,
+                      ),
                     ),
                   ),
                 ],
@@ -550,6 +678,9 @@ class _AdminCustomerTraysState extends State<AdminCustomerTrays> {
           ],
         ),
       ),
+    ],
+  ),
+),
     );
   }
 }

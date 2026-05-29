@@ -3,6 +3,7 @@ import 'package:proteinova_connect/core/services/notification_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/features/admin/Receiving%20branch/presentation/receiving_branch.dart';
 import 'package:proteinova_connect/features/admin/add%20branch/presentation/add_branch.dart';
+import 'package:proteinova_connect/features/admin/admin%20branch/presentation/admin_branch.dart';
 import 'package:proteinova_connect/features/admin/dailyclosing/screen/dailyclosing.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bloc.dart';
 import 'package:proteinova_connect/features/admin/expense/data/repository/expense_repository.dart';
@@ -21,6 +22,7 @@ import 'package:proteinova_connect/features/admin/purchase/data/repository/suppl
     as admin_supplier;
 import 'package:proteinova_connect/core/cache/hive_service/purchase_hive_service.dart';
 import 'package:proteinova_connect/core/network/dio_client.dart';
+import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
 import 'package:proteinova_connect/features/admin/supplier/bloc/supplier_bloc.dart';
 import 'package:proteinova_connect/features/admin/supplier/data/services/supplier_service.dart';
@@ -47,6 +49,7 @@ import 'package:proteinova_connect/features/admin/purchase_expense/data/reposito
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 import 'package:proteinova_connect/features/admin/admin customertrays/presentation/admin_customer_trays.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
+import 'package:proteinova_connect/features/warehouse/presentation/admin_inventory.dart';
 import 'features/admin/menu/SalesDashboard/bloc/sales_dashboard_bloc.dart';
 
 class AdminBottomNavigator extends StatefulWidget {
@@ -229,6 +232,11 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   _sectionTitle("Warehouse"),
 
                   //Incoming Stock
+                   _menuTile(
+                    Icons.inventory_2_outlined,
+                    "Inventory",
+                    AdminInventory(),
+                  ),
                   _menuTile(
                     Icons.local_shipping_outlined,
                     "Incoming Stock",
@@ -343,6 +351,11 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   _sectionTitle("Branch Section"),
 
                   //Add Branch
+                   _menuTile(
+                    Icons.warehouse_outlined,
+                    "Branches",
+                   AdminBranch(),
+                  ),
                   _menuTile(
                     Icons.add_circle_outline,
                     "Add Branch",
@@ -381,9 +394,9 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
 
                   ///ADMINISTRATION
                   _sectionTitle("ADMINISTRATION"),
-
+                       _menuTile(Icons.pie_chart_outline_outlined, "Reports", AdminReportDashboardScreen()),
                   //setting
-                  _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
+                  _menuTile(Icons.settings, "Settings", AdminSettingsScreen()),
 
                   //Report
                   // _menuTile(

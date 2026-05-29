@@ -209,7 +209,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                   _menuTile(Icons.money, "Expenses", ExpenseManagement()),
                    _menuTile( Icons.inventory_2_outlined, "Customer trays", CustomerTrays()),
 
-                  _menuTile(Icons.money, "Damage Entry", BlocProvider(
+                  _menuTile(Icons.error_outline_rounded, "Damage Entry", BlocProvider(
   create: (_) => DamageBloc(
     DamageRepository(DioClient().dio),
   )..add(

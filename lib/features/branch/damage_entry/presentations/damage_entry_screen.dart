@@ -37,7 +37,23 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
       backgroundColor: AppColors.background1,
           scrolledUnderElevation: 0,
           elevation: 0,
-          title: Text("Global Damage Entry", style: AppTextStyles.headingText22),
+          title:  Row(
+    children: [
+
+      const Icon(
+        Icons.error_outline_rounded,
+        color: Colors.red,
+        size: 28,
+      ),
+
+      const SizedBox(width: 8),
+
+      Text(
+        "Global Damage Entry",
+        style: AppTextStyles.headingText22,
+      ),
+    ],
+  ),
           ),
           body:  BlocListener<DamageBloc, DamageState>(
             listenWhen: (previous, current) {

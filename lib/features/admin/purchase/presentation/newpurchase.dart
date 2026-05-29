@@ -305,6 +305,7 @@ class _NewpurchaseState extends State<Newpurchase> {
         backgroundColor: const Color(0xFFF8FAFC),
         appBar: AppBar(
           backgroundColor: Colors.white,
+          scrolledUnderElevation: 0,
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -458,7 +459,7 @@ class _NewpurchaseState extends State<Newpurchase> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E293B),
+                backgroundColor: AppColors.amber600,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1273,7 +1274,7 @@ class _NewpurchaseState extends State<Newpurchase> {
                     child: ElevatedButton(
                       onPressed: () => _submitForm(false),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2563EB),
+                        backgroundColor: AppColors.amber600,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         elevation: 0,
