@@ -13,4 +13,6 @@ class ApiConfig {
   static const String adminDashboard = "/api/admin/dashboard";
    static String damageCategories(int branchId) =>
       "/api/branch/damage/categories?branch_id=$branchId";
+  static const String branches="/api/branches";
+
 }

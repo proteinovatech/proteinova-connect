@@ -354,11 +354,12 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   _sectionTitle("Branch Section"),
 
                   //Add Branch
-                   _menuTile(
-                    Icons.warehouse_outlined,
-                    "Branches",
-                   AdminBranch(),
+                  _menuTile(
+                    Icons.storefront_outlined,
+                    "Branch",
+                    const AdminBranchPage(),
                   ),
+                  
                   _menuTile(
                     Icons.add_circle_outline,
                     "Add Branch",
