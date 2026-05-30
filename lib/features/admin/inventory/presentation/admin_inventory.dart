@@ -33,9 +33,9 @@ class _AdminInventoryState extends State<AdminInventory> {
   List<PurchaseModel> purchaseData = [];
   Map<String, dynamic> rawInventoryData = {};
   Map<String, dynamic> inventoryStats = {
-    "expected_today": 0,
-    "ready_for_unloading": 0,
-    "delayed_in_transit": 0,
+    "opening_stock": 0,
+    "closing_stock": 0,
+    "incoming_stock": 0,
     "current_stock": 0,
     "damaged_trays": 0,
     "stock_value": 0.0,
@@ -70,9 +70,9 @@ String role = ""; // or "WAREHOUSE"
 
         // Inventory stats parsing
         inventoryStats = {
-          "expected_today": int.tryParse(rawStats["expected_today"]?.toString() ?? "0") ?? 0,
-          "ready_for_unloading": int.tryParse(rawStats["ready_for_unloading"]?.toString() ?? "0") ?? 0,
-          "delayed_in_transit": int.tryParse(rawStats["delayed_in_transit"]?.toString() ?? "0") ?? 0,
+          "opening_stock": int.tryParse(rawStats["opening_stock"]?.toString() ?? "0") ?? 0,
+          "closing_stock": int.tryParse(rawStats["closing_stock"]?.toString() ?? "0") ?? 0,
+          "incoming_stock": int.tryParse(rawStats["incoming_stock"]?.toString() ?? "0") ?? 0,
           "current_stock": int.tryParse(rawStats["current_stock"]?.toString() ?? "0") ?? 0,
           "damaged_trays": int.tryParse((rawStats["damaged_trays"] ?? rawStats["damaged_stock"] ?? rawStats["damaged_eggs"])?.toString() ?? "0") ?? 0,
           "stock_value": double.tryParse(rawStats["stock_value"]?.toString() ?? "0") ?? 0.0,
@@ -574,20 +574,20 @@ String role = ""; // or "WAREHOUSE"
                         childAspectRatio: 1.45,
                         children: [
                           GestureDetector(
-                            onTap: () => _openDetailsModal("Opening Stock Breakdown", inventoryStats["breakdowns"]["expected_today"], "count"),
+                            onTap: () => _openDetailsModal("Opening Stock Breakdown", inventoryStats["breakdowns"]["opening_stock"], "count"),
                             child: InventoryCard(
                               title: "Opening Stock",
-                              value: " Eggs",
+                             value: "${inventoryStats['opening_stock'] ?? 0} Eggs",
                               subtitle: "Stock at start of day",
                               icon: Icons.inventory_2_outlined,
                               iconColor: Colors.black87,
                             ),
                           ),
                           GestureDetector(
-                            onTap: () => _openDetailsModal("Closing Stock Breakdown", inventoryStats["breakdowns"]["ready_for_unloading"], "count"),
+                            onTap: () => _openDetailsModal("Closing Stock Breakdown", inventoryStats["breakdowns"]["closing_stock"], "count"),
                             child: InventoryCard(
                               title: "Closing Stock",
-                              value: " Eggs",
+                             value: "${inventoryStats['closing_stock'] ?? 0} Eggs",
                               subtitle: "Current available stock",
                               icon: Icons.local_shipping_outlined,
                               iconColor: Colors.green,
@@ -597,7 +597,7 @@ String role = ""; // or "WAREHOUSE"
                             onTap: () => _openDetailsModal("Incoming Stock Breakdown", inventoryStats["breakdowns"]["delayed_in_transit"], "count"),
                             child: InventoryCard(
                               title: "Total Incoming Stock",
-                              value: "Eggs",
+                             value: "${inventoryStats['incoming_stock'] ?? 0} Eggs",
                               subtitle: "Stock in transit",
                               icon: Icons.local_shipping_outlined,
                               iconColor: Colors.green,
@@ -607,7 +607,7 @@ String role = ""; // or "WAREHOUSE"
                             onTap: () => _openDetailsModal("Sales Today Breakdown", inventoryStats["breakdowns"]["current_stock"], "count"),
                             child: InventoryCard(
                               title: "Sales Today",
-                              value: "Eggs",
+                            value: "${inventoryStats['sales_today'] ?? 0} Eggs",
                               subtitle: "Total eggs sold today",
                               icon: Icons.send_outlined,
                               iconColor: Colors.black87,
@@ -618,8 +618,8 @@ String role = ""; // or "WAREHOUSE"
                             onTap: () => _openDetailsModal("Current Stock Breakdown", inventoryStats["breakdowns"]["damaged_stock"] ?? inventoryStats["breakdowns"]["damaged_trays"], "count"),
                             child: InventoryCard(
                               title: "Current Stock",
-                              value: " Eggs",
-                              subtitle: "View detailed breakdown",
+                              value: "${inventoryStats['current_stock'] ?? 0} Eggs",
+                               subtitle: "View detailed breakdown",
                               icon: Icons.inventory_2_outlined,
                               iconColor: Colors.black87,
                             ),
@@ -628,8 +628,8 @@ String role = ""; // or "WAREHOUSE"
                             onTap: () => _openDetailsModal("Stock Value Breakdown", inventoryStats["breakdowns"]["stock_value"], "currency"),
                             child: InventoryCard(
                               title: "Stock Value",
-                              value: "₹ ${(inventoryStats['stock_value'] as double).toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}",
-                              subtitle: "Today's inventory valuation",
+                            value: "₹ ${(inventoryStats['stock_value'] ?? 0).toString()}",
+                             subtitle: "Today's inventory valuation",
                               icon: Icons.currency_rupee,
                               iconColor: Colors.green,
                             ),
@@ -713,18 +713,18 @@ String role = ""; // or "WAREHOUSE"
                   color: Color(0xFF1E293B),
                 ),
               ),
-              TextButton(
-                onPressed: () {},
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(50, 30),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: const Text(
-                  "View Details",
-                  style: TextStyle(color: Color(0xFF1E73FF), fontWeight: FontWeight.bold, fontSize: 12),
-                ),
-              ),
+              // TextButton(
+              //   onPressed: () {},
+              //   style: TextButton.styleFrom(
+              //     padding: EdgeInsets.zero,
+              //     minimumSize: const Size(50, 30),
+              //     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              //   ),
+              //   child: const Text(
+              //     "View Details",
+              //     style: TextStyle(color: Color(0xFF1E73FF), fontWeight: FontWeight.bold, fontSize: 12),
+              //   ),
+              // ),
             ],
           ),
           const SizedBox(height: 12),
