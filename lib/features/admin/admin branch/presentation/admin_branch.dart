@@ -1075,110 +1075,107 @@ class _AdminBranchDashboardViewState extends State<AdminBranchDashboardView> {
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  crossAxisAlignment: CrossAxisAlignment.start,
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: getWidth(context, 10),
-                        color: const Color(0xFF64748B),
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-
-                    SizedBox(
-                      height: getHeight(context, 6),
-                    ),
-
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        Flexible(
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              value,
-                              style: TextStyle(
-                                fontSize: getWidth(context, 24),
-                                fontWeight: FontWeight.w800,
-                                color: const Color(0xFF1E293B),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        if (valueUnit.isNotEmpty) ...[
-                          SizedBox(
-                            width: getWidth(context, 4),
-                          ),
-
-                          Text(
-                            valueUnit,
-                            style: TextStyle(
-                              fontSize: getWidth(context, 13),
-                              color: const Color(0xFF64748B),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
+              Text(
+                title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: getWidth(context, 10),
+                  color: const Color(0xFF64748B),
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
                 ),
               ),
 
-              Container(
-                width: getWidth(context, 40),
-                height: getWidth(context, 40),
-                decoration: BoxDecoration(
-                  color: iconBgColor,
-                  borderRadius: BorderRadius.circular(
-                    getWidth(context, 10),
+              SizedBox(height: getHeight(context, 4)),
+
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        value,
+                        style: TextStyle(
+                          fontSize: getWidth(context, 24),
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF1E293B),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: getWidth(context, 20),
-                ),
+
+                  if (valueUnit.isNotEmpty) ...[
+                    SizedBox(width: getWidth(context, 4)),
+                    Flexible(
+                      child: Text(
+                        valueUnit,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: getWidth(context, 13),
+                          color: const Color(0xFF64748B),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ],
           ),
+        ),
 
-          SizedBox(
-            height: getHeight(context, 8),
+        Container(
+          width: getWidth(context, 40),
+          height: getWidth(context, 40),
+          decoration: BoxDecoration(
+            color: iconBgColor,
+            borderRadius: BorderRadius.circular(
+              getWidth(context, 10),
+            ),
           ),
+          child: Icon(
+            icon,
+            color: iconColor,
+            size: getWidth(context, 20),
+          ),
+        ),
+      ],
+    ),
 
-          Container(
-            padding: EdgeInsets.only(
-              top: getHeight(context, 8),
+    SizedBox(height: getHeight(context, 6)),
+
+    Flexible(
+      child: Container(
+        padding: EdgeInsets.only(
+          top: getHeight(context, 6),
+        ),
+        decoration: const BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: Color(0xFFF1F5F9),
             ),
-            decoration: const BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  color: Color(0xFFF1F5F9),
-                ),
-              ),
-            ),
-            child: footer,
           ),
-          SizedBox(
-            height: getHeight(context, 3),
-          ),
-        ],
+        ),
+        child: footer,
       ),
+    ),
+  ],
+),
     ),
   );
 }
