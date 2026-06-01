@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/payment_model.dart';
 
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/product_specificationcard.dart';
@@ -645,62 +646,75 @@ Widget _buildSummaryItem(
         )
       : const SizedBox(),
 ),
-          Row(
-            children: [
-              Expanded(
-                child:_buildDropdownField(
-  "Method",
-  p.method,
-  ["Cash", "UPI", "Card", "RTGS/NEFT", "Credit"],
-  (value) => _handlePaymentChange(
-    p.id,
-    'method',
-    value,
-  ),
-),
+Row(
+  children: [
+    Expanded(
+      child: _buildDropdownField(
+        "Method",
+        p.method,
+        ["Cash", "UPI", "Card", "RTGS/NEFT", "Credit"],
+        (value) => _handlePaymentChange(
+          p.id,
+          'method',
+          value,
+        ),
+      ),
+    ),
+
+    SizedBox(
+      width: getWidth(context, 10),
+    ),
+
+    Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Amount (₹) *",
+            style: TextStyle(
+              fontSize: getWidth(context, 11),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          SizedBox(
+            height: getHeight(context, 6),
+          ),
+
+          SizedBox(
+            height: getHeight(context, 40),
+            child: TextField(
+              keyboardType: TextInputType.number,
+              onChanged: (val) => _handlePaymentChange(
+                p.id,
+                'amount',
+                val,
               ),
-
-              const SizedBox(width: 10),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Amount (₹) *",
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    SizedBox(
-                      height: 40,
-                      child: TextField(
-                        keyboardType: TextInputType.number,
-                        onChanged: (val) => _handlePaymentChange(
-                          p.id,
-                          'amount',
-                          val,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: "0.00",
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 8,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+              style: TextStyle(
+                fontSize: getWidth(context, 13),
+              ),
+              decoration: InputDecoration(
+                hintText: "0.00",
+                hintStyle: TextStyle(
+                  fontSize: getWidth(context, 12),
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: getWidth(context, 10),
+                  vertical: getHeight(context, 8),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
+                    getWidth(context, 8),
+                  ),
                 ),
               ),
-            ],
+            ),
           ),
         ],
+      ),
+    ),
+  ],
+)     ],
       ),
     );
   },
