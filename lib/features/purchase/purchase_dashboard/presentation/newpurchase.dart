@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/payment_model.dart';
@@ -99,6 +102,8 @@ class _NewpurchaseState extends State<Newpurchase> {
     final trays = getTotalTrays();
     return trays == 0 ? 0 : getTotalCost() / trays;
   }
+  
+  
   @override
   void initState() {
     super.initState();
@@ -265,11 +270,14 @@ void _handlePaymentChange(
                     if (!isDraft) ...[
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Bill download started..."), backgroundColor: Colors.green),
-                            );
-                          },
+                        onPressed: () async {
+
+  await _downloadBill(
+    orderRef,
+    totalCost,
+  );
+
+},
                           icon: const Icon(Icons.download_outlined, size: 16),
                           label: const Text("Bill", style: TextStyle(fontSize: 12)),
                         ),
@@ -358,6 +366,275 @@ double get pendingAmount {
   return getTotalCost() - paidAmount;
 }
 
+Future<void> _downloadBill(
+  String orderRef,
+  double totalCost,
+) async {
+
+  final pdf = pw.Document();
+
+  final int totalEggs = (getTotalTrays() * 30).toInt();
+
+  pdf.addPage(
+    pw.Page(
+      pageFormat: PdfPageFormat.a4,
+      build: (pw.Context context) {
+        return pw.Padding(
+          padding: const pw.EdgeInsets.all(20),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+
+              pw.Text(
+                "Purchase Invoice",
+                style: pw.TextStyle(
+                  fontSize: 24,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+
+              pw.SizedBox(height: 20),
+
+              pw.Container(
+                width: double.infinity,
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(),
+                ),
+                child: pw.Column(
+                  children: [
+
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(12),
+                      child: pw.Column(
+                        children: [
+
+                          pw.Text(
+                            "PROTEIN OVA",
+                            style: pw.TextStyle(
+                              fontSize: 18,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+
+                          pw.SizedBox(height: 5),
+
+                          pw.Text(
+                            "Namakkal, Tamil Nadu",
+                          ),
+
+                          pw.SizedBox(height: 15),
+
+                          pw.Text(
+                            "Purchase Bill",
+                            style: pw.TextStyle(
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    pw.Divider(),
+
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(12),
+                      child: pw.Row(
+                        crossAxisAlignment:
+                            pw.CrossAxisAlignment.start,
+                        children: [
+
+                          pw.Expanded(
+                            child: pw.Column(
+                              crossAxisAlignment:
+                                  pw.CrossAxisAlignment.start,
+                              children: [
+
+                                pw.Text(
+                                  "Supplier Details",
+                                  style: pw.TextStyle(
+                                    fontWeight:
+                                        pw.FontWeight.bold,
+                                  ),
+                                ),
+
+                                pw.SizedBox(height: 5),
+
+                                pw.Text(
+                                  selectedSupplierName,
+                                ),
+
+                                pw.Text(
+                                  originLocation,
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          pw.Expanded(
+                            child: pw.Column(
+                              crossAxisAlignment:
+                                  pw.CrossAxisAlignment.start,
+                              children: [
+
+                                pw.Text(
+                                  "Purchase Details",
+                                  style: pw.TextStyle(
+                                    fontWeight:
+                                        pw.FontWeight.bold,
+                                  ),
+                                ),
+
+                                pw.SizedBox(height: 5),
+
+                                pw.Text(
+                                  "PO No: $orderRef",
+                                ),
+
+                                pw.Text(
+                                  "Date: ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    pw.Divider(),
+
+                    pw.Table(
+                      border: pw.TableBorder.all(),
+                      children: [
+
+                        pw.TableRow(
+                          children: [
+
+                            _tableCell("#"),
+                            _tableCell("Item"),
+                            _tableCell("Qty"),
+                            _tableCell("Eggs"),
+                            _tableCell("Rate"),
+                            _tableCell("Amount"),
+                          ],
+                        ),
+
+                        ...products.asMap().entries.map((entry) {
+
+                          final index = entry.key;
+                          final product = entry.value;
+
+                          final qty =
+                              int.tryParse(product.quantity) ?? 0;
+
+                          final eggs =
+                              int.tryParse(product.totalEggs) ?? 0;
+
+                          final rate =
+                              double.tryParse(product.rate) ?? 0;
+
+                          final amount = eggs * rate;
+
+                          return pw.TableRow(
+                            children: [
+
+                              _tableCell("${index + 1}"),
+
+                              _tableCell(product.category),
+
+                              _tableCell("$qty"),
+
+                              _tableCell("$eggs"),
+
+                              _tableCell(
+                                "₹ ${rate.toStringAsFixed(2)}",
+                              ),
+
+                              _tableCell(
+                                "₹ ${amount.toStringAsFixed(2)}",
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ],
+                    ),
+
+                    pw.SizedBox(height: 20),
+
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(12),
+                      child: pw.Column(
+                        crossAxisAlignment:
+                            pw.CrossAxisAlignment.end,
+                        children: [
+
+                          pw.Row(
+                            mainAxisAlignment:
+                                pw.MainAxisAlignment.spaceBetween,
+                            children: [
+
+                              pw.Text("Total Eggs"),
+
+                              pw.Text("$totalEggs"),
+                            ],
+                          ),
+
+                          pw.SizedBox(height: 8),
+
+                          pw.Row(
+                            mainAxisAlignment:
+                                pw.MainAxisAlignment.spaceBetween,
+                            children: [
+
+                              pw.Text(
+                                "Grand Total",
+                                style: pw.TextStyle(
+                                  fontWeight:
+                                      pw.FontWeight.bold,
+                                ),
+                              ),
+
+                              pw.Text(
+                                "₹ ${totalCost.toStringAsFixed(2)}",
+                                style: pw.TextStyle(
+                                  fontWeight:
+                                      pw.FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    pw.SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    ),
+  );
+
+  await Printing.layoutPdf(
+    onLayout: (PdfPageFormat format) async =>
+        pdf.save(),
+  );
+}
+ 
+ pw.Widget _tableCell(String text) {
+  return pw.Padding(
+    padding: const pw.EdgeInsets.all(8),
+    child: pw.Text(
+      text,
+      textAlign: pw.TextAlign.center,
+      style: const pw.TextStyle(
+        fontSize: 10,
+      ),
+    ),
+  );
+}
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
