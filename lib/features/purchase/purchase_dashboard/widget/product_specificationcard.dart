@@ -124,6 +124,7 @@ void updateTotalEggs(ProductInput product) {
   product.totalEggs = (qty * 30).toString();
 }
 
+
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
