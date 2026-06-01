@@ -133,8 +133,9 @@ class _NewpurchaseState extends State<Newpurchase> {
     );
   });
 }
-
+bool _isDraftSubmission = false;
   void _submitForm(bool isDraft) {
+    _isDraftSubmission = isDraft; 
     if (selectedSupplierId == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please select a supplier"), backgroundColor: Colors.red),
@@ -190,6 +191,9 @@ class _NewpurchaseState extends State<Newpurchase> {
 
     context.read<PurchaseBloc>().add(SubmitPurchaseEvent(purchase));
   }
+  
+
+
 void _handlePaymentChange(
   String id,
   String field,
@@ -361,8 +365,8 @@ double get pendingAmount {
     return BlocListener<PurchaseBloc, PurchaseState>(
       listener: (context, state) {
         if (state is PurchaseSubmitSuccess) {
-          final isDraft = activePaymentTab == "UPI" && paymentAmountController.text == "0" && debtAmountController.text == "0";
-          _showSuccessPopup(isDraft, "PO-${DateTime.now().millisecondsSinceEpoch % 100000}", getTotalCost());
+          
+          _showSuccessPopup(_isDraftSubmission, "PO-${DateTime.now().millisecondsSinceEpoch % 100000}", getTotalCost());
         } else if (state is PurchaseSubmitFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message), backgroundColor: Colors.red),
