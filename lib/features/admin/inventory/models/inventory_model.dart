@@ -56,18 +56,24 @@ class InventoryMetrics {
   });
 
   factory InventoryMetrics.fromJson(Map<String, dynamic> json) {
+    int parseInt(dynamic value) {
+      if (value == null) return 0;
+      if (value is num) return value.toInt();
+      return (num.tryParse(value.toString()) ?? 0).toInt();
+    }
+
     return InventoryMetrics(
-      expectedToday: json['expected_today'] ?? 0,
-      readyForUnloading: json['ready_for_unloading'] ?? 0,
-      delayedInTransit: json['delayed_in_transit'] ?? 0,
-      currentStock: json['current_stock'] ?? 0,
-      damagedTrays: json['damaged_trays'] ?? 0,
-      stockValue: json['stock_value'] ?? 0,
-      openingStock: json['opening_stock'] ?? 0,
-      closingStock: json['closing_stock'] ?? 0,
-      incomingStock: json['incoming_stock'] ?? 0,
-      salesToday: json['sales_today'] ?? 0,
-      purchaseExpense: json['purchase_expense'] ?? 0,
+      expectedToday: parseInt(json['expected_today']),
+      readyForUnloading: parseInt(json['ready_for_unloading']),
+      delayedInTransit: parseInt(json['delayed_in_transit']),
+      currentStock: parseInt(json['current_stock']),
+      damagedTrays: parseInt(json['damaged_trays']),
+      stockValue: parseInt(json['stock_value']),
+      openingStock: parseInt(json['opening_stock']),
+      closingStock: parseInt(json['closing_stock']),
+      incomingStock: parseInt(json['incoming_stock']),
+      salesToday: parseInt(json['sales_today']),
+      purchaseExpense: parseInt(json['purchase_expense']),
     );
   }
 }
