@@ -445,7 +445,7 @@ class _AdminBranchDashboardViewState extends State<AdminBranchDashboardView> {
                             onTap: () {
                               final data = dashboard.stockSummary
                                   .map(
-                                    (s) => {
+                                    (s) => <String, String>{
                                       "label": s.eggCategoryGrade,
                                       "value": "${s.trays} Trays",
                                       "sub": "${s.eggs} Eggs",
@@ -506,7 +506,7 @@ class _AdminBranchDashboardViewState extends State<AdminBranchDashboardView> {
                             onTap: () {
                               final data = dashboard.incomingShipments
                                   .map(
-                                    (s) => {
+                                    (s) => <String, String>{
                                       "label": "Dispatch #DS-${s.id}",
                                       "value": "${s.totalTrays} Trays",
                                       "sub": s.arrivalDate != null
@@ -567,7 +567,7 @@ class _AdminBranchDashboardViewState extends State<AdminBranchDashboardView> {
                             onTap: () {
                               final data = dashboard.damagedDetails
                                   .map(
-                                    (d) => {
+                                    (d) => <String, String>{
                                       "label": d.eggCategoryGrade,
                                       "value": "${d.trays} Eggs",
                                       "sub": "Damaged Eggs",
@@ -626,7 +626,7 @@ class _AdminBranchDashboardViewState extends State<AdminBranchDashboardView> {
                               final data = dashboard.recentActivity
                                   .where((a) => a.tag.toLowerCase() == 'sale')
                                   .map(
-                                    (a) => {
+                                    (a) => <String, String>{
                                       "label": a.title,
                                       "value": a.amount != null
                                           ? "₹${formatNumber(a.amount!)}"
@@ -681,7 +681,7 @@ class _AdminBranchDashboardViewState extends State<AdminBranchDashboardView> {
                             onTap: () {
                               final data = dashboard.todayExpensesList
                                   .map(
-                                    (e) => {
+                                    (e) => <String, String>{
                                       "label": e.category,
                                       "value": "₹${formatNumber(e.amount)}",
                                       "sub": e.description ?? "No description",
@@ -713,7 +713,7 @@ class _AdminBranchDashboardViewState extends State<AdminBranchDashboardView> {
                             onTap: () {
                               final data = dashboard.stockSummary
                                   .map(
-                                    (s) => {
+                                    (s) => <String, String>{
                                       "label": s.eggCategoryGrade,
                                       "value": "${s.trays} Trays",
                                       "sub": "${s.eggs} Eggs",
@@ -747,22 +747,6 @@ class _AdminBranchDashboardViewState extends State<AdminBranchDashboardView> {
                         ],
                       ),
 
-                      const SizedBox(height: 12),
-
-                      // Stat Cards Grid 2 (Sales Today, Expense, Eggs Sold, Closing Stock)
-                      GridView.count(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: width >= 1000
-                            ? 4
-                            : (width >= 600 ? 2 : 2),
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 1.5,
-                        children: [
-                          // Sales Today
-                        ],
-                      ),
                       const SizedBox(height: 24),
 
                       // Stock Summary Section
@@ -785,7 +769,7 @@ class _AdminBranchDashboardViewState extends State<AdminBranchDashboardView> {
                               : (width >= 600 ? 2 : 1),
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
-                          childAspectRatio: width >= 600 ? 1.5 : 1.25,
+                          mainAxisExtent: 180, // Fixed card height
                         ),
                         itemBuilder: (context, index) {
                           return _buildStockSummaryCard(
@@ -1036,149 +1020,130 @@ class _AdminBranchDashboardViewState extends State<AdminBranchDashboardView> {
     );
   }
 
- Widget _buildStatCard({
-  required String title,
-  required String value,
-  required String valueUnit,
-  required IconData icon,
-  required Color iconColor,
-  required Color iconBgColor,
-  required Widget footer,
-  required VoidCallback onTap,
-}) {
-  return InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(
-      getWidth(context, 16),
-    ),
-    child: Ink(
-      padding: EdgeInsets.all(
-        getWidth(context, 14),
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(
-          getWidth(context, 16),
-        ),
-        border: Border.all(
-          color: const Color(0xFFE2E8F0),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.015),
-            blurRadius: getWidth(context, 8),
-            offset: Offset(
-              0,
-              getHeight(context, 4),
+  Widget _buildStatCard({
+    required String title,
+    required String value,
+    required String valueUnit,
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBgColor,
+    required Widget footer,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(getWidth(context, 16)),
+      child: Ink(
+        padding: EdgeInsets.all(getWidth(context, 14)),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(getWidth(context, 16)),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.015),
+              blurRadius: getWidth(context, 8),
+              offset: Offset(0, getHeight(context, 4)),
             ),
-          ),
-        ],
-      ),
-      child: Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  mainAxisSize: MainAxisSize.min,
-  children: [
-    Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: getWidth(context, 10),
-                  color: const Color(0xFF64748B),
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
-              ),
-
-              SizedBox(height: getHeight(context, 4)),
-
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Flexible(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        value,
-                        style: TextStyle(
-                          fontSize: getWidth(context, 24),
-                          fontWeight: FontWeight.w800,
-                          color: const Color(0xFF1E293B),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  if (valueUnit.isNotEmpty) ...[
-                    SizedBox(width: getWidth(context, 4)),
-                    Flexible(
-                      child: Text(
-                        valueUnit,
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: getWidth(context, 13),
+                          fontSize: getWidth(context, 10),
                           color: const Color(0xFF64748B),
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
                         ),
                       ),
-                    ),
-                  ],
-                ],
+
+                      SizedBox(height: getHeight(context, 4)),
+
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                value,
+                                style: TextStyle(
+                                  fontSize: getWidth(context, 24),
+                                  fontWeight: FontWeight.w800,
+                                  color: const Color(0xFF1E293B),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          if (valueUnit.isNotEmpty) ...[
+                            SizedBox(width: getWidth(context, 4)),
+                            Flexible(
+                              child: Text(
+                                valueUnit,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: getWidth(context, 13),
+                                  color: const Color(0xFF64748B),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                Container(
+                  width: getWidth(context, 40),
+                  height: getWidth(context, 40),
+                  decoration: BoxDecoration(
+                    color: iconBgColor,
+                    borderRadius: BorderRadius.circular(getWidth(context, 10)),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: iconColor,
+                    size: getWidth(context, 20),
+                  ),
+                ),
+              ],
+            ),
+
+            SizedBox(height: getHeight(context, 6)),
+
+            Flexible(
+              child: Container(
+                padding: EdgeInsets.only(top: getHeight(context, 6)),
+                decoration: const BoxDecoration(
+                  border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
+                ),
+                child: footer,
               ),
-            ],
-          ),
-        ),
-
-        Container(
-          width: getWidth(context, 40),
-          height: getWidth(context, 40),
-          decoration: BoxDecoration(
-            color: iconBgColor,
-            borderRadius: BorderRadius.circular(
-              getWidth(context, 10),
             ),
-          ),
-          child: Icon(
-            icon,
-            color: iconColor,
-            size: getWidth(context, 20),
-          ),
+          ],
         ),
-      ],
-    ),
-
-    SizedBox(height: getHeight(context, 6)),
-
-    Flexible(
-      child: Container(
-        padding: EdgeInsets.only(
-          top: getHeight(context, 6),
-        ),
-        decoration: const BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: Color(0xFFF1F5F9),
-            ),
-          ),
-        ),
-        child: footer,
       ),
-    ),
-  ],
-),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildStockSummaryCard(AdminBranchStockSummary item) {
     final bool isLowStock = item.trays < 50;

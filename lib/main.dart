@@ -44,7 +44,6 @@ Future<void> main() async {
   // WidgetsFlutterBinding.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await Firebase.initializeApp();
   await dotenv.load(fileName: ".env");
   print(dotenv.env['BASE_URL']);
   await Hive.initFlutter();
@@ -68,8 +67,7 @@ Future<void> main() async {
       startScreen = const AdminBottomNavigator();
     } else if (role == 'warehouse' || role == 'ware house') {
       startScreen = const WarehouseBottomNavigator();
-    } 
-    else {
+    } else {
       startScreen = const SignupScreen();
     }
   } else {

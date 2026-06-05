@@ -1,8 +1,10 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiConfig {
-  static final String baseUrl =
-       dotenv.env['BASE_URL'] ?? '';
+  static final String baseUrl = () {
+    final url = dotenv.env['BASE_URL'] ?? '';
+    return url.trim().isEmpty ? 'https://proteinova-system-q3ob.onrender.com' : url.trim();
+  }();
 
 
   static const String login = "/login";

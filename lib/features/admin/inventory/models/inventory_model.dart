@@ -34,12 +34,12 @@ class InventoryMetrics {
   final int delayedInTransit;
   final int currentStock;
   final int damagedTrays;
-  final int stockValue;
+  final double stockValue;
   final int openingStock;
   final int closingStock;
   final int incomingStock;
   final int salesToday;
-  final int purchaseExpense;
+  final double purchaseExpense;
 
   InventoryMetrics({
     required this.expectedToday,
@@ -57,17 +57,17 @@ class InventoryMetrics {
 
   factory InventoryMetrics.fromJson(Map<String, dynamic> json) {
     return InventoryMetrics(
-      expectedToday: json['expected_today'] ?? 0,
-      readyForUnloading: json['ready_for_unloading'] ?? 0,
-      delayedInTransit: json['delayed_in_transit'] ?? 0,
-      currentStock: json['current_stock'] ?? 0,
-      damagedTrays: json['damaged_trays'] ?? 0,
-      stockValue: json['stock_value'] ?? 0,
-      openingStock: json['opening_stock'] ?? 0,
-      closingStock: json['closing_stock'] ?? 0,
-      incomingStock: json['incoming_stock'] ?? 0,
-      salesToday: json['sales_today'] ?? 0,
-      purchaseExpense: json['purchase_expense'] ?? 0,
+      expectedToday: int.tryParse(json['expected_today']?.toString() ?? '') ?? 0,
+      readyForUnloading: int.tryParse(json['ready_for_unloading']?.toString() ?? '') ?? 0,
+      delayedInTransit: int.tryParse(json['delayed_in_transit']?.toString() ?? '') ?? 0,
+      currentStock: int.tryParse(json['current_stock']?.toString() ?? '') ?? 0,
+      damagedTrays: int.tryParse(json['damaged_trays']?.toString() ?? '') ?? 0,
+      stockValue: double.tryParse(json['stock_value']?.toString() ?? '') ?? 0.0,
+      openingStock: int.tryParse(json['opening_stock']?.toString() ?? '') ?? 0,
+      closingStock: int.tryParse(json['closing_stock']?.toString() ?? '') ?? 0,
+      incomingStock: int.tryParse(json['incoming_stock']?.toString() ?? '') ?? 0,
+      salesToday: int.tryParse(json['sales_today']?.toString() ?? '') ?? 0,
+      purchaseExpense: double.tryParse(json['purchase_expense']?.toString() ?? '') ?? 0.0,
     );
   }
 }
@@ -84,6 +84,10 @@ class PurchaseModel {
   final String purchaseStatus;
   final String movementStatus;
   final String driverName;
+  final String vehicleNumber;
+  final String vehicleType;
+  final String driverPhone;
+  final String warehouseLocation;
 
   PurchaseModel({
     required this.id,
@@ -98,6 +102,10 @@ class PurchaseModel {
     required this.purchaseStatus,
     required this.movementStatus,
     this.driverName = '',
+    this.vehicleNumber = '',
+    this.vehicleType = '',
+    this.driverPhone = '',
+    this.warehouseLocation = '',
   });
 
   factory PurchaseModel.fromJson(Map<String, dynamic> json) {
@@ -129,6 +137,10 @@ class PurchaseModel {
       purchaseStatus: json['purchase_status']?.toString() ?? '',
       movementStatus: json['movement_status']?.toString() ?? '',
       driverName: json['driver_name']?.toString() ?? '',
+      vehicleNumber: json['vehicle_number']?.toString() ?? '',
+      vehicleType: json['vehicle_type']?.toString() ?? '',
+      driverPhone: json['driver_phone']?.toString() ?? '',
+      warehouseLocation: json['warehouse_location']?.toString() ?? '',
     );
   }
 }
