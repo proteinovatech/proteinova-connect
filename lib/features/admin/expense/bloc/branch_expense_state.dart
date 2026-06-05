@@ -6,7 +6,8 @@ class BranchExpenseState {
   final bool isSaving;
   final String? error;
   final bool saveSuccess;
-  final List<Location> locations;
+  final Map<int, String> branches;
+
   final BranchExpenseDashboardModel? dashboardData;
 
   const BranchExpenseState({
@@ -14,24 +15,27 @@ class BranchExpenseState {
     this.isSaving = false,
     this.error,
     this.saveSuccess = false,
-    this.locations = const [],
+    this.branches = const {},
     this.dashboardData,
   });
+  List<Location> get locations => branches.entries
+      .map((e) => Location(id: e.key, name: e.value, type: 'branch'))
+      .toList();
 
   BranchExpenseState copyWith({
     bool? isLoading,
     bool? isSaving,
     String? error,
     bool? saveSuccess,
-    List<Location>? locations,
+    Map<int, String>? branches,
     BranchExpenseDashboardModel? dashboardData,
   }) {
     return BranchExpenseState(
       isLoading: isLoading ?? this.isLoading,
       isSaving: isSaving ?? this.isSaving,
-      error: error,
+      error: error ?? this.error,
       saveSuccess: saveSuccess ?? this.saveSuccess,
-      locations: locations ?? this.locations,
+      branches: branches ?? this.branches,
       dashboardData: dashboardData ?? this.dashboardData,
     );
   }

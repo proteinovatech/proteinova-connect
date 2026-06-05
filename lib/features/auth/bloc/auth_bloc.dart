@@ -16,7 +16,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           password: event.password,
           role: event.role.toLowerCase(),
         );
-        print("2");
+       print("FULL RESPONSE => $result");
+
+if (result != null && result['user'] != null) {
+  print("USER => ${result['user']}");
+  print("ROLE => ${result['user']['role']}");
+}
       
 
         if (result != null && result['user'] != null) {
@@ -48,6 +53,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             emit(AuthSuccessBranch());
           } else if (userRole == "admin") {
             emit(AuthSuccessAdmin());
+          }
+            else if (userRole == "warehouse" || userRole == "ware house") {
+              emit(AuthSuccessWarehouse());
           } else {
             emit(AuthFailure("Invalid role"));
           }
@@ -55,10 +63,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(AuthFailure("Login failed"));
         }
       } catch (e) {
-        print(e);
+  print("LOGIN ERROR: $e");
 
-        emit(AuthFailure("Something went wrong"));
-      }
+  emit(AuthFailure(e.toString()));
+}
     });
 
     on<LogoutRequested>((event, emit) async {

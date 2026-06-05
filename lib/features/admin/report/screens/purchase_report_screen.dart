@@ -1262,37 +1262,49 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
     );
   }
 
-  Widget buildActionButton({
-    required String title,
-    required IconData icon,
-    required Color bgColor,
-  }) {
-    return Container(
-      height: 56,
-      width: 150,
+ Widget buildActionButton({
+  required String title,
+  required IconData icon,
+  required Color bgColor,
+}) {
+  return Container(
+    height: 52, // reduced height
+    width: 135,
 
-      decoration: BoxDecoration(
-        color: bgColor,
+    decoration: BoxDecoration(
+      color: bgColor,
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: const Color(0xffE5E7EB)),
+    ),
 
-        borderRadius: BorderRadius.circular(14),
-
-        border: Border.all(color: const Color(0xffE5E7EB)),
-      ),
-
+    child: Center(
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon),
+          Icon(
+            icon,
+            size: 18, // reduced icon size
+          ),
 
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
 
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+          Flexible(
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 13, // reduced text size
+                height: 1.1,
+              ),
+            ),
+          ),
         ],
       ),
-    );
-  }
-
+    ),
+  );
+}
   Widget buildBar(double blueHeight, double greenHeight, String month) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -1392,93 +1404,114 @@ class PurchaseStatCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
 
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xffE5E7EB)),
-          boxShadow: [
-            BoxShadow(
-              // ignore: deprecated_member_use
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    maxLines: 2,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xff4B5563),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: iconBg,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(icon, color: iconColor, size: 18),
-                ),
-              ],
-            ),
-            const Spacer(),
-            Text(
-              amount,
+    child: Container(
+  padding: const EdgeInsets.all(14), // reduced padding
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(12),
+    border: Border.all(color: const Color(0xffE5E7EB)),
+    boxShadow: [
+      BoxShadow(
+        // ignore: deprecated_member_use
+        color: Colors.black.withOpacity(0.02),
+        blurRadius: 10,
+        offset: const Offset(0, 4),
+      ),
+    ],
+  ),
+
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    mainAxisSize: MainAxisSize.min,
+
+    children: [
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                color: Colors.black87,
+                fontSize: 12, // reduced
+                height: 1.2,
+                color: Color(0xff4B5563),
+                fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                if (growth != "-")
-                  Icon(
-                    growth.contains("-")
-                        ? Icons.trending_down
-                        : Icons.trending_up,
-                    size: 16,
-                    color: growthColor,
-                  ),
-                if (growth != "-") const SizedBox(width: 4),
-                Text(
-                  growth == "-" ? "- 0.0% vs last period" : growth,
-                  style: TextStyle(
-                    color: growth == "-"
-                        ? const Color(0xff9CA3AF)
-                        : growthColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (growth != "-") const SizedBox(width: 4),
-                if (growth != "-")
-                  const Expanded(
-                    child: Text(
-                      "vs last period",
-                      style: TextStyle(color: Color(0xff9CA3AF), fontSize: 12),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-              ],
+          ),
+
+          const SizedBox(width: 8),
+
+          Container(
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: iconBg,
+              borderRadius: BorderRadius.circular(8),
             ),
-          ],
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 16, // reduced
+            ),
+          ),
+        ],
+      ),
+
+      const SizedBox(height: 10),
+
+      Flexible(
+        child: Text(
+          amount,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 20, // reduced
+            fontWeight: FontWeight.w800,
+            color: Colors.black87,
+          ),
         ),
       ),
-    );
+
+      const SizedBox(height: 6),
+
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (growth != "-")
+            Icon(
+              growth.contains("-")
+                  ? Icons.trending_down
+                  : Icons.trending_up,
+              size: 14, // reduced
+              color: growthColor,
+            ),
+
+          if (growth != "-") const SizedBox(width: 3),
+
+          Expanded(
+            child: Text(
+              growth == "-"
+                  ? "- 0.0% vs last period"
+                  : "$growth vs last period",
+
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+
+              style: TextStyle(
+                color: growth == "-"
+                    ? const Color(0xff9CA3AF)
+                    : growthColor,
+                fontSize: 11, // reduced
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ],
+  ),
+), );
   }
 }

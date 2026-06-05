@@ -3140,6 +3140,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/services/sales_receipt_service.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/branch/sales/data/datasource/branch_sales_remote_datasource.dart';
 import 'package:proteinova_connect/features/branch/sales/data/model/sales_entry_model.dart';
 import 'package:proteinova_connect/features/branch/sales/data/model/sales_item_model.dart';
@@ -3150,7 +3151,354 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SaleTray {
   String trayType;
   int qty;
-  SaleTray({this.trayType = "without tray", this.qty = 0});
+  double rate;
+  SaleTray({this.trayType = "without tray", this.qty = 0, this.rate = 1.0});
+}
+
+class DashedLinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    double dashWidth = 5, dashSpace = 3, startX = 0;
+    final paint = Paint()
+      ..color = Colors.grey.shade300
+      ..strokeWidth = 1;
+    while (startX < size.width) {
+      canvas.drawLine(Offset(startX, 0), Offset(startX + dashWidth, 0), paint);
+      startX += dashWidth + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
+class _TrayRow extends StatefulWidget {
+  final SaleTray tray;
+  final VoidCallback onDelete;
+  final VoidCallback onChanged;
+  final bool showDelete;
+
+  const _TrayRow({
+    Key? key,
+    required this.tray,
+    required this.onDelete,
+    required this.onChanged,
+    required this.showDelete,
+  }) : super(key: key);
+
+  @override
+  State<_TrayRow> createState() => _TrayRowState();
+}
+
+class _TrayRowState extends State<_TrayRow> {
+  late TextEditingController _rateController;
+
+  @override
+  void initState() {
+    super.initState();
+    _rateController = TextEditingController(
+      text: widget.tray.rate % 1 == 0
+          ? widget.tray.rate.toInt().toString()
+          : widget.tray.rate.toString(),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant _TrayRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.tray.rate != widget.tray.rate) {
+      final text = widget.tray.rate % 1 == 0
+          ? widget.tray.rate.toInt().toString()
+          : widget.tray.rate.toString();
+      if (_rateController.text != text) {
+        _rateController.text = text;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _rateController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isWide = MediaQuery.of(context).size.width >= 600;
+
+    final dropdownWidget = Container(
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: widget.tray.trayType,
+          isExpanded: true,
+          icon: const Icon(Icons.keyboard_arrow_down, size: 20),
+          items:
+              [
+                    "without tray",
+                    "Empty paper tray",
+                    "Empty plastic tray",
+                    "Plastic tray (With egg)",
+                    "Paper tray (with egg)",
+                  ]
+                  .map(
+                    (t) => DropdownMenuItem(
+                      value: t,
+                      child: Text(
+                        t,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+          onChanged: (v) {
+            if (v != null) {
+              setState(() {
+                widget.tray.trayType = v;
+              });
+              widget.onChanged();
+            }
+          },
+        ),
+      ),
+    );
+
+    final stepperWidget = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        InkWell(
+          onTap: () {
+            if (widget.tray.qty > 0) {
+              setState(() {
+                widget.tray.qty--;
+              });
+              widget.onChanged();
+            }
+          },
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: const Color(0xFF2E3E50),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.remove, size: 16, color: Colors.white),
+          ),
+        ),
+        const SizedBox(width: 8),
+      Container(
+  width: getWidth(context, 48),
+  height: getHeight(context, 36),
+  alignment: Alignment.center,
+  decoration: BoxDecoration(
+    color: const Color(0xFFF8FAFC),
+    border: Border.all(
+      color: const Color(0xFFE2E8F0),
+      width: getWidth(context, 1),
+    ),
+    borderRadius: BorderRadius.circular(
+      getWidth(context, 8),
+    ),
+  ),
+  child: Text(
+    "${widget.tray.qty}",
+    style: TextStyle(
+      fontSize: getWidth(context, 14),
+      fontWeight: FontWeight.bold,
+      color: Colors.black,
+    ),
+  ),
+), const SizedBox(width: 8),
+        InkWell(
+          onTap: () {
+            setState(() {
+              widget.tray.qty++;
+            });
+            widget.onChanged();
+          },
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: const Color(0xFF2E3E50),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.add, size: 16, color: Colors.white),
+          ),
+        ),
+      ],
+    );
+
+    final rateInputWidget =Container(
+  width: getWidth(context, 100),
+  height: getHeight(context, 48),
+  padding: EdgeInsets.symmetric(
+    horizontal: getWidth(context, 6),
+  ),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    border: Border.all(
+      color: Colors.grey.shade300,
+      width: 1,
+    ),
+    borderRadius: BorderRadius.circular(
+      getWidth(context, 8),
+    ),
+  ),
+  child: Row(
+    children: [
+      Text(
+        "₹",
+        style: TextStyle(
+          color: Colors.grey.shade600,
+          fontSize: getWidth(context, 11),
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+
+      SizedBox(width: getWidth(context, 2)),
+
+      Expanded(
+        child: TextField(
+          controller: _rateController,
+          keyboardType:
+              const TextInputType.numberWithOptions(
+            decimal: true,
+          ),
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: getWidth(context, 12),
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+          decoration: const InputDecoration(
+            border: InputBorder.none,
+            isDense: true,
+            contentPadding: EdgeInsets.zero,
+          ),
+          onChanged: (v) {
+            final val =
+                double.tryParse(v) ?? 0.0;
+
+            widget.tray.rate = val;
+
+            widget.onChanged();
+          },
+        ),
+      ),
+
+      Flexible(
+        child: Text(
+          "/tray",
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: Colors.grey.shade500,
+            fontSize: getWidth(context, 8),
+          ),
+        ),
+      ),
+    ],
+  ),
+);
+final totalWidget = Text(
+      " = ₹${(widget.tray.qty * widget.tray.rate).toStringAsFixed(2)}",
+      style: const TextStyle(
+        color: Color(0xFF16A34A),
+        fontWeight: FontWeight.bold,
+        fontSize: 13,
+      ),
+    );
+
+    final deleteWidget = widget.showDelete
+        ? InkWell(
+            onTap: widget.onDelete,
+            child: const Icon(
+              Icons.delete_outline,
+              color: Color(0xFFEF4444),
+              size: 22,
+            ),
+          )
+        : const SizedBox.shrink();
+
+    if (isWide) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(
+          children: [
+            Expanded(flex: 4, child: dropdownWidget),
+            const SizedBox(width: 16),
+            stepperWidget,
+            const SizedBox(width: 16),
+            rateInputWidget,
+            const SizedBox(width: 12),
+            totalWidget,
+            if (widget.showDelete) ...[const SizedBox(width: 12), deleteWidget],
+          ],
+        ),
+      );
+    } else {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            border: Border.all(color: Colors.grey.shade200),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(child: dropdownWidget),
+                  if (widget.showDelete) ...[
+                    const SizedBox(width: 12),
+                    deleteWidget,
+                  ],
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  stepperWidget,
+                  const SizedBox(width: 12),
+                  rateInputWidget,
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Divider(height: 1),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Total Charge:",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  totalWidget,
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
 }
 
 class SalesEntryPage extends StatefulWidget {
@@ -3221,7 +3569,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       if (existingIndex != -1) {
         final item = salesItems[existingIndex];
         item.dozen = dozen;
-        item.calculateEggs();
+        item.calculateFromDozen();
       } else {
         salesItems.removeWhere((e) => e.eggCategoryGrade.isEmpty);
         final newItem = SalesItem(
@@ -3229,7 +3577,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
           price: product.perTrayPrice / 30,
           dozen: dozen,
         );
-        newItem.calculateEggs();
+        newItem.calculateFromDozen();
         salesItems.add(newItem);
       }
     });
@@ -3383,7 +3731,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     return double.parse(discount.toStringAsFixed(2));
   }
 
-  double get totalAmount => subtotal - totalDiscount;
+  double get totalTrayCharges =>
+      saleTrays.fold(0.0, (sum, tray) => sum + (tray.qty * tray.rate));
+  double get totalAmount => subtotal - totalDiscount + totalTrayCharges;
   double get credit =>
       totalAmount - (double.tryParse(cashReceivedController.text) ?? 0);
 
@@ -3411,39 +3761,69 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     setState(() {
       final item = salesItems[index];
       if (field == 'product') {
-        final product = products.firstWhere((p) => p.productName == value);
+        // final product = products.firstWhere((p) => p.productName == value);
+        final product = products
+            .where((p) => p.productName == value)
+            .firstOrNull;
+
+        if (product == null) return;
         item.eggCategoryGrade = product.productName;
         item.price = product.perTrayPrice / 30;
-        item.calculateEggs();
+        item.calculateFromDozen();
       } else if (field == 'dozen') {
         item.dozen = double.tryParse(value.toString()) ?? 0;
-        item.calculateEggs();
+        item.calculateFromDozen();
       } else if (field == 'trays') {
         item.trays = int.tryParse(value.toString()) ?? 0;
-        item.calculateEggs();
+        item.calculateFromTrays();
       }
     });
   }
 
+  // void addProductFromCard(ProductDetail product) {
+  //   setState(() {
+  //     final existingIndex = salesItems.indexWhere(
+  //       (i) => i.eggCategoryGrade == product.productName,
+  //     );
+  //     if (existingIndex != -1) {
+  //       final item = salesItems[existingIndex];
+  //       item.trays += 1;
+  //       item.calculateEggs();
+  //     } else {
+  //       salesItems.removeWhere((i) => i.eggCategoryGrade.isEmpty);
+  //       final newItem = SalesItem(
+  //         eggCategoryGrade: product.productName,
+  //         price: product.perTrayPrice / 30,
+  //         trays: 1,
+  //       );
+  //       newItem.calculateEggs();
+  //       salesItems.add(newItem);
+  //     }
+  //   });
+  // }
   void addProductFromCard(ProductDetail product) {
     setState(() {
       final existingIndex = salesItems.indexWhere(
         (i) => i.eggCategoryGrade == product.productName,
       );
-      if (existingIndex != -1) {
-        final item = salesItems[existingIndex];
-        item.trays += 1;
-        item.calculateEggs();
-      } else {
+
+      if (existingIndex == -1) {
         salesItems.removeWhere((i) => i.eggCategoryGrade.isEmpty);
-        final newItem = SalesItem(
-          eggCategoryGrade: product.productName,
-          price: product.perTrayPrice / 30,
-          trays: 1,
+
+        salesItems.add(
+          SalesItem(
+            eggCategoryGrade: product.productName,
+            price: product.perTrayPrice / 30,
+
+            // Start empty
+            eggs: 0,
+            total: 0,
+          ),
         );
-        newItem.calculateEggs();
-        salesItems.add(newItem);
       }
+
+      // No auto tray increment
+      selectedProductIndex = filteredProducts.indexOf(product);
     });
   }
 
@@ -3486,26 +3866,26 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       return;
     }
 
-    if (selectedPaymentMethod == "CASH") {
-      final cashReceivedBy = cashReceivedByController.text.trim();
-      final cashContactNumber = cashContactNumberController.text.trim();
+    // if (selectedPaymentMethod == "CASH") {
+    //   final cashReceivedBy = cashReceivedByController.text.trim();
+    //   final cashContactNumber = cashContactNumberController.text.trim();
 
-      if (cashReceivedBy.isEmpty) {
-        _showError("Please enter Cash Received By name");
-        return;
-      }
+    //   if (cashReceivedBy.isEmpty) {
+    //     _showError("Please enter Cash Received By name");
+    //     return;
+    //   }
 
-      if (cashContactNumber.isEmpty) {
-        _showError("Please enter Cash Contact Number");
-        return;
-      }
+    //   if (cashContactNumber.isEmpty) {
+    //     _showError("Please enter Cash Contact Number");
+    //     return;
+    //   }
 
-      if (cashContactNumber.length != 10 ||
-          double.tryParse(cashContactNumber) == null) {
-        _showError("Cash Contact Number must be a valid 10-digit number");
-        return;
-      }
-    }
+    //   if (cashContactNumber.length != 10 ||
+    //       double.tryParse(cashContactNumber) == null) {
+    //     _showError("Cash Contact Number must be a valid 10-digit number");
+    //     return;
+    //   }
+    // }
 
     final validItems = salesItems
         .where((i) => i.eggCategoryGrade.isNotEmpty)
@@ -3527,11 +3907,32 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
     setState(() => isSubmitting = true);
     try {
+      final upiApp = selectedPaymentMethod == "UPI"
+          ? (selectedUpiApp.isEmpty ? "Other" : selectedUpiApp)
+          : "";
+      final ref = selectedPaymentMethod == "UPI"
+          ? otherUpiDetailsController.text.trim()
+          : "";
+      final otherUpiList = [
+        {
+          "method": selectedPaymentMethod == "CASH"
+              ? "Cash"
+              : (selectedPaymentMethod == "UPI"
+                    ? "UPI"
+                    : (selectedPaymentMethod == "CARD" ? "Card" : "Credit")),
+          "amount": (double.tryParse(cashReceivedController.text) ?? 0)
+              .toStringAsFixed(0),
+          "app": upiApp,
+          "reference": ref,
+          "notes": notesController.text,
+        },
+      ];
+
       final payload = {
-        "login_user_id": loginUserId.toString(),
+        "login_user_id": loginUserId,
         "sales_happen": salesHappen,
         "sold_location_id": selectedBranchId,
-        "customer_name": cName.isEmpty ? "Unknown Customer" : cName,
+        "customer_name": cName.isEmpty ? null : cName,
         "customer_number": cNumber.isEmpty ? "N/A" : cNumber,
         "customer_debit": double.tryParse(debtController.text) ?? 0,
         "dispatch_date": dateController.text,
@@ -3539,18 +3940,21 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         "payment_method": selectedPaymentMethod.toUpperCase(),
         "cash_received": double.tryParse(cashReceivedController.text) ?? 0,
         "cash_received_by": selectedPaymentMethod == "CASH"
-            ? cashReceivedByController.text.trim()
+            ? (cashReceivedByController.text.trim().isEmpty
+                  ? null
+                  : cashReceivedByController.text.trim())
             : null,
         "cash_contact_number": selectedPaymentMethod == "CASH"
-            ? cashContactNumberController.text.trim()
+            ? (cashContactNumberController.text.trim().isEmpty
+                  ? null
+                  : cashContactNumberController.text.trim())
             : null,
         "upi_app": selectedPaymentMethod == "UPI"
             ? (selectedUpiApp.isEmpty ? "Other" : selectedUpiApp)
             : null,
-        "other_upi_details": selectedPaymentMethod == "UPI"
-            ? otherUpiDetailsController.text.trim()
-            : null,
+        "other_upi_details": otherUpiList,
         "total_amount": totalAmount,
+        "tray_charges": totalTrayCharges,
         "offer_discount": totalDiscount,
         "applied_offers": offers
             .where((o) => o.applied)
@@ -3572,7 +3976,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             .toList(),
         "sale_trays": saleTrays
             .where((t) => t.qty > 0)
-            .map((t) => {"tray_type": t.trayType, "qty": t.qty})
+            .map(
+              (t) => {"tray_type": t.trayType, "qty": t.qty, "price": t.rate},
+            )
             .toList(),
         "branch_id": selectedBranchId == "warehouse"
             ? branchId
@@ -3699,6 +4105,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         items: finalItems,
         discount: totalDiscount,
         subtotal: subtotal,
+        trayCharges: totalTrayCharges,
         paymentMethod: selectedPaymentMethod,
         onNextSale: () {
           Navigator.pop(context);
@@ -4889,7 +5296,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
     return _buildCard(
       title: "Tray Types Used",
       trailing: ElevatedButton.icon(
-        onPressed: () => setState(() => saleTrays.add(SaleTray())),
+        onPressed: () => setState(() => saleTrays.add(SaleTray(rate: 1.0))),
         icon: const Icon(Icons.add, size: 14),
         label: const Text("Add Tray", style: TextStyle(fontSize: 12)),
         style: ElevatedButton.styleFrom(
@@ -4900,71 +5307,37 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         ),
       ),
       child: Column(
-        children: saleTrays.asMap().entries.map((entry) {
-          int idx = entry.key;
-          SaleTray tray = entry.value;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: tray.trayType,
-                        isExpanded: true,
-                        items:
-                            [
-                                  "without tray",
-                                  "Empty paper tray",
-                                  "Empty plastic tray",
-                                  "Plastic tray (With egg)",
-                                  "Paper tray (with egg)",
-                                ]
-                                .map(
-                                  (t) => DropdownMenuItem(
-                                    value: t,
-                                    child: Text(
-                                      t,
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                        onChanged: (v) => setState(() => tray.trayType = v!),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  flex: 2,
-                  child: _buildStepper(
-                    tray.qty.toDouble(),
-                    (v) => setState(() => tray.qty = v.toInt()),
-                  ),
-                ),
-                if (saleTrays.length > 1) ...[
-                  const SizedBox(width: 10),
-                  InkWell(
-                    onTap: () => setState(() => saleTrays.removeAt(idx)),
-                    child: const Icon(
-                      Icons.delete_outline,
-                      color: Color(0xFFEF4444),
-                      size: 20,
-                    ),
-                  ),
-                ],
-              ],
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ...saleTrays.asMap().entries.map((entry) {
+            int idx = entry.key;
+            SaleTray tray = entry.value;
+            return _TrayRow(
+              key: ValueKey(tray),
+              tray: tray,
+              onDelete: () => setState(() => saleTrays.removeAt(idx)),
+              onChanged: () => setState(() {}),
+              showDelete: true,
+            );
+          }).toList(),
+          const SizedBox(height: 16),
+          CustomPaint(
+            size: const Size(double.infinity, 1),
+            painter: DashedLinePainter(),
+          ),
+          const SizedBox(height: 16),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              "Tray Charges: ₹${totalTrayCharges.toStringAsFixed(2)}",
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Colors.black,
+              ),
             ),
-          );
-        }).toList(),
+          ),
+        ],
       ),
     );
   }
@@ -5075,7 +5448,7 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   }
 
   Widget _buildPaymentAndSummaryGrid() {
-    final currentTotal = totalAmount;
+    final currentTotal = totalAmount.ceilToDouble();
     final entered = double.tryParse(cashReceivedController.text);
     if (cashReceivedController.text.isEmpty || entered == _lastTotalAmount) {
       cashReceivedController.text = currentTotal.toStringAsFixed(2);
@@ -5320,12 +5693,17 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             color: const Color(0xFFEF4444),
           ),
 
+          if (totalTrayCharges > 0)
+            _summaryRow(
+              "Tray Charges",
+              "₹ ${totalTrayCharges.toStringAsFixed(2)}",
+            ),
+
           const Divider(height: 40),
-
+          _summaryRow(" Total", "₹ ${(totalAmount).toStringAsFixed(2)}"),
           _summaryRow(
-            "Total",
-            "₹ ${totalAmount.toStringAsFixed(2)}",
-
+            "Grand Total",
+            "₹ ${(totalAmount.ceilToDouble()).toStringAsFixed(2)}",
             isBold: true,
           ),
 
@@ -5645,6 +6023,7 @@ class _SuccessDialog extends StatelessWidget {
   final List<SalesItem> items;
   final double discount;
   final double subtotal;
+  final double trayCharges;
   final String paymentMethod;
   final VoidCallback onNextSale;
   final VoidCallback onDashboard;
@@ -5659,6 +6038,7 @@ class _SuccessDialog extends StatelessWidget {
     required this.items,
     required this.discount,
     required this.subtotal,
+    required this.trayCharges,
     required this.paymentMethod,
     required this.onNextSale,
     required this.onDashboard,
@@ -5728,7 +6108,11 @@ class _SuccessDialog extends StatelessWidget {
               "#$saleId",
               isPending ? "REQ" : "S",
             ),
-            _infoBox("Amount Paid:", "₹${amount.toStringAsFixed(2)}", "INR"),
+            _infoBox(
+              "Amount Paid:",
+              "₹${amount.ceilToDouble().toStringAsFixed(2)}",
+              "INR",
+            ),
             SizedBox(height: isTablet ? 8 : 32),
             if (!isPending)
               Row(
@@ -5754,6 +6138,7 @@ class _SuccessDialog extends StatelessWidget {
                             subtotal: subtotal,
                             discount: discount,
                             total: amount,
+                            trayCharges: trayCharges,
                             paymentMethod: paymentMethod,
                             isThermal: false,
                           );
@@ -5827,6 +6212,7 @@ class _SuccessDialog extends StatelessWidget {
                             subtotal: subtotal,
                             discount: discount,
                             total: amount,
+                            trayCharges: trayCharges,
                             paymentMethod: paymentMethod,
                             isThermal: true,
                           );
@@ -5973,17 +6359,17 @@ class _SuccessDialog extends StatelessWidget {
     );
   }
 
-  Widget _actionBtn(IconData icon, String label, VoidCallback onTap) {
-    return OutlinedButton.icon(
-      onPressed: onTap,
-      icon: Icon(icon, size: 20),
-      label: Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: const Color(0xFF1E293B),
-        side: const BorderSide(color: Color(0xFFE2E8F0), width: 2),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-      ),
-    );
-  }
+  // Widget _actionBtn(IconData icon, String label, VoidCallback onTap) {
+  //   return OutlinedButton.icon(
+  //     onPressed: onTap,
+  //     icon: Icon(icon, size: 20),
+  //     label: Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
+  //     style: OutlinedButton.styleFrom(
+  //       foregroundColor: const Color(0xFF1E293B),
+  //       side: const BorderSide(color: Color(0xFFE2E8F0), width: 2),
+  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  //       padding: const EdgeInsets.symmetric(vertical: 12),
+  //     ),
+  //   );
+  // }
 }

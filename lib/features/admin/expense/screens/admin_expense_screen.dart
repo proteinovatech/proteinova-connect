@@ -7,7 +7,6 @@ import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bl
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_event.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_state.dart';
 import 'package:proteinova_connect/features/admin/expense/data/models/branch_expense_dashboard_model.dart';
-import 'package:proteinova_connect/features/admin/expense/data/models/location_model.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_expense_management_skeleton_loader.dart';
 
 import '../data/repository/expense_repository.dart';
@@ -33,7 +32,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
   String selectedCategory = "Transport";
   String selectedPayment = "Cash";
   String selectedStatus = "Paid";
-  
+  String role = ""; 
   int? selectedLocationId;
   String selectedLocationType = "branch"; // 'branch' or 'warehouse'
   String selectedMonth = "";
@@ -95,9 +94,9 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
 
     setState(() => isSaving = true);
     try {
-      await _repository.createExpense(
-        branchId: selectedLocationType == 'branch' ? selectedLocationId : null,
-        warehouseId: selectedLocationType == 'warehouse' ? selectedLocationId : null,
+      await _repository.createBranchExpense(
+        branchId: selectedLocationId!,
+        
         expenseDate: dateController.text,
         category: selectedCategory.toUpperCase().replaceAll(' ', '_'),
         amount: double.parse(amountController.text),
@@ -157,14 +156,13 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
       body: BlocBuilder<BranchExpenseBloc, BranchExpenseState>(
         builder: (context, state) {
           final dashboardData = state.dashboardData;
-          final locations = state.locations;
+          final locations = state.branches;
           final isLoading = state.isLoading;
 
           // Auto-select first location if not set yet
           if (selectedLocationId == null && locations.isNotEmpty) {
-            final firstLoc = locations.first;
-            selectedLocationId = firstLoc.id;
-            selectedLocationType = firstLoc.type;
+            selectedLocationId = locations.entries.first.key;
+            selectedLocationType = 'branch';
             Future.microtask(() {
               context.read<BranchExpenseBloc>().add(
                 LoadDashboardEvent(
@@ -195,22 +193,28 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                     /// HEADER
                     Row(
                       children: [
-                        IconButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          icon: const Icon(Icons.arrow_back),
-                        ),
-                        const SizedBox(width: 8),
-                        const Expanded(
-                          child: Text(
-                            "Expense Management",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
+                       if (role == "ADMIN")
+      InkWell(
+        onTap: () => Navigator.pop(context),
+        child: const Icon(Icons.arrow_back, size: 24),
+      ),
+
+    if (role == "ADMIN")
+      SizedBox(width: getWidth(context, 12)),
+
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Expense Management",
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+       
+       ],
+    ),  SizedBox(width: getWidth(context, 10)),
                         Container(
                           padding: EdgeInsets.symmetric(
                             horizontal: getWidth(context, 14),
@@ -250,9 +254,9 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                               border: Border.all(color: Colors.grey.shade300),
                             ),
                             child: DropdownButtonHideUnderline(
-                              child: DropdownButton<Location>(
-                                value: locations.any((l) => l.id == selectedLocationId && l.type == selectedLocationType)
-                                    ? locations.firstWhere((l) => l.id == selectedLocationId && l.type == selectedLocationType)
+                              child: DropdownButton<int>(
+                               value: locations.containsKey(selectedLocationId)
+                                    ? selectedLocationId
                                     : null,
                                 hint: const Text("Select Location"),
                                 isExpanded: true,
@@ -262,23 +266,20 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
                                 ),
-                                items: locations.map((loc) {
-                                  final label = loc.type == 'branch'
-                                      ? "Branch: ${loc.name}"
-                                      : "Warehouse: ${loc.name}";
-                                  return DropdownMenuItem<Location>(
-                                    value: loc,
-                                    child: Text(
-                                      label,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  );
-                                }).toList(),
+                               items: locations.entries.map((entry) {
+  return DropdownMenuItem<int>(
+    value: entry.key,
+    child: Text(
+      entry.value,
+      overflow: TextOverflow.ellipsis,
+    ),
+  );
+}).toList(),
                                 onChanged: (loc) {
                                   if (loc != null) {
                                     setState(() {
-                                      selectedLocationId = loc.id;
-                                      selectedLocationType = loc.type;
+                                      selectedLocationId = loc;
+                                      selectedLocationType = "branch";
                                     });
                                     context.read<BranchExpenseBloc>().add(
                                       LoadDashboardEvent(

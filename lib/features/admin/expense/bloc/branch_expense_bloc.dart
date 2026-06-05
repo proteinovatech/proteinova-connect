@@ -22,11 +22,11 @@ class BranchExpenseBloc
   ) async {
     emit(state.copyWith(isLoading: true, saveSuccess: false));
     try {
-      final locations = await repository.fetchLocations();
+      final locations = await repository.fetchBranches();
       emit(
         state.copyWith(
           isLoading: false,
-          locations: locations,
+          branches: locations,
         ),
       );
     } catch (e) {
@@ -45,11 +45,10 @@ class BranchExpenseBloc
   ) async {
     emit(state.copyWith(isLoading: true, saveSuccess: false));
     try {
-      final data = await repository.fetchExpenses(
-        branchId: event.locationType == 'branch' ? event.locationId : null,
-        warehouseId: event.locationType == 'warehouse' ? event.locationId : null,
-        month: event.month,
-      );
+      final data = await repository.fetchBranchExpenses(
+  branchId: event.locationId,
+  month: event.month,
+);
 
       data.recentExpenses.sort(
         (a, b) => b.expenseDate.compareTo(a.expenseDate),
@@ -77,17 +76,16 @@ class BranchExpenseBloc
   ) async {
     emit(state.copyWith(isSaving: true, saveSuccess: false));
     try {
-      await repository.createExpense(
-        branchId: event.locationType == 'branch' ? event.locationId : null,
-        warehouseId: event.locationType == 'warehouse' ? event.locationId : null,
-        expenseDate: event.expenseDate,
-        category: event.category,
-        amount: event.amount,
-        paymentMethod: event.paymentMethod,
-        description: event.description,
-        status: event.status,
-        loginUserId: event.loginUserId,
-      );
+      await repository.createBranchExpense(
+  branchId: event.locationId,
+  expenseDate: event.expenseDate,
+  category: event.category,
+  amount: event.amount,
+  paymentMethod: event.paymentMethod,
+  description: event.description,
+  status: event.status,
+  loginUserId: event.loginUserId,
+);
 
       emit(
         state.copyWith(

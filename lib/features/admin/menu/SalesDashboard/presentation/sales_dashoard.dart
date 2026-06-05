@@ -148,7 +148,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                     },
 
                     child: Container(
-                      height: 38,
+                      height: 35,
                       width: double.infinity,
 
                       decoration: BoxDecoration(
@@ -162,7 +162,7 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                           children: [
                             Icon(Icons.add_circle_outline),
 
-                            SizedBox(width: 10),
+                            SizedBox(width: 5),
 
                             Text(
                               "New Sales Entry",
@@ -681,123 +681,261 @@ class _SalesDashboardPageState extends State<SalesDashboardPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
 
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: LayoutBuilder(
+  builder: (context, constraints) {
+    final isMobile = constraints.maxWidth < 600;
 
-                      children: [
-                        /// TEXT
-                        Text(
-                          filteredOrders.isEmpty
-                              ? "Showing 0 records"
-                              : "Showing ${((currentPage - 1) * itemsPerPage) + 1} to "
-                                    "${(((currentPage - 1) * itemsPerPage) + paginatedOrders.length)} "
-                                    "of ${filteredOrders.length} records",
+    return isMobile
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                filteredOrders.isEmpty
+                    ? "Showing 0 records"
+                    : "Showing ${((currentPage - 1) * itemsPerPage) + 1} to "
+                          "${(((currentPage - 1) * itemsPerPage) + paginatedOrders.length)} "
+                          "of ${filteredOrders.length} records",
 
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.black87,
-                          ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.black87,
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  /// PREVIOUS
+                  GestureDetector(
+                    onTap: () {
+                      if (currentPage > 1) {
+                        setState(() {
+                          currentPage--;
+                        });
+                      }
+                    },
+
+                    child: Container(
+                      height: 34,
+                      width: 34,
+
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+
+                        border: Border.all(
+                          color: Colors.grey.shade300,
                         ),
+                      ),
 
-                        /// BUTTONS
-                        Row(
-                          children: [
-                            /// PREVIOUS
-                            GestureDetector(
-                              onTap: () {
-                                if (currentPage > 1) {
-                                  setState(() {
-                                    currentPage--;
-                                  });
-                                }
-                              },
-
-                              child: Container(
-                                height: 38,
-                                width: 38,
-
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10),
-
-                                  border: Border.all(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-
-                                child: Icon(
-                                  Icons.chevron_left,
-                                  color: currentPage > 1
-                                      ? Colors.black
-                                      : Colors.grey.shade400,
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(width: 8),
-
-                            /// CURRENT PAGE
-                            Container(
-                              height: 38,
-                              width: 38,
-
-                              decoration: BoxDecoration(
-                                color: AppColors.amber600,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-
-                              child: Center(
-                                child: Text(
-                                  "$currentPage",
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(width: 8),
-
-                            /// NEXT
-                            GestureDetector(
-                              onTap: () {
-                                if ((currentPage * itemsPerPage) <
-                                    filteredOrders.length) {
-                                  setState(() {
-                                    currentPage++;
-                                  });
-                                }
-                              },
-
-                              child: Container(
-                                height: 38,
-                                width: 38,
-
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10),
-
-                                  border: Border.all(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-
-                                child: Icon(
-                                  Icons.chevron_right,
-                                  color:
-                                      (currentPage * itemsPerPage) <
-                                          filteredOrders.length
-                                      ? Colors.black
-                                      : Colors.grey.shade400,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                      child: Icon(
+                        Icons.chevron_left,
+                        size: 20,
+                        color: currentPage > 1
+                            ? Colors.black
+                            : Colors.grey.shade400,
+                      ),
                     ),
                   ),
+
+                  const SizedBox(width: 8),
+
+                  /// CURRENT PAGE
+                  Container(
+                    height: 34,
+                    width: 34,
+
+                    decoration: BoxDecoration(
+                      color: AppColors.amber600,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+
+                    child: Center(
+                      child: FittedBox(
+                        child: Text(
+                          "$currentPage",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  /// NEXT
+                  GestureDetector(
+                    onTap: () {
+                      if ((currentPage * itemsPerPage) <
+                          filteredOrders.length) {
+                        setState(() {
+                          currentPage++;
+                        });
+                      }
+                    },
+
+                    child: Container(
+                      height: 34,
+                      width: 34,
+
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                        ),
+                      ),
+
+                      child: Icon(
+                        Icons.chevron_right,
+                        size: 20,
+                        color:
+                            (currentPage * itemsPerPage) <
+                                    filteredOrders.length
+                                ? Colors.black
+                                : Colors.grey.shade400,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          )
+
+        : Row(
+            mainAxisAlignment:
+                MainAxisAlignment.spaceBetween,
+
+            children: [
+              Expanded(
+                child: Text(
+                  filteredOrders.isEmpty
+                      ? "Showing 0 records"
+                      : "Showing ${((currentPage - 1) * itemsPerPage) + 1} to "
+                            "${(((currentPage - 1) * itemsPerPage) + paginatedOrders.length)} "
+                            "of ${filteredOrders.length} records",
+
+                  overflow: TextOverflow.ellipsis,
+
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              Row(
+                children: [
+                  /// PREVIOUS
+                  GestureDetector(
+                    onTap: () {
+                      if (currentPage > 1) {
+                        setState(() {
+                          currentPage--;
+                        });
+                      }
+                    },
+
+                    child: Container(
+                      height: 38,
+                      width: 38,
+
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius:
+                            BorderRadius.circular(10),
+
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                        ),
+                      ),
+
+                      child: Icon(
+                        Icons.chevron_left,
+                        color: currentPage > 1
+                            ? Colors.black
+                            : Colors.grey.shade400,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  /// CURRENT PAGE
+                  Container(
+                    height: 38,
+                    width: 38,
+
+                    decoration: BoxDecoration(
+                      color: AppColors.amber600,
+                      borderRadius:
+                          BorderRadius.circular(10),
+                    ),
+
+                    child: Center(
+                      child: Text(
+                        "$currentPage",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  /// NEXT
+                  GestureDetector(
+                    onTap: () {
+                      if ((currentPage * itemsPerPage) <
+                          filteredOrders.length) {
+                        setState(() {
+                          currentPage++;
+                        });
+                      }
+                    },
+
+                    child: Container(
+                      height: 38,
+                      width: 38,
+
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius:
+                            BorderRadius.circular(10),
+
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                        ),
+                      ),
+
+                      child: Icon(
+                        Icons.chevron_right,
+                        color:
+                            (currentPage * itemsPerPage) <
+                                    filteredOrders.length
+                                ? Colors.black
+                                : Colors.grey.shade400,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+  },
+),   ),
                 ],
               ),
              );

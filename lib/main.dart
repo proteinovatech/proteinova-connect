@@ -37,6 +37,7 @@ import 'package:proteinova_connect/core/services/app_bloc.dart';
 import 'package:proteinova_connect/branch_bottom_navigator.dart';
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 import 'package:proteinova_connect/purchase_bottom_navigator.dart';
+import 'package:proteinova_connect/warehouse_bottom_navigator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
@@ -45,6 +46,7 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Firebase.initializeApp();
   await dotenv.load(fileName: ".env");
+  print(dotenv.env['BASE_URL']);
   await Hive.initFlutter();
 
   await Hive.openBox('purchaseBox');
@@ -64,7 +66,10 @@ Future<void> main() async {
       startScreen = const BranchBottomNavigator();
     } else if (role == 'admin') {
       startScreen = const AdminBottomNavigator();
-    } else {
+    } else if (role == 'warehouse' || role == 'ware house') {
+      startScreen = const WarehouseBottomNavigator();
+    } 
+    else {
       startScreen = const SignupScreen();
     }
   } else {

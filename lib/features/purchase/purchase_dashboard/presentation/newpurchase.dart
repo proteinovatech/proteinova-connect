@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/payment_model.dart';
 
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/product_specificationcard.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/supplier_locationcard.dart';
@@ -62,7 +67,7 @@ class _NewpurchaseState extends State<Newpurchase> {
   final TextEditingController otherUpiDetailsController = TextEditingController();
   final TextEditingController paymentAmountController = TextEditingController(text: "0");
   final TextEditingController debtAmountController = TextEditingController(text: "0");
-
+  final List<PaymentModel> _payments = [];
   // Summaries
   double getProductTotal() {
     double total = 0;
@@ -98,7 +103,8 @@ class _NewpurchaseState extends State<Newpurchase> {
     final trays = getTotalTrays();
     return trays == 0 ? 0 : getTotalCost() / trays;
   }
-
+  
+  
   @override
   void initState() {
     super.initState();
@@ -110,6 +116,11 @@ class _NewpurchaseState extends State<Newpurchase> {
     
     paymentAmountController.addListener(_refresh);
     debtAmountController.addListener(_refresh);
+     _payments.add(
+    PaymentModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+    ),
+  );
   }
 
   void _refresh() {
@@ -117,8 +128,20 @@ class _NewpurchaseState extends State<Newpurchase> {
       setState(() {});
     }
   }
-
+  void _addPaymentRow() {
+  setState(() {
+    _payments.add(
+      PaymentModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        method: '',
+        amount: '',
+      ),
+    );
+  });
+}
+bool _isDraftSubmission = false;
   void _submitForm(bool isDraft) {
+    _isDraftSubmission = isDraft; 
     if (selectedSupplierId == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please select a supplier"), backgroundColor: Colors.red),
@@ -174,6 +197,26 @@ class _NewpurchaseState extends State<Newpurchase> {
 
     context.read<PurchaseBloc>().add(SubmitPurchaseEvent(purchase));
   }
+  
+
+
+void _handlePaymentChange(
+  String id,
+  String field,
+  dynamic value,
+) {
+  final index = _payments.indexWhere((p) => p.id == id);
+
+  if (index == -1) return;
+
+  setState(() {
+    if (field == 'method') {
+      _payments[index].method = value ?? '';
+    } else if (field == 'amount') {
+      _payments[index].amount = value ?? '';
+    }
+  });
+}
 
   void _showSuccessPopup(bool isDraft, String orderRef, double totalCost) {
     showDialog(
@@ -228,11 +271,14 @@ class _NewpurchaseState extends State<Newpurchase> {
                     if (!isDraft) ...[
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Bill download started..."), backgroundColor: Colors.green),
-                            );
-                          },
+                        onPressed: () async {
+
+  await _downloadBill(
+    orderRef,
+    totalCost,
+  );
+
+},
                           icon: const Icon(Icons.download_outlined, size: 16),
                           label: const Text("Bill", style: TextStyle(fontSize: 12)),
                         ),
@@ -284,7 +330,312 @@ class _NewpurchaseState extends State<Newpurchase> {
       ),
     );
   }
+  double get totalAmount {
+  double total = 0;
 
+  for (var product in products) {
+    final eggs = int.tryParse(product.totalEggs) ?? 0;
+    final rate = double.tryParse(product.rate) ?? 0;
+
+    total += eggs * rate;
+  }
+
+  return total;
+}
+
+  double get paidAmount {
+  double total = 0;
+
+  for (var payment in _payments) {
+    total += double.tryParse(payment.amount) ?? 0;
+  }
+
+  return total;
+}
+double get balanceAmount {
+  return totalAmount - paidAmount;
+}
+double get totalPaidAmount {
+  return _payments.fold(
+    0.0,
+    (sum, payment) =>
+        sum + (double.tryParse(payment.amount.toString()) ?? 0),
+  );
+}
+
+double get pendingAmount {
+  return getTotalCost() - paidAmount;
+}
+
+Future<void> _downloadBill(
+  String orderRef,
+  double totalCost,
+) async {
+
+  final pdf = pw.Document();
+
+  final int totalEggs = (getTotalTrays() * 30).toInt();
+
+  pdf.addPage(
+    pw.Page(
+      pageFormat: PdfPageFormat.a4,
+      build: (pw.Context context) {
+        return pw.Padding(
+          padding: const pw.EdgeInsets.all(20),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+
+              pw.Text(
+                "Purchase Invoice",
+                style: pw.TextStyle(
+                  fontSize: 24,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+
+              pw.SizedBox(height: 20),
+
+              pw.Container(
+                width: double.infinity,
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(),
+                ),
+                child: pw.Column(
+                  children: [
+
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(12),
+                      child: pw.Column(
+                        children: [
+
+                          pw.Text(
+                            "PROTEIN OVA",
+                            style: pw.TextStyle(
+                              fontSize: 18,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+
+                          pw.SizedBox(height: 5),
+
+                          pw.Text(
+                            "Namakkal, Tamil Nadu",
+                          ),
+
+                          pw.SizedBox(height: 15),
+
+                          pw.Text(
+                            "Purchase Bill",
+                            style: pw.TextStyle(
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    pw.Divider(),
+
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(12),
+                      child: pw.Row(
+                        crossAxisAlignment:
+                            pw.CrossAxisAlignment.start,
+                        children: [
+
+                          pw.Expanded(
+                            child: pw.Column(
+                              crossAxisAlignment:
+                                  pw.CrossAxisAlignment.start,
+                              children: [
+
+                                pw.Text(
+                                  "Supplier Details",
+                                  style: pw.TextStyle(
+                                    fontWeight:
+                                        pw.FontWeight.bold,
+                                  ),
+                                ),
+
+                                pw.SizedBox(height: 5),
+
+                                pw.Text(
+                                  selectedSupplierName,
+                                ),
+
+                                pw.Text(
+                                  originLocation,
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          pw.Expanded(
+                            child: pw.Column(
+                              crossAxisAlignment:
+                                  pw.CrossAxisAlignment.start,
+                              children: [
+
+                                pw.Text(
+                                  "Purchase Details",
+                                  style: pw.TextStyle(
+                                    fontWeight:
+                                        pw.FontWeight.bold,
+                                  ),
+                                ),
+
+                                pw.SizedBox(height: 5),
+
+                                pw.Text(
+                                  "PO No: $orderRef",
+                                ),
+
+                                pw.Text(
+                                  "Date: ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    pw.Divider(),
+
+                    pw.Table(
+                      border: pw.TableBorder.all(),
+                      children: [
+
+                        pw.TableRow(
+                          children: [
+
+                            _tableCell("#"),
+                            _tableCell("Item"),
+                            _tableCell("Qty"),
+                            _tableCell("Eggs"),
+                            _tableCell("Rate"),
+                            _tableCell("Amount"),
+                          ],
+                        ),
+
+                        ...products.asMap().entries.map((entry) {
+
+                          final index = entry.key;
+                          final product = entry.value;
+
+                          final qty =
+                              int.tryParse(product.quantity) ?? 0;
+
+                          final eggs =
+                              int.tryParse(product.totalEggs) ?? 0;
+
+                          final rate =
+                              double.tryParse(product.rate) ?? 0;
+
+                          final amount = eggs * rate;
+
+                          return pw.TableRow(
+                            children: [
+
+                              _tableCell("${index + 1}"),
+
+                              _tableCell(product.category),
+
+                              _tableCell("$qty"),
+
+                              _tableCell("$eggs"),
+
+                              _tableCell(
+                                "₹ ${rate.toStringAsFixed(2)}",
+                              ),
+
+                              _tableCell(
+                                "₹ ${amount.toStringAsFixed(2)}",
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ],
+                    ),
+
+                    pw.SizedBox(height: 20),
+
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(12),
+                      child: pw.Column(
+                        crossAxisAlignment:
+                            pw.CrossAxisAlignment.end,
+                        children: [
+
+                          pw.Row(
+                            mainAxisAlignment:
+                                pw.MainAxisAlignment.spaceBetween,
+                            children: [
+
+                              pw.Text("Total Eggs"),
+
+                              pw.Text("$totalEggs"),
+                            ],
+                          ),
+
+                          pw.SizedBox(height: 8),
+
+                          pw.Row(
+                            mainAxisAlignment:
+                                pw.MainAxisAlignment.spaceBetween,
+                            children: [
+
+                              pw.Text(
+                                "Grand Total",
+                                style: pw.TextStyle(
+                                  fontWeight:
+                                      pw.FontWeight.bold,
+                                ),
+                              ),
+
+                              pw.Text(
+                                "₹ ${totalCost.toStringAsFixed(2)}",
+                                style: pw.TextStyle(
+                                  fontWeight:
+                                      pw.FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    pw.SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    ),
+  );
+
+  await Printing.layoutPdf(
+    onLayout: (PdfPageFormat format) async =>
+        pdf.save(),
+  );
+}
+ 
+ pw.Widget _tableCell(String text) {
+  return pw.Padding(
+    padding: const pw.EdgeInsets.all(8),
+    child: pw.Text(
+      text,
+      textAlign: pw.TextAlign.center,
+      style: const pw.TextStyle(
+        fontSize: 10,
+      ),
+    ),
+  );
+}
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
@@ -292,8 +643,8 @@ class _NewpurchaseState extends State<Newpurchase> {
     return BlocListener<PurchaseBloc, PurchaseState>(
       listener: (context, state) {
         if (state is PurchaseSubmitSuccess) {
-          final isDraft = activePaymentTab == "UPI" && paymentAmountController.text == "0" && debtAmountController.text == "0";
-          _showSuccessPopup(isDraft, "PO-${DateTime.now().millisecondsSinceEpoch % 100000}", getTotalCost());
+          
+          _showSuccessPopup(_isDraftSubmission, "PO-${DateTime.now().millisecondsSinceEpoch % 100000}", getTotalCost());
         } else if (state is PurchaseSubmitFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message), backgroundColor: Colors.red),
@@ -387,6 +738,92 @@ class _NewpurchaseState extends State<Newpurchase> {
       ),
     );
   }
+  Widget _buildPaymentSummaryCard() {
+  return Container(
+    padding: const EdgeInsets.symmetric(
+      vertical: 12,
+      horizontal: 8,
+    ),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF8FAFC),
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(
+        color: const Color(0xFFE2E8F0),
+      ),
+    ),
+    child: Row(
+      children: [
+        Expanded(
+          child: _buildSummaryItem(
+            "Total Amount",
+             "₹ ${totalAmount.toStringAsFixed(2)}",
+            Colors.black87,
+          ),
+        ),
+
+        Container(
+          width: 1,
+          height: 40,
+          color: const Color(0xFFE2E8F0),
+        ),
+
+        Expanded(
+          child: _buildSummaryItem(
+            "Paid Amount",
+             "₹ ${paidAmount.toStringAsFixed(2)}",
+            Colors.green,
+          ),
+        ),
+
+        Container(
+          width: 1,
+          height: 40,
+          color: const Color(0xFFE2E8F0),
+        ),
+
+        Expanded(
+          child: _buildSummaryItem(
+            "Balance Debit",
+          "₹ ${balanceAmount.toStringAsFixed(2)}",
+            Colors.red,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+
+Widget _buildSummaryItem(
+  String title,
+  String amount,
+  Color amountColor,
+) {
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Text(
+        title,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          fontSize: 11,
+          color: Colors.grey,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      const SizedBox(height: 4),
+      Text(
+        amount,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: amountColor,
+        ),
+      ),
+    ],
+  );
+}
 
   Widget _buildChoosePaymentSection(Size size) {
     return Container(
@@ -401,211 +838,184 @@ class _NewpurchaseState extends State<Newpurchase> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(Icons.payment_outlined, color: AppColors.blueAccent),
-              SizedBox(width: size.width * 0.02),
-              const Text(
-                "Choose Payment",
-                style: AppTextStyles.headingText20,
-              ),
-            ],
+         Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
+    Row(
+      children: [
+        const Icon(
+          Icons.payment_outlined,
+          color: AppColors.blueAccent,
+        ),
+        SizedBox(width: size.width * 0.02),
+        const Text(
+          "Choose Payment",
+          style: AppTextStyles.headingText20,
+        ),
+      ],
+    ),
+
+    InkWell(
+      onTap: _addPaymentRow,
+      child: const Row(
+        children: [
+          Icon(
+            Icons.add,
+            size: 18,
+            color: Color(0xFFFFC107),
           ),
-          SizedBox(height: size.height * 0.02),
-          const Divider(),
-          SizedBox(height: size.height * 0.01),
-          
-          // Payment Method Tabs
-          Row(
-            children: [
-              Expanded(child: _buildPaymentTab("UPI", Icons.phone_android_outlined)),
-              const SizedBox(width: 8),
-              Expanded(child: _buildPaymentTab("COD", Icons.money)),
-              const SizedBox(width: 8),
-              Expanded(child: _buildPaymentTab("RTGS", Icons.account_balance_outlined)),
-            ],
-          ),
-          SizedBox(height: size.height * 0.02),
-
-          // Conditional UI based on active tab
-          if (activePaymentTab == "UPI") ...[
-            const Text("Select UPI App", style: AppTextStyles.buttonText16),
-            SizedBox(height: size.height * 0.01),
-            Row(
-              children: [
-                Expanded(child: _buildUpiAppButton("Google Pay")),
-                const SizedBox(width: 6),
-                Expanded(child: _buildUpiAppButton("PhonePe")),
-                const SizedBox(width: 6),
-                Expanded(child: _buildUpiAppButton("Paytm")),
-                const SizedBox(width: 6),
-                Expanded(child: _buildUpiAppButton("Other")),
-              ],
+          SizedBox(width: 4),
+          Text(
+            "Add Payment",
+            style: TextStyle(
+              color: Color(0xFFFFC107),
+              fontWeight: FontWeight.w600,
             ),
-            SizedBox(height: size.height * 0.02),
-            const Text("Transaction Reference", style: AppTextStyles.buttonText16),
-            SizedBox(height: size.height * 0.01),
-            _buildTextField(
-              controller: otherUpiDetailsController,
-              hint: "UPI ID or Reference No.",
-              icon: Icons.vpn_key_outlined,
-            ),
-            SizedBox(height: size.height * 0.02),
-          ],
-
-          if (activePaymentTab == "RTGS") ...[
-            const Text("Transaction Reference", style: AppTextStyles.buttonText16),
-            SizedBox(height: size.height * 0.01),
-            _buildTextField(
-              controller: otherUpiDetailsController,
-              hint: "RTGS/NEFT Transaction ID",
-              icon: Icons.receipt_long_outlined,
-            ),
-            SizedBox(height: size.height * 0.02),
-          ],
-
-          // Payment amount and debt inputs
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("Payment Amount", style: AppTextStyles.buttonText16),
-                    SizedBox(height: size.height * 0.01),
-                    _buildTextField(
-                      controller: paymentAmountController,
-                      hint: "Enter amount paid",
-                      isNumeric: true,
-                      prefixText: "₹ ",
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("Debt (Optional)", style: AppTextStyles.buttonText16),
-                    SizedBox(height: size.height * 0.01),
-                    _buildTextField(
-                      controller: debtAmountController,
-                      hint: "Enter remaining debt",
-                      isNumeric: true,
-                      prefixText: "₹ ",
-                    ),
-                  ],
-                ),
-              ),
-            ],
           ),
         ],
       ),
-    );
-  }
+    ),
+  ],
+),
+          SizedBox(height: size.height * 0.02),
+          const Divider(),
+          _buildPaymentSummaryCard(),
+          SizedBox(height: size.height * 0.01),
+         
+         
+          SizedBox(height: size.height * 0.02),
+          
+          ListView.builder(
+  shrinkWrap: true,
+  physics: const NeverScrollableScrollPhysics(),
+  itemCount: _payments.length,
+  itemBuilder: (context, index) {
+    final p = _payments[index];
 
-  Widget _buildPaymentTab(String title, IconData icon) {
-    final bool isSelected = activePaymentTab == title;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          activePaymentTab = title;
-        });
-      },
-      child: Container(
-        height: 50,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.amber600 : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.amber600 : Colors.grey.shade300,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+        
+ Align(
+  alignment: Alignment.centerRight,
+  child: _payments.length > 1
+      ? IconButton(
+          icon: const Icon(
+            Icons.close,
+            color: Colors.red,
+            size: 18,
           ),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+          onPressed: () {
+            setState(() {
+              _payments.removeAt(index);
+            });
+          },
+        )
+      : const SizedBox(),
+),
+Row(
+  children: [
+    Expanded(
+      child: _buildDropdownField(
+        "Method",
+        p.method,
+        ["Cash", "UPI", "Card", "RTGS/NEFT", "Credit"],
+        (value) => _handlePaymentChange(
+          p.id,
+          'method',
+          value,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 16, color: isSelected ? Colors.white : Colors.black87),
-            const SizedBox(width: 4),
-            Text(
-              title,
-              style: AppTextStyles.bodyText13.copyWith(
-                color: isSelected ? Colors.white : Colors.black87,
-                fontWeight: FontWeight.bold,
+      ),
+    ),
+
+    SizedBox(
+      width: getWidth(context, 10),
+    ),
+
+    Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Amount (₹) *",
+            style: TextStyle(
+              fontSize: getWidth(context, 11),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          SizedBox(
+            height: getHeight(context, 6),
+          ),
+
+          SizedBox(
+            height: getHeight(context, 40),
+            child: TextField(
+              keyboardType: TextInputType.number,
+              onChanged: (val) => _handlePaymentChange(
+                p.id,
+                'amount',
+                val,
+              ),
+              style: TextStyle(
+                fontSize: getWidth(context, 13),
+              ),
+              decoration: InputDecoration(
+                hintText: "0.00",
+                hintStyle: TextStyle(
+                  fontSize: getWidth(context, 12),
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: getWidth(context, 10),
+                  vertical: getHeight(context, 8),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
+                    getWidth(context, 8),
+                  ),
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+    ),
+  ],
+)     ],
+      ),
+    );
+  },
+),
+
+          // Conditional UI based on active tab
+       ],
       ),
     );
   }
 
-  Widget _buildUpiAppButton(String title) {
-    final bool isSelected = selectedUpiApp == title;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedUpiApp = title;
-        });
-      },
-      child: Container(
-        height: 40,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.blueAccent : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected ? AppColors.blueAccent : Colors.grey.shade300,
-          ),
-        ),
-        child: Text(
-          title,
-          style: AppTextStyles.bodyText13.copyWith(
-            color: isSelected ? Colors.white : Colors.black87,
-            fontSize: 11,
-          ),
-        ),
-      ),
-    );
-  }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hint,
-    bool isNumeric = false,
-    String? prefixText,
-    IconData? icon,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: AppColors.containerColor,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: TextField(
-        controller: controller,
-        keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
-        inputFormatters: isNumeric
-            ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))]
-            : [],
-        decoration: InputDecoration(
-          hintText: hint,
-          border: InputBorder.none,
-          prefixText: prefixText,
-          prefixIcon: icon != null ? Icon(icon, color: AppColors.light, size: 18) : null,
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildPurchaseSummaryCard(Size size) {
     final double _ = getProductTotal();
-    final double additionalTotal = getAdditionalTotal();
+    getAdditionalTotal();
     final double totalCost = getTotalCost();
     final double _ = getTotalTrays();
-    final double perTray = getCostPerTray();
+    getCostPerTray();
+    final int totalEggsCount = products.fold(
+  0,
+  (sum, p) => sum + (int.tryParse(p.totalEggs) ?? 0),
+);
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -619,48 +1029,53 @@ class _NewpurchaseState extends State<Newpurchase> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Purchase Summary",
-            style: AppTextStyles.headingText25,
+          Center(
+            child: Text(
+              "Purchase Summary",
+              style: AppTextStyles.headingText25,
+            ),
           ),
-          SizedBox(height: size.height * 0.01),
+          SizedBox(height: size.height * 0.02),
+          Center(
+            child: Text(
+              "PURCHASE INFO",
+              style: AppTextStyles.bodyText16,
+            ),
+          ),
+          const Divider(),
           _buildRow("Supplier", selectedSupplierName),
           _buildRow("Location", originLocation),
-          const Divider(),
-          Text(
-            "Products Summary",
-            style: AppTextStyles.formInputs15dark,
+          
+_buildColumnRow(
+  "Products",
+  products
+      .map((p) => "${p.category} (${p.totalEggs})")
+      .toList(),
+),
+
+_buildColumnRow(
+  "Rate per Egg",
+  products
+      .map((p) => "₹ ${p.rate}")
+      .toList(),
+),
+const SizedBox(height: 8),
+
+        
+          
+           _buildRow("Total Eggs", totalEggsCount.toString()),
+           SizedBox(height: size.height * 0.02),
+            Center(
+            child: Text(
+              "AMOUNT SUMMARY",
+              style: AppTextStyles.bodyText16,
+            ),
           ),
-          SizedBox(height: size.height * 0.01),
-          ...products.map((p) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                children: [
-                  _buildRow("Category", p.category),
-                  _buildRow("Trays", p.quantity),
-                  _buildRow("Rate per Egg", "₹ ${p.rate}"),
-                ],
-              ),
-            );
-          }).toList(),
           const Divider(),
-          Text(
-            "Additional Costs",
-            style: AppTextStyles.formInputs15dark,
-          ),
-          _buildRow("Loading Charges", "₹ ${loadingController.text}"),
-          _buildRow("Unloading Charges", "₹ ${unloadingController.text}"),
-          _buildRow("Transport Charges", "₹ ${transportController.text}"),
-          _buildRow("Misc Expense", "₹ ${miscController.text}"),
-          _buildRow("Total Additional Cost", "₹ ${additionalTotal.toStringAsFixed(2)}"),
-          _buildRow("Cost per Tray", "₹ ${perTray.toStringAsFixed(2)}"),
-          const SizedBox(height: 12),
+           SizedBox(height: size.height * 0.02),
+          _buildRow("Subtotal", "₹ ${totalCost.toStringAsFixed(2)}"),
+          
+           SizedBox(height: size.height * 0.02),
           Row(
             children: List.generate(
               30,
@@ -678,7 +1093,7 @@ class _NewpurchaseState extends State<Newpurchase> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Total Estimated Cost",
+                "Grand Total",
                 style: AppTextStyles.headingText22,
               ),
               Text(
@@ -687,7 +1102,63 @@ class _NewpurchaseState extends State<Newpurchase> {
               ),
             ],
           ),
+          SizedBox(height: size.height * 0.02),
+           Center(
+            child: Text(
+              "PAYMENT BREAKDOWN",
+              style: AppTextStyles.bodyText16,
+            ),
+          ),
+          const Divider(),
+           _buildRow("Credit/Pending", "₹ ${totalCost.toStringAsFixed(2)}"),
           const SizedBox(height: 16),
+          Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(16),
+  decoration: BoxDecoration(
+    color: AppColors.containerColor,
+    border: Border.all(color: AppColors.border),
+    borderRadius: BorderRadius.circular(12),
+  ),
+  child: Column(
+    children: [
+      _buildRow(
+        "Paid Amount",
+        "₹ ${paidAmount.toStringAsFixed(2)}",
+        valueColor: Colors.green
+        
+      ),
+
+      const SizedBox(height: 8),
+
+      _buildRow(
+        "Pending Amount",
+        "₹ ${pendingAmount.toStringAsFixed(2)}",
+         valueColor: Colors.red
+      ),
+
+      const Padding(
+        padding: EdgeInsets.symmetric(vertical: 12),
+        child: Divider(thickness: 1),
+      ),
+
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            "Final Total",
+            style: AppTextStyles.headingText20,
+          ),
+          Text(
+            "₹ ${totalCost.toStringAsFixed(2)}",
+            style: AppTextStyles.headingText16,
+          ),
+        ],
+      ),
+    ],
+  ),
+),
+SizedBox(height: size.height * 0.02),
           
           // Submit Buttons
           BlocBuilder<PurchaseBloc, PurchaseState>(
@@ -762,7 +1233,9 @@ class _NewpurchaseState extends State<Newpurchase> {
     );
   }
 
-  Widget _buildRow(String title, String value) {
+  Widget _buildRow(String title, String value, {
+  Color valueColor = Colors.black,
+}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
@@ -771,10 +1244,78 @@ class _NewpurchaseState extends State<Newpurchase> {
           Text(title, style: AppTextStyles.formInputs15),
           Text(
             value.isEmpty ? "--" : value,
-            style: AppTextStyles.bodyText16,
+            style: AppTextStyles.headingText16.copyWith(color: valueColor,
+              ),
           ),
         ],
       ),
     );
   }
+
+Widget _buildColumnRow(String title, List<String> values) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 3),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: AppTextStyles.formInputs15,
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: values.map((value) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text(
+                value.isEmpty ? "--" : value,
+                style: AppTextStyles.headingText16
+            ));
+          }).toList(),
+        ),
+      ],
+    ),
+  );
+}
+Widget _buildDropdownField(
+  String label,
+  String? value,
+  List<String> items,
+  ValueChanged<String?> onChanged,
+) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      const SizedBox(height: 6),
+      DropdownButtonFormField<String>(
+        value: value?.isEmpty == true ? null : value,
+        decoration: InputDecoration(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 8,
+          ),
+        ),
+        items: items.map((item) {
+          return DropdownMenuItem(
+            value: item,
+            child: Text(item),
+          );
+        }).toList(),
+        onChanged: onChanged,
+      ),
+    ],
+  );
+}
+
 }

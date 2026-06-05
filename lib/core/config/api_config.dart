@@ -11,4 +11,8 @@ class ApiConfig {
   static const String getSupplier = "/api/getSupplier";
   static String arrival(String purchaseId) => "/api/admin/arrival/$purchaseId";
   static const String adminDashboard = "/api/admin/dashboard";
+   static String damageCategories(int branchId) =>
+      "/api/branch/damage/categories?branch_id=$branchId";
+  static const String branches="/api/branches";
+
 }

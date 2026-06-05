@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
-import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/Distribution/presentation/dispatch_planning_page.dart';
 import 'package:proteinova_connect/services/dispatch_service.dart';
 
@@ -738,8 +738,8 @@ class _DistributionPageState extends State<DistributionPage> {
                           physics: const NeverScrollableScrollPhysics(),
                           crossAxisCount: crossAxisCount,
                           childAspectRatio: childAspectRatio,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 15,
+                          mainAxisSpacing: 15,
                           children: [
                             _buildStatCard(
                               title: "Today Sales (Branch)",
@@ -983,77 +983,157 @@ class _DistributionPageState extends State<DistributionPage> {
     );
   }
 
-  Widget _buildStatCard({
-    required String title,
-    required int count,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Color(0xFF64748B),
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    count.toLocaleString(),
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF1E293B),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(color: Colors.grey, fontSize: 11),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-          ],
-        ),
+ Widget _buildStatCard({
+  required String title,
+  required int count,
+  required String subtitle,
+  required IconData icon,
+  required Color color,
+  VoidCallback? onTap,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+
+    child: Container(
+      padding: EdgeInsets.all(
+        getWidth(context, 14),
       ),
-    );
-  }
+
+      decoration: BoxDecoration(
+        color: Colors.white,
+
+        borderRadius: BorderRadius.circular(
+          getWidth(context, 12),
+        ),
+
+        border: Border.all(
+          color: const Color(0xFFE2E8F0),
+          width: getWidth(context, 1),
+        ),
+
+        boxShadow: [
+          BoxShadow(
+            color:
+                Colors.black.withOpacity(0.02),
+
+            blurRadius: getWidth(context, 4),
+
+            offset: Offset(
+              0,
+              getHeight(context, 2),
+            ),
+          ),
+        ],
+      ),
+
+      child: Row(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+        children: [
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+
+              children: [
+                Text(
+                  title,
+
+                  maxLines: 2,
+                  overflow:
+                      TextOverflow.ellipsis,
+
+                  style: TextStyle(
+                    color:
+                        const Color(0xFF64748B),
+
+                    fontSize:
+                        getWidth(context, 11),
+
+                    fontWeight:
+                        FontWeight.bold,
+                  ),
+                ),
+
+                SizedBox(
+                  height: getHeight(context, 8),
+                ),
+
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment:
+                      Alignment.centerLeft,
+
+                  child: Text(
+                    count.toLocaleString(),
+
+                    style: TextStyle(
+                      fontSize:
+                          getWidth(context, 22),
+
+                      fontWeight:
+                          FontWeight.w800,
+
+                      color:
+                          const Color(0xFF1E293B),
+                    ),
+                  ),
+                ),
+
+                SizedBox(
+                  height: getHeight(context, 4),
+                ),
+
+                Text(
+                  subtitle,
+
+                  maxLines: 2,
+                  overflow:
+                      TextOverflow.ellipsis,
+
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize:
+                        getWidth(context, 10),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          SizedBox(
+            width: getWidth(context, 10),
+          ),
+
+          Container(
+            padding: EdgeInsets.all(
+              getWidth(context, 8),
+            ),
+
+            decoration: BoxDecoration(
+              color:
+                  color.withOpacity(0.1),
+
+              borderRadius:
+                  BorderRadius.circular(
+                getWidth(context, 10),
+              ),
+            ),
+
+            child: Icon(
+              icon,
+              color: color,
+              size: getWidth(context, 22),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 }
 
 extension IntExtension on int {

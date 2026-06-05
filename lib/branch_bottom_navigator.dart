@@ -1,12 +1,19 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proteinova_connect/core/network/dio_client.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch/addexpense/presentation/expense_management/presentation/expense_management.dart';
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
+import 'package:proteinova_connect/features/branch/customer_trays/presentation/customer_trays.dart';
 import 'package:proteinova_connect/features/branch/daily_closing/presentation/daily_closing.dart';
+import 'package:proteinova_connect/features/branch/damage_entry/bloc/damage_bloc.dart';
+import 'package:proteinova_connect/features/branch/damage_entry/bloc/damage_event.dart';
+import 'package:proteinova_connect/features/branch/damage_entry/data/repository/damage_repository.dart';
+import 'package:proteinova_connect/features/branch/damage_entry/presentations/damage_entry_screen.dart';
 import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_bloc.dart';
 import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_event.dart';
 import 'package:proteinova_connect/features/branch/inventory/presentation/inventory.dart';
@@ -200,6 +207,16 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                   _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
 
                   _menuTile(Icons.money, "Expenses", ExpenseManagement()),
+                   _menuTile( Icons.inventory_2_outlined, "Customer trays", CustomerTrays()),
+
+                  _menuTile(Icons.error_outline_rounded, "Damage Entry", BlocProvider(
+  create: (_) => DamageBloc(
+    DamageRepository(DioClient().dio),
+  )..add(
+      FetchDamageCategoriesEvent(branchId: 11),
+    ),
+  child: const DamageEntryScreen(),
+)), 
 
                   //  _menuTile(Icons.money, "Admin in", AdminInventory()),
                   const SizedBox(height: 20),

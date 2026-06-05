@@ -16,7 +16,15 @@ import 'purchase_state.dart';
     on<FetchPurchaseInitData>((event, emit) async {
       emit(PurchaseLoading());
       try {
-        final suppliers = await supplierRepository.fetchSuppliers();
+        // Fetch suppliers — non-fatal; purchases still load if this fails.
+        List<dynamic> suppliers = [];
+        try {
+          suppliers = await supplierRepository.fetchSuppliers();
+        } catch (e) {
+          // Supplier fetch failed (e.g. null field in API response).
+          // Continue loading purchases so the main list still shows.
+        }
+
         final purchases = await purchaseRepository.getPurchases();
         _allPurchases = purchases;
         await cache.savePurchases(purchases);
@@ -113,7 +121,7 @@ on<SearchPurchaseEvent>((event, emit) {
     emit(PurchaseSubmitting());
 
     final res = await purchaseRepository.postPurchase(event.purchase);
-    final int purchaseId = int.tryParse(res?['data']?['id']?.toString() ?? '0') ?? 0;
+    final int purchaseId = int.tryParse(res['data']?['id']?.toString() ?? '0') ?? 0;
 
     // refresh purchase list
     final updatedList = await purchaseRepository.getPurchases();

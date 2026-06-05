@@ -33,30 +33,44 @@ class InventoryMetrics {
   final int readyForUnloading;
   final int delayedInTransit;
   final int currentStock;
-  final int damagedStock;
-  final double stockValue;
+  final int damagedTrays;
+  final int stockValue;
+  final int openingStock;
+  final int closingStock;
+  final int incomingStock;
+  final int salesToday;
+  final int purchaseExpense;
 
   InventoryMetrics({
     required this.expectedToday,
     required this.readyForUnloading,
     required this.delayedInTransit,
     required this.currentStock,
-    required this.damagedStock,
+    required this.damagedTrays,
     required this.stockValue,
+    required this.openingStock,
+    required this.closingStock,
+    required this.incomingStock,
+    required this.salesToday,
+    required this.purchaseExpense,
   });
 
   factory InventoryMetrics.fromJson(Map<String, dynamic> json) {
     return InventoryMetrics(
-      expectedToday: int.tryParse(json['expected_today']?.toString() ?? '') ?? 0,
-      readyForUnloading: int.tryParse(json['ready_for_unloading']?.toString() ?? '') ?? 0,
-      delayedInTransit: int.tryParse((json['delayed_in_transit'] ?? json['delayed_in_transit_count'])?.toString() ?? '') ?? 0,
-      currentStock: int.tryParse((json['current_stock'] ?? json['total_trays_in_transit'])?.toString() ?? '') ?? 0,
-      damagedStock: int.tryParse(json['damaged_stock']?.toString() ?? '') ?? 0,
-      stockValue: double.tryParse((json['stock_value'] ?? json['total_eggs_in_transit'])?.toString() ?? '') ?? 0.0,
+      expectedToday: json['expected_today'] ?? 0,
+      readyForUnloading: json['ready_for_unloading'] ?? 0,
+      delayedInTransit: json['delayed_in_transit'] ?? 0,
+      currentStock: json['current_stock'] ?? 0,
+      damagedTrays: json['damaged_trays'] ?? 0,
+      stockValue: json['stock_value'] ?? 0,
+      openingStock: json['opening_stock'] ?? 0,
+      closingStock: json['closing_stock'] ?? 0,
+      incomingStock: json['incoming_stock'] ?? 0,
+      salesToday: json['sales_today'] ?? 0,
+      purchaseExpense: json['purchase_expense'] ?? 0,
     );
   }
 }
-
 class PurchaseModel {
   final int id;
   final String poNumber;

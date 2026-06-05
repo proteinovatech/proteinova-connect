@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/config/api_config.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_dashboard_skeleton_loader.dart';
 import 'package:proteinova_connect/features/admin/presentation/notification_screen.dart';
 
@@ -616,45 +617,70 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
                     // Pagination Control
                     if (totalPages > 1) ...[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Page $modalPage of $totalPages (${modalData.length} records)",
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              OutlinedButton(
-                                onPressed: modalPage == 1
-                                    ? null
-                                    : () {
-                                        setStateModal(() {
-                                          modalPage = modalPage - 1;
-                                        });
-                                      },
-                                child: const Text("Previous"),
-                              ),
-                              const SizedBox(width: 8),
-                              OutlinedButton(
-                                onPressed: modalPage == totalPages
-                                    ? null
-                                    : () {
-                                        setStateModal(() {
-                                          modalPage = modalPage + 1;
-                                        });
-                                      },
-                                child: const Text("Next"),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                    ],
+  Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Expanded(
+        child: Text(
+          "Page $modalPage of $totalPages (${modalData.length} records)",
+          style: TextStyle(
+            fontSize: getWidth(context, 12),
+            color: Colors.grey,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+
+      SizedBox(width: getWidth(context, 8)),
+
+      Row(
+        children: [
+          SizedBox(
+            height: getHeight(context, 36),
+            child: OutlinedButton(
+              onPressed: modalPage == 1
+                  ? null
+                  : () {
+                      setStateModal(() {
+                        modalPage = modalPage - 1;
+                      });
+                    },
+              child: Text(
+                "Previous",
+                style: TextStyle(
+                  fontSize: getWidth(context, 12),
+                ),
+              ),
+            ),
+          ),
+
+          SizedBox(width: getWidth(context, 8)),
+
+          SizedBox(
+            height: getHeight(context, 36),
+            child: OutlinedButton(
+              onPressed: modalPage == totalPages
+                  ? null
+                  : () {
+                      setStateModal(() {
+                        modalPage = modalPage + 1;
+                      });
+                    },
+              child: Text(
+                "Next",
+                style: TextStyle(
+                  fontSize: getWidth(context, 12),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ],
+  ),
+
+  SizedBox(height: getHeight(context, 12)),
+],
 
                     SizedBox(
                       width: double.infinity,
