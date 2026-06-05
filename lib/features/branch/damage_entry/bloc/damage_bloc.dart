@@ -26,13 +26,13 @@ class DamageBloc extends Bloc<DamageEvent, DamageState> {
     );
 
     emit(state.copyWith(
-      isLoading: false,
+      isLoadingHistory: false,
       history: history,
     ));
 
   } catch (e) {
     emit(state.copyWith(
-      isLoading: false,
+      isLoadingHistory: false,
       error: e.toString(),
     ));
   }
