@@ -373,6 +373,7 @@ Future<void> _downloadBill(
 ) async {
 
   final pdf = pw.Document();
+  final ttf = await PdfGoogleFonts.notoSansRegular();
 
   final int totalEggs = (getTotalTrays() * 30).toInt();
 
@@ -547,11 +548,11 @@ Future<void> _downloadBill(
                               _tableCell("$eggs"),
 
                               _tableCell(
-                                "₹ ${rate.toStringAsFixed(2)}",
+                                "₹ ${rate.toStringAsFixed(2)}",ttf
                               ),
 
                               _tableCell(
-                                "₹ ${amount.toStringAsFixed(2)}",
+                                "₹ ${amount.toStringAsFixed(2)}",ttf
                               ),
                             ],
                           );
@@ -597,6 +598,7 @@ Future<void> _downloadBill(
                               pw.Text(
                                 "₹ ${totalCost.toStringAsFixed(2)}",
                                 style: pw.TextStyle(
+                                  font: ttf,
                                   fontWeight:
                                       pw.FontWeight.bold,
                                 ),
@@ -624,14 +626,15 @@ Future<void> _downloadBill(
   );
 }
  
- pw.Widget _tableCell(String text) {
+ pw.Widget _tableCell(String text,[pw.Font? font]) {
   return pw.Padding(
     padding: const pw.EdgeInsets.all(8),
     child: pw.Text(
       text,
       textAlign: pw.TextAlign.center,
-      style: const pw.TextStyle(
+      style:  pw.TextStyle(
         fontSize: 10,
+        font: font
       ),
     ),
   );
