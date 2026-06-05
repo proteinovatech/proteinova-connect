@@ -233,16 +233,6 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   ///Warehouse
                   _sectionTitle("Warehouse"),
 
-<<<<<<< HEAD
-                  //Inventory
-                  // _menuTile(
-                  //   Icons.store,
-                  //   "Branch Management",
-                  
-                  //   BlocProvider(
-                  //     create: (_) =>
-                  //         BranchBloc(BranchService())..add(LoadBranchesEvent()),
-=======
                   //Incoming Stock
                    _menuTile(
                     Icons.inventory_2_outlined,
@@ -255,7 +245,6 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                     IncomingStock(),
                   ),
                    
->>>>>>> 9304fe99fe958e451451e4a4bebf8cc68de7404f
 
                   //Purchase Expenses
                   _menuTile(
