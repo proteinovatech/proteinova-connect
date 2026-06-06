@@ -18,6 +18,7 @@ import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/rep
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/presentation/newpurchase.dart';
 import 'package:proteinova_connect/features/purchase/supplier/supplier_screen.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/presentation/purchase_dashboard.dart';
+import 'package:proteinova_connect/features/purchase/warehouse_stock_updates.dart';
 
 import 'features/admin/report/screens/purchase_report_screen.dart';
 
@@ -261,6 +262,20 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
                                       MaterialPageRoute(
                                         builder: (context) =>
                                             const PurchaseReportScreen(),
+                                      ),
+                                    );
+                                  },
+                                  ),
+                                  Divider(color: Colors.grey.shade200),
+_buildSettingTile(
+                                    icon: Icons.inventory_2_outlined,
+                                    title: "Warehouse Stock Updates",
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const WarehouseStockUpdates(),
                                       ),
                                     );
                                   },
