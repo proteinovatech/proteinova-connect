@@ -31,6 +31,7 @@ import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:proteinova_connect/admin_bottom_navigator.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:proteinova_connect/features/admin/report/screens/purchase_report_screen.dart';
 import 'package:proteinova_connect/firebase_options.dart';
 
 import 'package:proteinova_connect/core/services/app_bloc.dart';
@@ -92,7 +93,7 @@ class MyApp extends StatelessWidget {
       routes: {"/signup": (context) => const SignupScreen()},
 
       home: startScreen ?? const SignupScreen(),
-      //  home:BranchBottomNavigator(),
+      //  home:PurchaseReportScreen(),
     );
   }
 }

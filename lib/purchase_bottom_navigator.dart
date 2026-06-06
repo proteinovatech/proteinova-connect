@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proteinova_connect/core/cache/hive_service/purchase_hive_service.dart';
+import 'package:proteinova_connect/core/network/dio_client.dart';
+import 'package:proteinova_connect/features/admin/settings/screens/profile_screen.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
+import 'package:proteinova_connect/features/branch/branch_dashboard/presentation/add_supplier_screen.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/purchase/purchase_bloc.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/purchase/purchase_event.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_bloc.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_event.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/purchase_repository.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/supplier_repository.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/presentation/newpurchase.dart';
 import 'package:proteinova_connect/features/purchase/supplier/supplier_screen.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/presentation/purchase_dashboard.dart';
+
+import 'features/admin/report/screens/purchase_report_screen.dart';
 
 
 class PurchaseBottomNavigator extends StatefulWidget {
@@ -239,11 +252,20 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
 
                                   // Divider(color: Colors.grey.shade200),
 
-                                  // _buildSettingTile(
-                                  //   icon: Icons.language,
-                                  //   title: "Language",
-                                  // ),
-                                  // Divider(color: Colors.grey.shade200),
+                                  _buildSettingTile(
+                                    icon: Icons.inventory_2_outlined,
+                                    title: "Purchase Report",
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const PurchaseReportScreen(),
+                                      ),
+                                    );
+                                  },
+                                  ),
+                                  Divider(color: Colors.grey.shade200),
 
                                   _buildSettingTile(
                                     icon: Icons.logout,
@@ -369,7 +391,37 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
   }
   final List<Widget> pages = [
     PurchaseDashboard(),
+   MultiBlocProvider(
+  providers: [
+
+    BlocProvider<SupplierBloc>(
+      create: (_) => SupplierBloc(
+        SupplierRepository(DioClient().dio),
+      )..add(FetchSuppliers()),
+    ),
+
+    BlocProvider<PurchaseBloc>(
+      create: (_) => PurchaseBloc(
+        SupplierRepository(DioClient().dio),
+
+        PurchaseRepository(
+          DioClient().dio,
+          PurchaseCacheService(),
+        ),
+
+        PurchaseCacheService(),
+      )..add(FetchPurchaseInitData()),
+    ),
+
+  ],
+
+  child: const Newpurchase(
+    isEdit: false,
+    purchaseData: null,
+  ),
+),
     SuppliersScreen(),
+    AddSupplierScreen(),
     const Center(child: Text("Notifications Screen")),
   ];
 
@@ -387,8 +439,10 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildNavItem(Icons.grid_view, 0),
-            _buildNavItem(Icons.local_shipping_outlined, 1),
-            _buildNavItem(Icons.person_outline, 2),
+            _buildNavItem(Icons.shopping_cart, 1),
+            _buildNavItem(Icons.local_shipping_outlined, 2),
+            _buildNavItem(Icons.storefront_outlined, 3),
+            _buildNavItem(Icons.menu, 4),
           ],
         ),
       ),
@@ -400,7 +454,7 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
 
     return GestureDetector(
       onTap: () {
-        if (index == 2) {
+        if (index == 4) {
           _showProfileOptions(context);
         } else {
           setState(() {
@@ -437,9 +491,13 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
       case 0:
         return "Dashboard";
       case 1:
-        return "Supplier";
-      case 2:
-        return "Profile";
+        return "New Purchase";
+        case 2:
+        return "Suppliers";
+      case 3:
+        return "Add Supplier";
+      case 4:
+        return "Menu";
       default:
         return "";
     }
