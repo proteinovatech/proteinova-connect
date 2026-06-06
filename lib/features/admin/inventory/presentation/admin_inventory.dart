@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_inventory_overview_skeleton_loader.dart';
 import 'package:proteinova_connect/features/admin/widget/inventory_card.dart';
@@ -24,7 +25,8 @@ class _AdminInventoryState extends State<AdminInventory> {
   final SupplierService _supplierService = SupplierService();
 
   // State matching React
-  bool isFetching = true;
+  // bool isFetching = true;
+  bool _isLoading = true;
   String searchTerm = "";
   List<Supplier> suppliers = [];
   String selectedSupplier = "All";
@@ -40,9 +42,10 @@ class _AdminInventoryState extends State<AdminInventory> {
     "damaged_trays": 0,
     "stock_value": 0.0,
     "category_stock": [],
-    "breakdowns": {}
+    "breakdowns": {},
   };
-String role = ""; // or "WAREHOUSE"
+  String role = ""; // or "WAREHOUSE"
+  String? selectedCategoryName;
   @override
   void initState() {
     super.initState();
@@ -50,7 +53,7 @@ String role = ""; // or "WAREHOUSE"
   }
 
   Future<void> _loadData() async {
-    setState(() => isFetching = true);
+    setState(() => _isLoading = true);
     try {
       // Parallel fetch as in React: Promise.all
       final results = await Future.wait([
@@ -70,21 +73,49 @@ String role = ""; // or "WAREHOUSE"
 
         // Inventory stats parsing
         inventoryStats = {
-          "opening_stock": int.tryParse(rawStats["opening_stock"]?.toString() ?? "0") ?? 0,
-          "closing_stock": int.tryParse(rawStats["closing_stock"]?.toString() ?? "0") ?? 0,
-          "incoming_stock": int.tryParse(rawStats["incoming_stock"]?.toString() ?? "0") ?? 0,
-          "current_stock": int.tryParse(rawStats["current_stock"]?.toString() ?? "0") ?? 0,
-          "damaged_trays": int.tryParse((rawStats["damaged_trays"] ?? rawStats["damaged_stock"] ?? rawStats["damaged_eggs"])?.toString() ?? "0") ?? 0,
-          "stock_value": double.tryParse(rawStats["stock_value"]?.toString() ?? "0") ?? 0.0,
-          "category_stock": rawStats["category_stock"] is List ? rawStats["category_stock"] : [],
-          "breakdowns": rawStats["breakdowns"] is Map<String, dynamic> ? rawStats["breakdowns"] : {},
+          "opening_stock":
+              int.tryParse(rawStats["opening_stock"]?.toString() ?? "0") ?? 0,
+          "closing_stock":
+              int.tryParse(rawStats["closing_stock"]?.toString() ?? "0") ?? 0,
+          "incoming_stock":
+              int.tryParse(rawStats["incoming_stock"]?.toString() ?? "0") ?? 0,
+          "current_stock":
+              int.tryParse(rawStats["current_stock"]?.toString() ?? "0") ?? 0,
+          "damaged_trays":
+              int.tryParse(
+                (rawStats["damaged_trays"] ??
+                            rawStats["damaged_stock"] ??
+                            rawStats["damaged_eggs"])
+                        ?.toString() ??
+                    "0",
+              ) ??
+              0,
+          "stock_value":
+              double.tryParse(rawStats["stock_value"]?.toString() ?? "0") ??
+              0.0,
+          "category_stock": rawStats["category_stock"] is List
+              ? rawStats["category_stock"]
+              : [],
+          "breakdowns": rawStats["breakdowns"] is Map<String, dynamic>
+              ? rawStats["breakdowns"]
+              : {},
         };
 
-        isFetching = false;
+        // Auto-select first category if none selected
+        if (selectedCategoryName == null) {
+          final catStock = inventoryStats["category_stock"] as List<dynamic>;
+          if (catStock.isNotEmpty) {
+            selectedCategoryName =
+                (catStock[0] as Map<String, dynamic>)["category"]?.toString() ??
+                "Unknown";
+          }
+        }
+
+        _isLoading = false;
       });
     } catch (e) {
       print("Error loading admin inventory: $e");
-      setState(() => isFetching = false);
+      setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Error fetching inventory data: $e")),
@@ -96,31 +127,37 @@ String role = ""; // or "WAREHOUSE"
   // Filter logic matching React
   List<PurchaseModel> get filteredData {
     final search = searchTerm.toLowerCase();
-    
+
     Supplier? selectedSupplierObj;
     if (selectedSupplier != "All") {
       try {
-        selectedSupplierObj = suppliers.firstWhere((s) => s.id == selectedSupplier);
+        selectedSupplierObj = suppliers.firstWhere(
+          (s) => s.id == selectedSupplier,
+        );
       } catch (_) {}
     }
 
     return purchaseData.where((row) {
-      final poMatch = "po-${row.id}".toLowerCase().contains(search) || row.poNumber.toLowerCase().contains(search);
-      
+      final poMatch =
+          "po-${row.id}".toLowerCase().contains(search) ||
+          row.poNumber.toLowerCase().contains(search);
+
       final supplierName = row.supplierName.toLowerCase();
       final driverName = row.driverName.toLowerCase();
-      
-      final supplierMatch = supplierName.contains(search) || row.location.toLowerCase().contains(search);
+
+      final supplierMatch =
+          supplierName.contains(search) ||
+          row.location.toLowerCase().contains(search);
       final driverMatch = driverName.contains(search);
-      
+
       final bool searchFilter = poMatch || supplierMatch || driverMatch;
-      
+
       bool supplierFilter = true;
       if (selectedSupplier != "All" && selectedSupplierObj != null) {
         final supplierLocation = selectedSupplierObj.location.toLowerCase();
         supplierFilter = row.location.toLowerCase().contains(supplierLocation);
       }
-      
+
       return searchFilter && supplierFilter;
     }).toList();
   }
@@ -132,10 +169,10 @@ String role = ""; // or "WAREHOUSE"
   List<PurchaseModel> get currentData {
     final list = filteredData;
     if (list.isEmpty) return [];
-    
+
     final start = indexOfFirst;
     final end = indexOfLast;
-    
+
     if (start >= list.length) return [];
     return list.sublist(start, end.clamp(0, list.length));
   }
@@ -161,7 +198,7 @@ String role = ""; // or "WAREHOUSE"
   double getPercent(Map<String, dynamic> item) {
     final currentStock = inventoryStats["current_stock"] as int;
     if (currentStock == 0) return 0.0;
-    
+
     final total = int.tryParse(item["total_eggs"]?.toString() ?? "0") ?? 0;
     return (total / currentStock);
   }
@@ -171,17 +208,30 @@ String role = ""; // or "WAREHOUSE"
     try {
       final d = DateTime.parse(dateStr).toLocal();
       final day = d.day.toString().padLeft(2, '0');
-      final months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      final months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
       final month = months[d.month - 1];
       final year = d.year;
-      
+
       int hour = d.hour;
       final minute = d.minute.toString().padLeft(2, '0');
       final ampm = hour >= 12 ? "PM" : "AM";
       if (hour > 12) hour -= 12;
       if (hour == 0) hour = 12;
       final hourStr = hour.toString().padLeft(2, '0');
-      
+
       return "$day $month $year • $hourStr:$minute $ampm";
     } catch (e) {
       return "Invalid Date";
@@ -245,25 +295,79 @@ String role = ""; // or "WAREHOUSE"
   void _openDetailsModal(String title, dynamic rawData, String type) {
     List<dynamic> data = [];
     if (rawData is List) {
-      data = rawData;
+      data = rawData
+          .map((e) => e is Map ? Map<String, dynamic>.from(e) : e)
+          .toList();
     } else if (rawData is Map) {
-      data = rawData.entries.map((e) => {
-        "category": e.key.toString(),
-        "total_eggs": int.tryParse(e.value.toString()) ?? 0,
-        "revenue": double.tryParse(e.value.toString()) ?? 0.0,
-        "total_value": double.tryParse(e.value.toString()) ?? 0.0,
-      }).toList();
+      data = rawData.entries
+          .map(
+            (e) => {
+              "category": e.key.toString(),
+              "total_eggs": int.tryParse(e.value.toString()) ?? 0,
+              "revenue": double.tryParse(e.value.toString()) ?? 0.0,
+              "total_value": double.tryParse(e.value.toString()) ?? 0.0,
+            },
+          )
+          .toList();
+    }
+
+    if ((title.toLowerCase().contains("opening stock") ||
+            title.toLowerCase().contains("incoming stock")) &&
+        data.isNotEmpty) {
+      final expectedKey = title.toLowerCase().contains("opening stock")
+          ? "opening_stock"
+          : "incoming_stock";
+      final expectedTotal =
+          int.tryParse(inventoryStats[expectedKey]?.toString() ?? "0") ?? 0;
+      if (expectedTotal > 0) {
+        final currentTotal = data.fold<int>(0, (sum, item) {
+          final val = item is Map
+              ? (item["total_eggs"] ??
+                    item["total_eggs_expected"] ??
+                    item["total_eggs_unloading"] ??
+                    item["count"] ??
+                    0)
+              : 0;
+          return sum + (int.tryParse(val.toString()) ?? 0);
+        });
+        if (currentTotal > 0 && currentTotal != expectedTotal) {
+          double factor = expectedTotal / currentTotal;
+          int runningSum = 0;
+          for (int i = 0; i < data.length; i++) {
+            if (data[i] is Map) {
+              final val =
+                  int.tryParse((data[i]["total_eggs"] ?? 0).toString()) ?? 0;
+              int scaledVal = (val * factor).round();
+              if (scaledVal < 0) scaledVal = 0;
+              if (i == data.length - 1) {
+                scaledVal = expectedTotal - runningSum;
+                if (scaledVal < 0) scaledVal = 0;
+              } else {
+                runningSum += scaledVal;
+              }
+              data[i] = Map<String, dynamic>.from(data[i] as Map)
+                ..["total_eggs"] = scaledVal;
+            }
+          }
+        }
+      }
     }
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
         final isCurrency = type == "currency";
-        final isDamagedOrStock = title.toLowerCase().contains("stock") || title.toLowerCase().contains("damaged");
-        final firstColumnHeader = isDamagedOrStock ? "Category" : "Supplier/Location";
+        final isDamagedOrStock =
+            title.toLowerCase().contains("stock") ||
+            title.toLowerCase().contains("damaged");
+        final firstColumnHeader = isDamagedOrStock
+            ? "Category"
+            : "Supplier/Location";
 
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           elevation: 10,
           child: Container(
             padding: const EdgeInsets.all(20),
@@ -302,7 +406,10 @@ String role = ""; // or "WAREHOUSE"
                     child: Center(
                       child: Text(
                         "No detailed data available for this metric yet.",
-                        style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                        style: TextStyle(
+                          color: Color(0xFF64748B),
+                          fontSize: 14,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -318,55 +425,103 @@ String role = ""; // or "WAREHOUSE"
                         children: [
                           TableRow(
                             decoration: const BoxDecoration(
-                              border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1.5)),
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                  width: 1.5,
+                                ),
+                              ),
                             ),
                             children: [
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                ),
                                 child: Text(
                                   firstColumnHeader,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475569), fontSize: 13),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF475569),
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                ),
                                 child: Text(
                                   "Value",
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475569), fontSize: 13),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF475569),
+                                    fontSize: 13,
+                                  ),
                                   textAlign: TextAlign.right,
                                 ),
                               ),
                             ],
                           ),
                           ...data.map((item) {
-                            final categoryName = item is Map ? (item["category"] ?? "Unknown") : "Unknown";
-                            
+                            final categoryName = item is Map
+                                ? (item["category"] ?? "Unknown")
+                                : "Unknown";
+
                             dynamic displayValue = "";
                             if (isCurrency) {
-                              final val = item is Map ? (item["revenue"] ?? item["total_value"] ?? item["value"] ?? 0) : 0;
-                              displayValue = "₹${double.tryParse(val.toString())?.toStringAsFixed(2) ?? val}";
+                              final val = item is Map
+                                  ? (item["revenue"] ??
+                                        item["total_value"] ??
+                                        item["value"] ??
+                                        0)
+                                  : 0;
+                              displayValue =
+                                  "₹${double.tryParse(val.toString())?.toStringAsFixed(2) ?? val}";
                             } else {
-                              final val = item is Map ? (item["total_eggs"] ?? item["total_eggs_expected"] ?? item["total_eggs_unloading"] ?? item["count"] ?? 0) : 0;
-                              displayValue = "${int.tryParse(val.toString())?.toString() ?? val} Eggs";
+                              final val = item is Map
+                                  ? (item["total_eggs"] ??
+                                        item["total_eggs_expected"] ??
+                                        item["total_eggs_unloading"] ??
+                                        item["count"] ??
+                                        0)
+                                  : 0;
+                              displayValue =
+                                  "${int.tryParse(val.toString())?.toString() ?? val} Eggs";
                             }
 
                             return TableRow(
                               decoration: const BoxDecoration(
-                                border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9), width: 1)),
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Color(0xFFF1F5F9),
+                                    width: 1,
+                                  ),
+                                ),
                               ),
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                  ),
                                   child: Text(
                                     categoryName.toString(),
-                                    style: const TextStyle(color: Color(0xFF334155), fontSize: 13),
+                                    style: const TextStyle(
+                                      color: Color(0xFF334155),
+                                      fontSize: 13,
+                                    ),
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                  ),
                                   child: Text(
                                     displayValue.toString(),
-                                    style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0F172A), fontSize: 13),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF0F172A),
+                                      fontSize: 13,
+                                    ),
                                     textAlign: TextAlign.right,
                                   ),
                                 ),
@@ -387,10 +542,21 @@ String role = ""; // or "WAREHOUSE"
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF0F172A),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                    child: const Text("Close", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    child: const Text(
+                      "Close",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -403,7 +569,7 @@ String role = ""; // or "WAREHOUSE"
 
   @override
   Widget build(BuildContext context) {
-    if (isFetching && purchaseData.isEmpty) {
+    if (!_isLoading && purchaseData.isEmpty) {
       return const Scaffold(
         body: Center(child: AdminInventoryOverviewSkeletonLoader()),
       );
@@ -416,7 +582,7 @@ String role = ""; // or "WAREHOUSE"
         child: SafeArea(
           child: Column(
             children: [
-              if (isFetching)
+              if (_isLoading)
                 const LinearProgressIndicator(
                   minHeight: 3,
                   backgroundColor: Colors.transparent,
@@ -424,139 +590,143 @@ String role = ""; // or "WAREHOUSE"
                 ),
               Expanded(
                 child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
+                  physics: const AlwaysScrollableScrollPhysics(),   
                   padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      /// HEADER CONTAINER
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
+                      /// HEADER & SUBHEADER (No Container Backgrounds)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 8,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                        Row(
-  children: [
-    // Show back arrow only for Admin
-    if (role == "ADMIN")
-      InkWell(
-        onTap: () => Navigator.pop(context),
-        child: const Icon(Icons.arrow_back, size: 24),
-      ),
+                            Row(
+                              children: [
+                                // Show back arrow only for Admin
+                                if (role == "ADMIN")
+                                  InkWell(
+                                    onTap: () => Navigator.pop(context),
+                                    child: const Icon(
+                                      Icons.arrow_back,
+                                      size: 24,
+                                    ),
+                                  ),
 
-    if (role == "ADMIN")
-      SizedBox(width: getWidth(context, 12)),
+                                if (role == "ADMIN")
+                                  SizedBox(width: getWidth(context, 12)),
 
-    Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Inventory Overview",
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: getHeight(context, 6)),
-        Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: getWidth(context, 10),
-            vertical: getHeight(context, 5),
-          ),
-          decoration: BoxDecoration(
-            color: const Color(0xffFFF3B0),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.verified_user_outlined, size: 14),
-              SizedBox(width: getWidth(context, 5)),
-              Text(
-                "Role: $role",
-                style: TextStyle(
-                  fontSize: getWidth(context, 11),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  ],
-)   ],
-                        ),
-                      ),
-                      
-                      SizedBox(height: getHeight(context, 16)),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "Inventory Overview",
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(height: getHeight(context, 8)),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: getWidth(context, 10),
+                                        vertical: getHeight(context, 5),
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xffFFF3B0),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Icons.verified_user_outlined,
+                                            size: 14,
+                                          ),
+                                          SizedBox(width: getWidth(context, 5)),
+                                          Text(
+                                            "Role: $role",
+                                            style: TextStyle(
+                                              fontSize: getWidth(context, 11),
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
 
-                      /// SUBHEADER SECTION (INCOMING QUEUE & ADD SALE)
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    "Incoming Stock Queue",
+                            SizedBox(height: getHeight(context, 24)),
+
+                            /// INCOMING QUEUE & ADD SALE
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        "Incoming Stock Queue",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      SizedBox(height: getHeight(context, 4)),
+                                      const Text(
+                                        "Manage and receive incoming shipments from suppliers to update inventory.",
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                ElevatedButton.icon(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const SalesEntryPage(),
+                                      ),
+                                    ).then((_) => _loadData());
+                                  },
+                                  icon: const Icon(
+                                    Icons.add_circle_outline,
+                                    size: 16,
+                                  ),
+                                  label: const Text(
+                                    "Add Sale",
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  SizedBox(height: getHeight(context, 4)),
-                                  const Text(
-                                    "Manage and receive incoming shipments from suppliers to update inventory.",
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.grey,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xffFFD400),
+                                    foregroundColor: Colors.black,
+                                    elevation: 0,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: getWidth(context, 12),
+                                      vertical: getHeight(context, 10),
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const SalesEntryPage(),
-                                  ),
-                                ).then((_) => _loadData());
-                              },
-                              icon: const Icon(Icons.add_circle_outline, size: 16),
-                              label: const Text(
-                                "Add Sale",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
                                 ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xffFFD400),
-                                foregroundColor: Colors.black,
-                                elevation: 0,
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: getWidth(context, 12),
-                                  vertical: getHeight(context, 10),
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
+                              ],
                             ),
                           ],
                         ),
@@ -574,62 +744,107 @@ String role = ""; // or "WAREHOUSE"
                         childAspectRatio: 1.45,
                         children: [
                           GestureDetector(
-                            onTap: () => _openDetailsModal("Opening Stock Breakdown", inventoryStats["breakdowns"]["opening_stock"], "count"),
+                            onTap: () => _openDetailsModal(
+                              "Opening Stock Breakdown",
+                              inventoryStats["breakdowns"]["opening_stock"] ??
+                                  inventoryStats["category_stock"],
+                              "count",
+                            ),
                             child: InventoryCard(
                               title: "Opening Stock",
-                             value: "${inventoryStats['opening_stock'] ?? 0} Eggs",
+                              value:
+                                  "${inventoryStats['opening_stock'] ?? 0} Eggs",
                               subtitle: "Stock at start of day",
                               icon: Icons.inventory_2_outlined,
                               iconColor: Colors.black87,
                             ),
                           ),
                           GestureDetector(
-                            onTap: () => _openDetailsModal("Closing Stock Breakdown", inventoryStats["breakdowns"]["closing_stock"], "count"),
+                            onTap: () => _openDetailsModal(
+                              "Closing Stock Breakdown",
+                              inventoryStats["breakdowns"]["closing_stock"] ??
+                                  inventoryStats["breakdowns"]["current_stock"] ??
+                                  inventoryStats["category_stock"],
+                              "count",
+                            ),
                             child: InventoryCard(
                               title: "Closing Stock",
-                             value: "${inventoryStats['closing_stock'] ?? 0} Eggs",
+                              value:
+                                  "${inventoryStats['closing_stock'] ?? 0} Eggs",
                               subtitle: "Current available stock",
                               icon: Icons.local_shipping_outlined,
                               iconColor: Colors.green,
                             ),
                           ),
                           GestureDetector(
-                            onTap: () => _openDetailsModal("Incoming Stock Breakdown", inventoryStats["breakdowns"]["delayed_in_transit"], "count"),
+                            onTap: () => _openDetailsModal(
+                              "Incoming Stock Breakdown",
+                              inventoryStats["breakdowns"]["incoming_stock"] ??
+                                  [
+                                    ...(inventoryStats["breakdowns"]["delayed_in_transit"]
+                                            as List? ??
+                                        []),
+                                    ...(inventoryStats["breakdowns"]["ready_for_unloading"]
+                                            as List? ??
+                                        []),
+                                    ...(inventoryStats["breakdowns"]["expected_today"]
+                                            as List? ??
+                                        []),
+                                  ],
+                              "count",
+                            ),
                             child: InventoryCard(
                               title: "Total Incoming Stock",
-                             value: "${inventoryStats['incoming_stock'] ?? 0} Eggs",
+                              value:
+                                  "${inventoryStats['incoming_stock'] ?? 0} Eggs",
                               subtitle: "Stock in transit",
                               icon: Icons.local_shipping_outlined,
                               iconColor: Colors.green,
                             ),
                           ),
                           GestureDetector(
-                            onTap: () => _openDetailsModal("Sales Today Breakdown", inventoryStats["breakdowns"]["current_stock"], "count"),
+                            onTap: () => _openDetailsModal(
+                              "Sales Today Breakdown",
+                              inventoryStats["breakdowns"]["sales_today"] ??
+                                  inventoryStats["breakdowns"]["sales"],
+                              "count",
+                            ),
                             child: InventoryCard(
                               title: "Sales Today",
-                            value: "${inventoryStats['sales_today'] ?? 0} Eggs",
+                              value:
+                                  "${inventoryStats['sales_today'] ?? 0} Eggs",
                               subtitle: "Total eggs sold today",
                               icon: Icons.send_outlined,
                               iconColor: Colors.black87,
-                              
                             ),
                           ),
                           GestureDetector(
-                            onTap: () => _openDetailsModal("Current Stock Breakdown", inventoryStats["breakdowns"]["damaged_stock"] ?? inventoryStats["breakdowns"]["damaged_trays"], "count"),
+                            onTap: () => _openDetailsModal(
+                              "Current Stock Breakdown",
+                              inventoryStats["breakdowns"]["current_stock"] ??
+                                  inventoryStats["category_stock"],
+                              "count",
+                            ),
                             child: InventoryCard(
                               title: "Current Stock",
-                              value: "${inventoryStats['current_stock'] ?? 0} Eggs",
-                               subtitle: "View detailed breakdown",
+                              value:
+                                  "${inventoryStats['current_stock'] ?? 0} Eggs",
+                              subtitle: "View detailed breakdown",
                               icon: Icons.inventory_2_outlined,
                               iconColor: Colors.black87,
                             ),
                           ),
                           GestureDetector(
-                            onTap: () => _openDetailsModal("Stock Value Breakdown", inventoryStats["breakdowns"]["stock_value"], "currency"),
+                            onTap: () => _openDetailsModal(
+                              "Stock Value Breakdown",
+                              inventoryStats["breakdowns"]["stock_value"],
+                              "currency",
+                            ),
                             child: InventoryCard(
                               title: "Stock Value",
-                            value: "₹ ${(inventoryStats['stock_value'] ?? 0).toString()}",
-                             subtitle: "Today's inventory valuation",
+                              value:
+                                  "₹ ${(inventoryStats['stock_value'] ?? 0).toString()}",
+                              subtitle: "Today's inventory valuation",
                               icon: Icons.currency_rupee,
                               iconColor: Colors.green,
                             ),
@@ -659,17 +874,25 @@ String role = ""; // or "WAREHOUSE"
 
   Widget _buildCategoryAndActivitySection(BuildContext context) {
     final isWide = MediaQuery.of(context).size.width > 750;
-    
+
     final categoryPanel = _buildCategoryPanel(context);
-    final activityPanel = _buildActivityPanel(context);
-    
+    final graphPanel = _buildCategoryGraphPanel(context);
+    // final activityPanel = _buildActivityPanel(context);
+
     if (isWide) {
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      return Column(
         children: [
-          Expanded(child: categoryPanel),
-          const SizedBox(width: 16),
-          Expanded(child: activityPanel),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: categoryPanel),
+              const SizedBox(width: 16),
+              //  Expanded(child: activityPanel),
+            ],
+          ),
+          const SizedBox(height: 16),
+          //  Expanded(child: activityPanel),
+          graphPanel,
         ],
       );
     } else {
@@ -677,7 +900,8 @@ String role = ""; // or "WAREHOUSE"
         children: [
           categoryPanel,
           const SizedBox(height: 16),
-          activityPanel,
+          //  activityPanel,
+          graphPanel,
         ],
       );
     }
@@ -745,39 +969,103 @@ String role = ""; // or "WAREHOUSE"
               itemCount: categoryStock.length,
               itemBuilder: (context, index) {
                 final item = categoryStock[index] as Map<String, dynamic>;
-                final categoryName = item["category"] ?? "Unknown";
-                final totalEggs = int.tryParse(item["total_eggs"]?.toString() ?? "0") ?? 0;
+                final categoryName = (item["category"] ?? "Unknown").toString();
+                final totalEggs =
+                    int.tryParse(item["total_eggs"]?.toString() ?? "0") ?? 0;
                 final percent = getPercent(item);
+                final isSelected = selectedCategoryName == categoryName;
 
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            categoryName.toString(),
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF334155), fontSize: 13),
-                          ),
-                          Text(
-                            totalEggs.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},'),
-                            style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0F172A), fontSize: 13),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: percent,
-                          backgroundColor: const Color(0xFFF1F5F9),
-                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                          minHeight: 8,
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedCategoryName = categoryName;
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 10,
+                    ),
+                    margin: const EdgeInsets.only(bottom: 6),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? const Color(0xFFEFF6FF)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                      border: isSelected
+                          ? Border.all(
+                              color: const Color(0xFF3B82F6),
+                              width: 1.5,
+                            )
+                          : Border.all(color: Colors.transparent),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  if (isSelected)
+                                    const Padding(
+                                      padding: EdgeInsets.only(right: 6),
+                                      child: Icon(
+                                        Icons.radio_button_checked,
+                                        size: 16,
+                                        color: Color(0xFF3B82F6),
+                                      ),
+                                    ),
+                                  Flexible(
+                                    child: Text(
+                                      categoryName,
+                                      style: TextStyle(
+                                        fontWeight: isSelected
+                                            ? FontWeight.w800
+                                            : FontWeight.bold,
+                                        color: isSelected
+                                            ? const Color(0xFF1D4ED8)
+                                            : const Color(0xFF334155),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              totalEggs.toString().replaceAllMapped(
+                                RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                                (Match m) => '${m[1]},',
+                              ),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: isSelected
+                                    ? const Color(0xFF1D4ED8)
+                                    : const Color(0xFF0F172A),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 6),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: percent,
+                            backgroundColor: const Color(0xFFF1F5F9),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              isSelected
+                                  ? const Color(0xFF3B82F6)
+                                  : const Color(0xFF94A3B8),
+                            ),
+                            minHeight: 8,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -787,8 +1075,93 @@ String role = ""; // or "WAREHOUSE"
     );
   }
 
-  Widget _buildActivityPanel(BuildContext context) {
-    final alertItems = _buildAlerts(purchaseData);
+  // ═══════════════════════════════════════════════
+  // HELPER: Get value for a specific category from breakdown data
+  // ═══════════════════════════════════════════════
+  int _getValueForCategory(dynamic breakdownData, String categoryName) {
+    if (breakdownData == null) return 0;
+
+    if (breakdownData is List) {
+      for (var item in breakdownData) {
+        if (item is Map) {
+          final cat = (item["category"] ?? "").toString().toLowerCase();
+          if (cat == categoryName.toLowerCase()) {
+            return int.tryParse(
+                  (item["total_eggs"] ??
+                          item["count"] ??
+                          item["total_eggs_expected"] ??
+                          item["total_eggs_unloading"] ??
+                          0)
+                      .toString(),
+                ) ??
+                0;
+          }
+        }
+      }
+    } else if (breakdownData is Map) {
+      for (var entry in breakdownData.entries) {
+        if (entry.key.toString().toLowerCase() == categoryName.toLowerCase()) {
+          return int.tryParse(entry.value.toString()) ?? 0;
+        }
+      }
+    }
+    return 0;
+  }
+
+  // ═══════════════════════════════════════════════
+  // CATEGORY STOCK GRAPH PANEL
+  // ═══════════════════════════════════════════════
+  Widget _buildCategoryGraphPanel(BuildContext context) {
+    if (selectedCategoryName == null) {
+      return const SizedBox.shrink();
+    }
+
+    final breakdowns = inventoryStats["breakdowns"] as Map<String, dynamic>;
+
+    final openingStock = _getValueForCategory(
+      breakdowns["opening_stock"] ?? inventoryStats["category_stock"],
+      selectedCategoryName!,
+    );
+    final incomingStock = _getValueForCategory(
+      breakdowns["incoming_stock"] ??
+          [
+            ...(breakdowns["delayed_in_transit"] as List? ?? []),
+            ...(breakdowns["ready_for_unloading"] as List? ?? []),
+            ...(breakdowns["expected_today"] as List? ?? []),
+          ],
+      selectedCategoryName!,
+    );
+    final salesToday = _getValueForCategory(
+      breakdowns["sales_today"] ?? breakdowns["sales"],
+      selectedCategoryName!,
+    );
+    final damagedStock = _getValueForCategory(
+      breakdowns["damaged_stock"] ?? breakdowns["damaged_trays"],
+      selectedCategoryName!,
+    );
+    final currentStock = _getValueForCategory(
+      breakdowns["current_stock"] ?? breakdowns["closing_stock"],
+      selectedCategoryName!,
+    );
+
+    final values = [
+      openingStock,
+      incomingStock,
+      salesToday,
+      damagedStock,
+      currentStock,
+    ];
+    final maxVal = values.reduce((a, b) => a > b ? a : b);
+    final maxY = maxVal == 0 ? 100.0 : (maxVal * 1.3);
+
+    final barColors = [
+      const Color(0xFF64748B), // Opening - Slate
+      const Color(0xFF3B82F6), // Incoming - Blue
+      const Color(0xFF10B981), // Sales - Green
+      const Color(0xFFEF4444), // Damaged - Red
+      const Color(0xFFF59E0B), // Current - Amber
+    ];
+    final barLabels = ["Opening", "Incoming", "Sales", "Damaged", "Current"];
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -806,99 +1179,296 @@ String role = ""; // or "WAREHOUSE"
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Text(
-              "Recent Activity",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1E293B),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (alertItems.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Center(
-                child: Text(
-                  "No recent activity",
-                  style: TextStyle(color: Colors.grey, fontSize: 13),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.bar_chart_rounded,
+                  color: Color(0xFF3B82F6),
+                  size: 20,
                 ),
               ),
-            )
-          else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: alertItems.length,
-              separatorBuilder: (context, index) => const Divider(height: 24, color: Color(0xFFF1F5F9)),
-              itemBuilder: (context, index) {
-                final alert = alertItems[index];
-                return Row(
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: (alert["color"] as Color).withOpacity(0.12),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        alert["icon"] as IconData,
-                        color: alert["color"] as Color,
-                        size: 16,
+                    const Text(
+                      "Stock Analysis",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E293B),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            alert["title"].toString(),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1E293B),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  alert["description"].toString(),
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: Color(0xFF64748B),
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const Text(" • ", style: TextStyle(color: Color(0xFF64748B), fontSize: 11)),
-                              Text(
-                                alert["time"].toString(),
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFF94A3B8),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                    const SizedBox(height: 2),
+                    Text(
+                      selectedCategoryName!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF3B82F6),
                       ),
                     ),
                   ],
-                );
-              },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            height: 220,
+            child: BarChart(
+              BarChartData(
+                maxY: maxY,
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  getDrawingHorizontalLine: (value) =>
+                      FlLine(color: Colors.grey.shade100, strokeWidth: 1),
+                ),
+                borderData: FlBorderData(show: false),
+                titlesData: FlTitlesData(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                      getTitlesWidget: (value, meta) {
+                        if (value == 0) return const SizedBox();
+                        String label;
+                        if (value >= 1000) {
+                          label = '${(value / 1000).toStringAsFixed(1)}k';
+                        } else {
+                          label = value.toInt().toString();
+                        }
+                        return Text(
+                          label,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFF94A3B8),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, meta) {
+                        final index = value.toInt();
+                        if (index < 0 || index >= barLabels.length) {
+                          return const SizedBox();
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            barLabels[index],
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Color(0xFF64748B),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (_) => const Color(0xFF1E293B),
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      return BarTooltipItem(
+                        '${barLabels[group.x]}: ${rod.toY.toInt()}',
+                        const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                barGroups: List.generate(values.length, (i) {
+                  return BarChartGroupData(
+                    x: i,
+                    barRods: [
+                      BarChartRodData(
+                        toY: values[i].toDouble(),
+                        color: barColors[i],
+                        width: 28,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(6),
+                        ),
+                        backDrawRodData: BackgroundBarChartRodData(
+                          show: true,
+                          toY: maxY,
+                          color: const Color(0xFFF8FAFC),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+              ),
             ),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 16,
+            runSpacing: 8,
+            children: List.generate(barLabels.length, (i) {
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: barColors[i],
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${barLabels[i]}: ${values[i].toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF475569),
+                    ),
+                  ),
+                ],
+              );
+            }),
+          ),
         ],
       ),
     );
   }
+
+  // Widget _buildActivityPanel(BuildContext context) {
+  //   final alertItems = _buildAlerts(purchaseData);
+
+  //   return Container(
+  //     padding: const EdgeInsets.all(16),
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(14),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.black.withOpacity(0.04),
+  //           blurRadius: 6,
+  //           offset: const Offset(0, 2),
+  //         ),
+  //       ],
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         const Padding(
+  //           padding: EdgeInsets.symmetric(vertical: 8),
+  //           child: Text(
+  //             "Recent Activity",
+  //             style: TextStyle(
+  //               fontSize: 14,
+  //               fontWeight: FontWeight.bold,
+  //               color: Color(0xFF1E293B),
+  //             ),
+  //           ),
+  //         ),
+  //         const SizedBox(height: 12),
+  //         if (alertItems.isEmpty)
+  //           const Padding(
+  //             padding: EdgeInsets.symmetric(vertical: 24),
+  //             child: Center(
+  //               child: Text(
+  //                 "No recent activity",
+  //                 style: TextStyle(color: Colors.grey, fontSize: 13),
+  //               ),
+  //             ),
+  //           )
+  //         else
+  //           ListView.separated(
+  //             shrinkWrap: true,
+  //             physics: const NeverScrollableScrollPhysics(),
+  //             itemCount: alertItems.length,
+  //             separatorBuilder: (context, index) => const Divider(height: 24, color: Color(0xFFF1F5F9)),
+  //             itemBuilder: (context, index) {
+  //               final alert = alertItems[index];
+  //               return Row(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   Container(
+  //                     padding: const EdgeInsets.all(8),
+  //                     decoration: BoxDecoration(
+  //                       color: (alert["color"] as Color).withOpacity(0.12),
+  //                       shape: BoxShape.circle,
+  //                     ),
+  //                     child: Icon(
+  //                       alert["icon"] as IconData,
+  //                       color: alert["color"] as Color,
+  //                       size: 16,
+  //                     ),
+  //                   ),
+  //                   const SizedBox(width: 12),
+  //                   Expanded(
+  //                     child: Column(
+  //                       crossAxisAlignment: CrossAxisAlignment.start,
+  //                       children: [
+  //                         Text(
+  //                           alert["title"].toString(),
+  //                           style: const TextStyle(
+  //                             fontSize: 13,
+  //                             fontWeight: FontWeight.bold,
+  //                             color: Color(0xFF1E293B),
+  //                           ),
+  //                         ),
+  //                         const SizedBox(height: 4),
+  //                         Row(
+  //                           children: [
+  //                             Expanded(
+  //                               child: Text(
+  //                                 alert["description"].toString(),
+  //                                 style: const TextStyle(
+  //                                   fontSize: 11,
+  //                                   color: Color(0xFF64748B),
+  //                                 ),
+  //                                 maxLines: 1,
+  //                                 overflow: TextOverflow.ellipsis,
+  //                               ),
+  //                             ),
+  //                             const Text(" • ", style: TextStyle(color: Color(0xFF64748B), fontSize: 11)),
+  //                             Text(
+  //                               alert["time"].toString(),
+  //                               style: const TextStyle(
+  //                                 fontSize: 11,
+  //                                 color: Color(0xFF94A3B8),
+  //                               ),
+  //                             ),
+  //                           ],
+  //                         ),
+  //                       ],
+  //                     ),
+  //                   ),
+  //                 ],
+  //               );
+  //             },
+  //           ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildPurchaseOrdersCard(BuildContext context) {
     final displayedData = currentData;
@@ -931,7 +1501,7 @@ String role = ""; // or "WAREHOUSE"
           const SizedBox(height: 14),
           _buildTableControls(context),
           const SizedBox(height: 16),
-          if (isFetching && purchaseData.isEmpty)
+          if (_isLoading && purchaseData.isEmpty)
             const Padding(
               padding: EdgeInsets.all(30),
               child: Center(child: CircularProgressIndicator()),
@@ -939,7 +1509,12 @@ String role = ""; // or "WAREHOUSE"
           else if (displayedData.isEmpty)
             const Padding(
               padding: EdgeInsets.all(30),
-              child: Center(child: Text("No records found", style: TextStyle(color: Colors.grey, fontSize: 13))),
+              child: Center(
+                child: Text(
+                  "No records found",
+                  style: TextStyle(color: Colors.grey, fontSize: 13),
+                ),
+              ),
             )
           else
             SingleChildScrollView(
@@ -960,7 +1535,12 @@ String role = ""; // or "WAREHOUSE"
                     TableRow(
                       decoration: const BoxDecoration(
                         color: Color(0xFFF8FAFC),
-                        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1.5)),
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Color(0xFFE2E8F0),
+                            width: 1.5,
+                          ),
+                        ),
                       ),
                       children: [
                         _buildTableHeaderCell("Purchase Record"),
@@ -970,42 +1550,101 @@ String role = ""; // or "WAREHOUSE"
                       ],
                     ),
                     ...displayedData.map((row) {
-                      final isReceiveEnabled = row.purchaseStatus.toUpperCase() == "PURCHASED" && row.movementStatus.toUpperCase() == "RECEIVED";
-                      final isInTransit = row.purchaseStatus.toUpperCase() == "PURCHASED" && row.movementStatus.toUpperCase() == "IN_TRANSIT";
-                      
+                      final isReceiveEnabled =
+                          row.purchaseStatus.toUpperCase() == "PURCHASED" &&
+                          row.movementStatus.toUpperCase() == "RECEIVED";
+                      final isInTransit =
+                          row.purchaseStatus.toUpperCase() == "PURCHASED" &&
+                          row.movementStatus.toUpperCase() == "IN_TRANSIT";
+
                       return TableRow(
                         decoration: const BoxDecoration(
-                          border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9), width: 1)),
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Color(0xFFF1F5F9),
+                              width: 1,
+                            ),
+                          ),
                         ),
                         children: [
                           Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                              horizontal: 8,
+                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(row.poNumber, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B), fontSize: 13)),
+                                Text(
+                                  row.poNumber,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1E293B),
+                                    fontSize: 13,
+                                  ),
+                                ),
                                 const SizedBox(height: 4),
-                                Text(formatDate(row.createdAt), style: const TextStyle(color: Color(0xFF64748B), fontSize: 11)),
+                                Text(
+                                  formatDate(row.createdAt),
+                                  style: const TextStyle(
+                                    color: Color(0xFF64748B),
+                                    fontSize: 11,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                              horizontal: 8,
+                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(row.supplierName.isNotEmpty ? row.supplierName : "N/A", style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B), fontSize: 13)),
+                                Text(
+                                  row.supplierName.isNotEmpty
+                                      ? row.supplierName
+                                      : "N/A",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1E293B),
+                                    fontSize: 13,
+                                  ),
+                                ),
                                 const SizedBox(height: 4),
-                                Text(row.location.isNotEmpty ? row.location : "N/A", style: const TextStyle(color: Color(0xFF64748B), fontSize: 11)),
+                                Text(
+                                  row.location.isNotEmpty
+                                      ? row.location
+                                      : "N/A",
+                                  style: const TextStyle(
+                                    color: Color(0xFF64748B),
+                                    fontSize: 11,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                            child: Text(row.productName.isNotEmpty ? row.productName : "N/A", style: const TextStyle(color: Color(0xFF334155), fontSize: 13)),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                              horizontal: 8,
+                            ),
+                            child: Text(
+                              row.productName.isNotEmpty
+                                  ? row.productName
+                                  : "N/A",
+                              style: const TextStyle(
+                                color: Color(0xFF334155),
+                                fontSize: 13,
+                              ),
+                            ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                              horizontal: 8,
+                            ),
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: isReceiveEnabled
@@ -1014,43 +1653,77 @@ String role = ""; // or "WAREHOUSE"
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) => ReceiveStockScreen(id: row.id),
+                                            builder: (context) =>
+                                                ReceiveStockScreen(id: row.id),
                                           ),
                                         ).then((_) => _loadData());
                                       },
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF3B82F6),
+                                        backgroundColor: const Color(
+                                          0xFF3B82F6,
+                                        ),
                                         foregroundColor: Colors.white,
                                         elevation: 0,
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                                      ),
-                                      child: const Text("Receive Stock", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                                    )
-                                  : isInTransit
-                                      ? Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFFFF7ED),
-                                            borderRadius: BorderRadius.circular(20),
-                                            border: Border.all(color: const Color(0xFFFFEDD5)),
-                                          ),
-                                          child: const Text(
-                                            "In Transit",
-                                            style: TextStyle(color: Color(0xFFEA580C), fontWeight: FontWeight.bold, fontSize: 11),
-                                          ),
-                                        )
-                                      : Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFF1F5F9),
-                                            borderRadius: BorderRadius.circular(20),
-                                          ),
-                                          child: Text(
-                                            row.purchaseStatus.isNotEmpty ? row.purchaseStatus : "N/A",
-                                            style: const TextStyle(color: Color(0xFF475569), fontWeight: FontWeight.w600, fontSize: 11),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 8,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            6,
                                           ),
                                         ),
+                                      ),
+                                      child: const Text(
+                                        "Receive Stock",
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    )
+                                  : isInTransit
+                                  ? Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFFF7ED),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: const Color(0xFFFFEDD5),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        "In Transit",
+                                        style: TextStyle(
+                                          color: Color(0xFFEA580C),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    )
+                                  : Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF1F5F9),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        row.purchaseStatus.isNotEmpty
+                                            ? row.purchaseStatus
+                                            : "N/A",
+                                        style: const TextStyle(
+                                          color: Color(0xFF475569),
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ),
                             ),
                           ),
                         ],
@@ -1072,7 +1745,11 @@ String role = ""; // or "WAREHOUSE"
       padding: const EdgeInsets.all(8.0),
       child: Text(
         text,
-        style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475569), fontSize: 12),
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF475569),
+          fontSize: 12,
+        ),
       ),
     );
   }
@@ -1116,8 +1793,16 @@ String role = ""; // or "WAREHOUSE"
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: selectedSupplier,
-          icon: const Icon(Icons.keyboard_arrow_down, size: 18, color: Color(0xFF64748B)),
-          style: const TextStyle(color: Color(0xFF334155), fontSize: 13, fontWeight: FontWeight.w500),
+          icon: const Icon(
+            Icons.keyboard_arrow_down,
+            size: 18,
+            color: Color(0xFF64748B),
+          ),
+          style: const TextStyle(
+            color: Color(0xFF334155),
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
           onChanged: (val) {
             if (val != null) {
               setState(() {
@@ -1128,10 +1813,9 @@ String role = ""; // or "WAREHOUSE"
           },
           items: [
             const DropdownMenuItem(value: "All", child: Text("All Suppliers")),
-            ...suppliers.map((sup) => DropdownMenuItem(
-                  value: sup.id,
-                  child: Text(sup.name),
-                )),
+            ...suppliers.map(
+              (sup) => DropdownMenuItem(value: sup.id, child: Text(sup.name)),
+            ),
           ],
         ),
       ),
@@ -1159,8 +1843,9 @@ String role = ""; // or "WAREHOUSE"
   Widget _buildPaginationControls(int totalRecords) {
     final startRecord = totalRecords == 0 ? 0 : indexOfFirst + 1;
     final endRecord = indexOfLast.clamp(0, totalRecords);
-    
-    final textInfo = "Showing $startRecord - $endRecord of $totalRecords records";
+
+    final textInfo =
+        "Showing $startRecord - $endRecord of $totalRecords records";
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1177,13 +1862,22 @@ String role = ""; // or "WAREHOUSE"
                 backgroundColor: const Color(0xFFF8FAFC),
                 foregroundColor: const Color(0xFF334155),
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(6),
-                  side: BorderSide(color: const Color(0xFFE2E8F0), width: currentPage == 1 ? 0 : 1),
+                  side: BorderSide(
+                    color: const Color(0xFFE2E8F0),
+                    width: currentPage == 1 ? 0 : 1,
+                  ),
                 ),
               ),
-              child: const Text("Previous", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+              child: const Text(
+                "Previous",
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              ),
             ),
             const SizedBox(width: 8),
             ElevatedButton(
@@ -1192,13 +1886,22 @@ String role = ""; // or "WAREHOUSE"
                 backgroundColor: const Color(0xFFF8FAFC),
                 foregroundColor: const Color(0xFF334155),
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(6),
-                  side: BorderSide(color: const Color(0xFFE2E8F0), width: currentPage >= totalPages ? 0 : 1),
+                  side: BorderSide(
+                    color: const Color(0xFFE2E8F0),
+                    width: currentPage >= totalPages ? 0 : 1,
+                  ),
                 ),
               ),
-              child: const Text("Next", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+              child: const Text(
+                "Next",
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              ),
             ),
           ],
         ),

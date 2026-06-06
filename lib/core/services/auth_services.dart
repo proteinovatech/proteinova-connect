@@ -4,7 +4,10 @@ import 'package:http/http.dart' as http;
 import 'package:proteinova_connect/core/config/api_config.dart';
 
 class AuthService {
-  static String baseUrl = dotenv.env['BASE_URL'] ?? "";
+  static final String baseUrl = () {
+    final url = dotenv.env['BASE_URL'] ?? "";
+    return url.trim().isEmpty ? "https://proteinova-system-q3ob.onrender.com" : url.trim();
+  }();
   static Future<Map<String, dynamic>?> login({
     required String email,
     required String password,

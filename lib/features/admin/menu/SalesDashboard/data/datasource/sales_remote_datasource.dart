@@ -284,4 +284,41 @@ class SalesRemoteDatasource {
       throw Exception("Failed to load warehouse list : ${response.statusCode}");
     }
   }
+
+  // ──────────────────────────────────────────────
+  // GET /api/branch/dashboard/:id  →  getBranchDashboard
+  // ──────────────────────────────────────────────
+  Future<Map<String, dynamic>> getBranchDashboard({int? branchId}) async {
+    final String url = branchId != null
+        ? "$baseUrl/api/branch/dashboard/$branchId"
+        : "$baseUrl/api/branch/dashboard";
+
+    print("BRANCH DASHBOARD => $url");
+    final response = await http.get(Uri.parse(url));
+    print("BRANCH DASHBOARD BODY => ${response.body}");
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception("Failed to load branch dashboard : ${response.statusCode}");
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // GET /api/branches  →  getBranchesList (returns List)
+  // ──────────────────────────────────────────────
+  Future<List<dynamic>> getBranchesList() async {
+    final response = await http.get(Uri.parse("$baseUrl/api/branches"));
+
+    print("BRANCHES LIST STATUS => ${response.statusCode}");
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data is List) return data;
+      if (data is Map) return data['data'] ?? data['branches'] ?? [];
+      return [];
+    } else {
+      throw Exception("Failed to load branches : ${response.statusCode}");
+    }
+  }
 }
