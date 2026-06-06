@@ -32,7 +32,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
   String selectedCategory = "Transport";
   String selectedPayment = "Cash";
   String selectedStatus = "Paid";
-  String role = ""; 
+  String role = "";
   int? selectedLocationId;
   String selectedLocationType = "branch"; // 'branch' or 'warehouse'
   String selectedMonth = "";
@@ -51,7 +51,10 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
 
   bool isSaving = false;
 
-  double _getCategoryAmount(BranchExpenseDashboardModel? dashboardData, String categoryName) {
+  double _getCategoryAmount(
+    BranchExpenseDashboardModel? dashboardData,
+    String categoryName,
+  ) {
     if (dashboardData == null) return 0.0;
     try {
       final upper = categoryName.toUpperCase().replaceAll(' ', '_');
@@ -87,7 +90,9 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
         double.tryParse(amountController.text) == null ||
         double.parse(amountController.text) <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter a valid amount greater than 0")),
+        const SnackBar(
+          content: Text("Please enter a valid amount greater than 0"),
+        ),
       );
       return;
     }
@@ -96,7 +101,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
     try {
       await _repository.createBranchExpense(
         branchId: selectedLocationId!,
-        
+
         expenseDate: dateController.text,
         category: selectedCategory.toUpperCase().replaceAll(' ', '_'),
         amount: double.parse(amountController.text),
@@ -193,28 +198,24 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                     /// HEADER
                     Row(
                       children: [
-                       if (role == "ADMIN")
-      InkWell(
-        onTap: () => Navigator.pop(context),
-        child: const Icon(Icons.arrow_back, size: 24),
-      ),
-
-    if (role == "ADMIN")
-      SizedBox(width: getWidth(context, 12)),
-
-    Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Expense Management",
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-       
-       ],
-    ),  SizedBox(width: getWidth(context, 10)),
+                        InkWell(
+                          onTap: () => Navigator.pop(context),
+                          child: const Icon(Icons.arrow_back, size: 24),
+                        ),
+                        SizedBox(width: getWidth(context, 12)),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Expense Management",
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(width: getWidth(context, 10)),
                         Container(
                           padding: EdgeInsets.symmetric(
                             horizontal: getWidth(context, 14),
@@ -255,7 +256,7 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<int>(
-                               value: locations.containsKey(selectedLocationId)
+                                value: locations.containsKey(selectedLocationId)
                                     ? selectedLocationId
                                     : null,
                                 hint: const Text("Select Location"),
@@ -266,15 +267,15 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
                                 ),
-                               items: locations.entries.map((entry) {
-  return DropdownMenuItem<int>(
-    value: entry.key,
-    child: Text(
-      entry.value,
-      overflow: TextOverflow.ellipsis,
-    ),
-  );
-}).toList(),
+                                items: locations.entries.map((entry) {
+                                  return DropdownMenuItem<int>(
+                                    value: entry.key,
+                                    child: Text(
+                                      entry.value,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  );
+                                }).toList(),
                                 onChanged: (loc) {
                                   if (loc != null) {
                                     setState(() {
@@ -430,78 +431,77 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                       ],
                     ),
 
-                    SizedBox(height: getHeight(context, 12)),
+                    // SizedBox(height: getHeight(context, 12)),
 
-                    Row(
-                      children: [
-                        ExpenseSummaryCard(
-                          title: "Electricity",
-                          amount:
-                              "₹${_getCategoryAmount(dashboardData, "ELECTRICITY").toStringAsFixed(2)}",
-                          icon: Icons.bolt,
-                          iconBg: AppColors.amber100,
-                          onTap: () {
-                            showExpenseDetailsBottomSheet(
-                              dashboardData,
-                              "Electricity",
-                            );
-                          },
-                        ),
+                    // Row(
+                    //   children: [
+                    //     ExpenseSummaryCard(
+                    //       title: "Electricity",
+                    //       amount:
+                    //           "₹${_getCategoryAmount(dashboardData, "ELECTRICITY").toStringAsFixed(2)}",
+                    //       icon: Icons.bolt,
+                    //       iconBg: AppColors.amber100,
+                    //       onTap: () {
+                    //         showExpenseDetailsBottomSheet(
+                    //           dashboardData,
+                    //           "Electricity",
+                    //         );
+                    //       },
+                    //     ),
 
-                        SizedBox(width: getWidth(context, 12)),
+                    //     SizedBox(width: getWidth(context, 12)),
 
-                        ExpenseSummaryCard(
-                          title: "Miscellaneous",
-                          amount:
-                              "₹${_getCategoryAmount(dashboardData, "MISCELLANEOUS").toStringAsFixed(2)}",
-                          icon: Icons.more_horiz,
-                          iconBg: AppColors.lightGrey,
-                          onTap: () {
-                            showExpenseDetailsBottomSheet(
-                              dashboardData,
-                              "Miscellaneous",
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+                    //     ExpenseSummaryCard(
+                    //       title: "Miscellaneous",
+                    //       amount:
+                    //           "₹${_getCategoryAmount(dashboardData, "MISCELLANEOUS").toStringAsFixed(2)}",
+                    //       icon: Icons.more_horiz,
+                    //       iconBg: AppColors.lightGrey,
+                    //       onTap: () {
+                    //         showExpenseDetailsBottomSheet(
+                    //           dashboardData,
+                    //           "Miscellaneous",
+                    //         );
+                    //       },
+                    //     ),
+                    //   ],
+                    // ),
 
-                    SizedBox(height: getHeight(context, 12)),
+                    // SizedBox(height: getHeight(context, 12)),
 
-                    Row(
-                      children: [
-                        ExpenseSummaryCard(
-                          title: "Maintenance",
-                          amount:
-                              "₹${_getCategoryAmount(dashboardData, "MAINTENANCE").toStringAsFixed(2)}",
-                          icon: Icons.build,
-                          iconBg: AppColors.red100,
-                          onTap: () {
-                            showExpenseDetailsBottomSheet(
-                              dashboardData,
-                              "Maintenance",
-                            );
-                          },
-                        ),
+                    // Row(
+                    //   children: [
+                    //     ExpenseSummaryCard(
+                    //       title: "Maintenance",
+                    //       amount:
+                    //           "₹${_getCategoryAmount(dashboardData, "MAINTENANCE").toStringAsFixed(2)}",
+                    //       icon: Icons.build,
+                    //       iconBg: AppColors.red100,
+                    //       onTap: () {
+                    //         showExpenseDetailsBottomSheet(
+                    //           dashboardData,
+                    //           "Maintenance",
+                    //         );
+                    //       },
+                    //     ),
 
-                        SizedBox(width: getWidth(context, 12)),
+                    //     SizedBox(width: getWidth(context, 12)),
 
-                        ExpenseSummaryCard(
-                          title: "Other Expenses",
-                          amount:
-                              "₹${_getCategoryAmount(dashboardData, "OTHER_EXPENSES").toStringAsFixed(2)}",
-                          icon: Icons.groups,
-                          iconBg: AppColors.teal100,
-                          onTap: () {
-                            showExpenseDetailsBottomSheet(
-                              dashboardData,
-                              "Other Expenses",
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-
+                    //     ExpenseSummaryCard(
+                    //       title: "Other Expenses",
+                    //       amount:
+                    //           "₹${_getCategoryAmount(dashboardData, "OTHER_EXPENSES").toStringAsFixed(2)}",
+                    //       icon: Icons.groups,
+                    //       iconBg: AppColors.teal100,
+                    //       onTap: () {
+                    //         showExpenseDetailsBottomSheet(
+                    //           dashboardData,
+                    //           "Other Expenses",
+                    //         );
+                    //       },
+                    //     ),
+                    //   ],
+                    // ),
                     SizedBox(height: getHeight(context, 24)),
 
                     /// CATEGORY BREAKDOWN TABLE
@@ -659,7 +659,9 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                               );
                               if (picked != null) {
                                 setState(() {
-                                  dateController.text = DateFormat('yyyy-MM-dd').format(picked);
+                                  dateController.text = DateFormat(
+                                    'yyyy-MM-dd',
+                                  ).format(picked);
                                 });
                               }
                             },
@@ -777,10 +779,11 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                         ? SizedBox(
                                             width: getWidth(context, 20),
                                             height: getHeight(context, 20),
-                                            child: const CircularProgressIndicator(
-                                              color: Colors.black,
-                                              strokeWidth: 2,
-                                            ),
+                                            child:
+                                                const CircularProgressIndicator(
+                                                  color: Colors.black,
+                                                  strokeWidth: 2,
+                                                ),
                                           )
                                         : const Text("Save Expense"),
                                   ),
@@ -1041,16 +1044,19 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
               child: DropdownButton<String>(
                 value: selectedCategory,
                 isExpanded: true,
-                items: [
-                  "Rent",
-                  "Salary",
-                  "Electricity",
-                  "Miscellaneous",
-                  "Transport",
-                  "Packing",
-                  "Maintenance",
-                  "Other Expenses",
-                ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                items:
+                    [
+                          "Rent",
+                          "Salary",
+                          "Electricity",
+                          "Miscellaneous",
+                          "Transport",
+                          "Packing",
+                          "Maintenance",
+                          "Other Expenses",
+                        ]
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .toList(),
                 onChanged: (value) {
                   if (value != null) {
                     setState(() {
@@ -1128,7 +1134,10 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
     );
   }
 
-  void showExpenseDetailsBottomSheet(BranchExpenseDashboardModel? dashboardData, String title) {
+  void showExpenseDetailsBottomSheet(
+    BranchExpenseDashboardModel? dashboardData,
+    String title,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1233,36 +1242,72 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                       child: ListView.builder(
                                         itemCount: dashboardData.recentExpenses
                                             .where((e) {
-                                              final cat = e.category.toUpperCase().replaceAll(' ', '_');
-                                              if (title == "Total Expenses (MTD)") return true;
-                                              if (title == "Salary / Payroll") return cat == "SALARY";
-                                              if (title == "Rent & Facilities") return cat == "RENT";
-                                              if (title == "Transport & Fuel") return cat == "TRANSPORT";
-                                              if (title == "Electricity") return cat == "ELECTRICITY";
-                                              if (title == "Miscellaneous") return cat == "MISCELLANEOUS";
-                                              if (title == "Maintenance") return cat == "MAINTENANCE";
-                                              if (title == "Other Expenses") return cat == "OTHER_EXPENSES";
-                                              return cat == title.toUpperCase().replaceAll(' ', '_');
+                                              final cat = e.category
+                                                  .toUpperCase()
+                                                  .replaceAll(' ', '_');
+                                              if (title ==
+                                                  "Total Expenses (MTD)")
+                                                return true;
+                                              if (title == "Salary / Payroll")
+                                                return cat == "SALARY";
+                                              if (title == "Rent & Facilities")
+                                                return cat == "RENT";
+                                              if (title == "Transport & Fuel")
+                                                return cat == "TRANSPORT";
+                                              if (title == "Electricity")
+                                                return cat == "ELECTRICITY";
+                                              if (title == "Miscellaneous")
+                                                return cat == "MISCELLANEOUS";
+                                              if (title == "Maintenance")
+                                                return cat == "MAINTENANCE";
+                                              if (title == "Other Expenses")
+                                                return cat == "OTHER_EXPENSES";
+                                              return cat ==
+                                                  title
+                                                      .toUpperCase()
+                                                      .replaceAll(' ', '_');
                                             })
                                             .length,
                                         itemBuilder: (context, index) {
-                                          final filteredList = dashboardData.recentExpenses
+                                          final filteredList = dashboardData
+                                              .recentExpenses
                                               .where((e) {
-                                                final cat = e.category.toUpperCase().replaceAll(' ', '_');
-                                                if (title == "Total Expenses (MTD)") return true;
-                                                if (title == "Salary / Payroll") return cat == "SALARY";
-                                                if (title == "Rent & Facilities") return cat == "RENT";
-                                                if (title == "Transport & Fuel") return cat == "TRANSPORT";
-                                                if (title == "Electricity") return cat == "ELECTRICITY";
-                                                if (title == "Miscellaneous") return cat == "MISCELLANEOUS";
-                                                if (title == "Maintenance") return cat == "MAINTENANCE";
-                                                if (title == "Other Expenses") return cat == "OTHER_EXPENSES";
-                                                return cat == title.toUpperCase().replaceAll(' ', '_');
+                                                final cat = e.category
+                                                    .toUpperCase()
+                                                    .replaceAll(' ', '_');
+                                                if (title ==
+                                                    "Total Expenses (MTD)")
+                                                  return true;
+                                                if (title == "Salary / Payroll")
+                                                  return cat == "SALARY";
+                                                if (title ==
+                                                    "Rent & Facilities")
+                                                  return cat == "RENT";
+                                                if (title == "Transport & Fuel")
+                                                  return cat == "TRANSPORT";
+                                                if (title == "Electricity")
+                                                  return cat == "ELECTRICITY";
+                                                if (title == "Miscellaneous")
+                                                  return cat == "MISCELLANEOUS";
+                                                if (title == "Maintenance")
+                                                  return cat == "MAINTENANCE";
+                                                if (title == "Other Expenses")
+                                                  return cat ==
+                                                      "OTHER_EXPENSES";
+                                                return cat ==
+                                                    title
+                                                        .toUpperCase()
+                                                        .replaceAll(' ', '_');
                                               })
                                               .toList();
                                           final e = filteredList[index];
-                                          final amountVal = double.tryParse(e.amount);
-                                          final formattedAmount = amountVal != null ? "₹${amountVal.toStringAsFixed(2)}" : e.amount;
+                                          final amountVal = double.tryParse(
+                                            e.amount,
+                                          );
+                                          final formattedAmount =
+                                              amountVal != null
+                                              ? "₹${amountVal.toStringAsFixed(2)}"
+                                              : e.amount;
 
                                           return Container(
                                             padding: EdgeInsets.symmetric(
@@ -1279,9 +1324,20 @@ class _AdminExpenseScreenState extends State<AdminExpenseScreen> {
                                             child: Row(
                                               children: [
                                                 headerItem(e.expenseDate, 80),
-                                                headerItem(formatCategory(e.category), 80),
-                                                headerItem(e.description.isNotEmpty ? e.description : '—', 140),
-                                                headerItem(formattedAmount, 100),
+                                                headerItem(
+                                                  formatCategory(e.category),
+                                                  80,
+                                                ),
+                                                headerItem(
+                                                  e.description.isNotEmpty
+                                                      ? e.description
+                                                      : '—',
+                                                  140,
+                                                ),
+                                                headerItem(
+                                                  formattedAmount,
+                                                  100,
+                                                ),
                                                 headerItem(e.status, 80),
                                               ],
                                             ),

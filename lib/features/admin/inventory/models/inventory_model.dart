@@ -63,7 +63,6 @@ class InventoryMetrics {
     }
 
     return InventoryMetrics(
-<<<<<<< HEAD
       expectedToday: int.tryParse(json['expected_today']?.toString() ?? '') ?? 0,
       readyForUnloading: int.tryParse(json['ready_for_unloading']?.toString() ?? '') ?? 0,
       delayedInTransit: int.tryParse(json['delayed_in_transit']?.toString() ?? '') ?? 0,
@@ -75,19 +74,6 @@ class InventoryMetrics {
       incomingStock: int.tryParse(json['incoming_stock']?.toString() ?? '') ?? 0,
       salesToday: int.tryParse(json['sales_today']?.toString() ?? '') ?? 0,
       purchaseExpense: double.tryParse(json['purchase_expense']?.toString() ?? '') ?? 0.0,
-=======
-      expectedToday: parseInt(json['expected_today']),
-      readyForUnloading: parseInt(json['ready_for_unloading']),
-      delayedInTransit: parseInt(json['delayed_in_transit']),
-      currentStock: parseInt(json['current_stock']),
-      damagedTrays: parseInt(json['damaged_trays']),
-      stockValue: parseInt(json['stock_value']),
-      openingStock: parseInt(json['opening_stock']),
-      closingStock: parseInt(json['closing_stock']),
-      incomingStock: parseInt(json['incoming_stock']),
-      salesToday: parseInt(json['sales_today']),
-      purchaseExpense: parseInt(json['purchase_expense']),
->>>>>>> 6cd962f3290f1a97b5dffe5be77ef77b070e73ef
     );
   }
 }

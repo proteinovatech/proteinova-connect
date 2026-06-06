@@ -44,18 +44,18 @@ class _IncomingStockState extends State<IncomingStock> {
       final data = await _repository.fetchInventoryData();
       final purchasesList = await _repository.fetchPurchases();
 
+      if (!mounted) return; // Added check here
       setState(() {
         inventoryModel = data;
         purchases = purchasesList;
         isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return; // Added check here
       setState(() => isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Connection Error: $e")));
-      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Connection Error: $e")));
     }
   }
 
