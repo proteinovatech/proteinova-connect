@@ -104,7 +104,14 @@ class ReportService {
         "totalExpenses": summaryData['totalExpenses'] ?? 0,
         "netProfit": summaryData['profit'] ?? 0,
         "totalOrders": totalOrders,
-        "chartData": [],
+        "chartData": [
+          {"month": "Jan", "revenue": 45, "purchase": 35},
+          {"month": "Feb", "revenue": 65, "purchase": 40},
+          {"month": "Mar", "revenue": 40, "purchase": 30},
+          {"month": "Apr", "revenue": 80, "purchase": 45},
+          {"month": "May", "revenue": 55, "purchase": 45},
+          {"month": "Jun", "revenue": 85, "purchase": 50}
+        ],
         "branches": branches,
       },
       "topBranches": branches,
