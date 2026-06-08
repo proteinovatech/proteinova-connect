@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 class StatusBadge extends StatelessWidget {
   final String text;
@@ -24,7 +25,10 @@ class StatusBadge extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: bgColor,
         elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 13),
+         padding: EdgeInsets.symmetric(
+                      horizontal: getWidth(context, 10),
+                      vertical: getHeight(context, 4),
+                    ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),

@@ -32,6 +32,7 @@ void initState() {
 }
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
             appBar: AppBar(
         backgroundColor:AppColors.background,
@@ -122,6 +123,7 @@ final availableStock = state.purchases.where(
           ),
         ),
       )
+      
     :ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -137,6 +139,7 @@ final availableStock = state.purchases.where(
                 (sum, item) =>
                     sum + ((item["trays"] ?? 0) as int),
               );
+              
              
 
               return buildActivityCard(
@@ -350,6 +353,7 @@ Row(
             "Amount",
             style: AppTextStyles.bodyText10dark
           ),
+          
           Text(
             "₹${amount.toStringAsFixed(0)}",
             style: AppTextStyles.containerText
@@ -394,7 +398,7 @@ SizedBox(height: getHeight(context, 12)),
                     decoration: BoxDecoration(
                       color: status == "Received to Warehouse"
                           ? Colors.green.withOpacity(.1)
-                          : Colors.orange.withOpacity(.1),
+                          : Colors.blue.withOpacity(.1),
                       borderRadius:
                           BorderRadius.circular(getWidth(context, 20)),
                     ),
@@ -403,7 +407,7 @@ SizedBox(height: getHeight(context, 12)),
                       style: TextStyle(
                         color: status == "Received to Warehouse"
                             ? Colors.green
-                            : Colors.orange,
+                            : Colors.blue,
                         fontWeight: FontWeight.w600,
                         fontSize: getWidth(context, 11),
                       ),
@@ -423,8 +427,8 @@ SizedBox(height: getHeight(context, 12)),
           height: getWidth(context, 35),
           decoration: BoxDecoration(
             color: type == "PURCHASE"
-        ? Colors.orange.shade100
-        : AppColors.green100,
+        ? Colors.green
+        : AppColors.blue,
             borderRadius:
                 BorderRadius.circular(getWidth(context, 14)),
           ),
@@ -433,8 +437,8 @@ SizedBox(height: getHeight(context, 12)),
         ? Icons.shopping_cart_outlined
         : Icons.local_shipping_outlined,
     color: type == "PURCHASE"
-        ? Colors.orange
-        : Colors.green,
+        ? Colors.white
+        : Colors.white,
     size: getWidth(context, 24),
           ),
         ),
