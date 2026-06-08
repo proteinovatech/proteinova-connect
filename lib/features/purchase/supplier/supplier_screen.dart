@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_bloc.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_event.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_state.dart';
@@ -194,6 +195,7 @@ void didChangeDependencies() {
                       // ),
                     ],
                   ),
+                  SizedBox(height: getHeight(context, 16)),
                 BlocBuilder<SupplierBloc, SupplierState>(
   builder: (context, state) {
 
@@ -235,10 +237,10 @@ void didChangeDependencies() {
             orderId:
                 "ID-${index + 1}",
 
-            dateTime:
+            location:
                 supplier.location,
 
-            bottomId:
+           email:
                 supplier.email,
 
             items:
@@ -388,8 +390,8 @@ class PurchaseCards extends StatelessWidget {
   final String supplier;
 
   final String orderId;
-  final String dateTime;
-  final String bottomId;
+  final String location;
+  final String email;
   final String items;
   final String itemboxes;
   final String contactperson;
@@ -402,8 +404,8 @@ class PurchaseCards extends StatelessWidget {
     required this.textColor,
     required this.supplier,
     required this.orderId,
-    required this.dateTime,
-    required this.bottomId,
+    required this.location,
+    required this.email,
     required this.items,
     required this.itemboxes,
     required this.contactperson,
@@ -412,149 +414,153 @@ class PurchaseCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade300),
+  return Container(
+  margin: EdgeInsets.only(bottom: getHeight(context, 16)),
+  padding: EdgeInsets.all(getWidth(context, 16)),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    border: Border.all(color: Colors.grey.shade300),
+    borderRadius: BorderRadius.circular(
+      getWidth(context, 18),
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(.05),
+        blurRadius: getWidth(context, 12),
+        offset: Offset(
+          0,
+          getHeight(context, 4),
+        ),
+      ),
+    ],
+  ),
+
+  child: Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+
+      /// Left Circle
+      Container(
+        width: getWidth(context, 52),
+        height: getWidth(context, 52),
+        decoration: const BoxDecoration(
+          color: Color(0xFFE8F0FF),
+          shape: BoxShape.circle,
+        ),
+        child: Center(
+          child: Text(
+            orderId,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: getWidth(context, 12),
+            ),
+          ),
+        ),
       ),
 
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      SizedBox(width: getWidth(context, 16)),
 
-          /// STATUS
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              StatusBadge(
-                text: status,
-                bgColor: statusColor,
-                textColor: textColor,
-              ),
-            ],
-          ),
+      /// Content
+      Expanded(
+        child: Column(
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
+          children: [
 
-          /// COMPANY NAME
-          Text(
-            supplier,
-            style: AppTextStyles.headingText22,
-          ),
-
-          const SizedBox(height: 4),
-
-          /// ORDER ID
-          Text(
-            orderId,
-            style: AppTextStyles.bodyText16,
-          ),
-
-          const SizedBox(height: 6),
-
-          /// LOCATION
-          Text(
-            dateTime,
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 14,
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          Divider(color: Colors.grey.shade300),
-
-          const SizedBox(height: 14),
-
-          /// CONTACT PERSON
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: const Icon(
-                  Icons.person_outline,
-                  color: Colors.grey,
-                ),
-              ),
-
-              const SizedBox(width: 10),
-
-              Expanded(
-                child: Text(
-                  contactperson,
-                  style: AppTextStyles.bodyText16,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          /// PHONE
-          Text(
-            contactnumber,
-            style: AppTextStyles.headingText22,
-          ),
-
-          const SizedBox(height: 8),
-
-          /// EMAIL
-          Text(
-            bottomId,
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 14,
-            ),
-          ),
-
-          const SizedBox(height: 18),
-
-          /// EXTRA DETAILS
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(10),
+            Text(
+              supplier,
+              style: AppTextStyles.headingText16,
             ),
 
-            child: Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceBetween,
+            SizedBox(
+              height: getHeight(context, 4),
+            ),
+
+            Text(
+              contactperson,
+              style: AppTextStyles.bodyText14,
+            ),
+
+            SizedBox(
+              height: getHeight(context, 4),
+            ),
+
+            Text(
+              (contactnumber == null ||
+          contactnumber.toString().trim().isEmpty)
+      ? "--"
+      : contactnumber.toString(),
+              style: AppTextStyles
+                  .bodyText14,
+            ),
+
+            SizedBox(
+              height: getHeight(context, 4),
+            ),
+
+             Text(
+              email,
+              maxLines: 1,
+              overflow:TextOverflow.ellipsis ,
+              style: AppTextStyles
+                  .bodyText14,
+            ),
+
+            SizedBox(
+              height: getHeight(context, 4),
+            ),
+
+            Row(
               children: [
-                Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      items,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-
-                    const SizedBox(height: 4),
-
-                    Text(
-                      itemboxes,
-                      style: const TextStyle(
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
+                Icon(
+                  Icons.location_on_outlined,
+                  size: getWidth(context, 16),
+                  color: Colors.black,
                 ),
 
-                
+                SizedBox(
+                  width: getWidth(context, 6),
+                ),
+
+                Text(
+                  location,
+                  style: AppTextStyles.bodyText14
+                ),
+
+                const Spacer(),
+
+                StatusBadge(
+                  text: status,
+                  bgColor: Colors.green.shade100,
+                  textColor: Colors.green,
+                ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    );
-  }
+
+      SizedBox(width: getWidth(context, 12)),
+
+      /// Right Icon
+      Container(
+        width: getWidth(context, 35),
+        height: getWidth(context, 35),
+        decoration: BoxDecoration(
+          color: Colors.amber.shade100,
+          borderRadius:
+              BorderRadius.circular(
+            getWidth(context, 14),
+          ),
+        ),
+        child: Icon(
+          Icons.store_outlined,
+          color: AppColors.amber600,
+          size: getWidth(context, 22),
+        ),
+      ),
+    ],
+  ),
+);}
 }

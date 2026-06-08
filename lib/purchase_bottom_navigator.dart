@@ -88,8 +88,8 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
               width: MediaQuery.of(context).size.width * 0.77,
               height: double.infinity,
 
-              decoration: const BoxDecoration(
-                color: Color(0xfff5f6fa),
+              decoration:  BoxDecoration(
+                color: Colors.white,
 
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(28),
@@ -254,7 +254,7 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
                                   // Divider(color: Colors.grey.shade200),
 
                                   _buildSettingTile(
-                                    icon: Icons.inventory_2_outlined,
+                                    icon: Icons.stacked_bar_chart_outlined,
                                     title: "Purchase Report",
                                   onTap: () {
                                     Navigator.push(
@@ -400,7 +400,7 @@ _buildSettingTile(
           color: isLogout ? Colors.red : Colors.black,
         ),
       ),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      
       onTap: onTap,
     );
   }
@@ -443,6 +443,7 @@ _buildSettingTile(
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.white,
       body: pages[selectedIndex],
       bottomNavigationBar: Container(
         padding: const EdgeInsets.symmetric(vertical: 8),
