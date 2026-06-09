@@ -23,6 +23,9 @@ import 'package:proteinova_connect/features/admin/menu/AssetManagement/presentat
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/presentation/receive_trays_screen.dart';
 import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
 import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
+import 'package:proteinova_connect/features/admin/menu/item/presentation/item.dart';
+import 'package:proteinova_connect/features/admin/menu/item/bloc/item_bloc.dart';
+import 'package:proteinova_connect/features/admin/inventory/data/inventory_repository.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/screens/purchase_expense_screen.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/bloc/purchase_bloc.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/data/repository/purchase_expense_repository.dart';
@@ -246,6 +249,19 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
                           AssetBloc(AssetRepository())..add(FetchAssetsEvent()),
 
                       child: AssetManagementPage(),
+                    ),
+                  ),
+
+                  //Items
+                  _menuTile(
+                    Icons.category_outlined,
+                    "Items",
+                    BlocProvider(
+                      create: (_) => ItemBloc(
+                        inventoryRepository: InventoryRepository(),
+                        assetRepository: AssetRepository(),
+                      ),
+                      child: const ItemScreen(),
                     ),
                   ),
 
