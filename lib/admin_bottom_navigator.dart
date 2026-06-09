@@ -206,7 +206,7 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
       case 1:
         return "Add Price";
       case 2:
-        return "Distribution";
+        return "Sales";
       case 3:
         return "Approval";
       case 4:

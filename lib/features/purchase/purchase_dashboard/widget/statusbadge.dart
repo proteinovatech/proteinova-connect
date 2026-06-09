@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 class StatusBadge extends StatelessWidget {
   final String text;
@@ -10,46 +11,54 @@ class StatusBadge extends StatelessWidget {
 
   const StatusBadge({
     super.key,
-    this.icon,
     required this.text,
     required this.bgColor,
     required this.textColor,
+    this.icon,
     this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: bgColor,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 13),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        minimumSize: Size.zero,
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(
+        getWidth(context, 20),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(
-              icon,
-              color: textColor,
-              size: 18,
-            ),
-            const SizedBox(width: 6),
-          ],
-          Text(
-            text,
-            style: AppTextStyles.bodyText16.copyWith(
-              color: textColor,
-              fontSize: 12,
-            ),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: getWidth(context, 10),
+          vertical: getHeight(context, 4),
+        ),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(
+            getWidth(context, 20),
           ),
-        ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                color: textColor,
+                size: getWidth(context, 16),
+              ),
+              SizedBox(
+                width: getWidth(context, 6),
+              ),
+            ],
+            Text(
+              text,
+              style: AppTextStyles.bodyText16.copyWith(
+                color: textColor,
+                fontSize: getWidth(context, 12),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

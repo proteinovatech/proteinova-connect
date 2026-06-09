@@ -509,12 +509,12 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
                                           purchaseId: p['id'].toString(),
                                           data: {"movement_status": "RECEIVED"},
                                         ),
-                                      );
+                                      ); 
                                     },
                                     supplier: p['supplier_company_name'] ?? '',
                                     orderId: "PO-${p["id"]}",
                                     dateTime: p['created_at'] ?? '',
-                                    bottomId: "₹ ${totalCost.toStringAsFixed(2)}",
+                                    amount: "₹ ${totalCost.toStringAsFixed(2)}",
                                     items: items.isNotEmpty
                                         ? items.map((e) => e["egg_category_grade"]).join(", ")
                                         : "",

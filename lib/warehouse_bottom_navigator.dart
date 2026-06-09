@@ -5,12 +5,14 @@ import 'package:proteinova_connect/features/admin/admin%20Damage%20Entry/present
 import 'package:proteinova_connect/features/admin/admin%20customertrays/presentation/admin_customer_trays.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bloc.dart';
 import 'package:proteinova_connect/features/admin/expense/data/repository/expense_repository.dart';
+import 'package:proteinova_connect/features/admin/expense/screens/admin_addexpence_screen.dart';
 import 'package:proteinova_connect/features/admin/inventory/presentation/admin_inventory.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/bloc/asset_bloc.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/data/asset_repository.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_receive_bloc.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_receive_event.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/data/services/tray_receive_service.dart';
+import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
 
 import 'package:proteinova_connect/features/admin/tray_management/screen/tray_management.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
@@ -30,13 +32,14 @@ import 'package:proteinova_connect/features/admin/purchase_expense/screens/purch
 import 'package:proteinova_connect/features/admin/purchase_expense/bloc/purchase_bloc.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/data/repository/purchase_expense_repository.dart';
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
-
+import 'package:proteinova_connect/features/branch/addexpense/presentation/addexpense.dart';
 
 class WarehouseBottomNavigator extends StatefulWidget {
   const WarehouseBottomNavigator({super.key});
 
   @override
-  State<WarehouseBottomNavigator> createState() => _WarehouseBottomNavigatorState();
+  State<WarehouseBottomNavigator> createState() =>
+      _WarehouseBottomNavigatorState();
 }
 
 class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
@@ -110,22 +113,21 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
   int selectedIndex = 0;
 
   final List<Widget> pages = [
-  AdminInventory(),
+    AdminInventory(),
 
-  BlocProvider(
-    create: (_) => BranchExpenseBloc(ExpenseRepository()),
-    child: const AdminExpenseScreen(),
-  ),
+    IncomingStock(),
 
-  DistributionPage(),
+    // BlocProvider(
+    //   create: (_) => BranchExpenseBloc(ExpenseRepository()),
+    //   child: const AdminExpenseScreen(),
+    // ),
+    DistributionPage(),
 
-  BlocProvider(
-    create: (_) => PurchaseExpenseBloc(
-      PurchaseExpenseRepository(),
+    BlocProvider(
+      create: (_) => PurchaseExpenseBloc(PurchaseExpenseRepository()),
+      child: const PurchaseExpenseScreen(),
     ),
-    child: const PurchaseExpenseScreen(),
-  ),
-];
+  ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -141,7 +143,7 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildNavItem(Icons.inventory_2, 0),
-            _buildNavItem(Icons.money_outlined, 1),
+            _buildNavItem(Icons.move_to_inbox_rounded, 1),
             _buildNavItem(Icons.local_shipping_rounded, 2),
             _buildNavItem(Icons.account_balance_wallet_outlined, 3),
             _buildNavItem(Icons.menu_outlined, 4),
@@ -193,11 +195,11 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
       case 0:
         return "Inventory";
       case 1:
-        return "expenses";
+        return "Incoming";
       case 2:
-        return "sales";
+        return "Sales";
       case 3:
-        return "Purchase Expenses";
+        return "Expenses";
       case 4:
         return "Menu";
       default:
@@ -241,16 +243,16 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
                   //   "Supplier",
                   //   AdminSuppliersScreen(),
                   // ),
-                  _menuTile(
-                    Icons.account_balance_wallet_outlined,
-                    "Asset Management",
-                    BlocProvider(
-                      create: (_) =>
-                          AssetBloc(AssetRepository())..add(FetchAssetsEvent()),
+                  // _menuTile(
+                  //   Icons.account_balance_wallet_outlined,
+                  //   "Asset Management",
+                  //   BlocProvider(
+                  //     create: (_) =>
+                  //         AssetBloc(AssetRepository())..add(FetchAssetsEvent()),
 
-                      child: AssetManagementPage(),
-                    ),
-                  ),
+                  //     child: AssetManagementPage(),
+                  //   ),
+                  // ),
 
                   //Items
                   _menuTile(
@@ -267,17 +269,23 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
 
                   //Expenses
                   _menuTile(
-                    Icons.money,
-                    "Expenses",
+                    Icons.pie_chart_outline,
+                    "Expenses Overview",
                     BlocProvider(
                       create: (_) => BranchExpenseBloc(ExpenseRepository()),
                       child: const AdminExpenseScreen(),
                     ),
                   ),
 
+                  _menuTile(
+                    Icons.add_circle_outline,
+                    "Add Expense",
+                    AdminAddExpenseScreen(),
+                  ),
+
                   //Purchase Expenses
                   _menuTile(
-                    Icons.account_balance_wallet_outlined,
+                    Icons.receipt_long,
                     "Purchase Expenses",
                     BlocProvider(
                       create: (_) =>
@@ -295,7 +303,7 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
 
                   //Incoming Stock
                   _menuTile(
-                    Icons.local_shipping_outlined,
+                    Icons.move_to_inbox_rounded,
                     "Incoming Stock",
                     IncomingStock(),
                   ),
@@ -315,20 +323,20 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
 
                   //TrayManagement
                   _menuTile(
-                    Icons.inventory_2_outlined,
+                    Icons.layers_outlined,
                     "TrayManagement",
                     TrayManagementScreen(),
                   ),
-                    _menuTile(
-                    Icons.inventory_2_outlined,
+                  _menuTile(
+                    Icons.people_outline,
                     "Customer trays",
                     AdminCustomerTrays(),
                   ),
-                   _menuTile(
-                    Icons.inventory_2_outlined,
-                    "Damage entry",
-                  AdminDamageEntryPage(),
-                  ),
+                  // _menuTile(
+                  //   Icons.broken_image_outlined,
+                  //   "Damage entry",
+                  //   AdminDamageEntryPage(),
+                  // ),
 
                   // //Purchase
                   // _menuTile(
@@ -435,6 +443,18 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
                   // _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
                   // _menuTile(Icons.money, "Expenses", ExpenseManagement()),
                   // const SizedBox(height: 20),
+                  
+                  ///ADMINISTRATION
+                  _sectionTitle("ADMINISTRATION"),
+                       _menuTile(Icons.pie_chart_outline_outlined, "Reports", AdminReportDashboardScreen()),
+             
+
+                  //Report
+                  // _menuTile(
+                  //   Icons.report,
+                  //   "Report",
+                  //   AdminReportDashboardScreen(),
+                  // ),
                   Divider(),
                   ListTile(
                     leading: Icon(Icons.logout, color: Colors.red),

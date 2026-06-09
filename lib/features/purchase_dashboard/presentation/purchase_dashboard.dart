@@ -505,7 +505,7 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
                                     supplier: p['supplier_company_name'] ?? '',
                                     orderId: "PO-${p["id"]}",
                                     dateTime: p['created_at'] ?? '',
-                                    bottomId: "₹ ${totalCost.toStringAsFixed(2)}",
+                                    amount: "₹ ${totalCost.toStringAsFixed(2)}",
                                     items: items.isNotEmpty
                                         ? items.map((e) => e["egg_category_grade"]).join(", ")
                                         : "",

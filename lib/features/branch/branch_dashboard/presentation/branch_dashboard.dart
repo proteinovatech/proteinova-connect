@@ -850,41 +850,39 @@ class _BranchDashboardState extends State<BranchDashboard> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
+                      GridView.builder(
+  shrinkWrap: true,
+  physics: const NeverScrollableScrollPhysics(),
+  padding: const EdgeInsets.all(12),
 
-                          itemCount: dashboardModel.stockSummary.length,
+  itemCount: dashboardModel.stockSummary.length,
 
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                // Mobile → 1
-                                // Tablet → 2
-                                // Large tablet → 3
-                                crossAxisCount: width >= 1000
-                                    ? 3
-                                    : width >= 600
-                                    ? 2
-                                    : 1,
+  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: width >= 1000
+        ? 3
+        : width >= 600
+            ? 2
+            : 1,
 
-                                crossAxisSpacing: 10,
-                                mainAxisSpacing: 10,
+    crossAxisSpacing: 12,
+    mainAxisSpacing: 12,
 
-                                // Overflow fix
-                                childAspectRatio: width >= 700
-                                    ? 1.55
-                                    : width >= 600
-                                    ? 1.55
-                                    : 1.20,
-                              ),
+    // REMOVE childAspectRatio
+    // REMOVE mainAxisExtent
 
-                          itemBuilder: (context, index) {
-                            return _buildStockSummaryCard(
-                              dashboardModel.stockSummary[index],
-                            );
-                          },
-                        ),
+    // Add this
+    mainAxisExtent: 190,
+  ),
 
+  itemBuilder: (context, index) {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: _buildStockSummaryCard(
+        dashboardModel.stockSummary[index],
+      ),
+    );
+  },
+),
                         const SizedBox(height: 32),
 
                         // Low Stock Alerts & Offers Grid
