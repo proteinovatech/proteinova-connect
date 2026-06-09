@@ -1,12 +1,8 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiConstants {
-   static String get baseUrl =>
-      dotenv.env['BASE_URL']?.trim() ?? '';
-   //() {
-  //   final url = dotenv.env['BASE_URL'] ?? "";
-  //   return url.trim().isEmpty ? "https://proteinova-system-q3ob.onrender.com" : url.trim();
-  // }();
+   static final String baseUrl = dotenv.env['BASE_URL']!;
+
 
   static String dashboard(int branchId) => "$baseUrl/api/branch/dashboard/$branchId";
   static final String salesEntry = "$baseUrl/api/sales/entry";

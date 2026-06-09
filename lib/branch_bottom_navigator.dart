@@ -73,7 +73,9 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
           child: Material(
             color: Colors.white,
             child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.6,
+              width: MediaQuery.of(context).size.width > 600
+                  ? 320
+                  : MediaQuery.of(context).size.width * 0.6,
               height: double.infinity,
               child: _menuContent(),
             ),
@@ -190,8 +192,16 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Image.asset("assets/erplogo.png", height: 40, width: 150),
-          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Image.asset(
+              "assets/erplogo.png",
+              height: 40,
+              width: 150,
+              fit: BoxFit.contain,
+            ),
+          ),
+          const Divider(height: 1),
           Expanded(
             child: SingleChildScrollView(
               child: Column(

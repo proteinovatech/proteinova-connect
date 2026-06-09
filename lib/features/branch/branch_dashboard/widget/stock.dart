@@ -47,21 +47,17 @@ class _StockState extends State<Stock> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                widget.title,
-                style: AppTextStyles.bodyText12,
+              Expanded(
+                child: Text(widget.title, style: AppTextStyles.bodyText12),
               ),
+              const SizedBox(width: 4),
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
                   color: widget.iconBg,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
-                  widget.icon,
-                  color: widget.iconColor,
-                  size: 18,
-                ),
+                child: Icon(widget.icon, color: widget.iconColor, size: 15),
               ),
             ],
           ),
@@ -80,10 +76,7 @@ class _StockState extends State<Stock> {
                         ),
                       ),
                       TextSpan(
-                        text: widget.value
-                            .split(" ")
-                            .sublist(1)
-                            .join(" "),
+                        text: widget.value.split(" ").sublist(1).join(" "),
                         style: AppTextStyles.headingText22.copyWith(
                           color: Colors.grey, // 🔥 trays in grey
                           fontSize: 16,
@@ -92,30 +85,27 @@ class _StockState extends State<Stock> {
                     ],
                   ),
                 )
-              : Text(
-                  widget.value,
-                  style: AppTextStyles.headingText22,
-                ),
+              : Text(widget.value, style: AppTextStyles.headingText22),
 
-          const SizedBox(height: 5),
+          const SizedBox(height: 4),
 
           /// 🔹 Percentage row
           Row(
             children: [
-              const Icon(Icons.trending_up,
-                  color: Colors.green, size: 13),
-              const SizedBox(width: 3),
+              const Icon(Icons.trending_up, color: Colors.green, size: 10),
+              const SizedBox(width: 2),
               Text(
                 widget.percent,
-                style: const TextStyle(
-                  color: Colors.green,
-                  fontSize: 10,
-                ),
+                style: const TextStyle(color: Colors.green, fontSize: 9),
               ),
-              const SizedBox(width: 3),
-              Text(
-                widget.subtitle,
-                style: AppTextStyles.bodyText12semibold,
+              const SizedBox(width: 2),
+              Expanded(
+                child: Text(
+                  widget.subtitle,
+                  style: AppTextStyles.bodyText12semibold,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),

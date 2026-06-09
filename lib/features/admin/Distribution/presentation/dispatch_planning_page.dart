@@ -1197,487 +1197,213 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
     );
   }
 
- Widget _buildEmptyTraysCard() {
-  return _buildCard(
-    title: "Empty Tray Sales",
-
-    child: Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
-
-      children: [
-        Text(
-          "Specify additional empty trays being sold along with the product",
-
-          style: TextStyle(
-            color: Colors.grey,
-            fontSize: getWidth(context, 12),
+  Widget _buildEmptyTraysCard() {
+    return _buildCard(
+      title: "Empty Tray Sales",
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Specify additional empty trays being sold along with the product",
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 12,
+            ),
           ),
-        ),
-
-        SizedBox(
-          height: getHeight(context, 15),
-        ),
-
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                padding: EdgeInsets.all(
-                  getWidth(context, 12),
-                ),
-
-                decoration: BoxDecoration(
-                  color: Colors.white,
-
-                  borderRadius:
-                      BorderRadius.circular(
-                    getWidth(context, 8),
+          const SizedBox(height: 15),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: const Color(0xFFE2E8F0),
+                    ),
                   ),
-
-                  border: Border.all(
-                    color:
-                        const Color(0xFFE2E8F0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              "Plastic Trays",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Text(
+                            "(Empty)",
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFDCFCE7),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const FittedBox(
+                          child: Text(
+                            "Returnable",
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          const Flexible(
+                            child: Text(
+                              "Trays",
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: TextField(
+                              controller: _plasticTraysController,
+                              keyboardType: TextInputType.number,
+                              onChanged: (_) => setState(() {}),
+                              style: const TextStyle(
+                                fontSize: 13,
+                              ),
+                              decoration: const InputDecoration(
+                                isDense: true,
+                                contentPadding: EdgeInsets.all(8),
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ),
-
-                child: Column(
-                  mainAxisSize:
-                      MainAxisSize.min,
-
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
-
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            "Plastic Trays",
-
-                            maxLines: 1,
-                            overflow:
-                                TextOverflow
-                                    .ellipsis,
-
-                            style: TextStyle(
-                              fontWeight:
-                                  FontWeight
-                                      .bold,
-
-                              fontSize:
-                                  getWidth(
-                                context,
-                                13,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        SizedBox(
-                          width:
-                              getWidth(
-                            context,
-                            4,
-                          ),
-                        ),
-
-                        Text(
-                          "(Empty)",
-
-                          style: TextStyle(
-                            fontSize:
-                                getWidth(
-                              context,
-                              9,
-                            ),
-
-                            color:
-                                Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    SizedBox(
-                      height:
-                          getHeight(
-                        context,
-                        4,
-                      ),
-                    ),
-
-                    Container(
-                      padding:
-                          EdgeInsets.symmetric(
-                        horizontal:
-                            getWidth(
-                          context,
-                          6,
-                        ),
-
-                        vertical:
-                            getHeight(
-                          context,
-                          2,
-                        ),
-                      ),
-
-                      decoration:
-                          BoxDecoration(
-                        color:
-                            const Color(
-                          0xFFDCFCE7,
-                        ),
-
-                        borderRadius:
-                            BorderRadius
-                                .circular(
-                          getWidth(
-                            context,
-                            4,
-                          ),
-                        ),
-                      ),
-
-                      child: FittedBox(
-                        child: Text(
-                          "Returnable",
-
-                          style: TextStyle(
-                            color:
-                                Colors.green,
-
-                            fontSize:
-                                getWidth(
-                              context,
-                              9,
-                            ),
-
-                            fontWeight:
-                                FontWeight
-                                    .bold,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(
-                      height:
-                          getHeight(
-                        context,
-                        10,
-                      ),
-                    ),
-
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            "Trays",
-
-                            overflow:
-                                TextOverflow
-                                    .ellipsis,
-
-                            style: TextStyle(
-                              fontSize:
-                                  getWidth(
-                                context,
-                                11,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        SizedBox(
-                          width:
-                              getWidth(
-                            context,
-                            6,
-                          ),
-                        ),
-
-                        Expanded(
-                          child: TextField(
-                            controller:
-                                _plasticTraysController,
-
-                            keyboardType:
-                                TextInputType
-                                    .number,
-
-                            onChanged:
-                                (_) =>
-                                    setState(
-                              () {},
-                            ),
-
-                            style: TextStyle(
-                              fontSize:
-                                  getWidth(
-                                context,
-                                12,
-                              ),
-                            ),
-
-                            decoration:
-                                InputDecoration(
-                              isDense: true,
-
-                              contentPadding:
-                                  EdgeInsets.all(
-                                getWidth(
-                                  context,
-                                  8,
-                                ),
-                              ),
-
-                              border:
-                                  const OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
                 ),
               ),
-            ),
-
-            SizedBox(
-              width: getWidth(context, 10),
-            ),
-
-            Expanded(
-              child: Container(
-                padding: EdgeInsets.all(
-                  getWidth(context, 12),
-                ),
-
-                decoration: BoxDecoration(
-                  color: Colors.white,
-
-                  borderRadius:
-                      BorderRadius.circular(
-                    getWidth(context, 8),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: const Color(0xFFE2E8F0),
+                    ),
                   ),
-
-                  border: Border.all(
-                    color:
-                        const Color(0xFFE2E8F0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              "Paper Trays",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Text(
+                            "(Empty)",
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF3C7),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const FittedBox(
+                          child: Text(
+                            "Non-Returnable",
+                            style: TextStyle(
+                              color: Colors.orange,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          const Flexible(
+                            child: Text(
+                              "Trays",
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: TextField(
+                              controller: _paperTraysController,
+                              keyboardType: TextInputType.number,
+                              onChanged: (_) => setState(() {}),
+                              style: const TextStyle(
+                                fontSize: 13,
+                              ),
+                              decoration: const InputDecoration(
+                                isDense: true,
+                                contentPadding: EdgeInsets.all(8),
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ),
-
-                child: Column(
-                  mainAxisSize:
-                      MainAxisSize.min,
-
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
-
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            "Paper Trays",
-
-                            maxLines: 1,
-                            overflow:
-                                TextOverflow
-                                    .ellipsis,
-
-                            style: TextStyle(
-                              fontWeight:
-                                  FontWeight
-                                      .bold,
-
-                              fontSize:
-                                  getWidth(
-                                context,
-                                13,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        SizedBox(
-                          width:
-                              getWidth(
-                            context,
-                            4,
-                          ),
-                        ),
-
-                        Text(
-                          "(Empty)",
-
-                          style: TextStyle(
-                            fontSize:
-                                getWidth(
-                              context,
-                              9,
-                            ),
-
-                            color:
-                                Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    SizedBox(
-                      height:
-                          getHeight(
-                        context,
-                        4,
-                      ),
-                    ),
-
-                    Container(
-                      padding:
-                          EdgeInsets.symmetric(
-                        horizontal:
-                            getWidth(
-                          context,
-                          6,
-                        ),
-
-                        vertical:
-                            getHeight(
-                          context,
-                          2,
-                        ),
-                      ),
-
-                      decoration:
-                          BoxDecoration(
-                        color:
-                            const Color(
-                          0xFFFEF3C7,
-                        ),
-
-                        borderRadius:
-                            BorderRadius
-                                .circular(
-                          getWidth(
-                            context,
-                            4,
-                          ),
-                        ),
-                      ),
-
-                      child: FittedBox(
-                        child: Text(
-                          "Non-Returnable",
-
-                          style: TextStyle(
-                            color:
-                                Colors.orange,
-
-                            fontSize:
-                                getWidth(
-                              context,
-                              8,
-                            ),
-
-                            fontWeight:
-                                FontWeight
-                                    .bold,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(
-                      height:
-                          getHeight(
-                        context,
-                        10,
-                      ),
-                    ),
-
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            "Trays",
-
-                            overflow:
-                                TextOverflow
-                                    .ellipsis,
-
-                            style: TextStyle(
-                              fontSize:
-                                  getWidth(
-                                context,
-                                11,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        SizedBox(
-                          width:
-                              getWidth(
-                            context,
-                            6,
-                          ),
-                        ),
-
-                        Expanded(
-                          child: TextField(
-                            controller:
-                                _paperTraysController,
-
-                            keyboardType:
-                                TextInputType
-                                    .number,
-
-                            onChanged:
-                                (_) =>
-                                    setState(
-                              () {},
-                            ),
-
-                            style: TextStyle(
-                              fontSize:
-                                  getWidth(
-                                context,
-                                12,
-                              ),
-                            ),
-
-                            decoration:
-                                InputDecoration(
-                              isDense: true,
-
-                              contentPadding:
-                                  EdgeInsets.all(
-                                getWidth(
-                                  context,
-                                  8,
-                                ),
-                              ),
-
-                              border:
-                                  const OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
                 ),
               ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-}
+            ],
+          ),
+        ],
+      ),
+    );
+  }
   Widget _buildChoosePaymentCard() {
     return _buildCard(
       title: "Choose Payment",

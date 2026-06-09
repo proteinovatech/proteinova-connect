@@ -617,70 +617,70 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
                     // Pagination Control
                     if (totalPages > 1) ...[
-  Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Expanded(
-        child: Text(
-          "Page $modalPage of $totalPages (${modalData.length} records)",
-          style: TextStyle(
-            fontSize: getWidth(context, 12),
-            color: Colors.grey,
-          ),
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              "Page $modalPage of $totalPages (${modalData.length} records)",
+                              style: TextStyle(
+                                fontSize: getWidth(context, 12),
+                                color: Colors.grey,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
 
-      SizedBox(width: getWidth(context, 8)),
+                          SizedBox(width: getWidth(context, 8)),
 
-      Row(
-        children: [
-          SizedBox(
-            height: getHeight(context, 36),
-            child: OutlinedButton(
-              onPressed: modalPage == 1
-                  ? null
-                  : () {
-                      setStateModal(() {
-                        modalPage = modalPage - 1;
-                      });
-                    },
-              child: Text(
-                "Previous",
-                style: TextStyle(
-                  fontSize: getWidth(context, 12),
-                ),
-              ),
-            ),
-          ),
+                          Row(
+                            children: [
+                              SizedBox(
+                                height: getHeight(context, 36),
+                                child: OutlinedButton(
+                                  onPressed: modalPage == 1
+                                      ? null
+                                      : () {
+                                          setStateModal(() {
+                                            modalPage = modalPage - 1;
+                                          });
+                                        },
+                                  child: Text(
+                                    "Previous",
+                                    style: TextStyle(
+                                      fontSize: getWidth(context, 12),
+                                    ),
+                                  ),
+                                ),
+                              ),
 
-          SizedBox(width: getWidth(context, 8)),
+                              SizedBox(width: getWidth(context, 8)),
 
-          SizedBox(
-            height: getHeight(context, 36),
-            child: OutlinedButton(
-              onPressed: modalPage == totalPages
-                  ? null
-                  : () {
-                      setStateModal(() {
-                        modalPage = modalPage + 1;
-                      });
-                    },
-              child: Text(
-                "Next",
-                style: TextStyle(
-                  fontSize: getWidth(context, 12),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ],
-  ),
+                              SizedBox(
+                                height: getHeight(context, 36),
+                                child: OutlinedButton(
+                                  onPressed: modalPage == totalPages
+                                      ? null
+                                      : () {
+                                          setStateModal(() {
+                                            modalPage = modalPage + 1;
+                                          });
+                                        },
+                                  child: Text(
+                                    "Next",
+                                    style: TextStyle(
+                                      fontSize: getWidth(context, 12),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
 
-  SizedBox(height: getHeight(context, 12)),
-],
+                      SizedBox(height: getHeight(context, 12)),
+                    ],
 
                     SizedBox(
                       width: double.infinity,
@@ -1286,7 +1286,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             "${formatNumber(incomingStockEggs)} eggs are currently in transit and need tracking till warehouse receipt.",
         "action": "Track Shipment",
         "icon": Icons.access_time_rounded,
-        "page": const IncomingStock(),
+        "page": const IncomingStock( role: "admin",),
       });
     }
     if (profit < 0) {
@@ -1305,6 +1305,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final recentActivities = activities.take(10).toList();
 
     final branches = (dashboardData?['branches'] as List? ?? []);
+
+    final double width = MediaQuery.of(context).size.width;
+    final bool isTablet = width >= 600;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -1426,11 +1429,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
               GridView(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isTablet ? 4 : 2,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: 1.3,
+                  childAspectRatio: isTablet ? 1.6 : 1.3,
                 ),
                 children: [
                   _buildMetricCard(
@@ -1504,37 +1507,66 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 
   Widget _buildActionRow(BuildContext context) {
+    final double width = MediaQuery.of(context).size.width;
+    final bool isTablet = width >= 600;
+
+    final buttons = [
+      _buildActionButton(
+        context: context,
+        label: "Create\nPurchase Order",
+        icon: Icons.add_circle_outline,
+        targetPage: const Newpurchase(),
+        isTablet: isTablet,
+      ),
+      _buildActionButton(
+        context: context,
+        label: "Dispatch\nItems",
+        icon: Icons.local_shipping_outlined,
+        targetPage: const DispatchPlanningPage(),
+        isTablet: isTablet,
+      ),
+      _buildActionButton(
+        context: context,
+        label: "New Sales\nEntry",
+        icon: Icons.receipt_long_outlined,
+        targetPage: const SalesEntryPage(),
+        isTablet: isTablet,
+      ),
+      _buildActionButton(
+        context: context,
+        label: "Export\nReport",
+        icon: Icons.exit_to_app_rounded,
+        targetPage: const AdminReportDashboardScreen(),
+        isTablet: isTablet,
+      ),
+    ];
+
+    if (isTablet) {
+      return Row(
+        children: buttons
+            .map(
+              (b) => Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: b,
+                ),
+              ),
+            )
+            .toList(),
+      );
+    }
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _buildActionButton(
-            context: context,
-            label: "Create\nPurchase Order",
-            icon: Icons.add_circle_outline,
-            targetPage: const Newpurchase(),
-          ),
+          buttons[0],
           const SizedBox(width: 8),
-          _buildActionButton(
-            context: context,
-            label: "Dispatch\nItems",
-            icon: Icons.local_shipping_outlined,
-            targetPage: const DispatchPlanningPage(),
-          ),
+          buttons[1],
           const SizedBox(width: 8),
-          _buildActionButton(
-            context: context,
-            label: "New Sales\nEntry",
-            icon: Icons.receipt_long_outlined,
-            targetPage: const SalesEntryPage(),
-          ),
+          buttons[2],
           const SizedBox(width: 8),
-          _buildActionButton(
-            context: context,
-            label: "Export\nReport",
-            icon: Icons.exit_to_app_rounded,
-            targetPage: const AdminReportDashboardScreen(),
-          ),
+          buttons[3],
         ],
       ),
     );
@@ -1545,6 +1577,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     required String label,
     required IconData icon,
     required Widget targetPage,
+    bool isTablet = false,
   }) {
     return InkWell(
       onTap: () {
@@ -1555,7 +1588,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       },
       borderRadius: BorderRadius.circular(8),
       child: Container(
-        width: 115,
+        width: isTablet ? null : 115,
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -1664,295 +1697,302 @@ class _AdminDashboardState extends State<AdminDashboard> {
     List<dynamic> activities,
     List<Map<String, dynamic>> alerts,
   ) {
-    return Column(
-      children: [
-        // Recent Activity Card
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Recent Activity",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1E293B),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => _openAllActivitiesModal(activities),
-                    style: TextButton.styleFrom(
-                      visualDensity: VisualDensity.compact,
-                    ),
-                    child: const Text(
-                      "View All",
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              if (recentActivities.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20.0),
-                  child: Center(
-                    child: Text(
-                      "No recent activity.",
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  ),
-                )
-              else
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: recentActivities.length,
-                  separatorBuilder: (_, __) => const Divider(height: 12),
-                  itemBuilder: (context, idx) {
-                    final item = recentActivities[idx];
-                    final name = item['movement_type'] ?? "System";
-                    final action =
-                        "${item['tray_id']} moved from ${item['from_location'] ?? 'N/A'} to ${item['to_location'] ?? 'N/A'}.";
-                    final timeStr = formatTimeAgo(item['created_at']);
-                    final category = item['status'] ?? "Movement";
+    final double width = MediaQuery.of(context).size.width;
+    final bool isTablet = width >= 600;
 
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CircleAvatar(
-                          radius: 14,
-                          backgroundColor: Colors.blue.shade50,
-                          child: Text(
-                            name.isNotEmpty ? name[0].toUpperCase() : "S",
-                            style: TextStyle(
-                              color: Colors.blue.shade700,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              RichText(
-                                text: TextSpan(
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black87,
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                      text: "$name ",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    TextSpan(text: action),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                "$timeStr • $category",
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    );
-                  },
+    final recentActivityCard = Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Recent Activity",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E293B),
                 ),
+              ),
+              TextButton(
+                onPressed: () => _openAllActivitiesModal(activities),
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                ),
+                child: const Text("View All", style: TextStyle(fontSize: 12)),
+              ),
             ],
           ),
-        ),
-        const SizedBox(height: 16),
-
-        // Action Required Card (Alerts)
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Action Required",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1E293B),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: alerts.isEmpty
-                          ? Colors.green.shade50
-                          : Colors.red.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      "${alerts.length} Alerts",
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: alerts.isEmpty ? Colors.green : Colors.red,
-                      ),
-                    ),
-                  ),
-                ],
+          const SizedBox(height: 8),
+          if (recentActivities.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20.0),
+              child: Center(
+                child: Text(
+                  "No recent activity.",
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
               ),
-              const SizedBox(height: 16),
-              if (alerts.isEmpty)
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12.0),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.check_circle_outline,
-                          size: 36,
-                          color: Colors.green.shade400,
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          "Everything is fine!",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E293B),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          "No urgent actions required at this moment.",
-                          style: TextStyle(fontSize: 11, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              else
-                Column(
-                  children: alerts.map((alert) {
-                    final isCritical = alert['type'] == 'critical';
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: recentActivities.length,
+              separatorBuilder: (_, __) => const Divider(height: 12),
+              itemBuilder: (context, idx) {
+                final item = recentActivities[idx];
+                final name = item['movement_type'] ?? "System";
+                final action =
+                    "${item['tray_id']} moved from ${item['from_location'] ?? 'N/A'} to ${item['to_location'] ?? 'N/A'}.";
+                final timeStr = formatTimeAgo(item['created_at']);
+                final category = item['status'] ?? "Movement";
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: isCritical
-                            ? Colors.red.shade50
-                            : Colors.amber.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: isCritical
-                              ? Colors.red.shade100
-                              : Colors.amber.shade200,
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: 14,
+                      backgroundColor: Colors.blue.shade50,
+                      child: Text(
+                        name.isNotEmpty ? name[0].toUpperCase() : "S",
+                        style: TextStyle(
+                          color: Colors.blue.shade700,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      child: Row(
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            alert['icon'] as IconData,
-                            size: 20,
-                            color: isCritical
-                                ? Colors.red
-                                : Colors.amber.shade800,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          RichText(
+                            text: TextSpan(
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black87,
+                              ),
                               children: [
-                                Text(
-                                  alert['title'] as String,
-                                  style: TextStyle(
-                                    fontSize: 12,
+                                TextSpan(
+                                  text: "$name ",
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: isCritical
-                                        ? Colors.red.shade900
-                                        : Colors.amber.shade900,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  alert['description'] as String,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: isCritical
-                                        ? Colors.red.shade700
-                                        : Colors.amber.shade800,
-                                  ),
-                                ),
-                                if (alert['page'] != null) ...[
-                                  const SizedBox(height: 6),
-                                  InkWell(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              alert['page'] as Widget,
-                                        ),
-                                      );
-                                    },
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          alert['action'] as String,
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.blue,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        const Icon(
-                                          Icons.arrow_forward,
-                                          size: 10,
-                                          color: Colors.blue,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                                TextSpan(text: action),
                               ],
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "$timeStr • $category",
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey,
                             ),
                           ),
                         ],
                       ),
-                    );
-                  }).toList(),
+                    ),
+                  ],
+                );
+              },
+            ),
+        ],
+      ),
+    );
+
+    final actionRequiredCard = Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Action Required",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E293B),
                 ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: alerts.isEmpty
+                      ? Colors.green.shade50
+                      : Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  "${alerts.length} Alerts",
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: alerts.isEmpty ? Colors.green : Colors.red,
+                  ),
+                ),
+              ),
             ],
           ),
-        ),
+          const SizedBox(height: 16),
+          if (alerts.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.check_circle_outline,
+                      size: 36,
+                      color: Colors.green.shade400,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "Everything is fine!",
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      "No urgent actions required at this moment.",
+                      style: TextStyle(fontSize: 11, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            Column(
+              children: alerts.map((alert) {
+                final isCritical = alert['type'] == 'critical';
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isCritical
+                        ? Colors.red.shade50
+                        : Colors.amber.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isCritical
+                          ? Colors.red.shade100
+                          : Colors.amber.shade200,
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        alert['icon'] as IconData,
+                        size: 20,
+                        color: isCritical ? Colors.red : Colors.amber.shade800,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              alert['title'] as String,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: isCritical
+                                    ? Colors.red.shade900
+                                    : Colors.amber.shade900,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              alert['description'] as String,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isCritical
+                                    ? Colors.red.shade700
+                                    : Colors.amber.shade800,
+                              ),
+                            ),
+                            if (alert['page'] != null) ...[
+                              const SizedBox(height: 6),
+                              InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          alert['page'] as Widget,
+                                    ),
+                                  );
+                                },
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      alert['action'] as String,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blue,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(
+                                      Icons.arrow_forward,
+                                      size: 10,
+                                      color: Colors.blue,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+        ],
+      ),
+    );
+
+    if (isTablet) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: recentActivityCard),
+          const SizedBox(width: 16),
+          Expanded(child: actionRequiredCard),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        recentActivityCard,
+        const SizedBox(height: 16),
+        actionRequiredCard,
       ],
     );
   }

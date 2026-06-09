@@ -62,7 +62,9 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
                 );
                 eggController.clear();
                 // Refresh categories to update available stock count
-                context.read<DamageBloc>().add(FetchDamageCategoriesEvent(branchId: branchId));
+                context.read<DamageBloc>().add(
+                  FetchDamageCategoriesEvent(branchId: branchId),
+                );
               }
             }
 
@@ -79,7 +81,11 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
             builder: (context, state) {
               final selectedCatData = state.categories.firstWhere(
                 (c) => c.eggCategoryGrade == state.selectedCategory,
-                orElse: () => DamageCategoryModel(eggCategoryGrade: '', eggsAvailable: 0, traysAvailable: 0),
+                orElse: () => DamageCategoryModel(
+                  eggCategoryGrade: '',
+                  eggsAvailable: 0,
+                  traysAvailable: 0,
+                ),
               );
 
               return SingleChildScrollView(
@@ -96,7 +102,11 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.arrow_back, color: Color(0xFF6B7280), size: 20),
+                          Icon(
+                            Icons.arrow_back,
+                            color: Color(0xFF6B7280),
+                            size: 20,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             "Back to Dashboard",
@@ -122,7 +132,9 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
                         const SizedBox(width: 10),
                         Text(
                           "Manual Damage Entry",
-                          style: AppTextStyles.headingText22.copyWith(color: const Color(0xFF1E293B)),
+                          style: AppTextStyles.headingText22.copyWith(
+                            color: const Color(0xFF1E293B),
+                          ),
                         ),
                       ],
                     ),
@@ -170,37 +182,60 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
                               // Category dropdown
                               const Text(
                                 "Egg Category *",
-                                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: Color(0xFF334155)),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
+                                  color: Color(0xFF334155),
+                                ),
                               ),
                               const SizedBox(height: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: const Color(0xFFCBD5E1)),
+                                  border: Border.all(
+                                    color: const Color(0xFFCBD5E1),
+                                  ),
                                 ),
                                 child: state.isLoadingCategories
                                     ? const Padding(
                                         padding: EdgeInsets.all(12),
-                                        child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+                                        child: Center(
+                                          child: SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          ),
+                                        ),
                                       )
                                     : DropdownButton<String>(
                                         isExpanded: true,
                                         underline: const SizedBox(),
                                         value: state.selectedCategory,
-                                        hint: const Text("-- Select Available Category --"),
+                                        hint: const Text(
+                                          "-- Select Available Category --",
+                                        ),
                                         items: state.categories.map((category) {
                                           return DropdownMenuItem<String>(
                                             value: category.eggCategoryGrade,
                                             child: Text(
                                               "${category.eggCategoryGrade} (${category.eggsAvailable} eggs available)",
-                                              style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B)),
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: Color(0xFF1E293B),
+                                              ),
                                             ),
                                           );
                                         }).toList(),
                                         onChanged: (value) {
                                           if (value != null) {
-                                            context.read<DamageBloc>().add(SelectCategoryEvent(value));
+                                            context.read<DamageBloc>().add(
+                                              SelectCategoryEvent(value),
+                                            );
                                           }
                                         },
                                       ),
@@ -210,39 +245,62 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
                               // Damaged eggs count input
                               const Text(
                                 "Number of Damaged Eggs *",
-                                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: Color(0xFF334155)),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
+                                  color: Color(0xFF334155),
+                                ),
                               ),
                               const SizedBox(height: 8),
                               TextField(
                                 controller: eggController,
                                 keyboardType: TextInputType.number,
-                                style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B)),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xFF1E293B),
+                                ),
                                 decoration: InputDecoration(
                                   hintText: "e.g. 5",
-                                  hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                  hintStyle: const TextStyle(
+                                    color: Color(0xFF94A3B8),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 12,
+                                  ),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFCBD5E1),
+                                    ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFCBD5E1),
+                                    ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFF3B82F6),
+                                    ),
                                   ),
                                 ),
                                 onChanged: (val) {
                                   setState(() {});
                                 },
                               ),
-                              if (selectedCatData.eggCategoryGrade.isNotEmpty) ...[
+                              if (selectedCatData
+                                  .eggCategoryGrade
+                                  .isNotEmpty) ...[
                                 const SizedBox(height: 6),
                                 Text(
                                   "Maximum limit: ${selectedCatData.eggsAvailable} eggs",
-                                  style: const TextStyle(fontSize: 12, color: Color(0xFFEF4444)),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFFEF4444),
+                                  ),
                                 ),
                               ],
                               const SizedBox(height: 24),
@@ -254,46 +312,78 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFFEF4444),
-                                    disabledBackgroundColor: const Color(0xFF94A3B8),
+                                    disabledBackgroundColor: const Color(
+                                      0xFF94A3B8,
+                                    ),
                                     foregroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     elevation: 0,
                                   ),
-                                  onPressed: state.isSubmitting || state.selectedCategory == null || eggController.text.isEmpty
+                                  onPressed:
+                                      state.isSubmitting ||
+                                          state.selectedCategory == null ||
+                                          eggController.text.isEmpty
                                       ? null
                                       : () {
-                                          final enteredEggs = int.tryParse(eggController.text) ?? 0;
+                                          final enteredEggs =
+                                              int.tryParse(
+                                                eggController.text,
+                                              ) ??
+                                              0;
                                           if (enteredEggs <= 0) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(content: Text("Please enter a valid number of eggs")),
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  "Please enter a valid number of eggs",
+                                                ),
+                                              ),
                                             );
                                             return;
                                           }
-                                          if (selectedCatData.eggCategoryGrade.isNotEmpty && enteredEggs > selectedCatData.eggsAvailable) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(content: Text("Cannot report more than ${selectedCatData.eggsAvailable} damaged eggs")),
+                                          if (selectedCatData
+                                                  .eggCategoryGrade
+                                                  .isNotEmpty &&
+                                              enteredEggs >
+                                                  selectedCatData
+                                                      .eggsAvailable) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  "Cannot report more than ${selectedCatData.eggsAvailable} damaged eggs",
+                                                ),
+                                              ),
                                             );
                                             return;
                                           }
                                           context.read<DamageBloc>().add(
-                                                ReportDamageEvent(
-                                                  branchId: branchId,
-                                                  category: state.selectedCategory!,
-                                                  damagedEggs: eggController.text,
-                                                ),
-                                              );
+                                            ReportDamageEvent(
+                                              branchId: branchId,
+                                              category: state.selectedCategory!,
+                                              damagedEggs: eggController.text,
+                                            ),
+                                          );
                                         },
                                   child: state.isSubmitting
                                       ? const SizedBox(
                                           width: 20,
                                           height: 20,
-                                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2,
+                                          ),
                                         )
                                       : const Text(
                                           "Report Damage",
-                                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                 ),
                               ),
@@ -333,89 +423,238 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
                               const SizedBox(height: 16),
                               state.isLoadingHistory
                                   ? const Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 40),
-                                      child: Center(child: CircularProgressIndicator()),
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 40,
+                                      ),
+                                      child: Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
                                     )
                                   : state.history.isEmpty
-                                      ? const Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 40),
-                                          child: Center(
-                                            child: Text(
-                                              "No manual damage reports found.",
-                                              style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                                  ? const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 40,
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          "No manual damage reports found.",
+                                          style: TextStyle(
+                                            color: Color(0xFF94A3B8),
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        final bool useScroll =
+                                            constraints.maxWidth < 500;
+                                        final Table tableWidget = Table(
+                                          columnWidths: useScroll
+                                              ? null
+                                              : const {
+                                                  0: FlexColumnWidth(
+                                                    1.2,
+                                                  ), // Date
+                                                  1: FlexColumnWidth(
+                                                    1.5,
+                                                  ), // Category
+                                                  2: FlexColumnWidth(
+                                                    1.0,
+                                                  ), // Damaged Eggs
+                                                  3: FlexColumnWidth(
+                                                    1.3,
+                                                  ), // Trays Marked Damaged
+                                                },
+                                          defaultColumnWidth: useScroll
+                                              ? const FixedColumnWidth(110)
+                                              : const FlexColumnWidth(),
+                                          border: TableBorder(
+                                            horizontalInside: BorderSide(
+                                              color: Colors.grey.shade100,
+                                              width: 1,
                                             ),
                                           ),
-                                        )
-                                      : SingleChildScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          child: Table(
-                                            defaultColumnWidth: const FixedColumnWidth(110),
-                                            border: TableBorder(
-                                              horizontalInside: BorderSide(color: Colors.grey.shade100, width: 1),
-                                            ),
-                                            children: [
-                                              TableRow(
-                                                decoration: const BoxDecoration(
-                                                  border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0), width: 2)),
+                                          children: [
+                                            TableRow(
+                                              decoration: const BoxDecoration(
+                                                border: Border(
+                                                  bottom: BorderSide(
+                                                    color: Color(0xFFE2E8F0),
+                                                    width: 2,
+                                                  ),
                                                 ),
-                                                children: const [
-                                                  Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text("Date", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475569), fontSize: 13))),
-                                                  Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text("Category", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475569), fontSize: 13))),
-                                                  Padding(padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4), child: Text("Damaged Eggs", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475569), fontSize: 13), textAlign: TextAlign.center)),
-                                                  Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text("Trays Marked Damaged", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475569), fontSize: 13), textAlign: TextAlign.center)),
-                                                ],
                                               ),
-                                              ...state.history.map((log) {
-                                                return TableRow(
-                                                  children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                                      child: Text(
-                                                        log.date,
-                                                        style: const TextStyle(fontSize: 13, color: Color(0xFF334155)),
-                                                      ),
+                                              children: const [
+                                                Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                    vertical: 8,
+                                                  ),
+                                                  child: Text(
+                                                    "Date",
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Color(0xFF475569),
+                                                      fontSize: 13,
                                                     ),
-                                                    Padding(
-                                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                                      child: Text(
-                                                        log.category,
-                                                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF1E293B)),
-                                                      ),
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                    vertical: 8,
+                                                  ),
+                                                  child: Text(
+                                                    "Category",
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Color(0xFF475569),
+                                                      fontSize: 13,
                                                     ),
-                                                    Padding(
-                                                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-                                                      child: Text(
-                                                        log.damagedEggs.toString(),
-                                                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFFEF4444)),
-                                                        textAlign: TextAlign.center,
-                                                      ),
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                    vertical: 8,
+                                                    horizontal: 4,
+                                                  ),
+                                                  child: Text(
+                                                    "Damaged Eggs",
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Color(0xFF475569),
+                                                      fontSize: 13,
                                                     ),
-                                                    Padding(
-                                                      padding: const EdgeInsets.symmetric(vertical: 10),
-                                                      child: Center(
-                                                        child: Container(
-                                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                          decoration: BoxDecoration(
-                                                            color: const Color(0xFFFEE2E2),
-                                                            borderRadius: BorderRadius.circular(12),
-                                                          ),
-                                                          child: Text(
-                                                            "${log.trays} Trays",
-                                                            style: const TextStyle(
-                                                              color: Color(0xFF991B1B),
-                                                              fontSize: 11,
-                                                              fontWeight: FontWeight.bold,
-                                                            ),
-                                                          ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                    vertical: 8,
+                                                  ),
+                                                  child: Text(
+                                                    "Trays Marked Damaged",
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Color(0xFF475569),
+                                                      fontSize: 13,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            ...state.history.map((log) {
+                                              return TableRow(
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          vertical: 12,
+                                                        ),
+                                                    child: Text(
+                                                      log.date,
+                                                      style: const TextStyle(
+                                                        fontSize: 13,
+                                                        color: Color(
+                                                          0xFF334155,
                                                         ),
                                                       ),
                                                     ),
-                                                  ],
-                                                );
-                                              }),
-                                            ],
-                                          ),
-                                        ),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          vertical: 12,
+                                                        ),
+                                                    child: Text(
+                                                      log.category,
+                                                      style: const TextStyle(
+                                                        fontSize: 13,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: Color(
+                                                          0xFF1E293B,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          vertical: 12,
+                                                          horizontal: 4,
+                                                        ),
+                                                    child: Text(
+                                                      log.damagedEggs
+                                                          .toString(),
+                                                      style: const TextStyle(
+                                                        fontSize: 13,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Color(
+                                                          0xFFEF4444,
+                                                        ),
+                                                      ),
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          vertical: 10,
+                                                        ),
+                                                    child: Center(
+                                                      child: Container(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 8,
+                                                              vertical: 4,
+                                                            ),
+                                                        decoration: BoxDecoration(
+                                                          color: const Color(
+                                                            0xFFFEE2E2,
+                                                          ),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                12,
+                                                              ),
+                                                        ),
+                                                        child: Text(
+                                                          "${log.trays} Trays",
+                                                          style:
+                                                              const TextStyle(
+                                                                color: Color(
+                                                                  0xFF991B1B,
+                                                                ),
+                                                                fontSize: 11,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            }),
+                                          ],
+                                        );
+
+                                        if (useScroll) {
+                                          return SingleChildScrollView(
+                                            scrollDirection: Axis.horizontal,
+                                            child: tableWidget,
+                                          );
+                                        }
+                                        return tableWidget;
+                                      },
+                                    ),
                             ],
                           ),
                         ),

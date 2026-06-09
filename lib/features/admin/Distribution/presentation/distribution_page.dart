@@ -731,8 +731,10 @@ class _DistributionPageState extends State<DistributionPage> {
                     LayoutBuilder(
                       builder: (context, constraints) {
                         final width = constraints.maxWidth;
-                        final crossAxisCount = width > 1200 ? 4 : 2;
-                        final double childAspectRatio = width > 1200 ? 2.2 : 1.35;
+                        final int crossAxisCount = width >= 900 ? 4 : 2;
+                        final double childAspectRatio = width >= 900
+                            ? 2.0
+                            : (width >= 600 ? 2.5 : 1.35);
                         return GridView.count(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
@@ -851,8 +853,7 @@ class _DistributionPageState extends State<DistributionPage> {
                                         '';
                                     final qty =
                                         int.tryParse(
-                                          item['total_qty']?.toString() ??
-                                              '0',
+                                          item['total_qty']?.toString() ?? '0',
                                         ) ??
                                         0;
 
@@ -861,19 +862,26 @@ class _DistributionPageState extends State<DistributionPage> {
                                       elevation: 0,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        side: const BorderSide(color: Color(0xFFE2E8F0)),
+                                        side: const BorderSide(
+                                          color: Color(0xFFE2E8F0),
+                                        ),
                                       ),
                                       color: Colors.white,
                                       child: Padding(
                                         padding: const EdgeInsets.all(16),
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               children: [
                                                 Text(
-                                                  item['dispatch_id']?.toString() ?? 'N/A',
+                                                  item['dispatch_id']
+                                                          ?.toString() ??
+                                                      'N/A',
                                                   style: const TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 16,
@@ -881,17 +889,31 @@ class _DistributionPageState extends State<DistributionPage> {
                                                   ),
                                                 ),
                                                 Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 6,
+                                                      ),
                                                   decoration: BoxDecoration(
-                                                    color: getDisClass(status).withOpacity(0.1),
-                                                    borderRadius: BorderRadius.circular(20),
+                                                    color: getDisClass(
+                                                      status,
+                                                    ).withOpacity(0.1),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          20,
+                                                        ),
                                                   ),
                                                   child: Text(
-                                                    status == 'DELIVERED' ? 'Delivered' : 'Transit',
+                                                    status == 'DELIVERED'
+                                                        ? 'Delivered'
+                                                        : 'Transit',
                                                     style: TextStyle(
-                                                      color: getDisClass(status),
+                                                      color: getDisClass(
+                                                        status,
+                                                      ),
                                                       fontSize: 12,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                     ),
                                                   ),
                                                 ),
@@ -900,7 +922,11 @@ class _DistributionPageState extends State<DistributionPage> {
                                             const SizedBox(height: 12),
                                             Row(
                                               children: [
-                                                const Icon(Icons.calendar_today_outlined, size: 16, color: Color(0xFF64748B)),
+                                                const Icon(
+                                                  Icons.calendar_today_outlined,
+                                                  size: 16,
+                                                  color: Color(0xFF64748B),
+                                                ),
                                                 const SizedBox(width: 8),
                                                 Text(
                                                   dateText,
@@ -914,17 +940,24 @@ class _DistributionPageState extends State<DistributionPage> {
                                             const SizedBox(height: 8),
                                             Row(
                                               children: [
-                                                const Icon(Icons.location_on_outlined, size: 16, color: Color(0xFF64748B)),
+                                                const Icon(
+                                                  Icons.location_on_outlined,
+                                                  size: 16,
+                                                  color: Color(0xFF64748B),
+                                                ),
                                                 const SizedBox(width: 8),
                                                 Expanded(
                                                   child: Text(
-                                                    item['destination_branch']?.toString() ??
-                                                        item['customer_name']?.toString() ??
+                                                    item['destination_branch']
+                                                            ?.toString() ??
+                                                        item['customer_name']
+                                                            ?.toString() ??
                                                         'Customer/Walk-in',
                                                     style: const TextStyle(
                                                       color: Color(0xFF1E293B),
                                                       fontSize: 14,
-                                                      fontWeight: FontWeight.w500,
+                                                      fontWeight:
+                                                          FontWeight.w500,
                                                     ),
                                                   ),
                                                 ),
@@ -933,11 +966,17 @@ class _DistributionPageState extends State<DistributionPage> {
                                             const SizedBox(height: 8),
                                             Row(
                                               children: [
-                                                const Icon(Icons.directions_car_outlined, size: 16, color: Color(0xFF64748B)),
+                                                const Icon(
+                                                  Icons.directions_car_outlined,
+                                                  size: 16,
+                                                  color: Color(0xFF64748B),
+                                                ),
                                                 const SizedBox(width: 8),
                                                 Expanded(
                                                   child: Text(
-                                                    vehicle.isNotEmpty ? '$vehicle ($driver)' : 'Unassigned',
+                                                    vehicle.isNotEmpty
+                                                        ? '$vehicle ($driver)'
+                                                        : 'Unassigned',
                                                     style: const TextStyle(
                                                       color: Color(0xFF64748B),
                                                       fontSize: 14,
@@ -946,9 +985,14 @@ class _DistributionPageState extends State<DistributionPage> {
                                                 ),
                                               ],
                                             ),
-                                            const Divider(height: 24, color: Color(0xFFE2E8F0)),
+                                            const Divider(
+                                              height: 24,
+                                              color: Color(0xFFE2E8F0),
+                                            ),
                                             Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               children: [
                                                 const Text(
                                                   "Total Qty",
@@ -983,157 +1027,85 @@ class _DistributionPageState extends State<DistributionPage> {
     );
   }
 
- Widget _buildStatCard({
-  required String title,
-  required int count,
-  required String subtitle,
-  required IconData icon,
-  required Color color,
-  VoidCallback? onTap,
-}) {
-  return GestureDetector(
-    onTap: onTap,
-
-    child: Container(
-      padding: EdgeInsets.all(
-        getWidth(context, 14),
-      ),
-
-      decoration: BoxDecoration(
-        color: Colors.white,
-
-        borderRadius: BorderRadius.circular(
-          getWidth(context, 12),
-        ),
-
-        border: Border.all(
-          color: const Color(0xFFE2E8F0),
-          width: getWidth(context, 1),
-        ),
-
-        boxShadow: [
-          BoxShadow(
-            color:
-                Colors.black.withOpacity(0.02),
-
-            blurRadius: getWidth(context, 4),
-
-            offset: Offset(
-              0,
-              getHeight(context, 2),
+  Widget _buildStatCard({
+    required String title,
+    required int count,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
-          ),
-        ],
-      ),
-
-      child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-
-        children: [
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
-              children: [
-                Text(
-                  title,
-
-                  maxLines: 2,
-                  overflow:
-                      TextOverflow.ellipsis,
-
-                  style: TextStyle(
-                    color:
-                        const Color(0xFF64748B),
-
-                    fontSize:
-                        getWidth(context, 11),
-
-                    fontWeight:
-                        FontWeight.bold,
-                  ),
-                ),
-
-                SizedBox(
-                  height: getHeight(context, 8),
-                ),
-
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment:
-                      Alignment.centerLeft,
-
-                  child: Text(
-                    count.toLocaleString(),
-
-                    style: TextStyle(
-                      fontSize:
-                          getWidth(context, 22),
-
-                      fontWeight:
-                          FontWeight.w800,
-
-                      color:
-                          const Color(0xFF1E293B),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF64748B),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
-
-                SizedBox(
-                  height: getHeight(context, 4),
-                ),
-
-                Text(
-                  subtitle,
-
-                  maxLines: 2,
-                  overflow:
-                      TextOverflow.ellipsis,
-
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize:
-                        getWidth(context, 10),
+                  const SizedBox(height: 8),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      count.toLocaleString(),
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          SizedBox(
-            width: getWidth(context, 10),
-          ),
-
-          Container(
-            padding: EdgeInsets.all(
-              getWidth(context, 8),
-            ),
-
-            decoration: BoxDecoration(
-              color:
-                  color.withOpacity(0.1),
-
-              borderRadius:
-                  BorderRadius.circular(
-                getWidth(context, 10),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.grey, fontSize: 10),
+                  ),
+                ],
               ),
             ),
-
-            child: Icon(
-              icon,
-              color: color,
-              size: getWidth(context, 22),
+            const SizedBox(width: 10),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 22),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
 
 extension IntExtension on int {

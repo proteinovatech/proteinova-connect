@@ -3295,29 +3295,28 @@ class _TrayRowState extends State<_TrayRow> {
           ),
         ),
         const SizedBox(width: 8),
-      Container(
-  width: getWidth(context, 48),
-  height: getHeight(context, 36),
-  alignment: Alignment.center,
-  decoration: BoxDecoration(
-    color: const Color(0xFFF8FAFC),
-    border: Border.all(
-      color: const Color(0xFFE2E8F0),
-      width: getWidth(context, 1),
-    ),
-    borderRadius: BorderRadius.circular(
-      getWidth(context, 8),
-    ),
-  ),
-  child: Text(
-    "${widget.tray.qty}",
-    style: TextStyle(
-      fontSize: getWidth(context, 14),
-      fontWeight: FontWeight.bold,
-      color: Colors.black,
-    ),
-  ),
-), const SizedBox(width: 8),
+        Container(
+          width: getWidth(context, 48),
+          height: getHeight(context, 36),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            border: Border.all(
+              color: const Color(0xFFE2E8F0),
+              width: getWidth(context, 1),
+            ),
+            borderRadius: BorderRadius.circular(getWidth(context, 8)),
+          ),
+          child: Text(
+            "${widget.tray.qty}",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
         InkWell(
           onTap: () {
             setState(() {
@@ -3338,78 +3337,69 @@ class _TrayRowState extends State<_TrayRow> {
       ],
     );
 
-    final rateInputWidget =Container(
-  width: getWidth(context, 100),
-  height: getHeight(context, 48),
-  padding: EdgeInsets.symmetric(
-    horizontal: getWidth(context, 6),
-  ),
-  decoration: BoxDecoration(
-    color: Colors.white,
-    border: Border.all(
-      color: Colors.grey.shade300,
-      width: 1,
-    ),
-    borderRadius: BorderRadius.circular(
-      getWidth(context, 8),
-    ),
-  ),
-  child: Row(
-    children: [
-      Text(
-        "₹",
-        style: TextStyle(
-          color: Colors.grey.shade600,
-          fontSize: getWidth(context, 11),
-          fontWeight: FontWeight.w500,
-        ),
+    final rateInputWidget = Container(
+      width: getWidth(context, 100),
+      height: getHeight(context, 48),
+      padding: EdgeInsets.symmetric(horizontal: getWidth(context, 6)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.grey.shade300, width: 1),
+        borderRadius: BorderRadius.circular(getWidth(context, 8)),
       ),
-
-      SizedBox(width: getWidth(context, 2)),
-
-      Expanded(
-        child: TextField(
-          controller: _rateController,
-          keyboardType:
-              const TextInputType.numberWithOptions(
-            decimal: true,
+      child: Row(
+        children: [
+          Text(
+            "₹",
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 28,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: getWidth(context, 12),
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-          decoration: const InputDecoration(
-            border: InputBorder.none,
-            isDense: true,
-            contentPadding: EdgeInsets.zero,
-          ),
-          onChanged: (v) {
-            final val =
-                double.tryParse(v) ?? 0.0;
 
-            widget.tray.rate = val;
+          SizedBox(width: getWidth(context, 2)),
 
-            widget.onChanged();
-          },
-        ),
+          Expanded(
+            child: TextField(
+              controller: _rateController,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+              onChanged: (v) {
+                final val = double.tryParse(v) ?? 0.0;
+
+                widget.tray.rate = val;
+
+                widget.onChanged();
+              },
+            ),
+          ),
+
+          Flexible(
+            child: Text(
+              "/tray",
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.grey.shade500,
+                fontSize: getWidth(context, 8),
+              ),
+            ),
+          ),
+        ],
       ),
-
-      Flexible(
-        child: Text(
-          "/tray",
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: Colors.grey.shade500,
-            fontSize: getWidth(context, 8),
-          ),
-        ),
-      ),
-    ],
-  ),
-);
-final totalWidget = Text(
+    );
+    final totalWidget = Text(
       " = ₹${(widget.tray.qty * widget.tray.rate).toStringAsFixed(2)}",
       style: const TextStyle(
         color: Color(0xFF16A34A),

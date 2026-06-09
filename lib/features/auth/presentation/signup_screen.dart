@@ -134,10 +134,10 @@ class _SignupScreenState extends State<SignupScreen> {
                     child: BlocListener<AuthBloc, AuthState>(
                       listener: (context, state) {
                         if (state is AuthFailure) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.message)),
-      );
-    }
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(state.message)),
+                          );
+                        }
                         if (state is AuthSuccessPurchase) {
                           Navigator.pushReplacement(
                             context,
@@ -159,16 +159,14 @@ class _SignupScreenState extends State<SignupScreen> {
                               builder: (_) => const AdminBottomNavigator(),
                             ),
                           );
-                        } 
-                        else if (state is AuthSuccessWarehouse) {
+                        } else if (state is AuthSuccessWarehouse) {
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
                               builder: (_) => const WarehouseBottomNavigator(),
                             ),
                           );
-                        }
-                        else if (state is AuthFailure) {
+                        } else if (state is AuthFailure) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text(state.message)),
                           );
