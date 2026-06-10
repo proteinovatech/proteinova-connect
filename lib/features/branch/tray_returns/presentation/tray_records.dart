@@ -408,100 +408,105 @@ class _TrayRecordsState extends State<TrayRecords> {
                 //   ),
                 // ),
                 SizedBox(height: size.height * 0.02),
+                SizedBox(height: size.height * 0.02),
+
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _returnFromController.clear();
-                          _nameController.clear();
-                          _returnToController.clear();
-                          _trayTypeController.clear();
-                          _qtyController.clear();
-                          selectedIndex = -1;
-                          fileName = "Choose File";
-                        });
-                      },
-                      child: Container(
-                        height: getHeight(context, 65),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.border2),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.refresh, size: 18),
-                            SizedBox(width: getWidth(context, 6)),
-                            Text("Reset", style: AppTextStyles.containerText),
-                          ],
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _returnFromController.clear();
+                            _nameController.clear();
+                            _returnToController.clear();
+                            _trayTypeController.clear();
+                            _qtyController.clear();
+                            _numberController.clear();
+                            _amountController.clear();
+                            _remarksController.clear();
+                            selectedIndex = -1;
+                            fileName = "Choose File";
+                          });
+                        },
+                        child: Container(
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.border2),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.refresh, size: 18),
+                              SizedBox(width: getWidth(context, 6)),
+                              Text("Reset", style: AppTextStyles.containerText),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                    SizedBox(width: size.width * 0.01),
-                    GestureDetector(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text("Confirm"),
-                            content: const Text(
-                              "Are you sure you want to save this details?",
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text("No"),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text("Confirm"),
+                              content: const Text(
+                                "Are you sure you want to save this details?",
                               ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  _submit();
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("No"),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    _submit();
+                                  },
+                                  child: const Text("Yes"),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        child: Container(
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: AppColors.amber600,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.border2),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.save, size: 18),
+                              SizedBox(width: getWidth(context, 6)),
+                              BlocBuilder<TrayReturnBloc, TrayReturnState>(
+                                builder: (context, state) {
+                                  if (state is TrayReturnSubmitting) {
+                                    return const SizedBox(
+                                      height: 18,
+                                      width: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    );
+                                  }
+
+                                  return Text(
+                                    "Save Returns",
+                                    style: AppTextStyles.containerText,
+                                  );
                                 },
-                                child: const Text("Yes"),
                               ),
                             ],
                           ),
-                        );
-                      },
-                      child: Container(
-                        height: getHeight(context, 85),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.amber600,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.border2),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.save, size: 18),
-                            SizedBox(width: getWidth(context, 6)),
-                            BlocBuilder<TrayReturnBloc, TrayReturnState>(
-                              builder: (context, state) {
-                                if (state is TrayReturnSubmitting) {
-                                  return SizedBox(
-                                    height: getHeight(context, 18),
-                                    width: getWidth(context, 18),
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  );
-                                }
-                                return Text(
-                                  "Save Returns",
-                                  style: AppTextStyles.containerText,
-                                );
-                              },
-                            ),
-                          ],
                         ),
                       ),
                     ),

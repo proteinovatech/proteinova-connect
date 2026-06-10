@@ -16,20 +16,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           password: event.password,
           role: event.role.toLowerCase(),
         );
-       print("FULL RESPONSE => $result");
+        print("FULL RESPONSE => $result");
 
-if (result != null && result['user'] != null) {
-  print("USER => ${result['user']}");
-  print("ROLE => ${result['user']['role']}");
-}
-      
+        if (result != null && result['user'] != null) {
+          print("USER => ${result['user']}");
+          print("ROLE => ${result['user']['role']}");
+        }
 
         if (result != null && result['user'] != null) {
           final prefs = await SharedPreferences.getInstance();
 
           await prefs.setBool('isLoggedIn', true);
 
-          final String userRole = (result['user']['role'] ?? '').toString().trim().toLowerCase();
+          final String userRole = (result['user']['role'] ?? '')
+              .toString()
+              .trim()
+              .toLowerCase();
           await prefs.setString('role', userRole);
 
           if (result['user']['email'] != null) {
@@ -43,7 +45,7 @@ if (result != null && result['user'] != null) {
 
           print("BRANCH ID => $branchId");
           print("USER ID => $userId");
-          
+
           await prefs.setInt('branch_id', branchId ?? 0);
           await prefs.setInt('user_id', userId ?? 0);
 
@@ -53,20 +55,28 @@ if (result != null && result['user'] != null) {
             emit(AuthSuccessBranch());
           } else if (userRole == "admin") {
             emit(AuthSuccessAdmin());
-          }
-            else if (userRole == "warehouse" || userRole == "ware house") {
-              emit(AuthSuccessWarehouse());
+          } else if (userRole == "warehouse" || userRole == "ware house") {
+            emit(AuthSuccessWarehouse());
           } else {
             emit(AuthFailure("Invalid role"));
           }
         } else {
           emit(AuthFailure("Login failed"));
         }
-      } catch (e) {
-  print("LOGIN ERROR: $e");
+      }
+      // catch (e) {
+      //   print("LOGIN ERROR: $e");
+      //   String errorMessage = e.toString();
+      //   if (errorMessage.startsWith("Exception: ")) {
+      //     errorMessage = errorMessage.replaceFirst("Exception: ", "");
+      //   }
+      //   emit(AuthFailure(errorMessage));
+      // }
+      catch (e) {
+        print("LOGIN ERROR: $e");
 
-  emit(AuthFailure(e.toString()));
-}
+        emit(AuthFailure(e.toString().replaceFirst("Exception: ", "")));
+      }
     });
 
     on<LogoutRequested>((event, emit) async {

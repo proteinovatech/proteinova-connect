@@ -8,7 +8,7 @@ class Stockdetails extends StatefulWidget {
   final IconData icon;
   final Color iconBg;
   final Color iconColor;
- final bool highlightUnit;
+  final bool highlightUnit;
 
   const Stockdetails({
     super.key,
@@ -17,7 +17,7 @@ class Stockdetails extends StatefulWidget {
     required this.icon,
     required this.iconBg,
     required this.iconColor,
-    this.highlightUnit = false, 
+    this.highlightUnit = false,
   });
 
   @override
@@ -38,24 +38,25 @@ class _StockdetailsState extends State<Stockdetails> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-                    Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                widget.title,
-                style: AppTextStyles.bodyText12,
+              Expanded(
+                child: Text(
+                  widget.title,
+                  style: AppTextStyles.bodyText12,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+              const SizedBox(width: 4),
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
                   color: widget.iconBg,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
-                  widget.icon,
-                  color: widget.iconColor,
-                  size: 16,
-                ),
+                child: Icon(widget.icon, color: widget.iconColor, size: 16),
               ),
             ],
           ),
@@ -72,22 +73,16 @@ class _StockdetailsState extends State<Stockdetails> {
                         ),
                       ),
                       TextSpan(
-                        text: widget.value
-                            .split(" ")
-                            .sublist(1)
-                            .join(" "),
+                        text: widget.value.split(" ").sublist(1).join(" "),
                         style: AppTextStyles.headingText22.copyWith(
-                          color: Colors.grey, 
+                          color: Colors.grey,
                           fontSize: 18,
                         ),
                       ),
                     ],
                   ),
                 )
-              : Text(
-                  widget.value,
-                  style: AppTextStyles.headingText22,
-                ),
+              : Text(widget.value, style: AppTextStyles.headingText22),
         ],
       ),
     );

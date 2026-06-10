@@ -14,7 +14,8 @@ import 'package:proteinova_connect/features/admin/presentation/receive_stockscre
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/presentation/sales_entry_page.dart';
 
 class AdminInventory extends StatefulWidget {
-  const AdminInventory({super.key});
+  final String role;
+  const AdminInventory({super.key, required this.role});
 
   @override
   State<AdminInventory> createState() => _AdminInventoryState();
@@ -53,6 +54,7 @@ class _AdminInventoryState extends State<AdminInventory> {
   }
 
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
       // Parallel fetch as in React: Promise.all
@@ -66,6 +68,7 @@ class _AdminInventoryState extends State<AdminInventory> {
       final supplierList = results[1] as List<Supplier>;
       final purchasesList = results[2] as List<PurchaseModel>;
 
+      if (!mounted) return;
       setState(() {
         rawInventoryData = rawStats;
         suppliers = supplierList;
@@ -115,6 +118,7 @@ class _AdminInventoryState extends State<AdminInventory> {
       });
     } catch (e) {
       print("Error loading admin inventory: $e");
+      if (!mounted) return;
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -590,7 +594,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                 ),
               Expanded(
                 child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),   
+                  physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -607,7 +611,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                             Row(
                               children: [
                                 // Show back arrow only for Admin
-                                if (role == "ADMIN")
+                                if (widget.role.toLowerCase() == "admin") ...[
                                   InkWell(
                                     onTap: () => Navigator.pop(context),
                                     child: const Icon(
@@ -615,10 +619,8 @@ class _AdminInventoryState extends State<AdminInventory> {
                                       size: 24,
                                     ),
                                   ),
-
-                                if (role == "ADMIN")
                                   SizedBox(width: getWidth(context, 12)),
-
+                                ],
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -648,9 +650,9 @@ class _AdminInventoryState extends State<AdminInventory> {
                                           ),
                                           SizedBox(width: getWidth(context, 5)),
                                           Text(
-                                            "Role: $role",
+                                            'Admin & Warehouse',
                                             style: TextStyle(
-                                              fontSize: getWidth(context, 11),
+                                              fontSize: 14,
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),

@@ -25,6 +25,9 @@ import 'package:proteinova_connect/features/admin/menu/AssetManagement/presentat
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/presentation/receive_trays_screen.dart';
 import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
 import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
+import 'package:proteinova_connect/features/admin/menu/item/presentation/item.dart';
+import 'package:proteinova_connect/features/admin/menu/item/bloc/item_bloc.dart';
+import 'package:proteinova_connect/features/admin/inventory/data/inventory_repository.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/screens/purchase_expense_screen.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/bloc/purchase_bloc.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/data/repository/purchase_expense_repository.dart';
@@ -88,7 +91,9 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
           child: Material(
             color: Colors.white,
             child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.6,
+              width: MediaQuery.of(context).size.width > 600
+                  ? 320
+                  : MediaQuery.of(context).size.width * 0.6,
               height: double.infinity,
               child: _menuContent(),
             ),
@@ -110,9 +115,9 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
   int selectedIndex = 0;
 
   final List<Widget> pages = [
-    AdminInventory(),
+    AdminInventory(role: "warehouse"),
 
-    IncomingStock(),
+    IncomingStock(role: "warehouse"),
 
     // BlocProvider(
     //   create: (_) => BranchExpenseBloc(ExpenseRepository()),
@@ -209,8 +214,16 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Image.asset("assets/erplogo.png", height: 40, width: 150),
-          //   const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Image.asset(
+              "assets/erplogo.png",
+              height: 40,
+              width: 150,
+              fit: BoxFit.contain,
+            ),
+          ),
+          const Divider(height: 1),
           Expanded(
             child: SingleChildScrollView(
               child: Column(
@@ -251,6 +264,19 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
                   //   ),
                   // ),
 
+                  //Items
+                  _menuTile(
+                    Icons.category_outlined,
+                    "Items",
+                    BlocProvider(
+                      create: (_) => ItemBloc(
+                        inventoryRepository: InventoryRepository(),
+                        assetRepository: AssetRepository(),
+                      ),
+                      child: const ItemScreen(),
+                    ),
+                  ),
+
                   //Expenses
                   _menuTile(
                     Icons.pie_chart_outline,
@@ -289,7 +315,7 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
                   _menuTile(
                     Icons.move_to_inbox_rounded,
                     "Incoming Stock",
-                    IncomingStock(),
+                    IncomingStock(role: "warehouse"),
                   ),
 
                   //ReceiveTrays
@@ -427,11 +453,14 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
                   // _menuTile(Icons.settings, "setting", AdminSettingsScreen()),
                   // _menuTile(Icons.money, "Expenses", ExpenseManagement()),
                   // const SizedBox(height: 20),
-                  
+
                   ///ADMINISTRATION
                   _sectionTitle("ADMINISTRATION"),
-                       _menuTile(Icons.pie_chart_outline_outlined, "Reports", AdminReportDashboardScreen()),
-             
+                  _menuTile(
+                    Icons.pie_chart_outline_outlined,
+                    "Reports",
+                    AdminReportDashboardScreen(),
+                  ),
 
                   //Report
                   // _menuTile(
