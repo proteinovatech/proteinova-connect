@@ -110,7 +110,9 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
           child: Material(
             color: Colors.white,
             child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.6,
+              width: MediaQuery.of(context).size.width > 600
+                  ? 320
+                  : MediaQuery.of(context).size.width * 0.75,
               height: double.infinity,
               child: _menuContent(),
             ),
@@ -146,7 +148,7 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: const BoxDecoration(
           color: Colors.white,
-          boxShadow: [BoxShadow(color: AppColors.textSecondary, blurRadius: 1)],
+          boxShadow: [BoxShadow(color: Colors.white, blurRadius: 0)],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -221,198 +223,221 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Image.asset("assets/erplogo.png", height: 40, width: 150),
-          //   const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Image.asset(
+              "assets/erplogo.png",
+              height: 40,
+              width: 150,
+              fit: BoxFit.contain,
+            ),
+          ),
+          const Divider(height: 1),
           Expanded(
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 10),
-
-                  ///Warehouse
-                  _sectionTitle("Warehouse"),
-
-                  //Incoming Stock
-                   _menuTile(
-                    Icons.inventory_2_outlined,
-                    "Inventory",
-                    AdminInventory(),
-                  ),
-                  _menuTile(
-                    Icons.local_shipping_outlined,
-                    "Incoming Stock",
-                    IncomingStock(),
-                  ),
-                   
-
-                  //Purchase Expenses
-                  _menuTile(
-                    Icons.account_balance_wallet_outlined,
-                    "Purchase Expenses",
-                    BlocProvider(
-                      create: (_) =>
-                          PurchaseExpenseBloc(PurchaseExpenseRepository()),
-                      child: const PurchaseExpenseScreen(),
-                    ),
-                  ),
-
-                  _menuTile(
-                    Icons.inventory_2_outlined,
-                    "Tray Management",
-                    TrayManagementScreen(),
-                  ),
-
-                  //ReceiveTrays
-                  _menuTile(
-                    Icons.reply,
-                    "ReceiveTrays",
-                    BlocProvider(
-                      create: (_) =>
-                          TrayReceiveBloc(TrayReceiveService())
-                            ..add(FetchTrayReceiveNotes()),
-
-                      child: const ReceiveTraysScreen(),
-                    ),
-                  ),
-
-                  //Asset Management
-                  _menuTile(
-                    Icons.account_balance_wallet_outlined,
-                    "Asset Management",
-                    BlocProvider(
-                      create: (_) =>
-                          AssetBloc(AssetRepository())..add(FetchAssetsEvent()),
-
-                      child: AssetManagementPage(),
-                    ),
-                  ),
-
-                  //Expenses
-                  _menuTile(
-                    Icons.money,
-                    "Expenses",
-                    BlocProvider(
-                      create: (_) => BranchExpenseBloc(ExpenseRepository()),
-                      child: const AdminExpenseScreen(),
-                    ),
-                  ),
-
-                  //Offers & Prices
-                  _menuTile(
-                    Icons.sell_outlined,
-                    "Offers & Prices",
-                    OfferPrice(),
-                  ),
-
-                  _menuTile(
-                    Icons.error_outline_rounded,
-                    "Damage Entry",
-                    const AdminDamageEntryPage(),
-                  ),
-
-                  //TrayManagement
-                  _menuTile(
-                    Icons.inventory_2_outlined,
-                    "Customer Trays",
-                    const AdminCustomerTrays(),
-                  ),
-
-                  ///Purchase Section
-                  _sectionTitle("Purchase Section"),
-
-                  //Purchase
-                  _menuTile(
-                    Icons.local_shipping_outlined,
-                    "Purchase",
-                    BlocProvider(
-                      create: (_) => PurchaseBloc(
-                        admin_supplier.SupplierRepository(DioClient().dio),
-                        PurchaseRepository(
-                          DioClient().dio,
-                          PurchaseCacheService(),
-                        ),
-                        PurchaseCacheService(),
-                      )..add(FetchPurchaseInitData()),
-                      child: const Purchase(),
-                    ),
-                  ),
-
-                  //Supplier
-                  _menuTile(
-                    Icons.groups_outlined,
-                    "Supplier",
-                    BlocProvider(
-                      create: (_) =>
-                          SupplierBloc(SupplierService())
-                            ..add(FetchSuppliersEvent()),
-                      child: const AdminSuppliersScreen(),
-                    ),
-                  ),
-
-                  ///Branch Section
-                  _sectionTitle("Branch Section"),
-
-                  //Add Branch
-                  _menuTile(
-                    Icons.storefront_outlined,
-                    "Branch",
-                    const AdminBranchPage(),
-                  ),
-                  
-                  _menuTile(
-                    Icons.add_circle_outline,
-                    "Add Branch",
-                    AddBranchPage(),
-                  ),
-
-                  //Sales
-                  _menuTile(
-                    Icons.shopping_cart_outlined,
-                    "Sales",
-                    BlocProvider(
-                      create: (_) =>
-                          SalesDashboardBloc(SalesRemoteDatasource())
-                            ..add(FetchSalesDashboard()),
-
-                      child: const SalesDashboardPage(),
-                    ),
-                  ),
-
-                  //ReceivingBranchScreen
-                  _menuTile(
-                    Icons.groups_outlined,
-                    "Receiving From Branch",
-                    ReceivingBranchDashboardPage(),
-                  ),
-
-                  //Daily Closing
-                  _menuTile(
-                    Icons.storefront_outlined,
-                    "Daily Closing",
-                    DailyClosingScreen(),
-                  ),
-
-                  //Tray Return
-                  _menuTile(Icons.reply, "Tray Return", TrayReturn()),
-
-                  ///ADMINISTRATION
-                  _sectionTitle("ADMINISTRATION"),
-                       _menuTile(Icons.pie_chart_outline_outlined, "Reports", AdminReportDashboardScreen()),
-                  //setting
-                  _menuTile(Icons.settings, "Settings", AdminSettingsScreen()),
-
-                  //Report
-                  // _menuTile(
-                  //   Icons.report,
-                  //   "Report",
-                  //   AdminReportDashboardScreen(),
+                  // ─── ADMIN ───────────────────────────────────────────
+                  // _expansionSection(
+                  //   icon: Icons.settings_outlined,
+                  //   title: "Admin",
+                  //   initiallyExpanded: true,
+                  //   children: [
+                  //     _menuTile(
+                  //       Icons.dashboard_rounded,
+                  //       "Dashboard",
+                  //       AdminDashboard(),
+                  //     ),
+                  //     _menuTile(
+                  //       Icons.currency_rupee_rounded,
+                  //       "Add Price",
+                  //       AddPriceScreen(),
+                  //     ),
+                  //     _menuTile(
+                  //       Icons.verified_rounded,
+                  //       "Approvals",
+                  //       ApprovalsQueueScreen(),
+                  //     ),
+                  //     _menuTile(
+                  //       Icons.notifications_outlined,
+                  //       "Notifications",
+                  //       AdminDashboard(),
+                  //     ),
+                  //   ],
                   // ),
+
+                  // ─── WAREHOUSE ───────────────────────────────────────
+                  _expansionSection(
+                    icon: Icons.warehouse_outlined,
+                    title: "Warehouse",
+                    initiallyExpanded: true,
+                    children: [
+                      _menuTile(
+                        Icons.inventory_2_outlined,
+                        "Inventory",
+                        AdminInventory(role: "admin"),
+                      ),
+                      _menuTile(
+                        Icons.local_shipping_outlined,
+                        "Incoming Stock",
+                        IncomingStock(role: "admin"),
+                      ),
+                      _menuTile(
+                        Icons.account_balance_wallet_outlined,
+                        "Purchase Expenses",
+                        BlocProvider(
+                          create: (_) =>
+                              PurchaseExpenseBloc(PurchaseExpenseRepository()),
+                          child: const PurchaseExpenseScreen(),
+                        ),
+                      ),
+                      _menuTile(
+                        Icons.inventory_2_outlined,
+                        "Tray Management",
+                        TrayManagementScreen(),
+                      ),
+                      _menuTile(
+                        Icons.reply,
+                        "ReceiveTrays",
+                        BlocProvider(
+                          create: (_) =>
+                              TrayReceiveBloc(TrayReceiveService())
+                                ..add(FetchTrayReceiveNotes()),
+                          child: const ReceiveTraysScreen(),
+                        ),
+                      ),
+                      _menuTile(
+                        Icons.account_balance_wallet_outlined,
+                        "Asset Management",
+                        BlocProvider(
+                          create: (_) =>
+                              AssetBloc(AssetRepository())
+                                ..add(FetchAssetsEvent()),
+                          child: AssetManagementPage(),
+                        ),
+                      ),
+                      _menuTile(
+                        Icons.money,
+                        "Expenses",
+                        BlocProvider(
+                          create: (_) => BranchExpenseBloc(ExpenseRepository()),
+                          child: const AdminExpenseScreen(),
+                        ),
+                      ),
+                      _menuTile(
+                        Icons.sell_outlined,
+                        "Offers & Prices",
+                        OfferPrice(),
+                      ),
+                      _menuTile(
+                        Icons.error_outline_rounded,
+                        "Damage Entry",
+                        const AdminDamageEntryPage(),
+                      ),
+                      _menuTile(
+                        Icons.inventory_2_outlined,
+                        "Customer Trays",
+                        const AdminCustomerTrays(),
+                      ),
+                    ],
+                  ),
+
+                  // ─── PURCHASE SECTION ────────────────────────────────
+                  _expansionSection(
+                    icon: Icons.local_shipping_outlined,
+                    title: "Purchase Section",
+                    children: [
+                      _menuTile(
+                        Icons.local_shipping_outlined,
+                        "Purchase",
+                        BlocProvider(
+                          create: (_) => PurchaseBloc(
+                            admin_supplier.SupplierRepository(DioClient().dio),
+                            PurchaseRepository(
+                              DioClient().dio,
+                              PurchaseCacheService(),
+                            ),
+                            PurchaseCacheService(),
+                          )..add(FetchPurchaseInitData()),
+                          child: const Purchase(),
+                        ),
+                      ),
+                      _menuTile(
+                        Icons.groups_outlined,
+                        "Supplier",
+                        BlocProvider(
+                          create: (_) =>
+                              SupplierBloc(SupplierService())
+                                ..add(FetchSuppliersEvent()),
+                          child: const AdminSuppliersScreen(),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // ─── BRANCH SECTION ──────────────────────────────────
+                  _expansionSection(
+                    icon: Icons.storefront_outlined,
+                    title: "Branch Section",
+                    children: [
+                      _menuTile(
+                        Icons.storefront_outlined,
+                        "Branch",
+                        const AdminBranchPage(),
+                      ),
+                      _menuTile(
+                        Icons.add_circle_outline,
+                        "Add Branch",
+                        AddBranchPage(),
+                      ),
+                      _menuTile(
+                        Icons.shopping_cart_outlined,
+                        "Sales",
+                        BlocProvider(
+                          create: (_) =>
+                              SalesDashboardBloc(SalesRemoteDatasource())
+                                ..add(FetchSalesDashboard()),
+                          child: const SalesDashboardPage(),
+                        ),
+                      ),
+                      _menuTile(
+                        Icons.groups_outlined,
+                        "Receiving From Branch",
+                        ReceivingBranchDashboardPage(),
+                      ),
+                      _menuTile(
+                        Icons.storefront_outlined,
+                        "Daily Closing",
+                        DailyClosingScreen(),
+                      ),
+                      _menuTile(Icons.reply, "Tray Return", TrayReturn()),
+                    ],
+                  ),
+
+                  // ─── ADMINISTRATION ──────────────────────────────────
+                  _expansionSection(
+                    icon: Icons.admin_panel_settings_outlined,
+                    title: "Administration",
+                    children: [
+                      _menuTile(
+                        Icons.pie_chart_outline_outlined,
+                        "Reports",
+                        AdminReportDashboardScreen(),
+                      ),
+                      _menuTile(
+                        Icons.settings,
+                        "Settings",
+                        AdminSettingsScreen(),
+                      ),
+                    ],
+                  ),
+
                   const SizedBox(height: 20),
-                  Divider(),
+                  const Divider(),
                   ListTile(
-                    leading: Icon(Icons.logout, color: Colors.red),
-                    title: Text(
+                    leading: const Icon(Icons.logout, color: Colors.red),
+                    title: const Text(
                       "Logout",
                       style: TextStyle(
                         color: Colors.red,
@@ -430,52 +455,56 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
     );
   }
 
+  Widget _expansionSection({
+    required IconData icon,
+    required String title,
+    required List<Widget> children,
+    bool initiallyExpanded = false,
+  }) {
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        initiallyExpanded: initiallyExpanded,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+        childrenPadding: EdgeInsets.zero,
+        leading: Icon(icon, size: 20, color: Colors.grey.shade700),
+        title: Text(
+          title.toUpperCase(),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey.shade700,
+            letterSpacing: 0.8,
+          ),
+        ),
+        iconColor: Colors.grey.shade700,
+        collapsedIconColor: Colors.grey.shade500,
+        children: children,
+      ),
+    );
+  }
+
   Widget _menuTile(IconData icon, String title, Widget page) {
     return ListTile(
-      dense: true, // reduce height
+      dense: true,
       minVerticalPadding: 0,
-      horizontalTitleGap: 8, // icon ↔ text gap reduce
-      minLeadingWidth: 20, // icon width reduce
-
-      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 0),
-
+      horizontalTitleGap: 8,
+      minLeadingWidth: 20,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 0),
       leading: Icon(icon, size: 18, color: Colors.black87),
-
       title: Text(
         title,
         style: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
-
-          height: 1, // text line spacing reduce
+          height: 1,
         ),
       ),
-
-      visualDensity: const VisualDensity(
-        horizontal: 0,
-        vertical: 0, // menu item height reduce
-      ),
-
+      visualDensity: const VisualDensity(horizontal: 0, vertical: 0),
       onTap: () {
         Navigator.pop(context);
-
         Navigator.push(context, MaterialPageRoute(builder: (_) => page));
       },
-    );
-  }
-
-  Widget _sectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 20, top: 18, bottom: 8),
-      child: Text(
-        title.toUpperCase(),
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey,
-          letterSpacing: 0.8,
-        ),
-      ),
     );
   }
 }

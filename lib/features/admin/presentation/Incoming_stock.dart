@@ -7,17 +7,9 @@ import 'package:proteinova_connect/features/admin/widget/incoming_widget.dart';
 import '../inventory/data/inventory_repository.dart';
 import '../inventory/models/inventory_model.dart';
 
-class IncomingStockMain extends StatelessWidget {
-  const IncomingStockMain({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const IncomingStock();
-  }
-}
-
 class IncomingStock extends StatefulWidget {
-  const IncomingStock({super.key});
+  final String role;
+  const IncomingStock({super.key, required this.role});
 
   @override
   State<IncomingStock> createState() => _IncomingStockState();
@@ -234,26 +226,28 @@ class _IncomingStockState extends State<IncomingStock> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "$title Details",
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xff0F172A),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "$title Details",
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xff0F172A),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          "View comprehensive shipment data for this category",
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Color(0xff64748B),
+                          const SizedBox(height: 4),
+                          const Text(
+                            "View comprehensive shipment data for this category",
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Color(0xff64748B),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     IconButton(
                       onPressed: () => Navigator.pop(context),
@@ -278,9 +272,10 @@ class _IncomingStockState extends State<IncomingStock> {
                             Text(
                               "No shipments found",
                               style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              ),
                             ),
                             SizedBox(height: 8),
                             Text(
@@ -306,7 +301,9 @@ class _IncomingStockState extends State<IncomingStock> {
                               children: [
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 6),
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xffF1F5F9),
                                     borderRadius: BorderRadius.circular(6),
@@ -437,13 +434,15 @@ class _IncomingStockState extends State<IncomingStock> {
         return StatefulBuilder(
           builder: (context, setModalState) {
             final filtered = _vehicleTransactionsList.where((p) {
-              final searchMatch = p.vehicleNumber
-                      .toLowerCase()
-                      .contains(search.toLowerCase()) ||
+              final searchMatch =
+                  p.vehicleNumber.toLowerCase().contains(
+                    search.toLowerCase(),
+                  ) ||
                   p.driverName.toLowerCase().contains(search.toLowerCase()) ||
                   p.supplierName.toLowerCase().contains(search.toLowerCase());
 
-              final statusMatch = statusFilter.isEmpty ||
+              final statusMatch =
+                  statusFilter.isEmpty ||
                   p.movementStatus.toUpperCase() ==
                       statusFilter.toUpperCase() ||
                   p.purchaseStatus.toUpperCase() == statusFilter.toUpperCase();
@@ -484,31 +483,35 @@ class _IncomingStockState extends State<IncomingStock> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Vehicle Transaction Details",
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xff0F172A),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Vehicle Transaction Details",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xff0F172A),
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              "All incoming vehicle movements and logistics information",
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Color(0xff64748B),
+                              SizedBox(height: 4),
+                              Text(
+                                "All incoming vehicle movements and logistics information",
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xff64748B),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         IconButton(
                           onPressed: () => Navigator.pop(context),
-                          icon:
-                              const Icon(Icons.close, color: Color(0xff64748B)),
+                          icon: const Icon(
+                            Icons.close,
+                            color: Color(0xff64748B),
+                          ),
                         ),
                       ],
                     ),
@@ -516,7 +519,9 @@ class _IncomingStockState extends State<IncomingStock> {
                   const Divider(height: 1),
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
                     child: Row(
                       children: [
                         Expanded(
@@ -556,33 +561,53 @@ class _IncomingStockState extends State<IncomingStock> {
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
                               value: statusFilter.isEmpty ? null : statusFilter,
-                              hint: const Text("All Statuses",
-                                  style: TextStyle(fontSize: 12)),
+                              hint: const Text(
+                                "All Statuses",
+                                style: TextStyle(fontSize: 12),
+                              ),
                               items: const [
                                 DropdownMenuItem(
-                                    value: "",
-                                    child: Text("All Statuses",
-                                        style: TextStyle(fontSize: 12))),
+                                  value: "",
+                                  child: Text(
+                                    "All Statuses",
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ),
                                 DropdownMenuItem(
-                                    value: "ARRIVAL",
-                                    child: Text("Arrived",
-                                        style: TextStyle(fontSize: 12))),
+                                  value: "ARRIVAL",
+                                  child: Text(
+                                    "Arrived",
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ),
                                 DropdownMenuItem(
-                                    value: "RECEIVED",
-                                    child: Text("Ready for Unloading",
-                                        style: TextStyle(fontSize: 12))),
+                                  value: "RECEIVED",
+                                  child: Text(
+                                    "Ready for Unloading",
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ),
                                 DropdownMenuItem(
-                                    value: "UNLOADED",
-                                    child: Text("Unloaded",
-                                        style: TextStyle(fontSize: 12))),
+                                  value: "UNLOADED",
+                                  child: Text(
+                                    "Unloaded",
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ),
                                 DropdownMenuItem(
-                                    value: "IN_TRANSIT",
-                                    child: Text("In Transit",
-                                        style: TextStyle(fontSize: 12))),
+                                  value: "IN_TRANSIT",
+                                  child: Text(
+                                    "In Transit",
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ),
                                 DropdownMenuItem(
-                                    value: "PENDING",
-                                    child: Text("Pending",
-                                        style: TextStyle(fontSize: 12))),
+                                  value: "PENDING",
+                                  child: Text(
+                                    "Pending",
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ),
                               ],
                               onChanged: (value) {
                                 setModalState(() {
@@ -621,14 +646,18 @@ class _IncomingStockState extends State<IncomingStock> {
                                 Text(
                                   "Try adjusting your search or filter.",
                                   style: TextStyle(
-                                      color: Color(0xff94A3B8), fontSize: 13),
+                                    color: Color(0xff94A3B8),
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ],
                             ),
                           )
                         : ListView.separated(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 16),
+                              horizontal: 24,
+                              vertical: 16,
+                            ),
                             itemCount: currentRecords.length,
                             separatorBuilder: (context, index) =>
                                 const Divider(),
@@ -648,17 +677,19 @@ class _IncomingStockState extends State<IncomingStock> {
                                               ? "N/A"
                                               : p.vehicleNumber,
                                           style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 13,
-                                              color: Color(0xff0F172A)),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                            color: Color(0xff0F172A),
+                                          ),
                                         ),
                                         Text(
                                           p.vehicleType.isEmpty
                                               ? "Unknown Type"
                                               : p.vehicleType,
                                           style: const TextStyle(
-                                              fontSize: 11,
-                                              color: Color(0xff64748B)),
+                                            fontSize: 11,
+                                            color: Color(0xff64748B),
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -674,17 +705,19 @@ class _IncomingStockState extends State<IncomingStock> {
                                               ? "N/A"
                                               : p.driverName,
                                           style: const TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 12,
-                                              color: Color(0xff334155)),
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 12,
+                                            color: Color(0xff334155),
+                                          ),
                                         ),
                                         Text(
                                           p.driverPhone.isEmpty
                                               ? "No Contact"
                                               : p.driverPhone,
                                           style: const TextStyle(
-                                              fontSize: 11,
-                                              color: Color(0xff94A3B8)),
+                                            fontSize: 11,
+                                            color: Color(0xff94A3B8),
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -698,17 +731,19 @@ class _IncomingStockState extends State<IncomingStock> {
                                         Text(
                                           p.supplierName,
                                           style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 13,
-                                              color: Color(0xff0F172A)),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                            color: Color(0xff0F172A),
+                                          ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                         Text(
                                           "PO-${p.id}",
                                           style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Color(0xff3B82F6),
-                                              fontWeight: FontWeight.w500),
+                                            fontSize: 12,
+                                            color: Color(0xff3B82F6),
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -722,17 +757,19 @@ class _IncomingStockState extends State<IncomingStock> {
                                         Text(
                                           "${p.totalQuantity} Eggs",
                                           style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 13,
-                                              color: Color(0xff0F172A)),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                            color: Color(0xff0F172A),
+                                          ),
                                         ),
                                         Text(
                                           p.warehouseLocation.isEmpty
                                               ? "No Location"
                                               : p.warehouseLocation,
                                           style: const TextStyle(
-                                              fontSize: 11,
-                                              color: Color(0xff64748B)),
+                                            fontSize: 11,
+                                            color: Color(0xff64748B),
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -744,34 +781,41 @@ class _IncomingStockState extends State<IncomingStock> {
                                           CrossAxisAlignment.end,
                                       children: [
                                         Text(
-                                          _formatDate(p.createdAt)
-                                              .split(' - ')
-                                              .first,
+                                          _formatDate(
+                                            p.createdAt,
+                                          ).split(' - ').first,
                                           style: const TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 12,
-                                              color: Color(0xff475569)),
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 12,
+                                            color: Color(0xff475569),
+                                          ),
                                         ),
                                         const SizedBox(height: 4),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 6, vertical: 2),
+                                            horizontal: 6,
+                                            vertical: 2,
+                                          ),
                                           decoration: BoxDecoration(
                                             color: const Color(0xffF3F4F6),
-                                            borderRadius: BorderRadius.circular(4),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
                                           ),
                                           child: Text(
                                             (p.movementStatus.isNotEmpty
                                                     ? p.movementStatus
-                                                    : (p.purchaseStatus
-                                                            .isNotEmpty
-                                                        ? p.purchaseStatus
-                                                        : "PENDING"))
+                                                    : (p
+                                                              .purchaseStatus
+                                                              .isNotEmpty
+                                                          ? p.purchaseStatus
+                                                          : "PENDING"))
                                                 .toUpperCase(),
                                             style: const TextStyle(
-                                                fontSize: 9,
-                                                fontWeight: FontWeight.bold,
-                                                color: Color(0xff374151)),
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xff374151),
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -791,7 +835,9 @@ class _IncomingStockState extends State<IncomingStock> {
                         Text(
                           "Showing ${filtered.isEmpty ? 0 : startIndex + 1} to ${endIndex > filtered.length ? filtered.length : endIndex} of ${filtered.length} records",
                           style: const TextStyle(
-                              fontSize: 12, color: Color(0xff64748B)),
+                            fontSize: 12,
+                            color: Color(0xff64748B),
+                          ),
                         ),
                         Row(
                           children: [
@@ -805,12 +851,17 @@ class _IncomingStockState extends State<IncomingStock> {
                                     },
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8)),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
-                              child: const Text("Previous",
-                                  style: TextStyle(fontSize: 12)),
+                              child: const Text(
+                                "Previous",
+                                style: TextStyle(fontSize: 12),
+                              ),
                             ),
                             const SizedBox(width: 8),
                             OutlinedButton(
@@ -823,12 +874,17 @@ class _IncomingStockState extends State<IncomingStock> {
                                     },
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8)),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
-                              child: const Text("Next",
-                                  style: TextStyle(fontSize: 12)),
+                              child: const Text(
+                                "Next",
+                                style: TextStyle(fontSize: 12),
+                              ),
                             ),
                           ],
                         ),
@@ -956,14 +1012,20 @@ class _IncomingStockState extends State<IncomingStock> {
                 /// TOP BAR
                 Row(
                   children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-                    ),
+                   if (widget.role.trim().toLowerCase() == "admin") ...[
+  InkWell(
+    onTap: () => Navigator.pop(context),
+    child: const Icon(
+      Icons.arrow_back,
+      size: 24,
+    ),
+  ),
+  SizedBox(width: getWidth(context, 12)),
+],
                     const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
-                        "Inventory Overview",
+                        "Incoming Overview",
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -1025,10 +1087,7 @@ class _IncomingStockState extends State<IncomingStock> {
                   iconBg: const Color(0xFFF1F6FF),
                   iconColor: Colors.black,
                   onTap: () {
-                    _showShipmentModal(
-                      "Expected Today",
-                      _expectedTodayList,
-                    );
+                    _showShipmentModal("Expected Today", _expectedTodayList);
                   },
                 ),
 
@@ -1059,10 +1118,7 @@ class _IncomingStockState extends State<IncomingStock> {
                   iconBg: const Color(0xff0B74FF),
                   iconColor: Colors.white,
                   onTap: () {
-                    _showShipmentModal(
-                      "Upcoming Shipments",
-                      _upcomingList,
-                    );
+                    _showShipmentModal("Upcoming Shipments", _upcomingList);
                   },
                 ),
 
@@ -1101,8 +1157,9 @@ class _IncomingStockState extends State<IncomingStock> {
                             "Received",
                             "Delayed",
                           ];
-                          _showFilterMenu(context, statuses, selectedStatus,
-                              (val) {
+                          _showFilterMenu(context, statuses, selectedStatus, (
+                            val,
+                          ) {
                             setState(() => selectedStatus = val);
                           });
                         },
@@ -1189,8 +1246,9 @@ class _IncomingStockState extends State<IncomingStock> {
                                 po: "PO-${p.poNumber}",
                                 date: _formatDate(p.createdAt),
                                 supplier: p.supplierName,
-                                location:
-                                    p.location.isEmpty ? "N/A" : p.location,
+                                location: p.location.isEmpty
+                                    ? "N/A"
+                                    : p.location,
                                 quantity: "${p.totalQuantity} Eggs",
                                 type: p.productName,
                                 purchaseStatus: p.purchaseStatus,
@@ -1311,12 +1369,16 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
 
       // Initialize Text Editing Controllers
       _receivedControllers = trayDetails
-          .map((detail) =>
-              TextEditingController(text: detail['received'].toString()))
+          .map(
+            (detail) =>
+                TextEditingController(text: detail['received'].toString()),
+          )
           .toList();
       _damagedControllers = trayDetails
-          .map((detail) =>
-              TextEditingController(text: detail['damaged'].toString()))
+          .map(
+            (detail) =>
+                TextEditingController(text: detail['damaged'].toString()),
+          )
           .toList();
       _notesControllers = trayDetails
           .map((detail) => TextEditingController(text: detail['notes']))
@@ -1329,9 +1391,9 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
     } catch (e) {
       setState(() => isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error fetching purchase: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error fetching purchase: $e")));
       }
     }
   }
@@ -1379,9 +1441,9 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error confirming receive: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error confirming receive: $e")));
       }
     } finally {
       if (mounted) {
@@ -1393,20 +1455,21 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final items = purchase?['items'] ?? [];
     final totalTrays = (items as List).fold<int>(
-        0, (sum, item) => sum + (int.tryParse(item['trays'].toString()) ?? 0));
+      0,
+      (sum, item) => sum + (int.tryParse(item['trays'].toString()) ?? 0),
+    );
     final totalEggs = items.fold<int>(
-        0,
-        (sum, item) =>
-            sum +
-            ((int.tryParse(item['trays'].toString()) ?? 0) *
-                (int.tryParse(item['capacity'].toString()) ?? 30)));
+      0,
+      (sum, item) =>
+          sum +
+          ((int.tryParse(item['trays'].toString()) ?? 0) *
+              (int.tryParse(item['capacity'].toString()) ?? 30)),
+    );
 
     final double itemsTotal = items.fold<double>(0, (sum, item) {
       final trays = double.tryParse(item['trays'].toString()) ?? 0;
@@ -1419,11 +1482,12 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
 
     final double otherCharge = expenses
         .where(
-            (e) => e['expense_type']?.toString().toUpperCase() != "TRANSPORT")
+          (e) => e['expense_type']?.toString().toUpperCase() != "TRANSPORT",
+        )
         .fold<double>(
-            0,
-            (sum, e) =>
-                sum + (double.tryParse(e['amount'].toString()) ?? 0.0));
+          0,
+          (sum, e) => sum + (double.tryParse(e['amount'].toString()) ?? 0.0),
+        );
 
     final double totalAmount = itemsTotal + otherCharge;
 
@@ -1444,64 +1508,91 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
                     const SizedBox(height: 30),
 
                     /// INFO GRID
-                    LayoutBuilder(builder: (context, constraints) {
-                      final isWide = constraints.maxWidth > 900;
-                      return Column(
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                  flex: isWide ? 1 : 1,
-                                  child: _buildInfoCard()),
-                              if (isWide) const SizedBox(width: 20),
-                              if (isWide)
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isWide = constraints.maxWidth > 900;
+                        return Column(
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 Expanded(
+                                  flex: isWide ? 1 : 1,
+                                  child: _buildInfoCard(),
+                                ),
+                                if (isWide) const SizedBox(width: 20),
+                                if (isWide)
+                                  Expanded(
                                     flex: 2,
                                     child: _buildItemsCard(
-                                        items, itemsTotal, totalTrays, totalEggs)),
-                              if (isWide) const SizedBox(width: 20),
-                              if (isWide)
-                                Expanded(
+                                      items,
+                                      itemsTotal,
+                                      totalTrays,
+                                      totalEggs,
+                                    ),
+                                  ),
+                                if (isWide) const SizedBox(width: 20),
+                                if (isWide)
+                                  Expanded(
                                     flex: 1,
                                     child: _buildSummaryCard(
-                                        totalTrays, totalEggs, items)),
+                                      totalTrays,
+                                      totalEggs,
+                                      items,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            if (!isWide) ...[
+                              const SizedBox(height: 20),
+                              _buildItemsCard(
+                                items,
+                                itemsTotal,
+                                totalTrays,
+                                totalEggs,
+                              ),
+                              const SizedBox(height: 20),
+                              _buildSummaryCard(totalTrays, totalEggs, items),
                             ],
-                          ),
-                          if (!isWide) ...[
-                            const SizedBox(height: 20),
-                            _buildItemsCard(
-                                items, itemsTotal, totalTrays, totalEggs),
-                            const SizedBox(height: 20),
-                            _buildSummaryCard(totalTrays, totalEggs, items),
-                          ]
-                        ],
-                      );
-                    }),
+                          ],
+                        );
+                      },
+                    ),
 
                     const SizedBox(height: 30),
 
                     /// TRAY DETAILS & BILL SUMMARY
-                    LayoutBuilder(builder: (context, constraints) {
-                      final isWide = constraints.maxWidth > 900;
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(flex: 2, child: _buildTrayDetailsCard()),
-                          if (isWide) const SizedBox(width: 20),
-                          if (isWide)
-                            Expanded(
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isWide = constraints.maxWidth > 900;
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(flex: 2, child: _buildTrayDetailsCard()),
+                            if (isWide) const SizedBox(width: 20),
+                            if (isWide)
+                              Expanded(
                                 flex: 1,
-                                child: _buildBillSummaryCard(items.length,
-                                    itemsTotal, otherCharge, totalAmount)),
-                        ],
-                      );
-                    }),
+                                child: _buildBillSummaryCard(
+                                  items.length,
+                                  itemsTotal,
+                                  otherCharge,
+                                  totalAmount,
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
 
                     if (MediaQuery.of(context).size.width <= 900) ...[
                       const SizedBox(height: 20),
-                      _buildBillSummaryCard(items.length, itemsTotal,
-                          otherCharge, totalAmount),
+                      _buildBillSummaryCard(
+                        items.length,
+                        itemsTotal,
+                        otherCharge,
+                        totalAmount,
+                      ),
                     ],
 
                     const SizedBox(height: 30),
@@ -1538,16 +1629,18 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-                color: const Color(0xffFEF3C7),
-                borderRadius: BorderRadius.circular(12)),
+              color: const Color(0xffFEF3C7),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.verified_user, size: 16, color: Colors.amber),
                 SizedBox(width: 6),
-                Text("Role: Admin",
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                Text(
+                  "Role: Admin",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
               ],
             ),
           ),
@@ -1594,9 +1687,7 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
               ),
               decoration: BoxDecoration(
                 color: const Color(0xff16A34A),
-                borderRadius: BorderRadius.circular(
-                  getWidth(context, 8),
-                ),
+                borderRadius: BorderRadius.circular(getWidth(context, 8)),
               ),
               child: Text(
                 "Ready for Unload",
@@ -1611,8 +1702,9 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
         ),
         const SizedBox(height: 8),
         const Text(
-            "Manage and receive incoming shipments from suppliers to update inventory",
-            style: TextStyle(color: Color(0xff6B7280), fontSize: 16)),
+          "Manage and receive incoming shipments from suppliers to update inventory",
+          style: TextStyle(color: Color(0xff6B7280), fontSize: 16),
+        ),
       ],
     );
   }
@@ -1621,18 +1713,23 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xffE5E7EB))),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xffE5E7EB)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Received Info",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            "Received Info",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const Divider(height: 40),
           _infoRow("Receive No.", "${purchase?['id']}"),
-          _infoRow("Purchase Date",
-              purchase?['created_at']?.split('T').first ?? "N/A"),
+          _infoRow(
+            "Purchase Date",
+            purchase?['created_at']?.split('T').first ?? "N/A",
+          ),
           _infoRow("Vehicle No.", purchase?['vehicle_number'] ?? "N/A"),
           _infoRow("Driver Name", purchase?['driver_name'] ?? "N/A"),
           _infoRow("Broker Name", purchase?['broker_name'] ?? "N/A"),
@@ -1641,22 +1738,29 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-                color: const Color(0xffF9FAFB),
-                borderRadius: BorderRadius.circular(12)),
+              color: const Color(0xffF9FAFB),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("From Supplier",
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xff6B7280),
-                        fontWeight: FontWeight.bold)),
+                const Text(
+                  "From Supplier",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xff6B7280),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(purchase?['supplier_company_name'] ?? "N/A",
-                    style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87)),
+                Text(
+                  purchase?['supplier_company_name'] ?? "N/A",
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
               ],
             ),
           ),
@@ -1671,35 +1775,48 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xff6B7280),
-                  fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xff6B7280),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(value,
-              style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87)),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildItemsCard(
-      List items, double itemsTotal, int totalTrays, int totalEggs) {
+    List items,
+    double itemsTotal,
+    int totalTrays,
+    int totalEggs,
+  ) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xffE5E7EB))),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xffE5E7EB)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Received Items",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            "Received Items",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const Divider(height: 40),
           ...items.asMap().entries.map((entry) {
             final item = entry.value;
@@ -1724,20 +1841,30 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(item['egg_category_grade'] ?? "N/A",
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15)),
+                      Text(
+                        item['egg_category_grade'] ?? "N/A",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
-                            color: const Color(0xffE0E7FF),
-                            borderRadius: BorderRadius.circular(6)),
-                        child: Text(item['tray_type'] ?? "N/A",
-                            style: const TextStyle(
-                                color: Color(0xff4338CA),
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold)),
+                          color: const Color(0xffE0E7FF),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          item['tray_type'] ?? "N/A",
+                          style: const TextStyle(
+                            color: Color(0xff4338CA),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -1748,34 +1875,49 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Trays",
-                              style:
-                                  TextStyle(color: Colors.grey, fontSize: 12)),
-                          Text("$trays",
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 14)),
+                          const Text(
+                            "Trays",
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
+                          Text(
+                            "$trays",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
                         ],
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Text("Eggs",
-                              style:
-                                  TextStyle(color: Colors.grey, fontSize: 12)),
-                          Text("$eggs",
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 14)),
+                          const Text(
+                            "Eggs",
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
+                          Text(
+                            "$eggs",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
                         ],
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          const Text("Price/Egg",
-                              style:
-                                  TextStyle(color: Colors.grey, fontSize: 12)),
-                          Text("₹${price.toStringAsFixed(2)}",
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 14)),
+                          const Text(
+                            "Price/Egg",
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
+                          Text(
+                            "₹${price.toStringAsFixed(2)}",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -1784,13 +1926,18 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Total Price",
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text("₹${totalPrice.toStringAsFixed(0)}",
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xff16A34A),
-                              fontSize: 16)),
+                      const Text(
+                        "Total Price",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        "₹${totalPrice.toStringAsFixed(0)}",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xff16A34A),
+                          fontSize: 16,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -1801,27 +1948,35 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-                color: const Color(0xffFEF9C3),
-                borderRadius: BorderRadius.circular(12)),
+              color: const Color(0xffFEF9C3),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Grand Total",
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                const Text(
+                  "Grand Total",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text("$totalTrays Trays / $totalEggs Eggs",
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            color: Colors.black54)),
-                    Text("₹${itemsTotal.toStringAsFixed(0)}",
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            color: Colors.black)),
+                    Text(
+                      "$totalTrays Trays / $totalEggs Eggs",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    Text(
+                      "₹${itemsTotal.toStringAsFixed(0)}",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.black,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -1843,17 +1998,20 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xffE5E7EB))),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xffE5E7EB)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Summary",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(
+                "Summary",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
               Icon(Icons.description_outlined, color: Color(0xff6B7280)),
             ],
           ),
@@ -1874,11 +2032,14 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: const TextStyle(fontSize: 14, color: Color(0xff6B7280))),
-          Text(value,
-              style:
-                  const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 14, color: Color(0xff6B7280)),
+          ),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );
@@ -1888,14 +2049,17 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xffE5E7EB))),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xffE5E7EB)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Tray Details",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            "Tray Details",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 20),
           ...trayDetails.asMap().entries.map((entry) {
             final idx = entry.key;
@@ -1914,21 +2078,30 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(detail['product'],
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text(
+                        detail['product'],
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xffE0E7FF),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(detail['trayType'],
-                            style: const TextStyle(
-                                color: Color(0xff4338CA),
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold)),
+                        child: Text(
+                          detail['trayType'],
+                          style: const TextStyle(
+                            color: Color(0xff4338CA),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -1939,30 +2112,37 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("Received",
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.bold)),
+                            const Text(
+                              "Received",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             const SizedBox(height: 6),
                             TextField(
                               controller: _receivedControllers[idx],
                               keyboardType: TextInputType.number,
                               inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly
+                                FilteringTextInputFormatter.digitsOnly,
                               ],
                               textAlign: TextAlign.center,
                               decoration: InputDecoration(
                                 isDense: true,
                                 contentPadding: const EdgeInsets.all(10),
                                 border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                        color: Colors.grey.shade300)),
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
                                 enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                        color: Colors.grey.shade300)),
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
                                 filled: true,
                                 fillColor: Colors.white,
                               ),
@@ -1976,30 +2156,37 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("Damaged",
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.bold)),
+                            const Text(
+                              "Damaged",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             const SizedBox(height: 6),
                             TextField(
                               controller: _damagedControllers[idx],
                               keyboardType: TextInputType.number,
                               inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly
+                                FilteringTextInputFormatter.digitsOnly,
                               ],
                               textAlign: TextAlign.center,
                               decoration: InputDecoration(
                                 isDense: true,
                                 contentPadding: const EdgeInsets.all(10),
                                 border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                        color: Colors.grey.shade300)),
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
                                 enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                        color: Colors.grey.shade300)),
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
                                 filled: true,
                                 fillColor: Colors.white,
                               ),
@@ -2013,24 +2200,31 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("Good",
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.bold)),
+                            const Text(
+                              "Good",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             const SizedBox(height: 6),
                             Container(
                               width: double.infinity,
                               padding: const EdgeInsets.symmetric(vertical: 11),
                               decoration: BoxDecoration(
-                                  color: const Color(0xffDCFCE7),
-                                  borderRadius: BorderRadius.circular(8)),
-                              child: Text("${detail['good']}",
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                      color: Color(0xff166534),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15)),
+                                color: const Color(0xffDCFCE7),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                "${detail['good']}",
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Color(0xff166534),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -2042,16 +2236,20 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
                     controller: _notesControllers[idx],
                     decoration: InputDecoration(
                       hintText: "Add notes...",
-                      hintStyle:
-                          const TextStyle(fontSize: 13, color: Colors.grey),
+                      hintStyle: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey,
+                      ),
                       isDense: true,
                       contentPadding: const EdgeInsets.all(12),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey.shade300)),
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
                       enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey.shade300)),
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
                       filled: true,
                       fillColor: Colors.white,
                     ),
@@ -2069,11 +2267,13 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
               SizedBox(width: 8),
               Expanded(
                 child: Text(
-                    "Damage trays will not be added to your usable stock.",
-                    style: TextStyle(
-                        color: Colors.orange,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13)),
+                  "Damage trays will not be added to your usable stock.",
+                  style: TextStyle(
+                    color: Colors.orange,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
               ),
             ],
           ),
@@ -2082,32 +2282,47 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
     );
   }
 
-  Widget _buildBillSummaryCard(int itemCount, double itemsTotal,
-      double otherCharge, double totalAmount) {
+  Widget _buildBillSummaryCard(
+    int itemCount,
+    double itemsTotal,
+    double otherCharge,
+    double totalAmount,
+  ) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xffE5E7EB))),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xffE5E7EB)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Bill Summary",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            "Bill Summary",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const Divider(height: 40),
           _summaryRow(
-              "Items ($itemCount)", "₹${itemsTotal.toStringAsFixed(0)}"),
+            "Items ($itemCount)",
+            "₹${itemsTotal.toStringAsFixed(0)}",
+          ),
           _summaryRow("Other Charge", "₹${otherCharge.toStringAsFixed(0)}"),
           const Divider(height: 40, color: Colors.black),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Total Amount",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              Text("₹${totalAmount.toStringAsFixed(0)}",
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text(
+                "Total Amount",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                "₹${totalAmount.toStringAsFixed(0)}",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
         ],
@@ -2119,8 +2334,10 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Notes",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const Text(
+          "Notes",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 12),
         TextField(
           controller: _mainNotesController,
@@ -2130,8 +2347,9 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xffE5E7EB))),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xffE5E7EB)),
+            ),
           ),
         ),
         const SizedBox(height: 30),
@@ -2144,13 +2362,17 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 18),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: const Text("Cancel",
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16)),
+                child: const Text(
+                  "Cancel",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 16),
@@ -2163,21 +2385,27 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 18),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 child: isSubmitting
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2))
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.verified_user_outlined, size: 20),
                           SizedBox(width: 8),
-                          Text("Confirm Receive",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16)),
+                          Text(
+                            "Confirm Receive",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
                         ],
                       ),
               ),

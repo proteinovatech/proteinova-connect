@@ -85,7 +85,9 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
             color: Colors.transparent,
 
             child: Container(
-              width: MediaQuery.of(context).size.width * 0.77,
+              width: MediaQuery.of(context).size.width > 600
+                  ? 320
+                  : MediaQuery.of(context).size.width * 0.77,
               height: double.infinity,
 
               decoration:  BoxDecoration(

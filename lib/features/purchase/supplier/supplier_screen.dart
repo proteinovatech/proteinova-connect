@@ -339,26 +339,19 @@ void didChangeDependencies() {
 
           /// STATUS
           Expanded(
+  child: Flexible(
   child: Container(
     padding: const EdgeInsets.symmetric(
-      horizontal: 12,
+      horizontal: 6,
       vertical: 6,
-    ),
-    decoration: BoxDecoration(
-      color: Colors.green.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(30),
     ),
     child: const Text(
       "Active",
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        color: Colors.green,
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-      ),
+      overflow: TextOverflow.ellipsis,
+      maxLines: 1,
     ),
   ),
-),
+),),
 
           /// ACTIONS
           SizedBox(

@@ -126,9 +126,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
       
       
                   const SizedBox(height: 18),
-      
-                  /// LOCATION + STATUS
-                  Row(
+       Row(
                     children: [
                       /// LOCATION
                       Expanded(
@@ -143,31 +141,24 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                             const SizedBox(height: 8),
       
                             TextField(
-        controller: locationController,
-      
-        style: const TextStyle(
-      fontSize: 15,
-      color: Colors.black,
-        ),
-      
-        decoration: InputDecoration(
-      hintText: "e.g. Hyderabad, India",
-      
-      isDense: true,
-      
-      contentPadding:
-          const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 16,
-      ),
-      
-      border: OutlineInputBorder(
-        borderRadius:
-            BorderRadius.circular(16),
-      ),
-        ),
-      ),
-                          ],
+  controller: locationController,
+  style: const TextStyle(
+    fontSize: 14,
+    color: Colors.black,
+  ),
+  decoration: InputDecoration(
+    hintText: "e.g. Hyderabad, India",
+    hintMaxLines: 1,
+    isDense: true,
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: 12,
+      vertical: 14,
+    ),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+    ),
+  ),
+),   ],
                         ),
                       ),
       
@@ -191,7 +182,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
               value: status,
       
               style: const TextStyle(
-                fontSize: 15,
+                fontSize: 14,
                 color: Colors.black,
               ),
       
@@ -206,8 +197,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                     ),
                   )
                   .toList(),
-      
-              onChanged: (value) {
+                    onChanged: (value) {
                 setState(() {
                   status = value!;
                 });

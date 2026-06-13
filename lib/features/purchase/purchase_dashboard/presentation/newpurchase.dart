@@ -928,19 +928,18 @@ Widget _buildSummaryItem(
 ),
 Row(
   children: [
-    Expanded(
-      child: _buildDropdownField(
-        "Method",
-        p.method,
-        ["Cash", "UPI", "Card", "RTGS/NEFT", "Credit"],
-        (value) => _handlePaymentChange(
-          p.id,
-          'method',
-          value,
-        ),
-      ),
+   Expanded(
+  child: _buildDropdownField(
+    "Method",
+    p.method,
+    ["Cash", "UPI", "Card", "RTGS/NEFT", "Credit"],
+    (value) => _handlePaymentChange(
+      p.id,
+      'method',
+      value,
     ),
-
+  ),
+),
     SizedBox(
       width: getWidth(context, 10),
     ),
@@ -1298,26 +1297,31 @@ Widget _buildDropdownField(
         ),
       ),
       const SizedBox(height: 6),
-      DropdownButtonFormField<String>(
-        value: value?.isEmpty == true ? null : value,
-        decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 10,
-            vertical: 8,
-          ),
-        ),
-        items: items.map((item) {
-          return DropdownMenuItem(
-            value: item,
-            child: Text(item),
-          );
-        }).toList(),
-        onChanged: onChanged,
+     DropdownButtonFormField<String>(
+  isExpanded: true, 
+  value: value?.isEmpty == true ? null : value,
+  decoration: InputDecoration(
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+    ),
+    isDense: true,
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: 8,
+      vertical: 8,
+    ),
+  ),
+  items: items.map((item) {
+    return DropdownMenuItem<String>(
+      value: item,
+      child: Text(
+        item,
+        overflow: TextOverflow.ellipsis,
+        maxLines: 1,
       ),
-    ],
+    );
+  }).toList(),
+  onChanged: onChanged,
+) ],
   );
 }
 

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/network/dio_client.dart';
@@ -17,6 +16,10 @@ import 'package:proteinova_connect/features/branch/damage_entry/presentations/da
 import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_bloc.dart';
 import 'package:proteinova_connect/features/branch/inventory/bloc/inventory_event.dart';
 import 'package:proteinova_connect/features/branch/inventory/presentation/inventory.dart';
+import 'package:proteinova_connect/features/branch/ledger/bloc/ledger_bloc.dart';
+import 'package:proteinova_connect/features/branch/ledger/presentation/ledger_screen.dart';
+import 'package:proteinova_connect/features/branch/report/bloc/report_bloc.dart';
+import 'package:proteinova_connect/features/branch/report/presentation/report_screen.dart';
 import 'package:proteinova_connect/features/branch/sales/presentation/sales.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
 import 'features/branch/branch_dashboard/presentation/branch_dashboard.dart';
@@ -70,7 +73,9 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
           child: Material(
             color: Colors.white,
             child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.6,
+              width: MediaQuery.of(context).size.width > 600
+                  ? 320
+                  : MediaQuery.of(context).size.width * 0.6,
               height: double.infinity,
               child: _menuContent(),
             ),
@@ -93,16 +98,15 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
 
   final List<Widget> pages = [
     BranchDashboard(),
-    Sales(), 
+    Sales(),
     BlocProvider(
-    create: (_) => InventoryBloc()..add(
-        FetchInventoryEvent(),
-      ),
+      create: (_) => InventoryBloc()..add(FetchInventoryEvent()),
 
-    child: Inventory(),
-  ),
+      child: Inventory(),
+    ),
 
-   DailyClosing()];
+    DailyClosing(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -188,8 +192,16 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Image.asset("assets/erplogo.png", height: 40, width: 150),
-          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Image.asset(
+              "assets/erplogo.png",
+              height: 40,
+              width: 150,
+              fit: BoxFit.contain,
+            ),
+          ),
+          const Divider(height: 1),
           Expanded(
             child: SingleChildScrollView(
               child: Column(
@@ -204,19 +216,41 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                   // ),
 
                   // _menuTile(Icons.store, "Branches", BranchDetails()),
+                  _menuTile(
+                    Icons.account_balance_wallet,
+                    "Ledger",
+                    BlocProvider(
+                      create: (_) => LedgerBloc(),
+                      child: LedgerScreen(branchId: 11),
+                    ),
+                  ),
                   _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
 
                   _menuTile(Icons.money, "Expenses", ExpenseManagement()),
-                   _menuTile( Icons.inventory_2_outlined, "Customer trays", CustomerTrays()),
+                  _menuTile(
+                    Icons.inventory_2_outlined,
+                    "Customer trays",
+                    CustomerTrays(),
+                  ),
 
-                  _menuTile(Icons.error_outline_rounded, "Damage Entry", BlocProvider(
-  create: (_) => DamageBloc(
-    DamageRepository(DioClient().dio),
-  )..add(
-      FetchDamageCategoriesEvent(branchId: 11),
-    ),
-  child: const DamageEntryScreen(),
-)), 
+                  _menuTile(
+                    Icons.error_outline_rounded,
+                    "Damage Entry",
+                    BlocProvider(
+                      create: (_) =>
+                          DamageBloc(DamageRepository(DioClient().dio))
+                            ..add(FetchDamageCategoriesEvent(branchId: 11)),
+                      child: const DamageEntryScreen(),
+                    ),
+                  ),
+                  _menuTile(
+                    Icons.analytics_outlined,
+                    "Branch Report",
+                    BlocProvider(
+                      create: (_) => ReportBloc(),
+                      child: const ReportScreen(branchId: 11),
+                    ),
+                  ),
 
                   //  _menuTile(Icons.money, "Admin in", AdminInventory()),
                   const SizedBox(height: 20),

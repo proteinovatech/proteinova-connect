@@ -176,11 +176,7 @@ class _TrayReturnState extends State<TrayReturn> {
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                  SizedBox(height: size.height * 0.02),
-                  Row(
-                    children: [
+                      SizedBox(width: getWidth(context, 6)),
                       Expanded(
                         child: GestureDetector(
                           onTap: () => _showFilteredModal(
@@ -189,7 +185,7 @@ class _TrayReturnState extends State<TrayReturn> {
                             dataList,
                           ),
                           child: Stock(
-                            title: "Returned This\nMonth",
+                            title: "Returned This Month",
                             value: "${cards.totalReturnedThisMonth}",
                             percent: "MONTH",
                             subtitle: "Current Month",
@@ -200,7 +196,12 @@ class _TrayReturnState extends State<TrayReturn> {
                           ),
                         ),
                       ),
-                      SizedBox(width: getWidth(context, 12)),
+                      SizedBox(width: getWidth(context, 6)),
+                    ],
+                  ),
+                  SizedBox(height: size.height * 0.02),
+                  Row(
+                    children: [
                       Expanded(
                         child: GestureDetector(
                           onTap: () => _showFilteredModal(
@@ -222,6 +223,7 @@ class _TrayReturnState extends State<TrayReturn> {
                       ),
                     ],
                   ),
+
                   // SizedBox(height: size.height * 0.02),
                   // Container(
                   //   width: double.infinity,
@@ -323,38 +325,36 @@ class _TrayReturnState extends State<TrayReturn> {
                     style: AppTextStyles.headingText20,
                   ),
                   const SizedBox(height: 10),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columnSpacing: width >= 600
-                          ? 60 // Tablet
-                          : 20, // Mobile
-                      // ignore: deprecated_member_use
-                      headingRowColor: MaterialStateProperty.all(
-                        Colors.grey.shade100,
-                      ),
-                      columns: const [
-                        DataColumn(label: Text("Date")),
-                        DataColumn(label: Text("From")),
-                        DataColumn(label: Text("Tray Type")),
-                        DataColumn(label: Text("Qty")),
-                        DataColumn(label: Text("Condition")),
-                        DataColumn(label: Text("Price")),
-                      ],
-                      rows: dataList.isEmpty
-                          ? [
-                              const DataRow(
-                                cells: [
-                                  DataCell(Text("No Data")),
-                                  DataCell(Text("")),
-                                  DataCell(Text("")),
-                                  DataCell(Text("")),
-                                  DataCell(Text("")),
-                                  DataCell(Text("")),
-                                ],
-                              ),
-                            ]
-                          : dataList.map((item) {
+
+                  dataList.isEmpty
+                      ? Container(
+                          height: 120,
+                          alignment: Alignment.center,
+                          child: Text(
+                            "No Data Available",
+                            style: AppTextStyles.bodyText14.copyWith(
+                              color: Colors.grey,
+                            ),
+                          ),
+                        )
+                      : SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: DataTable(
+                            columnSpacing: width >= 600
+                                ? ((width * 0.9 - 320) / 5).clamp(20.0, 150.0)
+                                : 20,
+                            headingRowColor: MaterialStateProperty.all(
+                              Colors.grey.shade100,
+                            ),
+                            columns: const [
+                              DataColumn(label: Text("Date")),
+                              DataColumn(label: Text("From")),
+                              DataColumn(label: Text("Tray Type")),
+                              DataColumn(label: Text("Qty")),
+                              DataColumn(label: Text("Condition")),
+                              DataColumn(label: Text("Price")),
+                            ],
+                            rows: dataList.map((item) {
                               return buildSummaryRow(
                                 item.date,
                                 item.from,
@@ -364,8 +364,60 @@ class _TrayReturnState extends State<TrayReturn> {
                                 "₹${item.price}",
                               );
                             }).toList(),
-                    ),
-                  ),
+                          ),
+                        ),
+                  // Text(
+                  //   "Recent Tray Returns",
+                  //   style: AppTextStyles.headingText20,
+                  // ),
+                  // const SizedBox(height: 10),
+                  // SingleChildScrollView(
+                  //   scrollDirection: Axis.horizontal,
+                  //   child: DataTable(
+                  //     columnSpacing: width >= 600
+                  //         ? ((width * 0.9 - 320) / 5).clamp(
+                  //             20.0,
+                  //             150.0,
+                  //           ) // Distribute equally on tablets
+                  //         : 20, // Mobile
+                  //     // ignore: deprecated_member_use
+                  //     headingRowColor: MaterialStateProperty.all(
+                  //       Colors.grey.shade100,
+                  //     ),
+                  //     columns: const [
+                  //       DataColumn(label: Text("Date")),
+                  //       DataColumn(label: Text("From")),
+                  //       DataColumn(label: Text("Tray Type")),
+                  //       DataColumn(label: Text("Qty")),
+                  //       DataColumn(label: Text("Condition")),
+                  //       DataColumn(label: Text("Price")),
+                  //     ],
+                  //     rows: dataList.isEmpty
+                  //         ? [
+                  //             const DataRow(
+                  //               cells: [
+                  //                 DataCell(Text("No Data")),
+                  //                 DataCell(Text("")),
+                  //                 DataCell(Text("")),
+                  //                 DataCell(Text("")),
+                  //                 DataCell(Text("")),
+                  //                 DataCell(Text("")),
+                  //               ],
+                  //             ),
+                  //           ]
+                  //         : dataList.map((item) {
+                  //             return buildSummaryRow(
+                  //               item.date,
+                  //               item.from,
+                  //               item.trayType,
+                  //               item.qty,
+                  //               item.condition,
+                  //               "₹${item.price}",
+                  //             );
+                  //           }).toList(),
+                  //   ),
+                  // ),
+
                   // SizedBox(height: size.height * 0.02),
                   // Container(
                   //   width: double.infinity,

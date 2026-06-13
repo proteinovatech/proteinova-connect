@@ -1,11 +1,11 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/branch/inventory/widget/branch_inventory_skeleton.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,12 +29,20 @@ class _InventoryState extends State<Inventory> {
   String userRole = "Staff";
   String branchName = "";
   final TextEditingController searchController = TextEditingController();
+  final ScrollController _tableScrollController = ScrollController();
   String searchQuery = "";
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    _tableScrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadUserData() async {
@@ -199,53 +207,64 @@ class _InventoryState extends State<Inventory> {
 
           return LayoutBuilder(
             builder: (context, constraints) {
-              final bool isDesktop = constraints.maxWidth >= 900;
+              final bool isDesktop =
+                  constraints.maxWidth >= _Breakpoints.tablet;
 
               return Scaffold(
                 backgroundColor: Colors.white,
                 body: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header Bar
-                    const SizedBox(height: 52),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
-                      ),
-                      color: AppColors.white,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "${branchName.isNotEmpty ? branchName : "Branch"} Inventory",
-                                style: AppTextStyles.headingText22,
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
+                    // Header Bar with Safe Area protection and text constraints
+                    SafeArea(
+                      bottom: false,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
+                        ),
+                        color: AppColors.white,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Icon(
-                                    Icons.verified_user_outlined,
-                                    size: 16,
-                                    color: Color(0xFF10B981),
-                                  ),
-                                  const SizedBox(width: 6),
                                   Text(
-                                    "Role: $userRole",
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.grey.shade700,
-                                    ),
+                                    "${branchName.isNotEmpty ? branchName : "Branch"} Inventory",
+                                    style: AppTextStyles.headingText22,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.verified_user_outlined,
+                                        size: 16,
+                                        color: Color(0xFF10B981),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          "Role: $userRole",
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.grey.shade700,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const Divider(
@@ -276,7 +295,6 @@ class _InventoryState extends State<Inventory> {
                                 color: Colors.grey.shade600,
                               ),
                             ),
-                            const SizedBox(height: 24),
 
                             // Metric Cards Grid
                             _buildMetricCards(cards, constraints.maxWidth),
@@ -333,59 +351,62 @@ class _InventoryState extends State<Inventory> {
   }
 
   Widget _buildMetricCards(Map<dynamic, dynamic> cards, double width) {
-    final int columns = width >= 1000
-        ? 4
-        : width >= 600
-        ? 2
-        : 2;
+    final crossAxisCount = _adaptive<int>(
+      context,
+      mobile: 2,
+      tablet: 2,
+      desktop: 4,
+    );
 
-    final double spacing = 16;
+    final childAspectRatio = _adaptive<double>(
+      context,
+      mobile: 1.25,
+      tablet: 1.4,
+      desktop: 1.6,
+    );
 
-    final double cardWidth = (width - ((columns - 1) * spacing) - 48) / columns;
+    final double spacing = _adaptive<double>(
+      context,
+      mobile: 12,
+      tablet: 16,
+      desktop: 20,
+    );
 
-    return Wrap(
-      spacing: 16,
-      runSpacing: 16,
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: crossAxisCount,
+      mainAxisSpacing: spacing,
+      crossAxisSpacing: spacing,
+      childAspectRatio: childAspectRatio,
       children: [
-        SizedBox(
-          width: cardWidth,
-          child: ShipmentCard(
-            title: "Expected Today",
-            count: "${cards["expected_today"] ?? 0} Shipments",
-            subtitle: "Today's expected deliveries",
-            icon: Icons.calendar_today_outlined,
-            iconColor: Colors.blueAccent,
-          ),
+        ShipmentCard(
+          title: "Expected Today",
+          count: "${cards["expected_today"] ?? 0} Shipments",
+          subtitle: "Today's expected deliveries",
+          icon: Icons.calendar_today_outlined,
+          iconColor: Colors.blueAccent,
         ),
-        SizedBox(
-          width: cardWidth,
-          child: ShipmentCard(
-            title: "Ready for Unloading",
-            count: "${cards["ready_for_unloading"] ?? 0} Shipments",
-            subtitle: "Requires immediate action",
-            icon: Icons.local_shipping_outlined,
-            iconColor: Colors.green,
-          ),
+        ShipmentCard(
+          title: "Ready for Unloading",
+          count: "${cards["ready_for_unloading"] ?? 0} Shipments",
+          subtitle: "Requires immediate action",
+          icon: Icons.local_shipping_outlined,
+          iconColor: Colors.green,
         ),
-        SizedBox(
-          width: cardWidth,
-          child: ShipmentCard(
-            title: "Total in Transit",
-            count: "${formatNumber(cards["total_eggs_in_transit"])} Eggs",
-            subtitle: "Stock currently moving",
-            icon: Icons.send_outlined,
-            iconColor: Colors.orange,
-          ),
+        ShipmentCard(
+          title: "Total in Transit",
+          count: "${formatNumber(cards["total_eggs_in_transit"])} Eggs",
+          subtitle: "Stock currently moving",
+          icon: Icons.send_outlined,
+          iconColor: Colors.orange,
         ),
-        SizedBox(
-          width: cardWidth,
-          child: ShipmentCard(
-            title: "Delayed in Transit",
-            count: "${cards["delayed_in_transit"] ?? 0} Shipments",
-            subtitle: "Current transit delays",
-            icon: Icons.warning_amber_outlined,
-            iconColor: Colors.red,
-          ),
+        ShipmentCard(
+          title: "Delayed in Transit",
+          count: "${cards["delayed_in_transit"] ?? 0} Shipments",
+          subtitle: "Current transit delays",
+          icon: Icons.warning_amber_outlined,
+          iconColor: Colors.red,
         ),
       ],
     );
@@ -444,7 +465,26 @@ class _InventoryState extends State<Inventory> {
           if (shipments.isEmpty)
             _buildEmptyState()
           else if (isDesktop)
-            _buildShipmentTable(shipments)
+            LayoutBuilder(
+              builder: (context, tableConstraints) {
+                // Ensure table is at least 950px wide for columns, or stretches if screen allows
+                final double tableWidth = math.max(
+                  950.0,
+                  tableConstraints.maxWidth,
+                );
+                return Scrollbar(
+                  controller: _tableScrollController,
+                  child: SingleChildScrollView(
+                    controller: _tableScrollController,
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: tableWidth,
+                      child: _buildShipmentTable(shipments),
+                    ),
+                  ),
+                );
+              },
+            )
           else
             _buildShipmentCardsList(shipments),
 
@@ -452,103 +492,62 @@ class _InventoryState extends State<Inventory> {
 
           // Pagination UI
           Divider(color: Colors.grey.shade200),
-          const SizedBox(height: 10),
-       Row(
-  mainAxisAlignment:
-      MainAxisAlignment.spaceBetween,
-
-  children: [
-    Expanded(
-      child: Text(
-        "Showing ${shipments.length} records",
-
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-
-        style: TextStyle(
-          color: const Color(0xFF64748B),
-          fontSize: getWidth(context, 13),
-        ),
-      ),
-    ),
-
-    SizedBox(width: getWidth(context, 6)),
-
-    Row(
-      mainAxisSize: MainAxisSize.min,
-
-      children: [
-        OutlinedButton(
-          onPressed: null,
-
-          style: OutlinedButton.styleFrom(
-            minimumSize: Size(
-              getWidth(context, 72),
-              getHeight(context, 38),
-            ),
-
-            padding: EdgeInsets.symmetric(
-              horizontal: getWidth(context, 10),
-              vertical: getHeight(context, 8),
-            ),
-
-            shape: RoundedRectangleBorder(
-              borderRadius:
-                  BorderRadius.circular(
-                getWidth(context, 8),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  "Showing ${shipments.length} records",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 13,
+                  ),
+                ),
               ),
-            ),
-          ),
-
-          child: FittedBox(
-            child: Text(
-              "Previous",
-              style: TextStyle(
-                fontSize:
-                    getWidth(context, 11),
+              const SizedBox(width: 12),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  OutlinedButton(
+                    onPressed: null,
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(80, 36),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      "Previous",
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton(
+                    onPressed: () {},
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(80, 36),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text("Next", style: TextStyle(fontSize: 12)),
+                  ),
+                ],
               ),
-            ),
+            ],
           ),
-        ),
-
-        SizedBox(width: getWidth(context, 6)),
-
-        OutlinedButton(
-          onPressed: () {},
-
-          style: OutlinedButton.styleFrom(
-            minimumSize: Size(
-              getWidth(context, 65),
-              getHeight(context, 38),
-            ),
-
-            padding: EdgeInsets.symmetric(
-              horizontal: getWidth(context, 10),
-              vertical: getHeight(context, 8),
-            ),
-
-            shape: RoundedRectangleBorder(
-              borderRadius:
-                  BorderRadius.circular(
-                getWidth(context, 8),
-              ),
-            ),
-          ),
-
-          child: FittedBox(
-            child: Text(
-              "Next",
-              style: TextStyle(
-                fontSize:
-                    getWidth(context, 11),
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
-  ],
-) ],
+        ],
       ),
     );
   }
@@ -852,14 +851,19 @@ class _InventoryState extends State<Inventory> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    row["dispatch_code"] ?? "N/A",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Color(0xFF1E293B),
+                  Expanded(
+                    child: Text(
+                      row["dispatch_code"] ?? "N/A",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Color(0xFF1E293B),
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
@@ -904,6 +908,8 @@ class _InventoryState extends State<Inventory> {
                         const SizedBox(height: 2),
                         Text(
                           row["supplier_or_from"] ?? "N/A",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 13,
@@ -926,6 +932,8 @@ class _InventoryState extends State<Inventory> {
                         const SizedBox(height: 2),
                         Text(
                           row["vehicle_driver"] ?? "N/A",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 13,
@@ -953,6 +961,8 @@ class _InventoryState extends State<Inventory> {
                         const SizedBox(height: 2),
                         Text(
                           row["product_summary"] ?? "N/A",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 13,
@@ -975,6 +985,8 @@ class _InventoryState extends State<Inventory> {
                         const SizedBox(height: 2),
                         Text(
                           "${formatNumber(row["total_eggs"])} Eggs",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 13,
@@ -1015,9 +1027,12 @@ class _InventoryState extends State<Inventory> {
                           ),
                           elevation: 0,
                         ),
-                        child: const Text(
-                          "Receive Stock",
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        child: const FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            "Receive Stock",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ),
                     ),
@@ -1034,9 +1049,12 @@ class _InventoryState extends State<Inventory> {
                           ),
                           elevation: 0,
                         ),
-                        child: const Text(
-                          "Mark as Arrival",
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        child: const FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            "Mark as Arrival",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ),
                     ),
@@ -1223,4 +1241,24 @@ class _InventoryState extends State<Inventory> {
       ),
     );
   }
+}
+
+// ─── Adaptive Breakpoints ─────────────────────────────────────────────────────
+class _Breakpoints {
+  static const double mobile = 600;
+  static const double tablet = 900;
+  // > tablet is treated as desktop
+}
+
+/// Returns a value based on screen width breakpoints.
+T _adaptive<T>(
+  BuildContext context, {
+  required T mobile,
+  required T tablet,
+  required T desktop,
+}) {
+  final w = MediaQuery.of(context).size.width;
+  if (w < _Breakpoints.mobile) return mobile;
+  if (w < _Breakpoints.tablet) return tablet;
+  return desktop;
 }

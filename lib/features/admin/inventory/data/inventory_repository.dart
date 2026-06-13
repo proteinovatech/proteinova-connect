@@ -156,4 +156,37 @@ class InventoryRepository {
       throw Exception("Error fetching purchases: $e");
     }
   }
+
+  Future<void> updateManualStock(List<Map<String, dynamic>> eggForms, List<Map<String, dynamic>> trayForms) async {
+    try {
+      // WARNING: Placeholder endpoint. Replace with actual backend API.
+      final url = "${ApiConstants.baseUrl}/api/admin/inventory/update";
+      
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: jsonEncode({
+          "egg_stock": eggForms,
+          "tray_stock": trayForms,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        if (response.statusCode == 404) {
+          throw Exception("API Endpoint not found. Please verify the backend route exists.");
+        }
+        try {
+          final data = jsonDecode(response.body);
+          throw Exception(data['message'] ?? "Failed to update stock manually");
+        } catch (e) {
+          throw Exception("Server returned an invalid response (Status ${response.statusCode})");
+        }
+      }
+    } catch (e) {
+      throw Exception("Error updating manual stock: $e");
+    }
+  }
 }
