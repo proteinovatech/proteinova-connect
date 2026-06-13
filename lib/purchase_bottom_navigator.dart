@@ -267,7 +267,7 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
                                   },
                                   ),
                                   Divider(color: Colors.grey.shade200),
-_buildSettingTile(
+                                  _buildSettingTile(
                                     icon: Icons.inventory_2_outlined,
                                     title: "Warehouse Stock Updates",
                                   onTap: () {
