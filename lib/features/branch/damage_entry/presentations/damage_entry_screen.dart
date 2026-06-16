@@ -311,10 +311,8 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
                                 height: 48,
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFEF4444),
-                                    disabledBackgroundColor: const Color(
-                                      0xFF94A3B8,
-                                    ),
+                                    backgroundColor: const Color.fromARGB(255, 245, 44, 44),
+                                    disabledBackgroundColor: const Color.fromARGB(255, 245, 91, 81),
                                     foregroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -383,6 +381,7 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
                                           style: TextStyle(
                                             fontSize: 15,
                                             fontWeight: FontWeight.bold,
+                                            color: Colors.white,
                                           ),
                                         ),
                                 ),
