@@ -1,7 +1,7 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiConstants {
-   static final String baseUrl = dotenv.env['BASE_URL']!;
+   static final String baseUrl = dotenv.env['VITE_BACKEND_URL']!;
 
 
   static String dashboard(int branchId) => "$baseUrl/api/branch/dashboard/$branchId";
