@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/network/dio_client.dart';
+import 'package:proteinova_connect/features/admin/report/screens/expense_report_screen.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
@@ -243,15 +244,46 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                       child: const DamageEntryScreen(),
                     ),
                   ),
-                  _menuTile(
-                    Icons.analytics_outlined,
-                    "Branch Report",
-                    BlocProvider(
-                      create: (_) => ReportBloc(),
-                      child: const ReportScreen(branchId: 11),
-                    ),
-                  ),
-
+              ExpansionTile(
+  leading: const Icon(Icons.analytics_outlined),
+  title: const Text(
+    "Report",
+    style: TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w500,
+    ),
+  ),
+  childrenPadding: const EdgeInsets.only(left: 30),
+  children: [
+    ListTile(
+      leading: const Icon(Icons.receipt_long_outlined, size: 20),
+      title: const Text("Expense Report"),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ExpenseReportScreen(),
+          ),
+        );
+      },
+    ),
+    ListTile(
+      leading: const Icon(Icons.bar_chart_outlined, size: 20),
+      title: const Text("Branch Sales Report"),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => BlocProvider(
+              create: (_) => ReportBloc(),
+              child: const ReportScreen(branchId: 11),
+            ),
+          ),
+        );
+      },
+    ),
+  ],
+),
                   //  _menuTile(Icons.money, "Admin in", AdminInventory()),
                   const SizedBox(height: 20),
                   Divider(),
@@ -275,18 +307,26 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
     );
   }
 
-  Widget _menuTile(IconData icon, String title, Widget page) {
-    return ListTile(
-      leading: Icon(icon, size: 20),
-      title: Text(title),
-      onTap: () {
-        Navigator.pop(context);
-
-        Navigator.push(context, MaterialPageRoute(builder: (context) => page));
-      },
-    );
-  }
-}
+ Widget _menuTile(
+  IconData icon,
+  String title,
+  Widget? page, {
+  VoidCallback? onTap,
+}) {
+  return ListTile(
+    leading: Icon(icon),
+    title: Text(title),
+    onTap: onTap ??
+        () {
+          if (page != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => page),
+            );
+          }
+        },
+  );
+}}
 
 // Widget _sectionTitle(String title) {
 //   return Padding(
