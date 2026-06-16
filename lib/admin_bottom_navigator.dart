@@ -30,7 +30,13 @@ import 'package:proteinova_connect/features/admin/report/screens/expense_report_
 import 'package:proteinova_connect/features/admin/report/screens/purchase_report_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/sales_report_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/warehouse_report_screen.dart';
+import 'package:proteinova_connect/features/admin/settings/bloc/profile/profile_bloc.dart';
+import 'package:proteinova_connect/features/admin/settings/bloc/profile/profile_event.dart';
+import 'package:proteinova_connect/features/admin/settings/bloc/user/user_bloc.dart';
+import 'package:proteinova_connect/features/admin/settings/data/services/settings_service.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
+import 'package:proteinova_connect/features/admin/settings/screens/profile_screen.dart';
+import 'package:proteinova_connect/features/admin/settings/screens/staff_management_screen.dart';
 import 'package:proteinova_connect/features/admin/supplier/bloc/supplier_bloc.dart';
 import 'package:proteinova_connect/features/admin/supplier/data/services/supplier_service.dart';
 import 'package:proteinova_connect/features/admin/supplier/screens/add_suppliers.dart';
@@ -490,7 +496,12 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                       _menuTile(
                         Icons.person_outline,
                         "User Details",
-                        PurchaseReportScreen(),
+                         BlocProvider(
+      create: (_) => ProfileBloc(
+        SettingsService(),
+      )..add(LoadProfileEvent()),
+      child: const ProfileScreen(),
+    ),
                       ),
                        _menuTile(
                         Icons.settings_outlined,
@@ -500,7 +511,11 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                        _menuTile(
                         Icons.group_outlined,
                         "Staff Management",
-                        SalesReportScreen(),
+                       BlocProvider(
+         create: (_) => UserBloc(
+          SettingsService())..add(FetchUsersEvent()),
+             child: const StaffManagementScreen(),
+         )
                       ),
                        
                     ],
