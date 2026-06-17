@@ -573,10 +573,9 @@ class _AdminInventoryState extends State<AdminInventory> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_isLoading && purchaseData.isEmpty) {
-      return const Scaffold(
-        body: Center(child: AdminInventoryOverviewSkeletonLoader()),
-      );
+    if (_isLoading ) {
+      return const AdminInventoryOverviewSkeletonLoader();
+      
     }
 
     return Scaffold(
@@ -586,12 +585,12 @@ class _AdminInventoryState extends State<AdminInventory> {
         child: SafeArea(
           child: Column(
             children: [
-              if (_isLoading)
-                const LinearProgressIndicator(
-                  minHeight: 3,
-                  backgroundColor: Colors.transparent,
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                ),
+              // if (_isLoading)
+              //   const LinearProgressIndicator(
+              //     minHeight: 3,
+              //     backgroundColor: Colors.transparent,
+              //     valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+              //   ),
               Expanded(
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),

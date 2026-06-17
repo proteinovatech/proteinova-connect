@@ -4,6 +4,7 @@ import 'package:flutter/services.dart'
         TextInputFormatter,
         FilteringTextInputFormatter,
         LengthLimitingTextInputFormatter;
+import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/supplier/data/models/supplier_model.dart';
 import 'package:proteinova_connect/features/admin/supplier/data/services/supplier_service.dart';
@@ -81,10 +82,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                     const Expanded(
                       child: Text(
                         "Supplier Details",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: AppTextStyles.headingText22
                       ),
                     ),
 
@@ -110,12 +108,9 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       /// COMPANY NAME
-                      const Text(
+                       Text(
                         "Supplier Company Name",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style:AppTextStyles.buttonText16
                       ),
 
                       SizedBox(height: getHeight(context, 10)),
@@ -136,10 +131,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                               children: [
                                 const Text(
                                   "Location / Region",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                  style: AppTextStyles.buttonText16
                                 ),
 
                                 SizedBox(height: getHeight(context, 10)),
@@ -160,10 +152,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                               children: [
                                 const Text(
                                   "Status",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                  style: AppTextStyles.buttonText16
                                 ),
 
                                 SizedBox(height: getHeight(context, 10)),
@@ -213,10 +202,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                       /// CONTACT NAME
                       const Text(
                         "Primary Contact Name",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: AppTextStyles.buttonText16
                       ),
 
                       SizedBox(height: getHeight(context, 10)),
@@ -248,10 +234,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                                 const Text(
                                   "Email Address",
 
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                  style: AppTextStyles.buttonText16
                                 ),
 
                                 SizedBox(height: getHeight(context, 10)),
@@ -279,10 +262,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                               children: [
                                 const Text(
                                   "Phone number",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                  style: AppTextStyles.buttonText16
                                 ),
 
                                 SizedBox(height: getHeight(context, 10)),
@@ -309,10 +289,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                       /// GST NUMBER
                       const Text(
                         "GST Number (Optional)",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: AppTextStyles.buttonText16
                       ),
 
                       SizedBox(height: getHeight(context, 10)),
@@ -355,11 +332,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                           },
                           child: const Text(
                             "Cancel",
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style:AppTextStyles.headingText16
                           ),
                         ),
                       ),
@@ -450,10 +423,7 @@ class _AddSupplierBottomSheetState extends State<AddSupplierBottomSheet> {
                                   widget.supplierToEdit != null
                                       ? "Update Supplier"
                                       : "Save Supplier",
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                  style: AppTextStyles.headingText16
                                 ),
                         ),
                       ),

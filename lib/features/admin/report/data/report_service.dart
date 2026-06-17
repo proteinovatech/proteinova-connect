@@ -1,10 +1,11 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ReportService {
   final Dio dio = Dio(
     BaseOptions(
-      baseUrl: dotenv.env['BASE_URL'] ?? '',
+      baseUrl: dotenv.env['VITE_BACKEND_URL'] ?? '',
 
       headers: {'Content-Type': 'application/json'},
     ),
@@ -51,9 +52,20 @@ class ReportService {
         'branchId': branchId,
       },
     );
+    debugPrint("FINANCIAL TYPE = ${response.data.runtimeType}");
+debugPrint("SALES TYPE = ${salesResponse.data.runtimeType}");
+debugPrint("EXPENSE TYPE = ${expenseResponse.data.runtimeType}");
+debugPrint("PURCHASE TYPE = ${purchaseResponse.data.runtimeType}");
+
+debugPrint("FINANCIAL DATA = ${response.data}");
+debugPrint("SALES DATA = ${salesResponse.data}");
+debugPrint("EXPENSE DATA = ${expenseResponse.data}");
+debugPrint("PURCHASE DATA = ${purchaseResponse.data}");
+    
 
     final summaryData = response.data;
-    final branchSales = salesResponse.data as List<dynamic>? ?? [];
+    final branchSales =
+    (salesResponse.data['branches'] as List<dynamic>?) ?? [];
     final expensesList = expenseResponse.data as List<dynamic>? ?? [];
     final purchasesList = purchaseResponse.data as List<dynamic>? ?? [];
 
@@ -133,7 +145,7 @@ class ReportService {
       },
     );
 
-    final list = response.data as List<dynamic>? ?? [];
+    final list = (response.data['branches'] as List<dynamic>?) ?? [];
 
     double totalSales = 0;
     int totalOrders = 0;
@@ -205,10 +217,12 @@ class ReportService {
        ],
        "categories": categories,
        "recentExpenses": list.map((e) => {
-          "title": e["category"],
           "date": e["date"],
-          "amount": e["amount"],
-          "status": e["source"],
+  "source": e["source"],
+  "category": e["category"],
+  "location": e["location"],
+  "amount": e["amount"],
+  "status": "Paid",
        }).toList(),
     };
   }
@@ -223,7 +237,7 @@ class ReportService {
       queryParameters: {'startDate': startDate, 'endDate': endDate},
     );
 
-    final list = response.data as List<dynamic>? ?? [];
+    final list =response.data as List<dynamic>? ?? [];
 
     double totalSpend = 0;
     int totalTrays = 0;
@@ -255,7 +269,7 @@ class ReportService {
           {"title": "Active Suppliers", "amount": activeSuppliers.toString(), "growth": "-", "icon": "people", "color": "grey"},
        ],
        "suppliers": suppliers,
-       "monthlySummary": [],
+       "monthlySummary": list,
        "raw": list,
     };
   }
@@ -275,7 +289,7 @@ class ReportService {
       },
     );
 
-    final list = response.data as List<dynamic>? ?? [];
+    final list = (response.data['branches'] as List<dynamic>?) ?? [];
 
     int totalTrays = 0;
     Map<String, int> destMap = {};

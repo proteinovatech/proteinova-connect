@@ -340,7 +340,7 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                       //   ),
                       // ),
                       _menuTile(
-                        Icons.money,
+                        Icons.account_balance_wallet_outlined,
                         "Expenses Overview",
                         BlocProvider(
                           create: (_) => BranchExpenseBloc(ExpenseRepository()),
@@ -468,7 +468,7 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                         PurchaseReportScreen(),
                       ),
                        _menuTile(
-                        Icons.money_outlined,
+                        Icons.account_balance_wallet_outlined,
                         "Expense Report",
                         ExpenseReportScreen(),
                       ),

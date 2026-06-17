@@ -5,6 +5,7 @@ import 'package:proteinova_connect/features/admin/report/screens/admin_report_da
 import 'package:proteinova_connect/features/admin/report/screens/expense_report_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/purchase_report_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/sales_report_screen.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/admin_report_dashboard_shimmer.dart';
 
 class WarehouseReportScreen extends StatefulWidget {
   const WarehouseReportScreen({super.key});
@@ -56,7 +57,7 @@ class _WarehouseReportScreenState extends State<WarehouseReportScreen> {
 
       body: SafeArea(
         child: isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const AdminReportDashboardShimmer()
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
 

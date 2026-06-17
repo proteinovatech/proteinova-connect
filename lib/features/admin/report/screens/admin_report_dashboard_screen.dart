@@ -10,6 +10,7 @@ import 'package:proteinova_connect/features/admin/report/screens/expense_report_
 import 'package:proteinova_connect/features/admin/report/screens/purchase_report_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/sales_report_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/warehouse_report_screen.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/admin_report_dashboard_shimmer.dart';
 
 import '../widgets/financial_summary_table.dart';
 import '../widgets/report_filter_field.dart';
@@ -296,11 +297,14 @@ class _AdminReportDashboardScreenState
       String? start = fromDate != "dd-mm-yyyy" ? fromDate : null;
       String? end = toDate != "dd-mm-yyyy" ? toDate : null;
 
+  
+
       final data = await reportService.getFinancialSummary(
         startDate: start,
         endDate: end,
         branchId: branchId,
       );
+      debugPrint("API RESPONSE: $data");
       debugPrint(data.toString());
       setState(() {
         summaryData = data["summary"];
@@ -437,13 +441,15 @@ class _AdminReportDashboardScreenState
 
   @override
   Widget build(BuildContext context) {
+     if (isLoading) {
+    return const AdminReportDashboardShimmer();
+  }
+
     return Scaffold(
       backgroundColor: const Color(0xffF8F8F8),
 
       body: SafeArea(
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
+        child:SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
 
                 child: Column(
@@ -1026,4 +1032,5 @@ class _AdminReportDashboardScreenState
       ),
     );
   }
+
 }

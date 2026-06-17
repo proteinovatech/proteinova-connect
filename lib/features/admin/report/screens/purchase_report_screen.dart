@@ -4,6 +4,7 @@ import 'package:proteinova_connect/features/admin/report/screens/admin_report_da
 import 'package:proteinova_connect/features/admin/report/screens/expense_report_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/sales_report_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/warehouse_report_screen.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/admin_report_dashboard_shimmer.dart';
 
 class PurchaseReportScreen extends StatefulWidget {
   const PurchaseReportScreen({super.key});
@@ -269,7 +270,7 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
 
       body: SafeArea(
         child: isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const AdminReportDashboardShimmer()
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
 
@@ -1150,6 +1151,7 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
         endDate: end,
       );
 
+print("PURCHASE REPORT DATA = $data");
       setState(() {
         purchaseData = data;
 

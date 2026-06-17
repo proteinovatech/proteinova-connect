@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:proteinova_connect/core/theme/app_colors.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/tray_management_shimmer.dart';
 import '../bloc/tray_management_bloc.dart';
 import '../bloc/tray_management_event.dart';
 import '../bloc/tray_management_state.dart';
@@ -313,7 +315,7 @@ class _TrayManagementViewState extends State<TrayManagementView> {
                 width: 400,
 
                 padding: const EdgeInsets.all(24),
-
+                color: AppColors.white,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
 
@@ -415,7 +417,7 @@ class _TrayManagementViewState extends State<TrayManagementView> {
                     const SizedBox(height: 30),
 
                     Container(
-                      color: const Color(0xffF1F5F9),
+                      color: AppColors.background,
 
                       padding: const EdgeInsets.all(12),
 
@@ -512,7 +514,7 @@ class _TrayManagementViewState extends State<TrayManagementView> {
         },
         builder: (context, state) {
           if (state.isLoading && state.inventory.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
+            return const TrayManagementShimmer();
           }
 
           final inventory = state.inventory;

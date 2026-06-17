@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/config/api_config.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/receive_trays_shimmer.dart';
 
 class ReceiveTraysScreen extends StatefulWidget {
   const ReceiveTraysScreen({super.key});
@@ -363,6 +364,10 @@ class _ReceiveTraysScreenState extends State<ReceiveTraysScreen> {
 
   @override
   Widget build(BuildContext context) {
+     if (isFetching) {
+    return const ReceiveTraysShimmer();
+  }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -434,15 +439,7 @@ class _ReceiveTraysScreenState extends State<ReceiveTraysScreen> {
               }
             },
           ),
-          if (isFetching)
-            Container(
-              color: Colors.black.withOpacity(0.15),
-              child: const Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.amber600),
-                ),
-              ),
-            ),
+         
         ],
       ),
     );

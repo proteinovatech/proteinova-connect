@@ -10,6 +10,7 @@ import 'package:proteinova_connect/features/admin/report/screens/admin_report_da
 import 'package:proteinova_connect/features/admin/report/screens/purchase_report_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/sales_report_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/warehouse_report_screen.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/admin_report_dashboard_shimmer.dart';
 
 class ExpenseReportScreen extends StatefulWidget {
   const ExpenseReportScreen({super.key});
@@ -86,10 +87,10 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
       );
 
       setState(() {
-        expenseData = data["summary"] ?? data;
+        expenseData = data;
         expenseStats = data["stats"] ?? [];
         expenseCategories = data["categories"] ?? [];
-        expenseLogs = data["logs"] ?? data["recent"] ?? [];
+        expenseLogs = data["recentExpenses"] ?? [];
         isLoading = false;
       });
     } catch (e) {
@@ -173,7 +174,7 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
 
       body: SafeArea(
         child: isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const AdminReportDashboardShimmer()
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
 

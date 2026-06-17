@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/admin_branch_dashboard_shimmer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -316,19 +317,7 @@ class _AdminBranchDashboardViewState extends State<AdminBranchDashboardView> {
       body: BlocBuilder<AdminBranchBloc, AdminBranchState>(
         builder: (context, state) {
           if (state is AdminBranchLoading) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(color: AppColors.amber600),
-                  SizedBox(height: 16),
-                  Text(
-                    "Loading dashboard data...",
-                    style: TextStyle(color: Color(0xFF64748B), fontSize: 15),
-                  ),
-                ],
-              ),
-            );
+            return const AdminBranchDashboardShimmer();
           }
 
           if (state is AdminBranchError) {

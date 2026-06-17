@@ -4,6 +4,7 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/bloc/purchase_bloc.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/bloc/purchase_event.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/bloc/purchase_state.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/purchase_expense_shimmer.dart';
 import '../data/repository/purchase_expense_repository.dart';
 import '../data/models/purchase_list_item.dart';
 import '../data/models/purchase_detail_response.dart';
@@ -147,8 +148,7 @@ String role = ""; // or "WAREHOUSE"
 
   @override
   Widget build(BuildContext context) {
-    
-
+ 
     return Scaffold(
       backgroundColor: AppColors.lightGrey,
       appBar: AppBar(
@@ -241,14 +241,7 @@ String role = ""; // or "WAREHOUSE"
     builder: (context, state) {
 
       if (state.isLoading) {
-        return const Center(
-          child: CircularProgressIndicator(
-            valueColor:
-                AlwaysStoppedAnimation<Color>(
-              AppColors.amber600,
-            ),
-          ),
-        );
+        return const PurchaseExpenseShimmer();
       }
 
       final purchases = state.purchases;
