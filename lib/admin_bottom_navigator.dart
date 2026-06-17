@@ -8,14 +8,18 @@ import 'package:proteinova_connect/features/admin/admin%20branch/presentation/ad
 import 'package:proteinova_connect/features/admin/dailyclosing/screen/dailyclosing.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bloc.dart';
 import 'package:proteinova_connect/features/admin/expense/data/repository/expense_repository.dart';
+import 'package:proteinova_connect/features/admin/inventory/data/inventory_repository.dart';
 import 'package:proteinova_connect/features/admin/inventory/presentation/admin_inventory.dart';
-import 'package:proteinova_connect/features/admin/menu/AssetManagement/bloc/asset_bloc.dart';
+import 'package:proteinova_connect/features/admin/item/presentation/item.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/data/asset_repository.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_receive_bloc.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_receive_event.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/data/services/tray_receive_service.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/bloc/sales_dashboard_event.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/data/datasource/sales_remote_datasource.dart';
+import 'package:proteinova_connect/features/admin/menu/item/bloc/item_bloc.dart';
+import 'package:proteinova_connect/features/admin/menu/item/bloc/item_event.dart';
+import 'package:proteinova_connect/features/admin/menu/item/presentation/item.dart';
 
 import 'package:proteinova_connect/features/admin/purchase/presentation/purchase.dart';
 import 'package:proteinova_connect/features/admin/purchase/bloc/purchase/purchase_bloc.dart';
@@ -30,7 +34,8 @@ import 'package:proteinova_connect/features/admin/report/screens/expense_report_
 import 'package:proteinova_connect/features/admin/report/screens/purchase_report_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/sales_report_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/warehouse_report_screen.dart';
-import 'package:proteinova_connect/features/admin/settings/screens/admin_settings_screen.dart';
+import 'package:proteinova_connect/features/admin/settings/screens/branch_settings.dart';
+import 'package:proteinova_connect/features/admin/settings/screens/company_details.dart';
 import 'package:proteinova_connect/features/admin/supplier/bloc/supplier_bloc.dart';
 import 'package:proteinova_connect/features/admin/supplier/data/services/supplier_service.dart';
 import 'package:proteinova_connect/features/admin/supplier/screens/add_suppliers.dart';
@@ -44,7 +49,6 @@ import 'package:proteinova_connect/features/admin/Distribution/presentation/dist
 import 'package:proteinova_connect/features/admin/addprice/presentation/add_price.dart';
 import 'package:proteinova_connect/features/admin/approval/screens/approvals_queue_screen.dart';
 import 'package:proteinova_connect/features/admin/expense/screens/admin_expense_screen.dart';
-import 'package:proteinova_connect/features/admin/menu/AssetManagement/presentation/asset_management_page.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/presentation/receive_trays_screen.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/presentation/sales_dashoard.dart';
 import 'package:proteinova_connect/features/admin/presentation/admin_dashboard.dart';
@@ -276,6 +280,27 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                   // ─── WAREHOUSE ───────────────────────────────────────
                   _expansionSection(
                     icon: Icons.warehouse_outlined,
+                    title: "Admin",
+                    initiallyExpanded: true,
+                    children: [
+                      // _menuTile(
+                      //   Icons.inventory_2_outlined,
+                      //   "Inventory",
+                      //   AdminInventory(role: "admin"),
+                      // ),
+                      _menuTile(
+                        Icons.local_shipping_outlined,
+                        "Incoming Stock",
+                        IncomingStock(role: "admin"),
+                      ),
+                  _menuTile(
+  Icons.account_balance_wallet_outlined,
+  "Items",
+  Items(), 
+  ), ] ),
+
+                  _expansionSection(
+                    icon: Icons.warehouse_outlined,
                     title: "Warehouse",
                     initiallyExpanded: true,
                     children: [
@@ -485,7 +510,7 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                       _menuTile(
                         Icons.warehouse_outlined,
                         "Company Details",
-                        AdminReportDashboardScreen(),
+                        CompanyDetailsScreen (),
                       ),
                       _menuTile(
                         Icons.person_outline,
@@ -495,7 +520,7 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                        _menuTile(
                         Icons.settings_outlined,
                         "Branch Settings",
-                        ExpenseReportScreen(),
+                       BranchSettingsScreen(),
                       ),
                        _menuTile(
                         Icons.group_outlined,
