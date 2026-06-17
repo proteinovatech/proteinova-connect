@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/daily_closing_admin_shimmer.dart';
 import '../bloc/daily_closing_admin_bloc.dart';
 import '../bloc/daily_closing_admin_event.dart';
 import '../bloc/daily_closing_admin_state.dart';
@@ -131,7 +132,7 @@ class _DailyClosingViewState extends State<DailyClosingView> {
         body: BlocBuilder<DailyClosingAdminBloc, DailyClosingAdminState>(
           builder: (context, state) {
             if (state.isBranchesLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return const DailyClosingAdminShimmer();
             }
 
             if (state.branches.isEmpty) {
@@ -161,7 +162,7 @@ class _DailyClosingViewState extends State<DailyClosingView> {
                     if (state.isDashboardLoading)
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 60.0),
-                        child: Center(child: CircularProgressIndicator()),
+                        child: Center(child: DailyClosingAdminShimmer()),
                       )
                     else if (state.dashboardData == null)
                       const Padding(

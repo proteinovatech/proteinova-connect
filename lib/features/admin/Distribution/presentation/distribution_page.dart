@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/Distribution/presentation/dispatch_planning_page.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/warehouse_sales_dashboard_shimmer.dart';
 import 'package:proteinova_connect/services/dispatch_service.dart';
 
 class DistributionPage extends StatefulWidget {
@@ -716,9 +717,7 @@ class _DistributionPageState extends State<DistributionPage> {
         ],
       ),
       body: loading && isFetching
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.amber600),
-            )
+          ? const WarehouseSalesDashboardShimmer()
           : RefreshIndicator(
               onRefresh: fetchDashboardData,
               child: SingleChildScrollView(

@@ -7,6 +7,7 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/core/network/dio_client.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/warehouse_sales_shimmer_screen.dart';
 import 'package:proteinova_connect/services/dispatch_service.dart';
 
 class DispatchPlanningPage extends StatefulWidget {
@@ -732,7 +733,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator(color: AppColors.amber600)));
+      return const WarehouseSalesShimmer();
     }
 
     final size = MediaQuery.of(context).size;
@@ -1752,7 +1753,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
           child: ElevatedButton(
             onPressed: _isSaving ? null : _handleSubmit,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1E293B),
+              backgroundColor: AppColors.amber600,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),

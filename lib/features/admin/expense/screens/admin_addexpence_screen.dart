@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/features/admin/expense/data/repository/expense_repository.dart';
 import 'package:proteinova_connect/features/admin/expense/widgets/expense_textfield.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/add_expense_shimmer.dart';
 
 class AdminAddExpenseScreen extends StatefulWidget {
   const AdminAddExpenseScreen({super.key});
@@ -193,6 +194,7 @@ class _AdminAddExpenseScreenState extends State<AdminAddExpenseScreen> {
       ), // Light background like in image
       appBar: AppBar(
         backgroundColor: const Color(0xffF8F9FE),
+        scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -208,7 +210,9 @@ class _AdminAddExpenseScreenState extends State<AdminAddExpenseScreen> {
         ),
         centerTitle: false,
       ),
-      body: SafeArea(
+      body:isLoadingBranches
+    ? const AddExpenseShimmer()
+    : SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Column(
@@ -231,22 +235,8 @@ class _AdminAddExpenseScreenState extends State<AdminAddExpenseScreen> {
                   children: [
                     // Location
                     _buildLabel("Location", isRequired: true),
-                    if (isLoadingBranches)
-                      Container(
-                        height: 54,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: const Color(0xffE5E7EB)),
-                        ),
-                        child: const Center(
-                          child: SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
-                      )
-                    else
+                    
+                    
                       Container(
                         height: 54,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -554,4 +544,5 @@ class _AdminAddExpenseScreenState extends State<AdminAddExpenseScreen> {
       ),
     );
   }
+
 }

@@ -9,6 +9,7 @@ import 'package:proteinova_connect/features/admin/add%20branch/bloc/add_branch_e
 import 'package:proteinova_connect/features/admin/add%20branch/bloc/add_branch_state.dart';
 import 'package:proteinova_connect/features/admin/add%20branch/data/repository/add_branch_repository.dart';
 import 'package:proteinova_connect/features/admin/add%20branch/data/models/branch_manager_model.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/add_branch_shimmer.dart';
 
 class AddBranchPage extends StatelessWidget {
   final BranchModel? branch;
@@ -337,11 +338,7 @@ class _AddBranchState extends State<AddBranch> {
                   // Main Scrollable form
                   Expanded(
                     child: state is AddBranchFormLoading
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.amber600,
-                            ),
-                          )
+                        ? const AddBranchShimmer()
                         : SingleChildScrollView(
                             physics: const BouncingScrollPhysics(),
                             padding: EdgeInsets.symmetric(
