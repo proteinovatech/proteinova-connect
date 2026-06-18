@@ -1,124 +1,167 @@
 import 'package:flutter/material.dart';
+import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 class CreditLedgerScreen extends StatelessWidget {
   const CreditLedgerScreen({super.key});
+  bool isMobile(BuildContext context) =>
+    MediaQuery.of(context).size.width < 768;
+
+bool isTablet(BuildContext context) =>
+    MediaQuery.of(context).size.width >= 768 &&
+    MediaQuery.of(context).size.width < 1200;
+
+bool isDesktop(BuildContext context) =>
+    MediaQuery.of(context).size.width >= 1200;
+
+    
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+final cardWidth = (screenWidth - 56) / 2;
     return Scaffold(
       backgroundColor: const Color(0xffF5F7FB),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
 
-            /// Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      "Credit Ledger",
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 6),
-                    Text(
-                      "Track customer credit balances across branches and warehouse",
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-
-                ElevatedButton.icon(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xffF5C400),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 14,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  icon: const Icon(Icons.refresh, color: Colors.white),
-                  label: const Text(
-                    "Refresh",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
+           isMobile(context)
+    ? Row(
+  children: [
+    Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Credit Ledger",
+            style: TextStyle(
+              fontSize: getWidth(context, 28),
+              fontWeight: FontWeight.bold,
             ),
+          ),
+          SizedBox(height: getHeight(context, 6)),
+          const Text(
+            "Track customer credit balances across branches and warehouse",
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    ),
 
+    SizedBox(width: getWidth(context, 12)),
+
+    SizedBox(
+      width: 130,
+      height: 48,
+      child: ElevatedButton.icon(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xffF5C400),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        icon: const Icon(Icons.refresh, size: 18),
+        label: const Text("Refresh"),
+      ),
+    ),
+  ],
+)
+    : Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Credit Ledger",
+                style: TextStyle(
+                  fontSize: getWidth(context, 28),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: getHeight(context, 6)),
+              const Text(
+                "Track customer credit balances across branches and warehouse",
+              ),
+            ],
+          ),
+          SizedBox(
+      width: 130,
+      height: 48,
+      child: ElevatedButton.icon(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xffF5C400),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        icon: const Icon(Icons.refresh, size: 18),
+        label: const Text("Refresh"),
+      ),)
+        ],
+      ),
             const SizedBox(height: 24),
 
             /// Summary Cards
-            Row(
-              children: [
-                Expanded(
-                  child: _summaryCard(
-                    icon: Icons.account_balance_wallet_outlined,
-                    iconColor: Colors.red,
-                    title: "Total Outstanding",
-                    value: "₹ 0.00",
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _summaryCard(
-                    icon: Icons.currency_rupee,
-                    iconColor: Colors.deepPurple,
-                    title: "Total Charged",
-                    value: "₹ 0.00",
-                  ),
-                ),]),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _summaryCard(
-                        icon: Icons.check_circle,
-                        iconColor: Colors.green,
-                        title: "Total Received",
-                        value: "₹ 0.00",
-                      ),
-                    ),
-                  
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _summaryCard(
-                    icon: Icons.access_time,
-                    iconColor: Colors.orange,
-                    title: "Pending Customers",
-                    value: "0",
-                  ),
-                ),],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _summaryCard(
-                        icon: Icons.people_outline,
-                        iconColor: Colors.blue,
-                        title: "Cleared Customers",
-                        value: "0",
-                      ),
-                    ),
-                  ],
-                ),
-             
-
-            const SizedBox(height: 24),
+Wrap(
+  spacing: 16,
+  runSpacing: 16,
+  children: [
+    SizedBox(
+      width: cardWidth,
+      child: _summaryCard(
+        icon: Icons.account_balance_wallet_outlined,
+        iconColor: Colors.red,
+        title: "Total Outstanding",
+        value: "₹ 0.00",
+      ),
+    ),
+    SizedBox(
+      width: cardWidth,
+      child: _summaryCard(
+        icon: Icons.currency_rupee,
+        iconColor: Colors.deepPurple,
+        title: "Total Charged",
+        value: "₹ 0.00",
+      ),
+    ),
+    SizedBox(
+      width: cardWidth,
+      child: _summaryCard(
+        icon: Icons.check_circle,
+        iconColor: Colors.green,
+        title: "Total Received",
+        value: "₹ 0.00",
+      ),
+    ),
+    SizedBox(
+      width: cardWidth,
+      child: _summaryCard(
+        icon: Icons.access_time,
+        iconColor: Colors.orange,
+        title: "Pending Customers",
+        value: "0",
+      ),
+    ),
+    SizedBox(
+      width: screenWidth-40,
+      child: _summaryCard(
+        icon: Icons.people_outline,
+        iconColor: Colors.blue,
+        title: "Cleared Customers",
+        value: "0",
+      ),
+    ),
+  ],
+),
+      const SizedBox(height: 24),
 
             /// Filter Section
    Container(
@@ -132,7 +175,10 @@ class CreditLedgerScreen extends StatelessWidget {
     children: [
 
       /// Search Field
-      TextField(
+Row(
+  children: [
+    Expanded(
+      child: TextField(
         decoration: InputDecoration(
           hintText: "Search customer name...",
           prefixIcon: const Icon(Icons.search),
@@ -141,24 +187,29 @@ class CreditLedgerScreen extends StatelessWidget {
           ),
         ),
       ),
+    ),
 
-      const SizedBox(height: 12),
+    const SizedBox(width: 12),
 
-      SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: () {},
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xff08152F),
-            padding: const EdgeInsets.symmetric(vertical: 18),
-          ),
-          child: const Text(
-            "Search",
-            style: TextStyle(color: Colors.white),
+    SizedBox(
+      height: 56,
+      width: 120,
+      child: ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xff08152F),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
+        child: const Text(
+          "Search",
+          style: TextStyle(color: Colors.white),
+        ),
       ),
-
+    ),
+  ],
+),
       const SizedBox(height: 16),
 
       const Row(
@@ -269,9 +320,8 @@ class CreditLedgerScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ],
-        ),
-      ),
+         
+      ])),
     );
   }
 
@@ -282,13 +332,14 @@ class CreditLedgerScreen extends StatelessWidget {
     required String value,
   }) {
     return Container(
-      height: 110,
+      height: 130,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             height: 48,
@@ -350,4 +401,34 @@ class CreditLedgerScreen extends StatelessWidget {
       onChanged: (value) {},
     );
   }
+ Widget _responsiveCard(
+  BuildContext context, {
+  required IconData icon,
+  required Color iconColor,
+  required String title,
+  required String value,
+}) {
+  final screenWidth = MediaQuery.of(context).size.width;
+
+  double width;
+
+  if (screenWidth >= 1200) {
+    width = (screenWidth - 140) / 5;
+  } else if (screenWidth >= 768) {
+    width = (screenWidth - 80) / 2;
+  } else {
+    width = screenWidth - getWidth(context, 40);
+  }
+
+  return SizedBox(
+    width: width,
+    child: _summaryCard(
+      icon: icon,
+      iconColor: iconColor,
+      title: title,
+      value: value,
+    ),
+  );
+}
+
 }

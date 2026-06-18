@@ -5,6 +5,7 @@ import 'package:proteinova_connect/features/admin/Distribution/presentation/disp
 import 'package:proteinova_connect/features/admin/Receiving%20branch/presentation/receiving_branch.dart';
 import 'package:proteinova_connect/features/admin/add%20branch/presentation/add_branch.dart';
 import 'package:proteinova_connect/features/admin/admin%20branch/presentation/admin_branch.dart';
+import 'package:proteinova_connect/features/admin/credit_ledger/presentation/credit_ledger_screen.dart';
 import 'package:proteinova_connect/features/admin/dailyclosing/screen/dailyclosing.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bloc.dart';
 import 'package:proteinova_connect/features/admin/expense/data/repository/expense_repository.dart';
@@ -294,16 +295,17 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                       //   "Inventory",
                       //   AdminInventory(role: "admin"),
                       // ),
-                      _menuTile(
-                        Icons.local_shipping_outlined,
-                        "Incoming Stock",
-                        IncomingStock(role: "admin"),
-                      ),
+                    
                   _menuTile(
-  Icons.account_balance_wallet_outlined,
+  Icons.inventory_2_outlined,
   "Items",
   Items(), 
-  ), ] ),
+  ),
+   _menuTile(
+  Icons.account_balance_wallet_outlined,
+  "Credit Ledger",
+  CreditLedgerScreen(), 
+  ) ] ),
 
                   _expansionSection(
                     icon: Icons.warehouse_outlined,
