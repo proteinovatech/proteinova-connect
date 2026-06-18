@@ -1,5 +1,21 @@
 import 'package:flutter/material.dart';
 
+class TrayData {
+  String? type;
+  TextEditingController color = TextEditingController();
+  TextEditingController qty = TextEditingController();
+}
+
+class CoverData {
+  String? type;
+  TextEditingController color = TextEditingController();
+  TextEditingController qty = TextEditingController();
+}
+
+class EggData {
+  String? category;
+  TextEditingController qty = TextEditingController();
+}
 class Items extends StatefulWidget {
   const Items({super.key});
   
@@ -34,6 +50,9 @@ class _ItemsState extends State<Items> {
   final coverQtyController = TextEditingController();
 
   final eggQtyController = TextEditingController();
+int trayCount = 1;
+int coverCount = 1;
+int eggCount = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +74,6 @@ class _ItemsState extends State<Items> {
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-
         child: Column(
           children: [
             _buildTrayCard(),
@@ -91,12 +109,33 @@ class _ItemsState extends State<Items> {
                     ),
                   ),
                 ),
-
                 const SizedBox(width: 16),
-
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        title: const Text("Success"),
+        content: const Text(
+          "Items saved successfully.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text("OK"),
+          ),
+        ],
+      );
+    },
+  );
+},
 
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xffFACC15),
@@ -188,30 +227,55 @@ class _ItemsState extends State<Items> {
 
           const SizedBox(height: 24),
 
-          _dropdownField(
-            title: "Tray Type",
-            hint: "Select Type",
-            value: trayType,
-            items: trayTypes,
-            onChanged: (v) => setState(() => trayType = v),
-          ),
+       Column(
+  children: List.generate(
+    trayCount,
+    (index) => Column(
+      children: [
+        _dropdownField(
+          title: "Tray Type",
+          hint: "Select Type",
+          value: trayType,
+          items: trayTypes,
+          onChanged: (v) => setState(() => trayType = v),
+        ),
 
-          const SizedBox(height: 20),
+        const SizedBox(height: 20),
 
-          _textField(
-            title: "Color",
-            controller: trayColorController,
-            hint: "Enter details...",
-          ),
+        _textField(
+          title: "Color",
+          controller: TextEditingController(),
+          hint: "Enter details...",
+        ),
 
-          const SizedBox(height: 20),
+        const SizedBox(height: 20),
 
-          _textField(
-            title: "Quantity",
-            controller: trayQtyController,
-            hint: "Enter quantity...",
-          ),
-        ],
+        _textField(
+          title: "Quantity",
+          controller: TextEditingController(),
+          hint: "Enter quantity...",
+        ),
+
+        const SizedBox(height: 20),
+        if (index > 0)
+  Align(
+    alignment: Alignment.centerRight,
+    child: IconButton(
+      icon: const Icon(
+        Icons.delete,
+        color: Colors.red,
+      ),
+      onPressed: () {
+        setState(() {
+          trayCount--;
+        });
+      },
+    ),
+  ),
+      ],
+    ),
+  ),
+) ],
       ),
     );
   }
@@ -225,22 +289,7 @@ class _ItemsState extends State<Items> {
         children: [
          Row(
   children: [
-    Expanded(
-      child: DropdownButtonFormField<String>(
-        value: coverLocation,
-        decoration: _inputDecoration(),
-        items: locations
-            .map(
-              (e) => DropdownMenuItem(
-                value: e,
-                child: Text(e),
-              ),
-            )
-            .toList(),
-        onChanged: (v) => setState(() => coverLocation = v),
-      ),
-    ),
-
+   
     const SizedBox(width: 12),
 
     ElevatedButton(
@@ -261,13 +310,20 @@ class _ItemsState extends State<Items> {
 
     const SizedBox(width: 12),
 
-    const Text(
-      "+ Add More",
-      style: TextStyle(
-        color: Colors.blue,
-        fontWeight: FontWeight.w600,
-      ),
+   InkWell(
+  onTap: () {
+    setState(() {
+      coverCount++;
+    });
+  },
+  child: const Text(
+    "+ Add More",
+    style: TextStyle(
+      color: Colors.blue,
+      fontWeight: FontWeight.w600,
     ),
+  ),
+),
   ],
 ),
 if (showCoverNewType) ...[
@@ -306,31 +362,55 @@ if (showCoverNewType) ...[
   const SizedBox(height: 20),
 ],
           const SizedBox(height: 24),
+Column(
+  children: List.generate(
+    coverCount,
+    (index) => Column(
+      children: [
+        _dropdownField(
+          title: "Cover Type",
+          hint: "Select Type",
+          value: coverType,
+          items: coverTypes,
+          onChanged: (v) => setState(() => coverType = v),
+        ),
 
-          _dropdownField(
-            title: "Cover Type",
-            hint: "Select Type",
-            value: coverType,
-            items: coverTypes,
-            onChanged: (v) => setState(() => coverType = v),
-          ),
+        const SizedBox(height: 20),
 
-          const SizedBox(height: 20),
+        _textField(
+          title: "Color",
+          controller: TextEditingController(),
+          hint: "Enter details...",
+        ),
 
-          _textField(
-            title: "Color",
-            controller: coverColorController,
-            hint: "Enter details...",
-          ),
+        const SizedBox(height: 20),
 
-          const SizedBox(height: 20),
+        _textField(
+          title: "Quantity",
+          controller: TextEditingController(),
+          hint: "Enter quantity...",
+        ),
 
-          _textField(
-            title: "Quantity",
-            controller: coverQtyController,
-            hint: "Enter quantity...",
-          ),
-        ],
+        const SizedBox(height: 20),
+        if (index > 0)
+  Align(
+    alignment: Alignment.centerRight,
+    child: IconButton(
+      icon: const Icon(
+        Icons.delete,
+        color: Colors.red,
+      ),
+      onPressed: () {
+        setState(() {
+          coverCount--;
+        });
+      },
+    ),
+  ),
+      ],
+    ),
+  ),
+) ],
       ),
     );
   }
@@ -344,22 +424,7 @@ if (showCoverNewType) ...[
         children: [
          Row(
   children: [
-    Expanded(
-      child: DropdownButtonFormField<String>(
-        value: coverLocation,
-        decoration: _inputDecoration(),
-        items: locations
-            .map(
-              (e) => DropdownMenuItem(
-                value: e,
-                child: Text(e),
-              ),
-            )
-            .toList(),
-        onChanged: (v) => setState(() => coverLocation = v),
-      ),
-    ),
-
+  
     const SizedBox(width: 12),
 
     ElevatedButton(
@@ -380,15 +445,20 @@ if (showCoverNewType) ...[
 
     const SizedBox(width: 12),
 
-    const Text(
-      "+ Add More",
-      style: TextStyle(
-        color: Colors.blue,
-        fontWeight: FontWeight.w600,
-      ),
+   InkWell(
+  onTap: () {
+    setState(() {
+      eggCount++;
+    });
+  },
+  child: const Text(
+    "+ Add More",
+    style: TextStyle(
+      color: Colors.blue,
+      fontWeight: FontWeight.w600,
     ),
-  ],
-),
+  ),
+),]),
 if (showEggNewTypeCategory) ...[
   const SizedBox(height: 20),
 
@@ -426,22 +496,49 @@ if (showEggNewTypeCategory) ...[
 ],
           const SizedBox(height: 24),
 
-          _dropdownField(
-            title: "Category",
-            hint: "Select Egg Category",
-            value: eggCategory,
-            items: eggCategories,
-            onChanged: (v) => setState(() => eggCategory = v),
-          ),
+        Column(
+  children: List.generate(
+    eggCount,
+    (index) => Column(
+      children: [
+        _dropdownField(
+          title: "Category",
+          hint: "Select Egg Category",
+          value: eggCategory,
+          items: eggCategories,
+          onChanged: (v) => setState(() => eggCategory = v),
+        ),
 
-          const SizedBox(height: 20),
+        const SizedBox(height: 20),
 
-          _textField(
-            title: "Quantity",
-            controller: eggQtyController,
-            hint: "Enter quantity...",
-          ),
-        ],
+        _textField(
+          title: "Quantity",
+          controller: TextEditingController(),
+          hint: "Enter quantity...",
+        ),
+
+        const SizedBox(height: 20),
+        if (index > 0)
+  Align(
+    alignment: Alignment.centerRight,
+    child: IconButton(
+      icon: const Icon(
+        Icons.delete,
+        color: Colors.red,
+      ),
+      onPressed: () {
+        setState(() {
+          eggCount--;
+        });
+      },
+    ),
+  ),
+      ],
+    ),
+    
+  ),
+),
+ ],
       ),
     );
   }
@@ -545,7 +642,11 @@ child,
         const SizedBox(width: 12),
 
         InkWell(
-          onTap: () {},
+         onTap: () {
+  setState(() {
+    trayCount++;
+  });
+},
           child: const Text(
             "+ Add More",
             style: TextStyle(
