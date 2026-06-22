@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:proteinova_connect/features/admin/report/data/report_service.dart';
 import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/expense_report_screen.dart';
@@ -37,9 +38,12 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
   List<dynamic> volumeBySupplier = [];
 
   List<dynamic> supplierList = [];
+  List<dynamic> branches = [];
+  String? selectedBranch;
 
   List<dynamic> avgUnitCost = [];
   List<dynamic> monthlySummary = [];
+  List<Map<String, dynamic>> monthlyTrend = [];
   List<String> reportItems = [
     "Financial Summary",
     "Purchase Report",
@@ -47,7 +51,7 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
     "Branch Sales Report",
     "Warehouse Report",
   ];
-
+  final indianCurrency = NumberFormat('#,##,##0', 'en_IN');
   void showPurchaseBottomSheet({
     required String title,
     required String subtitle,
@@ -255,13 +259,30 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
       },
     );
   }
+  
 
   @override
   void initState() {
     super.initState();
 
     fetchPurchaseReport();
+     fetchBranches();
   }
+  Future<void> fetchBranches() async {
+  try {
+    final data = await reportService.getBranches();
+
+    setState(() {
+      branches = data;
+
+      if (branches.isNotEmpty) {
+        selectedBranch = branches.first["name"];
+      }
+    });
+  } catch (e) {
+    debugPrint("Error loading branches: $e");
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -329,9 +350,9 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
                           ),
                         ),
 
-                        const SizedBox(width: 12),
+                        // const SizedBox(width: 12),
 
-                        const Icon(Icons.notifications_none, size: 28),
+                        // const Icon(Icons.notifications_none, size: 28),
                       ],
                     ),
 
@@ -423,29 +444,24 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
 
                           Row(
                             children: [
-                              Expanded(
-                                child: buildDropdownField(
-                                  title: "Supplier",
-
-                                  value: supplier,
-
-                                  items: const [
-                                    "All Suppliers",
-
-                                    "Valley Farms",
-
-                                    "Sunrise Poultry",
-                                  ],
-
-                                  onChanged: (v) {
-                                    setState(() {
-                                      supplier = v!;
-                                    });
-                                  },
-                                ),
-                              ),
-
-                              const SizedBox(width: 14),
+   Expanded(
+  child: buildDropdownField(
+    title: "Branch",
+    value: selectedBranch??"All Branches",
+     items: [
+      "All Branches",
+      ...branches
+          .map<String>((e) => e["branch_name"].toString())
+          .toSet()
+          .toList(),
+    ],
+    onChanged: (v) {
+      setState(() {
+        selectedBranch = v;
+      });
+    },
+  ),
+),                            const SizedBox(width: 14),
 
                               Expanded(
                                 child: buildDropdownField(
@@ -601,9 +617,11 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
                         return PurchaseStatCard(
                           title: e["title"].toString(),
 
-                          amount: e["title"].toString().contains("Spend")
-                              ? "₹ ${e["amount"]}"
-                              : e["amount"].toString(),
+                         amount: e["title"].toString().contains("Spend")
+    ? "₹ ${indianCurrency.format(
+        double.tryParse(e["amount"]?.toString() ?? "0") ?? 0,
+      )}"
+    : e["amount"].toString(),
 
                           growth: e["growth"].toString(),
 
@@ -773,57 +791,57 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
                               SizedBox(
                                 height: 180,
 
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-
-                                  children: [
-                                    buildBar(80, 60, "Jan"),
-
-                                    buildBar(110, 90, "Feb"),
-
-                                    buildBar(70, 45, "Mar"),
-
-                                    buildBar(140, 100, "Apr"),
-
-                                    buildBar(100, 85, "May"),
-
-                                    buildBar(140, 120, "Jun"),
-                                  ],
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                  
+                                  
+                                    children: [
+                                      ...monthlyTrend.map((e) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                                      child: buildBar(
+                                          double.tryParse(e["spend"].toString()) ?? 0,
+                                          double.tryParse(e["volume"].toString()) ?? 0,
+                                        e["month"].toString(),
+                                      ),
+                                    );
+                                  }),
+                                    ],
+                                  ),
                                 ),
                               ),
 
                               const SizedBox(height: 24),
 
-                              Container(
-                                height: 54,
+                              // Container(
+                              //   height: 54,
 
-                                decoration: BoxDecoration(
-                                  color: const Color(0xffF3F4F6),
+                              //   decoration: BoxDecoration(
+                              //     color: const Color(0xffF3F4F6),
 
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
+                              //     borderRadius: BorderRadius.circular(14),
+                              //   ),
 
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                              //   child: const Row(
+                              //     mainAxisAlignment: MainAxisAlignment.center,
 
-                                  children: [
-                                    Text(
-                                      "View Details",
+                              //     children: [
+                              //       Text(
+                              //         "View Details",
 
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
+                              //         style: TextStyle(
+                              //           fontWeight: FontWeight.w700,
+                              //         ),
+                              //       ),
 
-                                    SizedBox(width: 10),
+                              //       SizedBox(width: 10),
 
-                                    Icon(Icons.arrow_forward_ios, size: 16),
-                                  ],
-                                ),
-                              ),
+                              //       Icon(Icons.arrow_forward_ios, size: 16),
+                              //     ],
+                              //   ),
+                              // ),
                             ],
                           ),
                         ),
@@ -862,65 +880,45 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
                               ...suppliers.map((e) {
                                 return buildSupplierRow(
                                   e["name"].toString(),
-                                  e["amount"].toString(),
+                                  "₹ ${indianCurrency.format(
+                               double.tryParse(e["amount"]?.toString() ?? "0") ?? 0,
+                                )}",
                                   double.tryParse(e["progress"].toString()) ??
                                       0.0,
                                 );
                               }),
-                              ...suppliers.map((e) {
-                                return buildSupplierRow(
-                                  e["name"].toString(),
-                                  e["amount"].toString(),
-                                  double.tryParse(e["progress"].toString()) ??
-                                      0.0,
-                                );
-                              }),
-                              ...suppliers.map((e) {
-                                return buildSupplierRow(
-                                  e["name"].toString(),
-                                  e["amount"].toString(),
-                                  double.tryParse(e["progress"].toString()) ??
-                                      0.0,
-                                );
-                              }),
-
-                              ...suppliers.map((e) {
-                                return buildSupplierRow(
-                                  e["name"].toString(),
-                                  e["amount"].toString(),
-                                  double.tryParse(e["progress"].toString()) ??
-                                      0.0,
-                                );
-                              }),
+                             
+                              
+                             
                               const SizedBox(height: 28),
 
-                              Container(
-                                height: 54,
+                              // Container(
+                              //   height: 54,
 
-                                decoration: BoxDecoration(
-                                  color: const Color(0xffF3F4F6),
+                              //   decoration: BoxDecoration(
+                              //     color: const Color(0xffF3F4F6),
 
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
+                              //     borderRadius: BorderRadius.circular(14),
+                              //   ),
 
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                              //   child: const Row(
+                              //     mainAxisAlignment: MainAxisAlignment.center,
 
-                                  children: [
-                                    Text(
-                                      "View All",
+                              //     children: [
+                              //       Text(
+                              //         "View All",
 
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
+                              //         style: TextStyle(
+                              //           fontWeight: FontWeight.w700,
+                              //         ),
+                              //       ),
 
-                                    SizedBox(width: 10),
+                              //       SizedBox(width: 10),
 
-                                    Icon(Icons.arrow_forward_ios, size: 16),
-                                  ],
-                                ),
-                              ),
+                              //       Icon(Icons.arrow_forward_ios, size: 16),
+                              //     ],
+                              //   ),
+                              // ),
                             ],
                           ),
                         ),
@@ -1061,10 +1059,12 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
                                   cells: [
                                     DataCell(
                                       Text(
-                                        e["date"]?.toString() ??
-                                            e["period"]?.toString() ??
-                                            "",
-                                      ),
+  e["date"] != null
+      ? DateFormat('dd/MM/yyyy').format(
+          DateTime.parse(e["date"].toString()),
+        )
+      : (e["period"]?.toString() ?? ""),
+),
                                     ),
 
                                     DataCell(
@@ -1079,21 +1079,29 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
                                     DataCell(
                                       Text(
                                         e["supplier"]?.toString() ??
-                                            e["supplierName"]?.toString() ??
+                                            e["supplier_name"]?.toString() ??
                                             "-",
                                       ),
                                     ),
 
                                     DataCell(
                                       Text(
-                                        "${e["quantity"] ?? e["qty"] ?? e["trays"] ?? 0}",
+                                        "${e["total_trays"] ??e["quantity"] ?? e["qty"] ?? e["trays"] ?? 0}",
                                       ),
                                     ),
 
                                     DataCell(
                                       Text(
-                                        "₹ ${e["totalAmount"] ?? e["total_amount"] ?? e["totalSpend"] ?? e["total_spend"] ?? 0}",
-                                      ),
+  "₹ ${NumberFormat('#,##,##0', 'en_IN').format(
+    double.tryParse(
+      (e["totalAmount"] ??
+       e["total_amount"] ??
+       e["totalSpend"] ??
+       e["total_spend"] ??
+       0).toString(),
+    ) ?? 0,
+  )}",
+),
                                     ),
 
                                     DataCell(
@@ -1175,6 +1183,10 @@ print("PURCHASE REPORT DATA = $data");
               return {"name": e["name"], "value": e["count"] ?? 1};
             }).toList();
         avgUnitCost = data["avgUnitCost"] ?? [];
+         monthlyTrend =
+      List<Map<String, dynamic>>.from(
+        data["monthlyTrend"] ?? [],
+      );
 
         isLoading = false;
       });
@@ -1307,7 +1319,20 @@ print("PURCHASE REPORT DATA = $data");
     ),
   );
 }
-  Widget buildBar(double blueHeight, double greenHeight, String month) {
+  Widget buildBar(double spend, double volume, String month) {
+     double maxValue = 1;
+
+  for (var e in monthlyTrend) {
+    double value =
+        double.tryParse(e["spend"].toString()) ?? 0;
+
+    if (value > maxValue) {
+      maxValue = value;
+    }
+  }
+
+  double spendHeight = (spend / maxValue) * 140;
+  double volumeHeight = (volume / maxValue) * 140;
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
 
@@ -1318,7 +1343,7 @@ print("PURCHASE REPORT DATA = $data");
           children: [
             Container(
               width: 14,
-              height: blueHeight,
+              height: spendHeight,
 
               decoration: BoxDecoration(
                 color: Colors.blue,
@@ -1331,7 +1356,7 @@ print("PURCHASE REPORT DATA = $data");
 
             Container(
               width: 14,
-              height: greenHeight,
+              height: volumeHeight,
 
               decoration: BoxDecoration(
                 color: Colors.green,

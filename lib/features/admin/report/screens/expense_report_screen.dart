@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -36,7 +37,7 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
   String branch = "All Locations";
   String status = "All Status";
   String selectedReport = "Expense Report";
-
+  List<Map<String, dynamic>> dailyTrend = [];
   String fromDate = "dd-mm-yyyy";
   String toDate = "dd-mm-yyyy";
   List<dynamic> branchList = [];
@@ -48,6 +49,11 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
     "Branch Sales Report",
     "Warehouse Report",
   ];
+  final indianCurrency = NumberFormat.currency(
+  locale: 'en_IN',
+  symbol: '₹',
+  decimalDigits: 0,
+);
 
   @override
   void initState() {
@@ -85,6 +91,8 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
         endDate: end,
         branchId: branchId,
       );
+      print(data);
+print(data["dailyTrend"]);
 
       setState(() {
         expenseData = data;
@@ -92,14 +100,30 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
         expenseCategories = data["categories"] ?? [];
         expenseLogs = data["recentExpenses"] ?? [];
         isLoading = false;
+        dailyTrend =
+        List<Map<String, dynamic>>.from(data["dailyTrend"] ?? []);
+        print("expenseCategories: $expenseCategories");
+        print("API RESPONSE: $data");
+        print("STATS: ${data['stats']}");
       });
     } catch (e) {
       debugPrint(e.toString());
       setState(() {
         isLoading = false;
       });
+      
     }
   }
+
+  Future<void> loadCategories() async {
+  final data = await reportService.getCategories(
+  
+  );
+
+  setState(() {
+    expenseCategories = data;
+  });
+}
 
   Future<void> exportPdf() async {
     final pdf = pw.Document();
@@ -169,6 +193,7 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+     print(expenseCategories);
     return Scaffold(
       backgroundColor: const Color(0xffF8F8F8),
 
@@ -233,9 +258,9 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
                           ),
                         ),
 
-                        const SizedBox(width: 12),
+                        // const SizedBox(width: 12),
 
-                        const Icon(Icons.notifications_none, size: 28),
+                        // const Icon(Icons.notifications_none, size: 28),
                       ],
                     ),
 
@@ -477,6 +502,7 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
                         int crossAxisCount = constraints.maxWidth > 1000
                             ? 4
                             : 2;
+                            print(expenseStats);
                         return GridView.count(
                           crossAxisCount: crossAxisCount,
                           shrinkWrap: true,
@@ -525,7 +551,9 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
                               title: e["title"].toString(),
                               amount: e["title"] == "Pending Approvals"
                                   ? e["amount"].toString()
-                                  : "₹ ${e["amount"]}",
+                                  :  indianCurrency.format(
+                                     double.tryParse(e["amount"].toString()) ?? 0,
+                                  ),
                               growth: e["growth"].toString(),
                               icon: getIcon(e["icon"]?.toString() ?? ""),
                               iconColor: iconColor,
@@ -662,17 +690,24 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
                               crossAxisAlignment: CrossAxisAlignment.end,
 
                               children: [
-                                buildBar(100, 60, "Mon"),
+                             ...dailyTrend.map((e) {
+        final amount =
+            double.tryParse(e["amount"].toString()) ?? 0;
 
-                                buildBar(120, 70, "Tue"),
+        final maxAmount = dailyTrend
+            .map((x) => double.tryParse(x["amount"].toString()) ?? 0)
+            .reduce((a, b) => a > b ? a : b);
 
-                                buildBar(150, 80, "Wed"),
+        final height = (amount / maxAmount) * 150;
 
-                                buildBar(110, 70, "Thu"),
+        print("${e["day"]} -> $height");
 
-                                buildBar(130, 75, "Fri"),
-
-                                buildBar(140, 78, "Sat"),
+        return buildBar(
+          height,
+          height * 0.7,
+          e["day"].toString(),
+        );
+      }),
                               ],
                             ),
                           ),
@@ -681,6 +716,7 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
                     ),
 
                     const SizedBox(height: 24),
+                    
 
                     /// CATEGORY CARD
                     Container(
@@ -709,12 +745,16 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
                           ),
 
                           const SizedBox(height: 24),
-
+                          
+                             
                           ...expenseCategories.map((e) {
                             return buildCategoryRow(
-                              e["title"].toString(),
+                              
+                              e["name"].toString(),
 
-                              e["amount"].toString(),
+                              indianCurrency.format(
+  double.tryParse(e["amount"].toString()) ?? 0,
+),
 
                               double.tryParse(e["progress"].toString()) ?? 0.0,
 
@@ -863,7 +903,9 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
                                     /// DATE
                                     DataCell(
                                       Text(
-                                        e["date"]?.toString() ?? "",
+                                        DateFormat('d/M/yyyy').format(
+  DateTime.parse(e["date"].toString()),
+),
 
                                         style: const TextStyle(
                                           fontWeight: FontWeight.w500,

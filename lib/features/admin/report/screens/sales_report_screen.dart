@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:proteinova_connect/features/admin/report/data/report_service.dart';
 import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/expense_report_screen.dart';
@@ -42,6 +43,11 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
     "Branch Sales Report",
     "Warehouse Report",
   ];
+  final indianFormat = NumberFormat.currency(
+  locale: 'en_IN',
+  symbol: '',
+  decimalDigits: 0,
+);
   @override
   void initState() {
     super.initState();
@@ -79,7 +85,7 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
 
                         const Expanded(
                           child: Text(
-                            "Sales Report",
+                            "Branch Sales & Stock Reports",
 
                             style: TextStyle(
                               fontSize: 24,
@@ -115,9 +121,9 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
                           ),
                         ),
 
-                        const SizedBox(width: 12),
+                        // const SizedBox(width: 12),
 
-                        const Icon(Icons.notifications_none, size: 28),
+                        // const Icon(Icons.notifications_none, size: 28),
                       ],
                     ),
 
@@ -357,10 +363,12 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
                               }
                             }
                             Color iconColor = getColor(e["color"]?.toString() ?? "green");
-
+                            final isRevenue = e["title"].toString().contains("Revenue");
                             return SalesStatCard(
                               title: e["title"].toString(),
-                              amount: e["title"].toString().contains("Revenue") ? "₹ ${e["amount"]}" : e["amount"].toString(),
+                             amount: isRevenue
+    ? "₹ ${indianFormat.format(e["amount"])}"
+    : indianFormat.format(e["amount"]),
                               growth: e["growth"].toString(),
                               icon: getIcon(e["icon"]?.toString() ?? ""),
                               iconColor: iconColor,

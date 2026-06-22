@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class FinancialSummaryTable extends StatelessWidget {
   final List<dynamic> branches;
@@ -72,6 +73,8 @@ class FinancialSummaryTable extends StatelessWidget {
 
           /// ROWS
           ...branches.map((e) {
+            print(e);
+       
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
 
@@ -83,11 +86,17 @@ class FinancialSummaryTable extends StatelessWidget {
                 children: [
                   cell(e["branchName"]?.toString() ?? "", 230),
 
-                  cell("₹ ${e["revenue"] ?? 0}", 180),
+             cell(
+  "₹ ${NumberFormat('#,##,##0.0', 'en_IN').format(e["revenue"] ?? 0)}",
+  180,
+),
 
-                  cell("${e["totalOrders"] ?? 0}", 180),
+                  cell("${e["orders"] ?? 0}", 180),
 
-                  cell("₹ ${e["avgOrderValue"] ?? 0}", 160),
+                 cell(
+  "₹ ${NumberFormat('#,##,##0.00', 'en_IN').format(e["avgOrderValue"] ?? 0)}",
+  160,
+),
                 ],
               ),
             );

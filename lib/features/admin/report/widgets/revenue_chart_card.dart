@@ -165,18 +165,23 @@ class RevenueChartCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: chartData.map((e) {
-                          return bar(
-                            double.tryParse(e["revenue"]?.toString() ?? '0') ?? 0.0,
-                            double.tryParse(e["purchase"]?.toString() ?? '0') ?? 0.0,
-                            e["month"]?.toString() ?? '',
-                            maxVal,
-                          );
-                        }).toList(),
-                      ),
+                     SingleChildScrollView(
+  scrollDirection: Axis.horizontal,
+  child: Row(
+    crossAxisAlignment: CrossAxisAlignment.end,
+    children: chartData.map((e) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: bar(
+          double.tryParse(e["revenue"]?.toString() ?? '0') ?? 0.0,
+          double.tryParse(e["purchase"]?.toString() ?? '0') ?? 0.0,
+          e["month"]?.toString() ?? '',
+          maxVal,
+        ),
+      );
+    }).toList(),
+  ),
+)
                     ],
                   ),
                 ),

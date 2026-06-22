@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 
 import 'package:proteinova_connect/features/admin/report/data/report_service.dart';
 import 'package:proteinova_connect/features/admin/report/screens/expense_report_screen.dart';
@@ -56,6 +58,7 @@ class _AdminReportDashboardScreenState
     "Branch Sales Report",
     "Warehouse Report",
   ];
+  final indianCurrency = NumberFormat('#,##,##0.#', 'en_IN');
   void showSummaryDialog({
     required String title,
     required List<Map<String, dynamic>> rows,
@@ -562,7 +565,7 @@ class _AdminReportDashboardScreenState
 
                     /// FILTER CARD
                     Container(
-                      padding: const EdgeInsets.all(18),
+                      padding: const EdgeInsets.all(23),
 
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -575,160 +578,205 @@ class _AdminReportDashboardScreenState
                         runSpacing: 14,
 
                         children: [
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.38,
-                            child: ReportFilterField(
-                              hint: fromDate,
-                              prefix: Icons.calendar_month,
-                              onTap: () async {
-                                DateTime? picked = await showDatePicker(
-                                  context: context,
-                                  initialDate: DateTime.now(),
-                                  firstDate: DateTime(2020),
-                                  lastDate: DateTime.now(),
-                                );
-                                if (picked != null) {
-                                  setState(() {
-                                    fromDate =
-                                        "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-                                  });
-                                  fetchReport();
-                                }
-                              },
-                            ),
-                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                               Text(
+      "From Date",
+      style: AppTextStyles.bodyText14
+    ),
 
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.38,
-                            child: ReportFilterField(
-                              hint: toDate,
-                              prefix: Icons.calendar_month,
-                              onTap: () async {
-                                DateTime? picked = await showDatePicker(
-                                  context: context,
-                                  initialDate: DateTime.now(),
-                                  firstDate: DateTime(2020),
-                                  lastDate: DateTime.now(),
-                                );
-                                if (picked != null) {
-                                  setState(() {
-                                    toDate =
-                                        "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-                                  });
-                                  fetchReport();
-                                }
-                              },
-                            ),
-                          ),
-
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.38,
-                            child: Container(
-                              height: 58,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: const Color(0xffE5E7EB),
-                                ),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: selectedBranch,
-                                  isExpanded: true,
-                                  items: [
-                                    const DropdownMenuItem(
-                                      value: "All Branches",
-                                      child: Text("All Branches"),
-                                    ),
-                                    ...branchList
-                                        .map((e) {
-                                          final bName =
-                                              e['branch_name']?.toString() ??
-                                              'Unknown';
-                                          return DropdownMenuItem(
-                                            value: bName,
-                                            child: Text(bName),
-                                          );
-                                        })
-                                        .toSet()
-                                        .toList(),
-                                  ],
-                                  onChanged: (value) {
-                                    if (value != null &&
-                                        value != selectedBranch) {
+    const SizedBox(height: 8),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.38,
+                                child: ReportFilterField(
+                                  hint: fromDate,
+                                  prefix: Icons.calendar_month,
+                                  onTap: () async {
+                                    DateTime? picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime(2020),
+                                      lastDate: DateTime.now(),
+                                    );
+                                    if (picked != null) {
                                       setState(() {
-                                        selectedBranch = value;
+                                        fromDate =
+                                            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
                                       });
                                       fetchReport();
                                     }
                                   },
                                 ),
                               ),
-                            ),
+                            ],
                           ),
 
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.38,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+      "To Date",
+      style: AppTextStyles.bodyText14
+    ),
 
-                            child: Container(
-                              height: 58,
-
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: const Color(0xffE5E7EB),
-                                ),
-                              ),
-
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: selectedReport,
-                                  isExpanded: true,
-
-                                  items: reportItems.map((e) {
-                                    return DropdownMenuItem(
-                                      value: e,
-                                      child: Text(e),
+    const SizedBox(height: 8),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.38,
+                                child: ReportFilterField(
+                                  hint: toDate,
+                                  prefix: Icons.calendar_month,
+                                  onTap: () async {
+                                    DateTime? picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime(2020),
+                                      lastDate: DateTime.now(),
                                     );
-                                  }).toList(),
-
-                                  onChanged: (value) {
-                                    if (value == null) return;
-
-                                    Widget? nextScreen;
-
-                                    if (value == "Purchase Report") {
-                                      nextScreen = const PurchaseReportScreen();
-                                    } else if (value == "Expense Report") {
-                                      nextScreen = const ExpenseReportScreen();
-                                    } else if (value == "Branch Sales Report") {
-                                      nextScreen = const SalesReportScreen();
-                                    } else if (value == "Warehouse Report") {
-                                      nextScreen =
-                                          const WarehouseReportScreen();
-                                    }
-
-                                    if (nextScreen != null) {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => nextScreen!,
-                                        ),
-                                      );
+                                    if (picked != null) {
+                                      setState(() {
+                                        toDate =
+                                            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                                      });
+                                      fetchReport();
                                     }
                                   },
                                 ),
                               ),
-                            ),
+                            ],
+                          ),
+
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                                Text(
+      "Select Branch",
+      style: AppTextStyles.bodyText14
+    ),
+
+    const SizedBox(height: 8),
+                              
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.38,
+                                child: Container(
+                                  height: 58,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: const Color(0xffE5E7EB),
+                                    ),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: selectedBranch,
+                                      isExpanded: true,
+                                      items: [
+                                        const DropdownMenuItem(
+                                          value: "All Branches",
+                                          child: Text("All Branches"),
+                                        ),
+                                        ...branchList
+                                            .map((e) {
+                                              final bName =
+                                                  e['branch_name']?.toString() ??
+                                                  'Unknown';
+                                              return DropdownMenuItem(
+                                                value: bName,
+                                                child: Text(bName),
+                                              );
+                                            })
+                                            .toSet()
+                                            .toList(),
+                                      ],
+                                      onChanged: (value) {
+                                        if (value != null &&
+                                            value != selectedBranch) {
+                                          setState(() {
+                                            selectedBranch = value;
+                                          });
+                                          fetchReport();
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                                Text(
+      "Report Category",
+      style: AppTextStyles.bodyText14
+    ),
+
+    const SizedBox(height: 8),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.38,
+                              
+                                child: Container(
+                                  height: 58,
+                              
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                              
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: const Color(0xffE5E7EB),
+                                    ),
+                                  ),
+                              
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: selectedReport,
+                                      isExpanded: true,
+                              
+                                      items: reportItems.map((e) {
+                                        return DropdownMenuItem(
+                                          value: e,
+                                          child: Text(e),
+                                        );
+                                      }).toList(),
+                              
+                                      onChanged: (value) {
+                                        if (value == null) return;
+                              
+                                        Widget? nextScreen;
+                              
+                                        if (value == "Purchase Report") {
+                                          nextScreen = const PurchaseReportScreen();
+                                        } else if (value == "Expense Report") {
+                                          nextScreen = const ExpenseReportScreen();
+                                        } else if (value == "Branch Sales Report") {
+                                          nextScreen = const SalesReportScreen();
+                                        } else if (value == "Warehouse Report") {
+                                          nextScreen =
+                                              const WarehouseReportScreen();
+                                        }
+                              
+                                        if (nextScreen != null) {
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => nextScreen!,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
 
                           InkWell(
@@ -822,7 +870,9 @@ class _AdminReportDashboardScreenState
                       children: [
                         ReportStatCard(
                           title: "Total Revenue",
-                          amount: "₹ ${summaryData?['totalRevenue'] ?? 0}",
+                          amount: "₹ ${indianCurrency.format(
+  double.tryParse(summaryData?['totalRevenue']?.toString() ?? '0') ?? 0,
+)}",
                           growth: "+12.5%",
                           icon: Icons.currency_rupee,
                           iconBg: const Color(0xffDCFCE7),
@@ -847,7 +897,9 @@ class _AdminReportDashboardScreenState
 
                         ReportStatCard(
                           title: "Total Expenses",
-                          amount: "₹ ${summaryData?['totalExpenses'] ?? 0}",
+                          amount: "₹ ${indianCurrency.format(
+  double.tryParse(summaryData?['totalExpenses']?.toString() ?? '0') ?? 0,
+)}",
                           growth: "-8.2%",
                           icon: Icons.trending_down,
                           iconBg: const Color(0xffFEE2E2),
@@ -872,7 +924,9 @@ class _AdminReportDashboardScreenState
 
                         ReportStatCard(
                           title: "Net Profit",
-                          amount: "₹ ${summaryData?['netProfit'] ?? 0}",
+                           amount: "₹ ${indianCurrency.format(
+  double.tryParse(summaryData?['netProfit']?.toString() ?? '0') ?? 0,
+)}",
                           growth: "+15.3%",
                           icon: Icons.trending_up,
                           iconBg: const Color(0xffDCFCE7),
@@ -960,7 +1014,9 @@ class _AdminReportDashboardScreenState
                               child: TopBranchTile(
                                 branch: e["branch_name"].toString(),
 
-                                amount: "₹ ${e["amount"].toString()}",
+                                amount: "₹ ${indianCurrency.format(
+  double.tryParse(e["amount"]?.toString() ?? '0') ?? 0,
+)}",
 
                                 progress:
                                     double.tryParse(e["progress"].toString()) ??
