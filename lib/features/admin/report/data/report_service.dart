@@ -499,86 +499,137 @@ class ReportService {
     String? endDate,
     String? branchId,
   }) async {
-    final response = await dio.get(
-      '/api/reports/warehouse-dispatch',
-      queryParameters: {
-        'startDate': startDate,
-        'endDate': endDate,
-        'branchId': branchId,
-      },
-    );
+    try {
+      final response = await dio.get(
+        '/api/reports/warehouse-dispatch',
+        queryParameters: {
+          'startDate': startDate,
+          'endDate': endDate,
+          'branchId': branchId,
+        },
+      );
 
-    final list = (response.data['branches'] as List<dynamic>?) ?? [];
+      debugPrint("Warehouse API Response: ${response.data}");
 
-    int totalTrays = 0;
-    Map<String, int> destMap = {};
+      final list = (response.data['dispatches'] as List<dynamic>?) ?? [];
+      Map<String, int> dayWiseDispatch = {};
 
-    for (var item in list) {
-      int trays = int.tryParse(item['total_trays']?.toString() ?? '0') ?? 0;
-      totalTrays += trays;
-      String dest = item['destination']?.toString() ?? 'Unknown';
-      destMap[dest] = (destMap[dest] ?? 0) + trays;
-    }
+      for (var item in list) {
+        final date = DateTime.parse(item["date"]);
 
-    List<Map<String, dynamic>> destinations = destMap.entries
-        .map(
-          (e) => {
-            "name": e.key,
-            "trays": e.value,
-            "progress": totalTrays > 0 ? e.value / totalTrays : 0,
+        final day = DateFormat('EEE').format(date);
+
+        final eggs = (item["total_eggs"] as num?)?.toInt() ?? 0;
+
+        dayWiseDispatch[day] = (dayWiseDispatch[day] ?? 0) + eggs;
+      }
+      List<Map<String, dynamic>> volumeChart = dayWiseDispatch.entries.map((e) {
+        return {"day": e.key, "dispatched": e.value};
+      }).toList();
+
+      final availableStock = response.data['availableStock'] ?? 0;
+      int totalTrays = 0;
+
+      int totalEggs = 0;
+
+      Set<String> drivers = {};
+
+      int deliveredCount = 0;
+
+      for (var item in list) {
+        totalTrays += (item["total_trays"] as num?)?.toInt() ?? 0;
+        totalEggs += (item["total_eggs"] as num?)?.toInt() ?? 0;
+
+        if (item["driver_name"] != null) {
+          drivers.add(item["driver_name"].toString());
+        }
+
+        if (item["status"]?.toString().toUpperCase() == "DELIVERED") {
+          deliveredCount++;
+        }
+      }
+
+      double onTimeDelivery = list.isEmpty
+          ? 0
+          : (deliveredCount / list.length) * 100;
+
+      Map<String, int> destMap = {};
+
+      for (var item in list) {
+        int units = int.tryParse(item['total_eggs'].toString()) ?? 0;
+        String dest = item['destination']?.toString() ?? "Unknown";
+
+        destMap[dest] = (destMap[dest] ?? 0) + units;
+      }
+
+      List<Map<String, dynamic>> destinations = destMap.entries.map((e) {
+        return {
+          "name": e.key,
+          "trays": e.value,
+          "progress": totalEggs > 0 ? e.value / totalEggs : 0,
+        };
+      }).toList();
+
+      return {
+        "stats": [
+          {
+            "title": "Available Stock",
+            "amount": availableStock.toString(),
+            "growth": "",
+            "icon": "warehouse",
+            "color": "blue",
           },
-        )
-        .toList();
+          {
+            "title": "Total Dispatched (Units)",
+            "amount": NumberFormat.decimalPattern('en_IN').format(totalEggs),
+            "growth": "",
+            "icon": "truck",
+            "color": "green",
+          },
+          {
+            "title": "On-Time Delivery",
+            "amount": "${onTimeDelivery.toStringAsFixed(0)}%",
+            "growth": "",
+            "icon": "check",
+            "color": "orange",
+          },
+          {
+            "title": "Active Drivers",
+            "amount": drivers.length.toString(),
+            "growth": "",
+            "icon": "clock",
+            "color": "grey",
+          },
+        ],
 
-    return {
-      "stats": [
-        {
-          "title": "Available Stock",
-          "amount": "420.3K",
-          "growth": "+4.4%",
-          "icon": "warehouse",
-          "color": "blue",
-        },
-        {
-          "title": "Total Dispatched (Units)",
-          "amount": totalTrays >= 1000
-              ? "${(totalTrays / 1000).toStringAsFixed(1)}K"
-              : totalTrays.toString(),
-          "growth": "+12.4%",
-          "icon": "truck",
-          "color": "green",
-        },
-        {
-          "title": "On-Time Delivery",
-          "amount": "94.5%",
-          "growth": "-1.4%",
-          "icon": "check",
-          "color": "orange",
-        },
-        {
-          "title": "Active Suppliers",
-          "amount": "14",
-          "growth": "- 15m",
-          "icon": "clock",
-          "color": "grey",
-        },
-      ],
-      "destinations": destinations,
-      "recentDispatches": list
-          .map(
-            (e) => {
-              "id": e["id"]?.toString() ?? "",
-              "destination": e["destination"],
-              "date": e["date"],
-              "trays": e["total_trays"],
-              "status": e["status"],
-            },
-          )
-          .toList(),
-    };
+        "dispatchVolume": volumeChart,
+
+        "destinations": destinations,
+
+        "recentDispatches": list.map((e) {
+          return {
+            "date": e["date"] != null
+                ? DateFormat('dd/MM/yyyy').format(DateTime.parse(e["date"]))
+                : "",
+            "dispatchId": "#DSP-${e["id"] ?? ""}",
+            "destination": e["destination"] ?? "",
+            "vehicle": e["vehicle_number"] ?? "",
+            "quantity": (e["total_eggs"] as num?) ?? 0,
+            "status": e["status"] ?? "",
+          };
+        }).toList(),
+      };
+    } on DioException catch (e) {
+      debugPrint("STATUS CODE: ${e.response?.statusCode}");
+      debugPrint("ERROR DATA: ${e.response?.data}");
+      debugPrint("REQUEST URL: ${e.requestOptions.uri}");
+
+      rethrow;
+    }
   }
 
   /// Branch List
+
   Future<List<dynamic>> getBranches() async {
     final response = await dio.get('/api/branches');
 

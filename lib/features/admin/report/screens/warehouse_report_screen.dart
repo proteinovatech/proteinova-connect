@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/admin/report/data/report_service.dart'
     show ReportService;
 import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
@@ -15,14 +17,20 @@ class WarehouseReportScreen extends StatefulWidget {
 }
 
 class _WarehouseReportScreenState extends State<WarehouseReportScreen> {
+  int parseInt(dynamic value) {
+  if (value == null) return 0;
+  return int.tryParse(value.toString().replaceAll(',', '')) ?? 0;
+}
+   final ReportService repository =
+      ReportService();
   String branch = "All Branches";
   String zone = "All Zones";
   String status = "All Status";
   String reportCategory = "Warehouse Report";
   String selectedReport = "Warehouse Report";
 
-  String fromDate = "dd-mm-yyyy";
-  String toDate = "dd-mm-yyyy";
+  String fromDate = "";
+  String toDate = "";
   List<dynamic> branchList = [];
 
   final ReportService reportService = ReportService();
@@ -33,8 +41,8 @@ class _WarehouseReportScreenState extends State<WarehouseReportScreen> {
 
   List<dynamic> warehouseStats = [];
 
-  List<dynamic> branchDispatch = [];
-
+  List<dynamic> branchDispatches = [];
+  List<Map<String, dynamic>> dispatchVolume = [];
   List<dynamic> dispatchLogs = [];
   List<String> reportItems = [
     "Financial Summary",
@@ -143,7 +151,7 @@ class _WarehouseReportScreenState extends State<WarehouseReportScreen> {
                               Expanded(
                                 child: buildDateField(
                                   title: "From Date",
-                                  value: fromDate,
+                                  value:fromDate.isEmpty ? "dd-mm-yyyy" : fromDate,
                                   onTap: () async {
                                     DateTime? picked = await showDatePicker(
                                       context: context,
@@ -166,7 +174,7 @@ class _WarehouseReportScreenState extends State<WarehouseReportScreen> {
                               Expanded(
                                 child: buildDateField(
                                   title: "To Date",
-                                  value: toDate,
+                                  value: toDate.isEmpty ? "dd-mm-yyyy" : toDate,
                                   onTap: () async {
                                     DateTime? picked = await showDatePicker(
                                       context: context,
@@ -423,11 +431,11 @@ class _WarehouseReportScreenState extends State<WarehouseReportScreen> {
                                 ),
                               ),
 
-                              TextButton(
-                                onPressed: () {},
+                              // TextButton(
+                              //   onPressed: () {},
 
-                                child: const Text("View All"),
-                              ),
+                              //   child: const Text("View All"),
+                              // ),
                             ],
                           ),
 
@@ -453,22 +461,37 @@ class _WarehouseReportScreenState extends State<WarehouseReportScreen> {
                                 DataColumn(label: Text("STATUS")),
                               ],
 
-                              rows: dispatchLogs.map<DataRow>((e) {
-                                return buildRow(
-                                  e["date"].toString(),
-                                  e["dispatchId"].toString(),
-                                  e["destination"].toString(),
-                                  e["vehicle"].toString(),
-                                  e["quantity"].toString(),
-                                  e["status"].toString(),
-                                  e["status"] == "Delivered"
-                                      ? Colors.green
-                                      : e["status"] == "Delayed"
-                                      ? Colors.red
-                                      : Colors.orange,
-                                );
-                              }).toList(),
-                            ),
+rows: dispatchLogs.map<DataRow>((e) {
+
+  String status =
+      e["status"].toString().toUpperCase();
+
+  Color statusColor;
+
+  switch (status) {
+    case "DELIVERED":
+      statusColor = Colors.green;
+      break;
+
+    case "DELAYED":
+      statusColor = Colors.red;
+      break;
+
+    default:
+      statusColor = Colors.orange;
+  }
+
+  return buildRow(
+    e["date"].toString(),
+    e["dispatchId"].toString(),
+    e["destination"].toString(),
+    e["vehicle"].toString(),
+    e["quantity"].toString(),
+    e["status"].toString(),
+    statusColor,
+  );
+
+}).toList(),                     ),
                           ),
                         ],
                       ),
@@ -480,52 +503,76 @@ class _WarehouseReportScreenState extends State<WarehouseReportScreen> {
     );
   }
 
-  Future<void> fetchWarehouseReport() async {
-    try {
-      setState(() {
-        isLoading = true;
-      });
+ Future<void> fetchWarehouseReport() async {
+  setState(() {
+    isLoading = true;
+  });
 
-      if (branchList.isEmpty) {
-        branchList = await reportService.getBranches();
-      }
+  try {
+    final data = await repository.getWarehouseReport(
+  startDate: fromDate.isEmpty ? null : fromDate,
+  endDate: toDate.isEmpty ? null : toDate,
+  branchId: branch == "All Branches" ? null : branch,
+);
 
-      String? branchId;
-      if (branch != "All Branches") {
-        final b = branchList.firstWhere(
-          (element) => element['branch_name'] == branch, 
-          orElse: () => null
-        );
-        if (b != null) {
-          branchId = b['id']?.toString() ?? b['branch_id']?.toString();
-        }
-      }
+debugPrint("dispatchVolume = ${data["dispatchVolume"]}");
+debugPrint("dispatches = ${data["dispatches"]}");
+debugPrint("recentDispatches = ${data["recentDispatches"]}");
 
-      String? start = fromDate != "dd-mm-yyyy" ? fromDate : null;
-      String? end = toDate != "dd-mm-yyyy" ? toDate : null;
+final List dispatches = data["recentDispatches"] ?? [];
+int parseInt(dynamic value) {
+  if (value == null) return 0;
+  return int.tryParse(value.toString().replaceAll(',', '')) ?? 0;
+}
 
-      final data = await reportService.getWarehouseReport(
-        startDate: start,
-        endDate: end,
-        branchId: branchId,
-      );
+Map<String, int> dispatchByBranch = {};
 
-      setState(() {
-        warehouseData = data;
-        warehouseStats = data["stats"] ?? [];
-        branchDispatch = data["destinations"] ?? data["branchDispatch"] ?? [];
-        dispatchLogs = data["recentDispatches"] ?? data["logs"] ?? [];
-        isLoading = false;
-      });
-    } catch (e) {
-      debugPrint(e.toString());
-      setState(() {
-        isLoading = false;
-      });
-    }
+for (var item in dispatches) {
+  final branch = item['destination'] ?? 'Unknown';
+
+  final eggs = parseInt(item["total_eggs"] ?? item["quantity"]);
+
+  dispatchByBranch.update(
+    branch,
+    (value) => value + eggs,
+    ifAbsent: () => eggs,
+  );
+ print("RAW ITEM: $item");
+print("TYPE: ${item.runtimeType}");
+  print("Branch: $branch | Eggs: $eggs");
+}
+
+print("Dispatch By Branch: $dispatchByBranch");
+
+    setState(() {
+      warehouseStats =
+          List<Map<String, dynamic>>.from(data["stats"]);
+
+      dispatchVolume =
+    List<Map<String, dynamic>>.from(
+      data["dispatchVolume"] ?? [],
+    );    
+
+      dispatchLogs =
+          List<Map<String, dynamic>>.from(
+              data["recentDispatches"]);
+
+      branchDispatches =
+          List<Map<String, dynamic>>.from(
+              data["destinations"]);
+
+      isLoading = false;
+    });
+  } catch (e) {
+    setState(() {
+      isLoading = false;
+    });
+
+    debugPrint(e.toString());
   }
+} 
 
-  Widget buildDateField({required String title, required String value, required VoidCallback onTap}) {
+Widget buildDateField({required String title, required String value, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
@@ -655,26 +702,26 @@ class _WarehouseReportScreenState extends State<WarehouseReportScreen> {
                 ),
               ),
 
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
+              // Container(
+              //   padding: const EdgeInsets.symmetric(
+              //     horizontal: 12,
+              //     vertical: 8,
+              //   ),
 
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
+              //   decoration: BoxDecoration(
+              //     borderRadius: BorderRadius.circular(10),
 
-                  border: Border.all(color: const Color(0xffE5E7EB)),
-                ),
+              //     border: Border.all(color: const Color(0xffE5E7EB)),
+              //   ),
 
-                child: const Row(
-                  children: [
-                    Text("7 Days"),
-                    SizedBox(width: 6),
-                    Icon(Icons.keyboard_arrow_down, size: 18),
-                  ],
-                ),
-              ),
+              //   child: const Row(
+              //     children: [
+              //       Text("7 Days"),
+              //       SizedBox(width: 6),
+              //       Icon(Icons.keyboard_arrow_down, size: 18),
+              //     ],
+              //   ),
+              // ),
             ],
           ),
 
@@ -737,14 +784,22 @@ class _WarehouseReportScreenState extends State<WarehouseReportScreen> {
 
               crossAxisAlignment: CrossAxisAlignment.end,
 
-              children: [
-                buildBar(60, 90, "Mon"),
-                buildBar(70, 120, "Tue"),
-                buildBar(65, 140, "Wed"),
-                buildBar(62, 100, "Thu"),
-                buildBar(95, 145, "Fri"),
-                buildBar(40, 65, "Sat"),
-              ],
+             children: dispatchVolume.map((item) {
+
+  final dispatched =
+      (item["dispatched"] as num).toDouble();
+
+  final maxValue = dispatchVolume
+      .map((e) => (e["dispatched"] as num).toDouble())
+      .reduce((a, b) => a > b ? a : b);
+
+  return buildBar(
+    0,
+    (dispatched / maxValue) * 150,
+    item["day"].toString(),
+  );
+
+}).toList(),
             ),
           ),
 
@@ -783,94 +838,73 @@ class _WarehouseReportScreenState extends State<WarehouseReportScreen> {
     );
   }
 
-  Widget buildBranchDispatchCard() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-
-      decoration: BoxDecoration(
-        color: Colors.white,
-
-        borderRadius: BorderRadius.circular(20),
-
-        border: Border.all(color: const Color(0xffE5E7EB)),
-      ),
-
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-
-        children: [
-          const Text(
-            "Dispatch by Branch",
-
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+Widget buildBranchDispatchCard() {
+  debugPrint("branchDispatches = $branchDispatches");
+  return Container(
+    padding: const EdgeInsets.all(24),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: const Color(0xFFE5E7EB)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Dispatch by Branch",
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
           ),
+        ),
 
-          const SizedBox(height: 28),
+        const SizedBox(height: 30),
+        
 
-          ...branchDispatch.map((e) {
-            return buildBranchRow(
-              e["branch"].toString(),
-              e["amount"].toString(),
-              double.tryParse(e["progress"].toString()) ?? 0.0,
-            );
-          }),
-          ...branchDispatch.map((e) {
-            return buildBranchRow(
-              e["branch"].toString(),
-              e["amount"].toString(),
-              double.tryParse(e["progress"].toString()) ?? 0.0,
-            );
-          }),
-          ...branchDispatch.map((e) {
-            return buildBranchRow(
-              e["branch"].toString(),
-              e["amount"].toString(),
-              double.tryParse(e["progress"].toString()) ?? 0.0,
-            );
-          }),
-          ...branchDispatch.map((e) {
-            return buildBranchRow(
-              e["branch"].toString(),
-              e["amount"].toString(),
-              double.tryParse(e["progress"].toString()) ?? 0.0,
-            );
-          }),
-          const SizedBox(height: 24),
-
-          Container(
-            height: 54,
-
-            decoration: BoxDecoration(
-              color: const Color(0xffF3F4F6),
-
-              borderRadius: BorderRadius.circular(14),
-            ),
-
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-
+        ...branchDispatches.map((item) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 28),
+            child: Column(
               children: [
-                Text(
-                  "View All",
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item["name"].toString(),
+                        style: AppTextStyles.headingText16
+                      ),
+                    ),
 
-                  style: TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.w700,
-                  ),
+                    Text(
+                      "${NumberFormat.decimalPattern('en_IN').format( item["trays"]?? 0)} Units",
+                      style: AppTextStyles.headingText16
+                    ),
+                  ],
                 ),
 
-                SizedBox(width: 10),
+                const SizedBox(height: 10),
 
-                Icon(Icons.arrow_forward_ios, size: 16, color: Colors.blue),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: LinearProgressIndicator(
+                    value: ((item["progress"]??0) as num).toDouble(),
+                    minHeight: 7,
+                    backgroundColor: const Color(0xFFE9EEF6),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      Color(0xFF2F5BEA),
+                    ),
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
+          );
+        }).toList(),
+      ],
+    ),
+  );
+}
 
-  Widget buildBar(double greyHeight, double blueHeight, String day) {
+Widget buildBar(double greyHeight, double blueHeight, String day) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
 

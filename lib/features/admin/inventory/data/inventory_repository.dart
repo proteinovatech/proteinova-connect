@@ -33,6 +33,9 @@ class InventoryRepository {
         headers: {"Accept": "application/json"},
       );
 
+       print("STATUS CODE = ${response.statusCode}");
+    print("RESPONSE BODY = ${response.body}");
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return data['data'] is Map<String, dynamic> ? data['data'] : (data is Map<String, dynamic> ? data : {});

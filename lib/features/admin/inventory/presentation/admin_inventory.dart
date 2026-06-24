@@ -54,6 +54,7 @@ class _AdminInventoryState extends State<AdminInventory> {
   }
 
   Future<void> _loadData() async {
+     print("=== _loadData called ===");
     if (!mounted) return;
     setState(() => _isLoading = true);
     try {
@@ -63,6 +64,9 @@ class _AdminInventoryState extends State<AdminInventory> {
         _supplierService.getSuppliers(),
         _repository.fetchPurchases(),
       ]);
+      print("Raw Inventory Data: ${results[0]}");
+print("Suppliers Count: ${(results[1] as List).length}");
+print("Purchases Count: ${(results[2] as List).length}");
 
       final rawStats = results[0] as Map<String, dynamic>;
       final supplierList = results[1] as List<Supplier>;
@@ -113,6 +117,7 @@ class _AdminInventoryState extends State<AdminInventory> {
                 "Unknown";
           }
         }
+        print("Selected Category: $selectedCategoryName");
 
         _isLoading = false;
       });
