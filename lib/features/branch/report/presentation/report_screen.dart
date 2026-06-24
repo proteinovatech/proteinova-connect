@@ -26,12 +26,10 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   void _fetchReport() {
-    context.read<ReportBloc>().add(FetchBranchReportEvent(
-          branchId: widget.branchId,
-        ));
+    context.read<ReportBloc>().add(
+      FetchBranchReportEvent(branchId: widget.branchId),
+    );
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +51,11 @@ class _ReportScreenState extends State<ReportScreen> {
                         borderRadius: BorderRadius.circular(8),
                         child: const Padding(
                           padding: EdgeInsets.only(top: 4),
-                          child: Icon(Icons.arrow_back, size: 24, color: Color(0xFF1E293B)),
+                          child: Icon(
+                            Icons.arrow_back,
+                            size: 24,
+                            color: Color(0xFF1E293B),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -134,14 +136,29 @@ class _ReportScreenState extends State<ReportScreen> {
                       const Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Net Profit', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
-                          Icon(Icons.trending_up, color: Colors.white70, size: 20),
+                          Text(
+                            'Net Profit',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Icon(
+                            Icons.trending_up,
+                            color: Colors.white70,
+                            size: 20,
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Text(
                         '₹${_formatter.format(data.netProfit >= 0 ? data.netProfit : 0)}',
-                        style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -172,14 +189,29 @@ class _ReportScreenState extends State<ReportScreen> {
                       const Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Net Loss', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
-                          Icon(Icons.trending_down, color: Colors.white70, size: 20),
+                          Text(
+                            'Net Loss',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Icon(
+                            Icons.trending_down,
+                            color: Colors.white70,
+                            size: 20,
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Text(
                         '₹${_formatter.format(data.netProfit < 0 ? data.netProfit.abs() : 0)}',
-                        style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -196,26 +228,62 @@ class _ReportScreenState extends State<ReportScreen> {
             crossAxisCount: 2,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            childAspectRatio: MediaQuery.of(context).size.width < 400 ? 1.05 : 1.25,
+            childAspectRatio: MediaQuery.of(context).size.width < 400
+                ? 1.05
+                : 1.25,
             children: [
-              _buildMetricCard('Total Revenue', '₹${_formatter.format(data.totalRevenue)}', Icons.account_balance_wallet_outlined, const Color(0xFF3B82F6), const Color(0xFFEFF6FF), onTap: () {
-                _showDetails(context, 'Total Revenue Details', []);
-              }),
-              _buildMetricCard('Total Expenses', '₹${_formatter.format(data.totalExpenses)}', Icons.money_off_outlined, const Color(0xFFF59E0B), const Color(0xFFFEF3C7), onTap: () {
-                _showDetails(context, 'Total Expenses Breakdown', 
-                  data.expenseCategories.map((e) => {
-                    'label': e.name,
-                    'value': '₹${_formatter.format(e.amount)}',
-                    'sub': 'Expense',
-                  }).toList(),
-                );
-              }),
-              _buildMetricCard('Sales Orders', '${data.totalSalesOrders}', Icons.shopping_cart_outlined, const Color(0xFF8B5CF6), const Color(0xFFF5F3FF), onTap: () {
-                _showDetails(context, 'Sales Orders Breakdown', []);
-              }),
-              _buildMetricCard('Pending Ledger', '₹${_formatter.format(data.totalPendingCollection)}', Icons.pending_actions_outlined, const Color(0xFFEF4444), const Color(0xFFFEF2F2), onTap: () {
-                _showDetails(context, 'Pending Ledger Details', []);
-              }),
+              _buildMetricCard(
+                'Total Revenue',
+                '₹${_formatter.format(data.totalRevenue)}',
+                Icons.account_balance_wallet_outlined,
+                const Color(0xFF3B82F6),
+                const Color(0xFFEFF6FF),
+                onTap: () {
+                  _showDetails(context, 'Total Revenue Details', []);
+                },
+              ),
+              _buildMetricCard(
+                'Total Expenses',
+                '₹${_formatter.format(data.totalExpenses)}',
+                Icons.money_off_outlined,
+                const Color(0xFFF59E0B),
+                const Color(0xFFFEF3C7),
+                onTap: () {
+                  _showDetails(
+                    context,
+                    'Total Expenses Breakdown',
+                    data.expenseCategories
+                        .map(
+                          (e) => {
+                            'label': e.name,
+                            'value': '₹${_formatter.format(e.amount)}',
+                            'sub': 'Expense',
+                          },
+                        )
+                        .toList(),
+                  );
+                },
+              ),
+              _buildMetricCard(
+                'Sales Orders',
+                '${data.totalSalesOrders}',
+                Icons.shopping_cart_outlined,
+                const Color(0xFF8B5CF6),
+                const Color(0xFFF5F3FF),
+                onTap: () {
+                  _showDetails(context, 'Sales Orders Breakdown', []);
+                },
+              ),
+              _buildMetricCard(
+                'Pending Ledger',
+                '₹${_formatter.format(data.totalPendingCollection)}',
+                Icons.pending_actions_outlined,
+                const Color(0xFFEF4444),
+                const Color(0xFFFEF2F2),
+                onTap: () {
+                  _showDetails(context, 'Pending Ledger Details', []);
+                },
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -224,7 +292,14 @@ class _ReportScreenState extends State<ReportScreen> {
           if (data.categorySales.isNotEmpty) ...[
             _sectionTitle('Sales Breakdown'),
             const SizedBox(height: 12),
-            ...data.categorySales.map((c) => _buildListItem(c.name, '${c.quantity} items', '₹${_formatter.format(c.amount)}', Icons.inventory_2_outlined)),
+            ...data.categorySales.map(
+              (c) => _buildListItem(
+                c.name,
+                '${c.quantity} items',
+                '₹${_formatter.format(c.amount)}',
+                Icons.inventory_2_outlined,
+              ),
+            ),
             const SizedBox(height: 24),
           ],
 
@@ -272,14 +347,17 @@ class _ReportScreenState extends State<ReportScreen> {
                         reservedSize: 30,
                         getTitlesWidget: (value, meta) {
                           final index = value.toInt();
-                          if (index < 0 || index >= data.expenseCategories.length) {
+                          if (index < 0 ||
+                              index >= data.expenseCategories.length) {
                             return const SizedBox();
                           }
                           final name = data.expenseCategories[index].name;
                           return Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
-                              name.length > 7 ? '${name.substring(0, 6)}.' : name,
+                              name.length > 7
+                                  ? '${name.substring(0, 6)}.'
+                                  : name,
                               style: const TextStyle(
                                 fontSize: 10,
                                 color: Color(0xFF64748B),
@@ -330,8 +408,13 @@ class _ReportScreenState extends State<ReportScreen> {
           // Other metrics
           _sectionTitle('Other Metrics'),
           const SizedBox(height: 12),
-          _buildListItem('Trays Returned', '', '${data.totalTraysReturned}', Icons.alt_route),
-          
+          _buildListItem(
+            'Trays Returned',
+            '',
+            '${data.totalTraysReturned}',
+            Icons.alt_route,
+          ),
+
           const SizedBox(height: 40),
         ],
       ),
@@ -349,7 +432,14 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  Widget _buildMetricCard(String title, String value, IconData icon, Color color, Color bgColor, {VoidCallback? onTap}) {
+  Widget _buildMetricCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+    Color bgColor, {
+    VoidCallback? onTap,
+  }) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final bool isSmallScreen = screenWidth < 400;
 
@@ -428,7 +518,11 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  void _showDetails(BuildContext context, String title, List<Map<String, String>> modalData) {
+  void _showDetails(
+    BuildContext context,
+    String title,
+    List<Map<String, String>> modalData,
+  ) {
     showDialog(
       context: context,
       builder: (context) {
@@ -657,7 +751,12 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  Widget _buildListItem(String title, String subtitle, String trailing, IconData icon) {
+  Widget _buildListItem(
+    String title,
+    String subtitle,
+    String trailing,
+    IconData icon,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -687,12 +786,31 @@ class _ReportScreenState extends State<ReportScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
-                if (subtitle.isNotEmpty) Text(subtitle, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E293B),
+                  ),
+                ),
+                if (subtitle.isNotEmpty)
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
               ],
             ),
           ),
-          Text(trailing, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+          Text(
+            trailing,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E293B),
+            ),
+          ),
         ],
       ),
     );
@@ -713,20 +831,26 @@ class _ReportScreenState extends State<ReportScreen> {
                 Expanded(
                   child: Container(
                     height: 110,
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Container(
                     height: 110,
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
-            
+
             // Grid Cards Shimmer
             GridView.count(
               shrinkWrap: true,
@@ -734,52 +858,77 @@ class _ReportScreenState extends State<ReportScreen> {
               crossAxisCount: 2,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: MediaQuery.of(context).size.width < 400 ? 1.05 : 1.25,
-              children: List.generate(4, (i) => Container(
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-              )),
+              childAspectRatio: MediaQuery.of(context).size.width < 400
+                  ? 1.05
+                  : 1.25,
+              children: List.generate(
+                4,
+                (i) => Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 24),
-            
+
             // Instagram Style List Shimmer
             Container(
               width: 150,
               height: 20,
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
             ),
             const SizedBox(height: 16),
-            ...List.generate(4, (index) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  border: Border.all(color: Colors.white, width: 2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(width: 120, height: 12, color: Colors.white),
-                          const SizedBox(height: 8),
-                          Container(width: 80, height: 10, color: Colors.white),
-                        ],
+            ...List.generate(
+              4,
+              (index) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    border: Border.all(color: Colors.white, width: 2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                    ),
-                    Container(width: 40, height: 12, color: Colors.white),
-                  ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 120,
+                              height: 12,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              width: 80,
+                              height: 10,
+                              color: Colors.white,
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(width: 40, height: 12, color: Colors.white),
+                    ],
+                  ),
                 ),
               ),
-            )),
+            ),
           ],
         ),
       ),
@@ -795,9 +944,16 @@ class _ReportScreenState extends State<ReportScreen> {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            const Text('Oops! Could not load report.', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              'Oops! Could not load report.',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
-            Text(message, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.grey),
+            ),
           ],
         ),
       ),

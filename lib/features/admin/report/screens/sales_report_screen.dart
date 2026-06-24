@@ -44,10 +44,10 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
     "Warehouse Report",
   ];
   final indianFormat = NumberFormat.currency(
-  locale: 'en_IN',
-  symbol: '',
-  decimalDigits: 0,
-);
+    locale: 'en_IN',
+    symbol: '',
+    decimalDigits: 0,
+  );
   @override
   void initState() {
     super.initState();
@@ -158,7 +158,8 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
                                     );
                                     if (picked != null) {
                                       setState(() {
-                                        fromDate = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                                        fromDate =
+                                            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
                                       });
                                       fetchSalesReport();
                                     }
@@ -181,7 +182,8 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
                                     );
                                     if (picked != null) {
                                       setState(() {
-                                        toDate = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                                        toDate =
+                                            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
                                       });
                                       fetchSalesReport();
                                     }
@@ -197,7 +199,14 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
                                   value: branch,
                                   items: [
                                     "All Branches",
-                                    ...branchList.map((e) => e["branch_name"]?.toString() ?? "Unknown").toSet().toList()
+                                    ...branchList
+                                        .map(
+                                          (e) =>
+                                              e["branch_name"]?.toString() ??
+                                              "Unknown",
+                                        )
+                                        .toSet()
+                                        .toList(),
                                   ],
                                   onChanged: (v) {
                                     setState(() {
@@ -334,51 +343,75 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
                     /// STATS
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        int crossAxisCount = constraints.maxWidth > 1000 ? 4 : 2;
+                        int crossAxisCount = constraints.maxWidth > 1000
+                            ? 4
+                            : 2;
                         return GridView.count(
                           crossAxisCount: crossAxisCount,
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           crossAxisSpacing: 16,
                           mainAxisSpacing: 16,
-                          childAspectRatio: constraints.maxWidth > 1000 ? 2.0 : 1.3,
+                          childAspectRatio: constraints.maxWidth > 1000
+                              ? 2.0
+                              : 1.3,
                           children: salesStats.map((e) {
                             IconData getIcon(String name) {
-                              switch(name) {
-                                case "money": return Icons.currency_rupee;
-                                case "bag": return Icons.shopping_bag_outlined;
-                                case "store": return Icons.storefront;
-                                case "warning": return Icons.warning_amber_rounded;
-                                default: return Icons.wallet_outlined;
+                              switch (name) {
+                                case "money":
+                                  return Icons.currency_rupee;
+                                case "bag":
+                                  return Icons.shopping_bag_outlined;
+                                case "store":
+                                  return Icons.storefront;
+                                case "warning":
+                                  return Icons.warning_amber_rounded;
+                                default:
+                                  return Icons.wallet_outlined;
                               }
                             }
+
                             Color getColor(String name) {
-                              switch(name) {
-                                case "red": return Colors.red;
-                                case "blue": return Colors.blue;
-                                case "orange": return Colors.orange;
-                                case "grey": return const Color(0xff9CA3AF);
-                                case "green": return Colors.green;
-                                default: return Colors.green;
+                              switch (name) {
+                                case "red":
+                                  return Colors.red;
+                                case "blue":
+                                  return Colors.blue;
+                                case "orange":
+                                  return Colors.orange;
+                                case "grey":
+                                  return const Color(0xff9CA3AF);
+                                case "green":
+                                  return Colors.green;
+                                default:
+                                  return Colors.green;
                               }
                             }
-                            Color iconColor = getColor(e["color"]?.toString() ?? "green");
-                            final isRevenue = e["title"].toString().contains("Revenue");
+
+                            Color iconColor = getColor(
+                              e["color"]?.toString() ?? "green",
+                            );
+                            final isRevenue = e["title"].toString().contains(
+                              "Revenue",
+                            );
+                            double amountValue =
+                                double.tryParse(e["amount"].toString()) ?? 0;
                             return SalesStatCard(
                               title: e["title"].toString(),
-                             amount: isRevenue
-    ? "₹ ${indianFormat.format(e["amount"])}"
-    : indianFormat.format(e["amount"]),
+                              amount: isRevenue
+                                  ? "₹ ${indianFormat.format(amountValue)}"
+                                  : indianFormat.format(amountValue),
                               growth: e["growth"].toString(),
                               icon: getIcon(e["icon"]?.toString() ?? ""),
                               iconColor: iconColor,
-                              // ignore: deprecated_member_use
                               iconBg: iconColor.withOpacity(0.1),
-                              growthColor: e["growth"].toString().contains("-") && e["growth"].toString() != "-" ? Colors.red : Colors.green,
+                              growthColor: e["growth"].toString().contains("-")
+                                  ? Colors.red
+                                  : Colors.green,
                             );
                           }).toList(),
                         );
-                      }
+                      },
                     ),
 
                     const SizedBox(height: 24),
@@ -499,10 +532,15 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
 
       String? branchId;
       if (branch != "All Branches") {
-        final b = branchList.firstWhere(
-          (element) => element['branch_name'] == branch, 
-          orElse: () => null
-        );
+        dynamic b;
+
+        try {
+          b = branchList.firstWhere(
+            (element) => element['branch_name'] == branch,
+          );
+        } catch (_) {
+          b = null;
+        }
         if (b != null) {
           branchId = b['id']?.toString() ?? b['branch_id']?.toString();
         }
@@ -517,6 +555,8 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
         branchId: branchId,
       );
 
+      debugPrint("API RESPONSE:");
+      debugPrint(data.toString());
       setState(() {
         salesData = data;
         salesStats = data["stats"] ?? [];
@@ -532,7 +572,11 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
     }
   }
 
-  Widget buildDateField({required String title, required String value, required VoidCallback onTap}) {
+  Widget buildDateField({
+    required String title,
+    required String value,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
@@ -577,7 +621,6 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
 
         Container(
           height: 56,
-
           padding: const EdgeInsets.symmetric(horizontal: 14),
 
           decoration: BoxDecoration(
@@ -613,23 +656,16 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
     return Container(
       height: 56,
       width: 135,
-
       decoration: BoxDecoration(
         color: bgColor,
-
         borderRadius: BorderRadius.circular(14),
-
         border: Border.all(color: const Color(0xffE5E7EB)),
       ),
-
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-
         children: [
           Icon(icon),
-
           const SizedBox(width: 8),
-
           Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
         ],
       ),
@@ -639,25 +675,19 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
   Widget buildSalesVolumeCard() {
     return Container(
       padding: const EdgeInsets.all(18),
-
       decoration: BoxDecoration(
         color: Colors.white,
-
         borderRadius: BorderRadius.circular(20),
-
         border: Border.all(color: const Color(0xffE5E7EB)),
       ),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-
         children: [
           Row(
             children: [
               const Expanded(
                 child: Text(
                   "Daily Sales Volume",
-
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
                 ),
               ),
@@ -688,99 +718,78 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
           const SizedBox(height: 18),
 
           const Wrap(
-  crossAxisAlignment: WrapCrossAlignment.center,
-  spacing: 14,
-  runSpacing: 6,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 14,
+            runSpacing: 6,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.square, color: Colors.blue, size: 12),
+                  SizedBox(width: 4),
+                  Text("Retail Sales(Units)", style: TextStyle(fontSize: 12)),
+                ],
+              ),
 
-  children: [
-    Row(
-      mainAxisSize: MainAxisSize.min,
-      children: const [
-        Icon(
-          Icons.square,
-          color: Colors.blue,
-          size: 12,
-        ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.square, color: Color(0xffE5E7EB), size: 12),
 
-        SizedBox(width: 4),
+                  SizedBox(width: 4),
 
-        Text(
-          "Retail Sales(Units)",
-          style: TextStyle(
-            fontSize: 12,
+                  Text(
+                    "Wholesale Sales(Units)",
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ),
-      ],
-    ),
-
-    Row(
-      mainAxisSize: MainAxisSize.min,
-      children: const [
-        Icon(
-          Icons.square,
-          color: Color(0xffE5E7EB),
-          size: 12,
-        ),
-
-        SizedBox(width: 4),
-
-        Text(
-          "Wholesale Sales(Units)",
-          style: TextStyle(
-            fontSize: 12,
-          ),
-        ),
-      ],
-    ),
-  ],
-),
           const SizedBox(height: 28),
-
           SizedBox(
             height: 220,
-
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-
               crossAxisAlignment: CrossAxisAlignment.end,
-
               children: [
-                buildBar(70, 110, "Mon"),
-                buildBar(90, 130, "Tue"),
-                buildBar(90, 150, "Wed"),
-                buildBar(75, 110, "Thu"),
-                buildBar(100, 160, "Fri"),
-                buildBar(55, 75, "Sat"),
+                SizedBox(
+                  height: 220,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: (salesData?["dailySales"] ?? []).map<Widget>((
+                      item,
+                    ) {
+                      return buildBar(
+                        (item["retailSales"] ?? 0).toDouble(),
+                        (item["wholesaleSales"] ?? 0).toDouble(),
+                        item["day"] ?? "",
+                      );
+                    }).toList(),
+                  ),
+                ),
               ],
             ),
           ),
-
           const SizedBox(height: 20),
-
           Container(
             height: 54,
-
             decoration: BoxDecoration(
               color: const Color(0xffF3F4F6),
-
               borderRadius: BorderRadius.circular(14),
             ),
-
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
-
               children: [
                 Text(
                   "View Details",
-
                   style: TextStyle(
                     color: Colors.blue,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-
                 SizedBox(width: 10),
-
                 Icon(Icons.arrow_forward_ios, size: 16, color: Colors.blue),
               ],
             ),
@@ -793,27 +802,19 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
   Widget buildTopBranchesCard() {
     return Container(
       padding: const EdgeInsets.all(18),
-
       decoration: BoxDecoration(
         color: Colors.white,
-
         borderRadius: BorderRadius.circular(20),
-
         border: Border.all(color: const Color(0xffE5E7EB)),
       ),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-
         children: [
           const Text(
             "Top Selling Branches",
-
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
           ),
-
           const SizedBox(height: 28),
-
           ...topBranches.map((e) {
             return buildBranchRow(
               e["branch"].toString(),
@@ -843,31 +844,23 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
             );
           }),
           const SizedBox(height: 24),
-
           Container(
             height: 54,
-
             decoration: BoxDecoration(
               color: const Color(0xffF3F4F6),
-
               borderRadius: BorderRadius.circular(14),
             ),
-
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
-
               children: [
                 Text(
                   "View All",
-
                   style: TextStyle(
                     color: Colors.blue,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-
                 SizedBox(width: 10),
-
                 Icon(Icons.arrow_forward_ios, size: 16, color: Colors.blue),
               ],
             ),
@@ -877,43 +870,33 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
     );
   }
 
-  Widget buildBar(double greyHeight, double blueHeight, String day) {
+  Widget buildBar(double retailSales, double wholesaleSales, String day) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
-
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
-
           children: [
             Container(
-              width: 16,
-              height: greyHeight,
-
-              decoration: BoxDecoration(
-                color: const Color(0xffE5E7EB),
-
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-
-            const SizedBox(width: 6),
-
-            Container(
-              width: 16,
-              height: blueHeight,
-
+              width: 14,
+              height: retailSales,
               decoration: BoxDecoration(
                 color: Colors.blue,
-
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Container(
+              width: 14,
+              height: wholesaleSales,
+              decoration: BoxDecoration(
+                color: const Color(0xffE5E7EB),
+                borderRadius: BorderRadius.circular(6),
               ),
             ),
           ],
         ),
-
         const SizedBox(height: 8),
-
         Text(day),
       ],
     );
@@ -922,7 +905,6 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
   Widget buildBranchRow(String title, String amount, double progress) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
-
       child: Column(
         children: [
           Row(
@@ -1017,117 +999,107 @@ class SalesStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-  padding: const EdgeInsets.all(14), // reduced padding
-  decoration: BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(12),
-    border: Border.all(color: const Color(0xffE5E7EB)),
-    boxShadow: [
-      BoxShadow(
-        // ignore: deprecated_member_use
-        color: Colors.black.withOpacity(0.02),
-        blurRadius: 10,
-        offset: const Offset(0, 4),
+      padding: const EdgeInsets.all(14), // reduced padding
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xffE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            // ignore: deprecated_member_use
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-    ],
-  ),
 
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    mainAxisSize: MainAxisSize.min,
-
-    children: [
-      /// HEADER
-      Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+
         children: [
-          Expanded(
+          /// HEADER
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    height: 1.2,
+                    color: Color(0xff4B5563),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 6),
+
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: iconColor, size: 16),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          /// AMOUNT
+          Flexible(
             child: Text(
-              title,
-              maxLines: 2,
+              amount,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 12,
-                height: 1.2,
-                color: Color(0xff4B5563),
-                fontWeight: FontWeight.w600,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Colors.black87,
               ),
             ),
           ),
 
-          const SizedBox(width: 6),
+          const SizedBox(height: 6),
 
-          Container(
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              icon,
-              color: iconColor,
-              size: 16,
-            ),
+          /// GROWTH
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 4,
+            runSpacing: 2,
+            children: [
+              if (growth != "-")
+                Icon(
+                  growth.contains("-")
+                      ? Icons.trending_down
+                      : Icons.trending_up,
+                  size: 14,
+                  color: growthColor,
+                ),
+
+              Text(
+                growth == "-" ? "- 0.0%" : growth,
+                style: TextStyle(
+                  color: growth == "-" ? const Color(0xff9CA3AF) : growthColor,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+
+              const Text(
+                "vs last period",
+                style: TextStyle(color: Color(0xff9CA3AF), fontSize: 11),
+              ),
+            ],
           ),
         ],
       ),
-
-      const SizedBox(height: 10),
-
-      /// AMOUNT
-      Flexible(
-        child: Text(
-          amount,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-            color: Colors.black87,
-          ),
-        ),
-      ),
-
-      const SizedBox(height: 6),
-
-      /// GROWTH
-      Wrap(
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 4,
-        runSpacing: 2,
-        children: [
-          if (growth != "-")
-            Icon(
-              growth.contains("-")
-                  ? Icons.trending_down
-                  : Icons.trending_up,
-              size: 14,
-              color: growthColor,
-            ),
-
-          Text(
-            growth == "-"
-                ? "- 0.0%"
-                : growth,
-            style: TextStyle(
-              color: growth == "-"
-                  ? const Color(0xff9CA3AF)
-                  : growthColor,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-
-          const Text(
-            "vs last period",
-            style: TextStyle(
-              color: Color(0xff9CA3AF),
-              fontSize: 11,
-            ),
-          ),
-        ],
-      ),
-    ],
-  ),
-); }
+    );
+  }
 }
