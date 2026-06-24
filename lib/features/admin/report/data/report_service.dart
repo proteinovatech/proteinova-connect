@@ -198,6 +198,7 @@ class ReportService {
     String? endDate,
     String? branchId,
   }) async {
+   
     final response = await dio.get(
       '/api/reports/branch-sales',
       queryParameters: {
@@ -206,9 +207,11 @@ class ReportService {
         'branchId': branchId,
       },
     );
+  
 
     final list = (response.data['branches'] as List<dynamic>?) ?? [];
-
+    final trend = (response.data["trend"] as List<dynamic>?) ?? [];
+    
     double totalSales = 0;
     int totalOrders = 0;
     for (var item in list) {
@@ -258,7 +261,9 @@ class ReportService {
           )
           .toList(),
       "hourlySales": [],
+       "dailySales": trend,
       "raw": list,
+      
     };
   }
 

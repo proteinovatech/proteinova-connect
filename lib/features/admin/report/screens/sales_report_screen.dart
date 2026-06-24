@@ -57,6 +57,10 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print("salesData = $salesData");
+print("dailySales = ${salesData?["dailySales"]}");
+print("hourlySales = ${salesData?["hourlySales"]}");
+print("raw = ${salesData?["raw"]}");
     return Scaffold(
       backgroundColor: const Color(0xffF8F8F8),
 
@@ -563,6 +567,10 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
         topBranches = data["topBranches"] ?? [];
         transactions = data["transactions"] ?? [];
         isLoading = false;
+        debugPrint("Keys: ${data.keys.toList()}");
+debugPrint("hourlySales: ${data["hourlySales"]}");
+debugPrint("raw: ${data["raw"]}");
+debugPrint("dailySales: ${data["dailySales"]}");
       });
     } catch (e) {
       debugPrint(e.toString());
@@ -692,26 +700,26 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
                 ),
               ),
 
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
+              // Container(
+              //   padding: const EdgeInsets.symmetric(
+              //     horizontal: 12,
+              //     vertical: 8,
+              //   ),
 
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
+              //   decoration: BoxDecoration(
+              //     borderRadius: BorderRadius.circular(10),
 
-                  border: Border.all(color: const Color(0xffE5E7EB)),
-                ),
+              //     border: Border.all(color: const Color(0xffE5E7EB)),
+              //   ),
 
-                child: const Row(
-                  children: [
-                    Text("7 Days"),
-                    SizedBox(width: 6),
-                    Icon(Icons.keyboard_arrow_down, size: 18),
-                  ],
-                ),
-              ),
+              //   child: const Row(
+              //     children: [
+              //       Text("7 Days"),
+              //       SizedBox(width: 6),
+              //       Icon(Icons.keyboard_arrow_down, size: 18),
+              //     ],
+              //   ),
+              // ),
             ],
           ),
 
@@ -760,13 +768,16 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: (salesData?["dailySales"] ?? []).map<Widget>((
                       item,
-                    ) {
+                    ) {print("Bar Item: $item");
+                    
                       return buildBar(
                         (item["retailSales"] ?? 0).toDouble(),
                         (item["wholesaleSales"] ?? 0).toDouble(),
                         item["day"] ?? "",
                       );
+                      
                     }).toList(),
+                    
                   ),
                 ),
               ],
@@ -998,6 +1009,7 @@ class SalesStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     return Container(
       padding: const EdgeInsets.all(14), // reduced padding
       decoration: BoxDecoration(

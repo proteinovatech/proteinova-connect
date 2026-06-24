@@ -110,6 +110,7 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
   }
 
   Future<void> _bulkUpdatePrices() async {
+     print("Update Rates button clicked");
     setState(() {
       isUpdating = true;
     });
@@ -299,7 +300,8 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
                                         GestureDetector(
                                           onTap: isLoading || isUpdating
                                               ? null
-                                              : _bulkUpdatePrices,
+                                              :(){ print("GestureDetector tapped");
+                                               _bulkUpdatePrices();},
                                           child: Container(
                                             width: isSmall
                                                 ? getWidth(context, 120)

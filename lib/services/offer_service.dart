@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 class OfferService {
   static Future<Map<String, dynamic>?> fetchOffers() async {
     try {
-      final baseUrl = dotenv.env['BASE_URL'];
+      final baseUrl = dotenv.env['VITE_BACKEND_URL'];
       final response = await http.get(
         Uri.parse("$baseUrl/api/offers"),
         headers: {"Accept": "application/json"},
@@ -25,7 +25,7 @@ class OfferService {
 
   static Future<bool> createOffer(Map<String, dynamic> offerData) async {
     try {
-      final baseUrl = dotenv.env['BASE_URL'];
+      final baseUrl = dotenv.env['VITE_BACKEND_URL'];
       final response = await http.post(
         Uri.parse("$baseUrl/api/offers"),
         headers: {"Content-Type": "application/json"},
@@ -41,7 +41,7 @@ class OfferService {
 
   static Future<List<dynamic>> getCurrentPrices() async {
     try {
-      final baseUrl = dotenv.env['BASE_URL'];
+      final baseUrl = dotenv.env['VITE_BACKEND_URL'];
       final response = await http.get(
         Uri.parse("$baseUrl/api/admin/get_current_prices"),
         headers: {"Accept": "application/json"},
@@ -60,7 +60,7 @@ class OfferService {
 
   static Future<bool> bulkUpdatePrices(List<Map<String, dynamic>> prices) async {
     try {
-      final baseUrl = dotenv.env['BASE_URL'];
+      final baseUrl = dotenv.env['VITE_BACKEND_URL'];
       final response = await http.post(
         Uri.parse("$baseUrl/api/admin/bulk_update_prices"),
         headers: {"Content-Type": "application/json"},
