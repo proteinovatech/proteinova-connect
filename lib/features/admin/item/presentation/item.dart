@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class TrayData {
   String? type;
@@ -16,9 +19,9 @@ class EggData {
   String? category;
   TextEditingController qty = TextEditingController();
 }
+
 class Items extends StatefulWidget {
   const Items({super.key});
-  
 
   @override
   State<Items> createState() => _ItemsState();
@@ -28,7 +31,81 @@ class _ItemsState extends State<Items> {
   final List<String> locations = ["Warehouse", "Branch"];
   final List<String> trayTypes = ["Plastic Tray", "Paper Tray"];
   final List<String> coverTypes = ["plastic", "paper"];
-  final List<String> eggCategories = ["quil Egg", "white large", "brown Egg","white correct size","white export","white medium"];
+  final List<String> eggCategories = [
+    "quil Egg",
+    "white large",
+    "brown Egg",
+    "white correct size",
+    "white export",
+    "white medium",
+  ];
+
+  Future<void> saveItems() async {
+    try {
+      final url = Uri.parse(
+        'https://proteinova-system-4z2a.onrender.com/api/items-inventory/add',
+      );
+
+      final body = {
+        "tray": {
+          "location": trayLocation,
+          "type": trayType,
+          "quantity": trayQtyController.text,
+          "color": trayColorController.text,
+        },
+        "cover": {
+          "location": coverLocation,
+          "type": coverType,
+          "quantity": coverQtyController.text,
+          "color": coverColorController.text,
+        },
+        "egg": {
+          "location": eggLocation,
+          "category": eggCategory,
+          "quantity": eggQtyController.text,
+        },
+      };
+
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      print("Status Code: ${response.statusCode}");
+      print("Response: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (!mounted) return;
+
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text("Success"),
+            content: const Text("Items saved successfully"),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          ),
+        );
+      } else {
+        throw Exception(response.body);
+      }
+    } catch (e) {
+      print(e);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+  }
 
   String? trayLocation = "Warehouse";
   String? trayType;
@@ -39,9 +116,8 @@ class _ItemsState extends State<Items> {
   String? eggLocation = "Warehouse";
   String? eggCategory;
   bool showTrayNewType = false;
-   bool showCoverNewType = false;
-   bool showEggNewTypeCategory = false;
-   
+  bool showCoverNewType = false;
+  bool showEggNewTypeCategory = false;
 
   final trayColorController = TextEditingController();
   final trayQtyController = TextEditingController();
@@ -50,9 +126,9 @@ class _ItemsState extends State<Items> {
   final coverQtyController = TextEditingController();
 
   final eggQtyController = TextEditingController();
-int trayCount = 1;
-int coverCount = 1;
-int eggCount = 1;
+  int trayCount = 1;
+  int coverCount = 1;
+  int eggCount = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -112,31 +188,9 @@ int eggCount = 1;
                 const SizedBox(width: 16),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        title: const Text("Success"),
-        content: const Text(
-          "Items saved successfully.",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text("OK"),
-          ),
-        ],
-      );
-    },
-  );
-},
-
+                    onPressed: () async {
+                      await saveItems();
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xffFACC15),
                       foregroundColor: Colors.black,
@@ -150,14 +204,12 @@ int eggCount = 1;
 
                     child: const Text(
                       "Save Items",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -178,104 +230,98 @@ int eggCount = 1;
             newButtonText: "+ New Type",
           ),
           if (showTrayNewType) ...[
-  const SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-  Row(
-    children: [
-      Expanded(
-        child: TextField(
-          decoration: _inputDecoration(
-            hint: "Enter new tray type...",
-          ),
-        ),
-      ),
-      const SizedBox(width: 10),
-      Expanded(
-        child: TextField(
-          decoration: _inputDecoration(
-            hint: "Tray color",
-          ),
-        ),
-      ),
-    ],
-  ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: _inputDecoration(
+                      hint: "Enter new tray type...",
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    decoration: _inputDecoration(hint: "Tray color"),
+                  ),
+                ),
+              ],
+            ),
 
-  const SizedBox(height: 10),
+            const SizedBox(height: 10),
 
-  Row(
-    children: [
-      Expanded(
-        child: TextField(
-          decoration: _inputDecoration(
-            hint: "Quantity / Capacity",
-          ),
-        ),
-      ),
-      const SizedBox(width: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: _inputDecoration(hint: "Quantity / Capacity"),
+                  ),
+                ),
+                const SizedBox(width: 10),
 
-      ElevatedButton(
-        onPressed: () {
-          // save type
-        },
-        child: const Text("Save Type"),
-      ),
-    ],
-  ),
+                ElevatedButton(
+                  onPressed: () {
+                    // save type
+                  },
+                  child: const Text("Save Type"),
+                ),
+              ],
+            ),
 
-  const SizedBox(height: 20),
-],
+            const SizedBox(height: 20),
+          ],
 
           const SizedBox(height: 24),
 
-       Column(
-  children: List.generate(
-    trayCount,
-    (index) => Column(
-      children: [
-        _dropdownField(
-          title: "Tray Type",
-          hint: "Select Type",
-          value: trayType,
-          items: trayTypes,
-          onChanged: (v) => setState(() => trayType = v),
-        ),
+          Column(
+            children: List.generate(
+              trayCount,
+              (index) => Column(
+                children: [
+                  _dropdownField(
+                    title: "Tray Type",
+                    hint: "Select Type",
+                    value: trayType,
+                    items: trayTypes,
+                    onChanged: (v) => setState(() => trayType = v),
+                  ),
 
-        const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-        _textField(
-          title: "Color",
-          controller: TextEditingController(),
-          hint: "Enter details...",
-        ),
+                  _textField(
+                    title: "Color",
+                    controller: TextEditingController(),
+                    hint: "Enter details...",
+                  ),
 
-        const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-        _textField(
-          title: "Quantity",
-          controller: TextEditingController(),
-          hint: "Enter quantity...",
-        ),
+                  _textField(
+                    title: "Quantity",
+                    controller: TextEditingController(),
+                    hint: "Enter quantity...",
+                  ),
 
-        const SizedBox(height: 20),
-        if (index > 0)
-  Align(
-    alignment: Alignment.centerRight,
-    child: IconButton(
-      icon: const Icon(
-        Icons.delete,
-        color: Colors.red,
-      ),
-      onPressed: () {
-        setState(() {
-          trayCount--;
-        });
-      },
-    ),
-  ),
-      ],
-    ),
-  ),
-) ],
+                  const SizedBox(height: 20),
+                  if (index > 0)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          setState(() {
+                            trayCount--;
+                          });
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -287,130 +333,125 @@ int eggCount = 1;
       addMoreText: "+ Add More",
       child: Column(
         children: [
-         Row(
-  children: [
-   
-    const SizedBox(width: 12),
+          Row(
+            children: [
+              const SizedBox(width: 12),
 
-    ElevatedButton(
-      onPressed: () {
-        setState(() {
-          showCoverNewType = !showCoverNewType;
-        });
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xffE5E7EB),
-        foregroundColor: const Color(0xff374151),
-        elevation: 0,
-      ),
-      child: Text(
-        showCoverNewType ? "Close" : "+ New Type",
-      ),
-    ),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    showCoverNewType = !showCoverNewType;
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xffE5E7EB),
+                  foregroundColor: const Color(0xff374151),
+                  elevation: 0,
+                ),
+                child: Text(showCoverNewType ? "Close" : "+ New Type"),
+              ),
 
-    const SizedBox(width: 12),
+              const SizedBox(width: 12),
 
-   InkWell(
-  onTap: () {
-    setState(() {
-      coverCount++;
-    });
-  },
-  child: const Text(
-    "+ Add More",
-    style: TextStyle(
-      color: Colors.blue,
-      fontWeight: FontWeight.w600,
-    ),
-  ),
-),
-  ],
-),
-if (showCoverNewType) ...[
-  const SizedBox(height: 20),
-
-  Row(
-    children: [
-      Expanded(
-        child: TextField(
-          decoration: _inputDecoration(
-            hint: "Enter new cover type...",
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    coverCount++;
+                  });
+                },
+                child: const Text(
+                  "+ Add More",
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-      ),
+          if (showCoverNewType) ...[
+            const SizedBox(height: 20),
 
-      const SizedBox(width: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: _inputDecoration(
+                      hint: "Enter new cover type...",
+                    ),
+                  ),
+                ),
 
-      SizedBox(
-        height: 50,
-        child: ElevatedButton(
-          onPressed: () {
-            // Save cover type
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xff5BC8A8),
-          ),
-          child: const Text(
-            "Save Type",
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      ),
-    ],
-  ),
+                const SizedBox(width: 12),
 
-  const SizedBox(height: 20),
-],
+                SizedBox(
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Save cover type
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xff5BC8A8),
+                    ),
+                    child: const Text(
+                      "Save Type",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+          ],
           const SizedBox(height: 24),
-Column(
-  children: List.generate(
-    coverCount,
-    (index) => Column(
-      children: [
-        _dropdownField(
-          title: "Cover Type",
-          hint: "Select Type",
-          value: coverType,
-          items: coverTypes,
-          onChanged: (v) => setState(() => coverType = v),
-        ),
+          Column(
+            children: List.generate(
+              coverCount,
+              (index) => Column(
+                children: [
+                  _dropdownField(
+                    title: "Cover Type",
+                    hint: "Select Type",
+                    value: coverType,
+                    items: coverTypes,
+                    onChanged: (v) => setState(() => coverType = v),
+                  ),
 
-        const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-        _textField(
-          title: "Color",
-          controller: TextEditingController(),
-          hint: "Enter details...",
-        ),
+                  _textField(
+                    title: "Color",
+                    controller: TextEditingController(),
+                    hint: "Enter details...",
+                  ),
 
-        const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-        _textField(
-          title: "Quantity",
-          controller: TextEditingController(),
-          hint: "Enter quantity...",
-        ),
+                  _textField(
+                    title: "Quantity",
+                    controller: TextEditingController(),
+                    hint: "Enter quantity...",
+                  ),
 
-        const SizedBox(height: 20),
-        if (index > 0)
-  Align(
-    alignment: Alignment.centerRight,
-    child: IconButton(
-      icon: const Icon(
-        Icons.delete,
-        color: Colors.red,
-      ),
-      onPressed: () {
-        setState(() {
-          coverCount--;
-        });
-      },
-    ),
-  ),
-      ],
-    ),
-  ),
-) ],
+                  const SizedBox(height: 20),
+                  if (index > 0)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          setState(() {
+                            coverCount--;
+                          });
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -422,123 +463,118 @@ Column(
       addMoreText: "+ Add More",
       child: Column(
         children: [
-         Row(
-  children: [
-  
-    const SizedBox(width: 12),
+          Row(
+            children: [
+              const SizedBox(width: 12),
 
-    ElevatedButton(
-      onPressed: () {
-        setState(() {
-          showEggNewTypeCategory = !showEggNewTypeCategory;
-        });
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xffE5E7EB),
-        foregroundColor: const Color(0xff374151),
-        elevation: 0,
-      ),
-      child: Text(
-        showEggNewTypeCategory ? "Close" : "+ New Category",
-      ),
-    ),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    showEggNewTypeCategory = !showEggNewTypeCategory;
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xffE5E7EB),
+                  foregroundColor: const Color(0xff374151),
+                  elevation: 0,
+                ),
+                child: Text(
+                  showEggNewTypeCategory ? "Close" : "+ New Category",
+                ),
+              ),
 
-    const SizedBox(width: 12),
+              const SizedBox(width: 12),
 
-   InkWell(
-  onTap: () {
-    setState(() {
-      eggCount++;
-    });
-  },
-  child: const Text(
-    "+ Add More",
-    style: TextStyle(
-      color: Colors.blue,
-      fontWeight: FontWeight.w600,
-    ),
-  ),
-),]),
-if (showEggNewTypeCategory) ...[
-  const SizedBox(height: 20),
-
-  Row(
-    children: [
-      Expanded(
-        child: TextField(
-          decoration: _inputDecoration(
-            hint: "Enter new egg category...",
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    eggCount++;
+                  });
+                },
+                child: const Text(
+                  "+ Add More",
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-      ),
+          if (showEggNewTypeCategory) ...[
+            const SizedBox(height: 20),
 
-      const SizedBox(width: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: _inputDecoration(
+                      hint: "Enter new egg category...",
+                    ),
+                  ),
+                ),
 
-      SizedBox(
-        height: 50,
-        child: ElevatedButton(
-          onPressed: () {
-           
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xff5BC8A8),
-          ),
-          child: const Text(
-            "Save Type",
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      ),
-    ],
-  ),
+                const SizedBox(width: 12),
 
-  const SizedBox(height: 20),
-],
+                SizedBox(
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xff5BC8A8),
+                    ),
+                    child: const Text(
+                      "Save Type",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+          ],
           const SizedBox(height: 24),
 
-        Column(
-  children: List.generate(
-    eggCount,
-    (index) => Column(
-      children: [
-        _dropdownField(
-          title: "Category",
-          hint: "Select Egg Category",
-          value: eggCategory,
-          items: eggCategories,
-          onChanged: (v) => setState(() => eggCategory = v),
-        ),
+          Column(
+            children: List.generate(
+              eggCount,
+              (index) => Column(
+                children: [
+                  _dropdownField(
+                    title: "Category",
+                    hint: "Select Egg Category",
+                    value: eggCategory,
+                    items: eggCategories,
+                    onChanged: (v) => setState(() => eggCategory = v),
+                  ),
 
-        const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-        _textField(
-          title: "Quantity",
-          controller: TextEditingController(),
-          hint: "Enter quantity...",
-        ),
+                  _textField(
+                    title: "Quantity",
+                    controller: TextEditingController(),
+                    hint: "Enter quantity...",
+                  ),
 
-        const SizedBox(height: 20),
-        if (index > 0)
-  Align(
-    alignment: Alignment.centerRight,
-    child: IconButton(
-      icon: const Icon(
-        Icons.delete,
-        color: Colors.red,
-      ),
-      onPressed: () {
-        setState(() {
-          eggCount--;
-        });
-      },
-    ),
-  ),
-      ],
-    ),
-    
-  ),
-),
- ],
+                  const SizedBox(height: 20),
+                  if (index > 0)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          setState(() {
+                            eggCount--;
+                          });
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -569,43 +605,40 @@ if (showEggNewTypeCategory) ...[
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-         Row(
-  children: [
-    Text(
-      title,
-      style: const TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-        color: Color(0xff374151),
-      ),
-    ),
+          Row(
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xff374151),
+                ),
+              ),
 
-    const Spacer(),
+              const Spacer(),
 
-    SizedBox(
-      width: 150,
-      child: DropdownButtonFormField<String>(
-        value: "Warehouse",
-        decoration: _inputDecoration(),
-        items: const [
-          DropdownMenuItem(
-            value: "Warehouse",
-            child: Text("Warehouse"),
+              SizedBox(
+                width: 150,
+                child: DropdownButtonFormField<String>(
+                  value: "Warehouse",
+                  decoration: _inputDecoration(),
+                  items: const [
+                    DropdownMenuItem(
+                      value: "Warehouse",
+                      child: Text("Warehouse"),
+                    ),
+                    DropdownMenuItem(value: "Branch", child: Text("Branch")),
+                  ],
+                  onChanged: (value) {},
+                ),
+              ),
+            ],
           ),
-          DropdownMenuItem(
-            value: "Branch",
-            child: Text("Branch"),
-          ),
-        ],
-        onChanged: (value) {},
-      ),
-    ),
-  ],
-),
 
-const SizedBox(height: 20),
+          const SizedBox(height: 20),
 
-child,
+          child,
         ],
       ),
     );
@@ -619,42 +652,36 @@ child,
   }) {
     return Row(
       children: [
-       
         const SizedBox(width: 12),
 
         ElevatedButton(
-  onPressed: () {
-    if (newButtonText == "+ New Type") {
-      setState(() {
-        showTrayNewType = !showTrayNewType;
-      });
-    }
-  },
-  style: ElevatedButton.styleFrom(
-    backgroundColor: const Color(0xffE5E7EB),
-    foregroundColor: const Color(0xff374151),
-    elevation: 0,
-  ),
-  child: Text(
-    showTrayNewType ? "Close" : "+ New Type",
-  ),
-),
+          onPressed: () {
+            if (newButtonText == "+ New Type") {
+              setState(() {
+                showTrayNewType = !showTrayNewType;
+              });
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xffE5E7EB),
+            foregroundColor: const Color(0xff374151),
+            elevation: 0,
+          ),
+          child: Text(showTrayNewType ? "Close" : "+ New Type"),
+        ),
         const SizedBox(width: 12),
 
         InkWell(
-         onTap: () {
-  setState(() {
-    trayCount++;
-  });
-},
+          onTap: () {
+            setState(() {
+              trayCount++;
+            });
+          },
           child: const Text(
             "+ Add More",
-            style: TextStyle(
-              color: Colors.blue,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600),
           ),
-        )
+        ),
       ],
     );
   }
@@ -678,12 +705,7 @@ child,
           decoration: _inputDecoration(),
           hint: Text(hint),
           items: items
-              .map(
-                (e) => DropdownMenuItem(
-                  value: e,
-                  child: Text(e),
-                ),
-              )
+              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
               .toList(),
           onChanged: onChanged,
         ),
@@ -717,20 +739,13 @@ child,
       filled: true,
       fillColor: Colors.white,
 
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 16,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
 
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
 
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(
-          color: Colors.grey.shade300,
-        ),
+        borderSide: BorderSide(color: Colors.grey.shade300),
       ),
     );
   }
