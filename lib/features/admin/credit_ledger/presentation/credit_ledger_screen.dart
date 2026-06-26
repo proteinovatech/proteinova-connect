@@ -407,9 +407,7 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
                       ),
                     ),
                   ),
-
                   const Divider(height: 1),
-
                   Expanded(
                     child: Center(
                       child: Column(

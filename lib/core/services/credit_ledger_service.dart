@@ -1,8 +1,9 @@
-import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class CreditLedgerService {
-  static const String baseUrl = 'https://proteinova-system-4z2a.onrender.com';
+  final String baseUrl = dotenv.env['BASE_URL']!;
 
   Future<Map<String, dynamic>> getCreditLedger() async {
     final response = await http.get(
@@ -11,12 +12,12 @@ class CreditLedgerService {
     );
 
     print("Status Code: ${response.statusCode}");
-    print("Response: ${response.body}");
+    print("Response Body: ${response.body}");
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception('Failed to load credit ledger: ${response.statusCode}');
+      throw Exception("Failed to fetch data: ${response.statusCode}");
     }
   }
 }

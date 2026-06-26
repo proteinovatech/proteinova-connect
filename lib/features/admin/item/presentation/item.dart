@@ -168,14 +168,12 @@ class _ItemsState extends State<Items> {
                     onPressed: () {
                       Navigator.pop(context);
                     },
-
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size.fromHeight(52),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-
                     child: const Text(
                       "Cancel",
                       style: TextStyle(

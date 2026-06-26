@@ -31,11 +31,11 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
 
   Map<String, dynamic>? salesData;
 
-  List<dynamic> salesStats = [];
+  List<dynamic> salesStats = ["stats"];
 
-  List<dynamic> topBranches = [];
+  List<dynamic> topBranches = ["topBranches"];
 
-  List<dynamic> transactions = [];
+  List<dynamic> transactions = ["transactions"];
   List<String> reportItems = [
     "Financial Summary",
     "Purchase Report",
@@ -58,21 +58,18 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
   @override
   Widget build(BuildContext context) {
     print("salesData = $salesData");
-print("dailySales = ${salesData?["dailySales"]}");
-print("hourlySales = ${salesData?["hourlySales"]}");
-print("raw = ${salesData?["raw"]}");
+    print("dailySales = ${salesData?["dailySales"]}");
+    print("hourlySales = ${salesData?["hourlySales"]}");
+    print("raw = ${salesData?["raw"]}");
     return Scaffold(
       backgroundColor: const Color(0xffF8F8F8),
-
       body: SafeArea(
         child: isLoading
             ? const AdminReportDashboardShimmer()
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
-
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-
                   children: [
                     /// HEADER
                     Row(
@@ -552,25 +549,71 @@ print("raw = ${salesData?["raw"]}");
 
       String? start = fromDate != "dd-mm-yyyy" ? fromDate : null;
       String? end = toDate != "dd-mm-yyyy" ? toDate : null;
-
       final data = await reportService.getBranchSalesReport(
         startDate: start,
         endDate: end,
         branchId: branchId,
       );
-
       debugPrint("API RESPONSE:");
       debugPrint(data.toString());
       setState(() {
         salesData = data;
-        salesStats = data["stats"] ?? [];
-        topBranches = data["topBranches"] ?? [];
+        salesStats = [
+          {
+            "title": "Total Revenue",
+            "amount":
+                data["branches"]?.fold<double>(
+                  0,
+                  (sum, item) =>
+                      sum +
+                      (double.tryParse(item["total_sales"].toString()) ?? 0),
+                ) ??
+                0,
+            "growth": "-",
+            "icon": "money",
+            "color": "green",
+          },
+          {
+            "title": "Total Orders",
+            "amount":
+                data["branches"]?.fold<int>(
+                  0,
+                  (sum, item) =>
+                      sum +
+                      (int.tryParse(item["total_orders"].toString()) ?? 0),
+                ) ??
+                0,
+            "growth": "-",
+            "icon": "bag",
+            "color": "blue",
+          },
+          {
+            "title": "Total Eggs Sold",
+            "amount":
+                data["branches"]?.fold<int>(
+                  0,
+                  (sum, item) => sum + (item["total_eggs_sold"] ?? 0),
+                ) ??
+                0,
+            "growth": "-",
+            "icon": "store",
+            "color": "orange",
+          },
+        ];
+        topBranches = (data["branches"] ?? []).map((branch) {
+          final sales = double.tryParse(branch["total_sales"].toString()) ?? 0;
+          return {
+            "branch": branch["branch_name"],
+            "amount": "₹ ${sales.toStringAsFixed(0)}",
+            "progress": sales / 50000,
+          };
+        }).toList();
         transactions = data["transactions"] ?? [];
         isLoading = false;
         debugPrint("Keys: ${data.keys.toList()}");
-debugPrint("hourlySales: ${data["hourlySales"]}");
-debugPrint("raw: ${data["raw"]}");
-debugPrint("dailySales: ${data["dailySales"]}");
+        debugPrint("hourlySales: ${data["hourlySales"]}");
+        debugPrint("raw: ${data["raw"]}");
+        debugPrint("dailySales: ${data["dailySales"]}");
       });
     } catch (e) {
       debugPrint(e.toString());
@@ -766,18 +809,16 @@ debugPrint("dailySales: ${data["dailySales"]}");
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     crossAxisAlignment: CrossAxisAlignment.end,
-                    children: (salesData?["dailySales"] ?? []).map<Widget>((
-                      item,
-                    ) {print("Bar Item: $item");
-                    
+                    children: (salesData?["trend"] ?? []).map<Widget>((item) {
                       return buildBar(
-                        (item["retailSales"] ?? 0).toDouble(),
-                        (item["wholesaleSales"] ?? 0).toDouble(),
-                        item["day"] ?? "",
+                        double.tryParse(item["retail_units"].toString()) ?? 0,
+
+                        double.tryParse(item["wholesale_units"].toString()) ??
+                            0,
+
+                        item["day_name"] ?? "",
                       );
-                      
                     }).toList(),
-                    
                   ),
                 ),
               ],
@@ -882,6 +923,20 @@ debugPrint("dailySales: ${data["dailySales"]}");
   }
 
   Widget buildBar(double retailSales, double wholesaleSales, String day) {
+    double maxHeight = 160;
+
+    double maxValue = (salesData?["trend"] ?? [])
+        .map<double>((e) => double.tryParse(e["retail_units"].toString()) ?? 0)
+        .fold(0, (a, b) => a > b ? a : b);
+
+    double retailHeight = maxValue == 0
+        ? 0
+        : (retailSales / maxValue) * maxHeight;
+
+    double wholesaleHeight = maxValue == 0
+        ? 0
+        : (wholesaleSales / maxValue) * maxHeight;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -890,7 +945,7 @@ debugPrint("dailySales: ${data["dailySales"]}");
           children: [
             Container(
               width: 14,
-              height: retailSales,
+              height: retailHeight,
               decoration: BoxDecoration(
                 color: Colors.blue,
                 borderRadius: BorderRadius.circular(6),
@@ -899,7 +954,7 @@ debugPrint("dailySales: ${data["dailySales"]}");
             const SizedBox(width: 4),
             Container(
               width: 14,
-              height: wholesaleSales,
+              height: wholesaleHeight,
               decoration: BoxDecoration(
                 color: const Color(0xffE5E7EB),
                 borderRadius: BorderRadius.circular(6),
@@ -907,7 +962,9 @@ debugPrint("dailySales: ${data["dailySales"]}");
             ),
           ],
         ),
+
         const SizedBox(height: 8),
+
         Text(day),
       ],
     );
@@ -1009,7 +1066,6 @@ class SalesStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     return Container(
       padding: const EdgeInsets.all(14), // reduced padding
       decoration: BoxDecoration(
