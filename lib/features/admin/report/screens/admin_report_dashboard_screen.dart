@@ -307,8 +307,11 @@ class _AdminReportDashboardScreenState
         endDate: end,
         branchId: branchId,
       );
-      debugPrint("API RESPONSE: $data");
-      debugPrint(data.toString());
+      
+
+print("FULL DATA = $data");
+print("SUMMARY = ${data["summary"]}");
+print("TOP BRANCHES = ${data["topBranches"]}");
       setState(() {
         summaryData = data["summary"];
         topBranches = data["topBranches"] ?? [];
@@ -357,12 +360,10 @@ class _AdminReportDashboardScreenState
         }).toList();
         isLoading = false;
       });
-    } catch (e) {
-      debugPrint(e.toString());
-      setState(() {
-        isLoading = false;
-      });
-    }
+    } catch (e, stackTrace) {
+  debugPrint("ERROR = $e");
+  debugPrint("STACK = $stackTrace");
+}
   }
 
   Future<void> exportPdf() async {
@@ -444,6 +445,12 @@ class _AdminReportDashboardScreenState
 
   @override
   Widget build(BuildContext context) {
+    print("SUMMARY DATA = $summaryData");
+print("TOTAL REVENUE = ${summaryData?['totalRevenue']}");
+print("TOTAL EXPENSES = ${summaryData?['totalExpenses']}");
+print("NET PROFIT = ${summaryData?['netProfit']}");
+print("TOTAL ORDERS = ${summaryData?['totalOrders']}");
+print("CHART DATA = ${summaryData?['chartData']}");
      if (isLoading) {
     return const AdminReportDashboardShimmer();
   }
@@ -858,6 +865,7 @@ class _AdminReportDashboardScreenState
                     const SizedBox(height: 24),
 
                     /// STATS
+                    
                     GridView.count(
                       crossAxisCount: 2,
                       shrinkWrap: true,
@@ -866,6 +874,7 @@ class _AdminReportDashboardScreenState
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
                       childAspectRatio: 0.95,
+                      
 
                       children: [
                         ReportStatCard(

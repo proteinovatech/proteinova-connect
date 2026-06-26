@@ -67,7 +67,8 @@ class ReportService {
     final branchSales =
         (salesResponse.data['branches'] as List<dynamic>?) ?? [];
     final expensesList = expenseResponse.data as List<dynamic>? ?? [];
-    final purchasesList = purchaseResponse.data as List<dynamic>? ?? [];
+    final purchasesList =
+    (purchaseResponse.data['data'] as List<dynamic>?) ?? [];
 
     Map<String, double> branchExpenses = {};
     for (var exp in expensesList) {
@@ -293,8 +294,9 @@ class ReportService {
 
       totalExpense += amount;
 
-      String category = item['category']?.toString() ?? '';
-
+      String category = item['category']?.toString() ?? 'Other';
+      categoryMap[category] =
+    (categoryMap[category] ?? 0) + amount;
       if (category == 'TRANSPORT') {
         logisticsExpense += amount;
       }
@@ -330,7 +332,8 @@ class ReportService {
     final trendData = dailyMap.entries
         .map((e) => {'day': e.key, 'amount': e.value})
         .toList();
-
+print("CATEGORY MAP = $categoryMap");
+print("CATEGORIES = $categories");
     return {
       "stats": [
         {
@@ -389,7 +392,10 @@ class ReportService {
       queryParameters: {'startDate': startDate, 'endDate': endDate},
     );
 
-    final list = response.data as List<dynamic>? ?? [];
+    final list =
+    (response.data['data'] as List<dynamic>?) ?? [];
+    print("RAW PURCHASE RESPONSE = ${response.data}");
+print("PURCHASE LIST = $list");
 
     double totalSpend = 0;
     int totalTrays = 0;

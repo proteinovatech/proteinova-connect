@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:proteinova_connect/core/network/api_constants.dart';
 
 class TrayData {
   String? type;
@@ -42,9 +43,7 @@ class _ItemsState extends State<Items> {
 
   Future<void> saveItems() async {
     try {
-      final url = Uri.parse(
-        'https://proteinova-system-4z2a.onrender.com/api/items-inventory/add',
-      );
+     final url = Uri.parse(ApiConstants.itemsInventoryAdd);
 
       final body = {
         "tray": {

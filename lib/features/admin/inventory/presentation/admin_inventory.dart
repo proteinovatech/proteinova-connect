@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_inventory_overview_skeleton_loader.dart';
 import 'package:proteinova_connect/features/admin/widget/inventory_card.dart';
@@ -29,12 +30,18 @@ class _AdminInventoryState extends State<AdminInventory> {
   // bool isFetching = true;
   bool _isLoading = true;
   String searchTerm = "";
+  String selectedLocation = "all";
   List<Supplier> suppliers = [];
   String selectedSupplier = "All";
   int currentPage = 1;
   final int recordsPerPage = 10;
   List<PurchaseModel> purchaseData = [];
   Map<String, dynamic> rawInventoryData = {};
+  Map<String, int> branchIds = {
+  "krpuram": 1,
+  "sarjapura": 2,
+  "gunjur": 3,
+};
   Map<String, dynamic> inventoryStats = {
     "opening_stock": 0,
     "closing_stock": 0,
@@ -47,10 +54,15 @@ class _AdminInventoryState extends State<AdminInventory> {
   };
   String role = ""; // or "WAREHOUSE"
   String? selectedCategoryName;
+
+ 
   @override
   void initState() {
     super.initState();
     _loadData();
+     selectedLocation = "all";
+
+  loadAllBranches();
   }
 
   Future<void> _loadData() async {
@@ -60,7 +72,7 @@ class _AdminInventoryState extends State<AdminInventory> {
     try {
       // Parallel fetch as in React: Promise.all
       final results = await Future.wait([
-        _repository.fetchRawInventoryData(),
+        _repository.fetchBranchDashboard(1),
         _supplierService.getSuppliers(),
         _repository.fetchPurchases(),
       ]);
@@ -69,51 +81,38 @@ print("Suppliers Count: ${(results[1] as List).length}");
 print("Purchases Count: ${(results[2] as List).length}");
 
       final rawStats = results[0] as Map<String, dynamic>;
+      final cards = rawStats["cards"] ?? {};
       final supplierList = results[1] as List<Supplier>;
       final purchasesList = results[2] as List<PurchaseModel>;
 
       if (!mounted) return;
+      print("cards = $cards");
+print("rawStats = $rawStats");
+print("category_stock = ${rawStats['category_stock']}");
       setState(() {
         rawInventoryData = rawStats;
         suppliers = supplierList;
         purchaseData = purchasesList;
 
         // Inventory stats parsing
-        inventoryStats = {
-          "opening_stock":
-              int.tryParse(rawStats["opening_stock"]?.toString() ?? "0") ?? 0,
-          "closing_stock":
-              int.tryParse(rawStats["closing_stock"]?.toString() ?? "0") ?? 0,
-          "incoming_stock":
-              int.tryParse(rawStats["incoming_stock"]?.toString() ?? "0") ?? 0,
-          "current_stock":
-              int.tryParse(rawStats["current_stock"]?.toString() ?? "0") ?? 0,
-          "damaged_trays":
-              int.tryParse(
-                (rawStats["damaged_trays"] ??
-                            rawStats["damaged_stock"] ??
-                            rawStats["damaged_eggs"])
-                        ?.toString() ??
-                    "0",
-              ) ??
-              0,
-          "stock_value":
-              double.tryParse(rawStats["stock_value"]?.toString() ?? "0") ??
-              0.0,
-          "category_stock": rawStats["category_stock"] is List
-              ? rawStats["category_stock"]
-              : [],
-          "breakdowns": rawStats["breakdowns"] is Map<String, dynamic>
-              ? rawStats["breakdowns"]
-              : {},
-        };
-
-        // Auto-select first category if none selected
+   inventoryStats = {
+  "opening_stock": cards["opening_stocks"] ?? 0,
+  "closing_stock": cards["closing_stock"] ?? 0,
+  "incoming_stock": cards["incoming_stock_in_transit"] ?? 0,
+  "current_stock": cards["total_eggs_in_stock"] ?? 0,
+  "sales_today": cards["sales_today"] ?? 0,
+  "stock_value": cards["revenue_mtd"] ?? 0,
+  "damaged_stock": cards["damaged_stock"] ?? 0,
+  "today_tray_sold": cards["today_tray_sold"] ?? 0,
+  "today_expense": cards["today_expense"] ?? 0,
+  "category_stock": rawStats["stock_summary"] ?? [],
+};    // Auto-select first category if none selected
         if (selectedCategoryName == null) {
-          final catStock = inventoryStats["category_stock"] as List<dynamic>;
+         final catStock =
+    (inventoryStats["category_stock"] as List<dynamic>?) ?? [];
           if (catStock.isNotEmpty) {
             selectedCategoryName =
-                (catStock[0] as Map<String, dynamic>)["category"]?.toString() ??
+                (catStock[0] as Map<String, dynamic>)["egg_category_grade"]?.toString() ??
                 "Unknown";
           }
         }
@@ -132,6 +131,97 @@ print("Purchases Count: ${(results[2] as List).length}");
       }
     }
   }
+
+  Future<void> loadBranchData(int branchId) async {
+  try {
+    setState(() => _isLoading = true);
+
+    final rawStats = await _repository.fetchBranchDashboard(branchId);
+
+    final cards = rawStats["cards"] ?? {};
+
+    setState(() {
+      rawInventoryData = rawStats;
+
+      inventoryStats = {
+        "opening_stock": cards["opening_stocks"] ?? 0,
+        "closing_stock": cards["closing_stock"] ?? 0,
+        "incoming_stock": cards["incoming_stock_in_transit"] ?? 0,
+        "current_stock": cards["total_eggs_in_stock"] ?? 0,
+        "sales_today": cards["sales_today"] ?? 0,
+        "damaged_stock": cards["damaged_stock"] ?? 0,
+        "today_tray_sold": cards["today_tray_sold"] ?? 0,
+        "today_expense": cards["today_expense"] ?? 0,
+        "category_stock": rawStats["stock_summary"] ?? [],
+      };
+
+      _isLoading = false;
+    });
+  } catch (e) {
+    print("Branch Load Error: $e");
+
+    setState(() => _isLoading = false);
+  }
+}
+
+Future<void> loadAllBranches() async {
+  try {
+    setState(() => _isLoading = true);
+
+    final results = await Future.wait([
+      _repository.fetchBranchDashboard(1),
+      _repository.fetchBranchDashboard(2),
+      _repository.fetchBranchDashboard(3),
+    ]);
+
+    int openingStock = 0;
+    int closingStock = 0;
+    int incomingStock = 0;
+    int currentStock = 0;
+    int salesToday = 0;
+    int damagedStock = 0;
+    int traySold = 0;
+    int todayExpense = 0;
+    List<dynamic> combinedCategoryStock = [];
+
+    for (final branch in results) {
+      final cards = branch["cards"] ?? {};
+
+      openingStock += (cards["opening_stocks"] ?? 0) as int;
+      closingStock += (cards["closing_stock"] ?? 0) as int;
+      incomingStock += (cards["incoming_stock_in_transit"] ?? 0) as int;
+      currentStock += (cards["total_eggs_in_stock"] ?? 0) as int;
+      salesToday += (cards["sales_today"] ?? 0) as int;
+      damagedStock += (cards["damaged_stock"] ?? 0) as int;
+      traySold += (cards["today_tray_sold"] ?? 0) as int;
+      todayExpense += (cards["today_expense"] ?? 0) as int;
+      combinedCategoryStock.addAll(
+  (branch["stock_summary"] as List?) ?? [],
+);
+      
+    }
+
+    setState(() {
+      inventoryStats = {
+        "opening_stock": openingStock,
+        "closing_stock": closingStock,
+        "incoming_stock": incomingStock,
+        "current_stock": currentStock,
+        "sales_today": salesToday,
+        "damaged_stock": damagedStock,
+        "today_tray_sold": traySold,
+        "today_expense": todayExpense,
+        "category_stock":combinedCategoryStock
+      };
+
+      _isLoading = false;
+    });
+  } catch (e) {
+    print("All Branch Load Error: $e");
+
+    setState(() => _isLoading = false);
+  }
+}
 
   // Filter logic matching React
   List<PurchaseModel> get filteredData {
@@ -578,6 +668,7 @@ print("Purchases Count: ${(results[2] as List).length}");
 
   @override
   Widget build(BuildContext context) {
+    
     if (_isLoading ) {
       return const AdminInventoryOverviewSkeletonLoader();
       
@@ -698,7 +789,65 @@ print("Purchases Count: ${(results[2] as List).length}");
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                ElevatedButton.icon(
+                                Expanded(
+                                  child: DropdownButtonFormField<String>(
+                                    value: selectedLocation,
+                                    decoration: InputDecoration(
+                                      labelText: "Select Location",
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 14,
+                                      ),
+                                    ),
+                                    items: const [
+                                      DropdownMenuItem(
+                                        value: "all",
+                                        child: Text("All Branches"),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: "warehouse",
+                                        child: Text("Warehouse"),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: "gunjur",
+                                        child: Text("GUNJUR"),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: "krpuram",
+                                        child: Text("KRPURAM"),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: "sarjapura",
+                                        child: Text("SARJAPURA"),
+                                      ),
+                                    ],
+                                    onChanged: (value) async {
+  if (value == null) return;
+
+  setState(() {
+    selectedLocation = value;
+  });
+
+  print("Selected Location: $selectedLocation");
+
+  if (value == "all") {
+    await loadAllBranches();
+  } else {
+    final branchId = branchIds[value];
+
+    if (branchId != null) {
+      await loadBranchData(branchId);
+    }
+  }
+},
+                                  ),
+                                ),
+                         ],
+                            ),
+                                                            ElevatedButton.icon(
                                   onPressed: () {
                                     Navigator.push(
                                       context,
@@ -732,8 +881,7 @@ print("Purchases Count: ${(results[2] as List).length}");
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
+     
                           ],
                         ),
                       ),
@@ -759,7 +907,7 @@ print("Purchases Count: ${(results[2] as List).length}");
                             child: InventoryCard(
                               title: "Opening Stock",
                               value:
-                                  "${inventoryStats['opening_stock'] ?? 0} Eggs",
+    "${NumberFormat('#,##,###').format(inventoryStats['opening_stock'] ?? 0)} Eggs",
                               subtitle: "Stock at start of day",
                               icon: Icons.inventory_2_outlined,
                               iconColor: Colors.black87,
@@ -775,8 +923,8 @@ print("Purchases Count: ${(results[2] as List).length}");
                             ),
                             child: InventoryCard(
                               title: "Closing Stock",
-                              value:
-                                  "${inventoryStats['closing_stock'] ?? 0} Eggs",
+                           value:
+    "${NumberFormat('#,##,###').format(inventoryStats['closing_stock'] ?? 0)} Eggs",
                               subtitle: "Current available stock",
                               icon: Icons.local_shipping_outlined,
                               iconColor: Colors.green,
@@ -801,8 +949,8 @@ print("Purchases Count: ${(results[2] as List).length}");
                             ),
                             child: InventoryCard(
                               title: "Total Incoming Stock",
-                              value:
-                                  "${inventoryStats['incoming_stock'] ?? 0} Eggs",
+              value:
+    "${NumberFormat('#,##,###').format(inventoryStats['incoming_stock'] ?? 0)} Eggs",
                               subtitle: "Stock in transit",
                               icon: Icons.local_shipping_outlined,
                               iconColor: Colors.green,
@@ -817,8 +965,8 @@ print("Purchases Count: ${(results[2] as List).length}");
                             ),
                             child: InventoryCard(
                               title: "Sales Today",
-                              value:
-                                  "${inventoryStats['sales_today'] ?? 0} Eggs",
+                             value:
+    "${NumberFormat('#,##,###').format(inventoryStats['today_tray_sold'] ?? 0)} Eggs",
                               subtitle: "Total eggs sold today",
                               icon: Icons.send_outlined,
                               iconColor: Colors.black87,
@@ -833,28 +981,28 @@ print("Purchases Count: ${(results[2] as List).length}");
                             ),
                             child: InventoryCard(
                               title: "Current Stock",
-                              value:
-                                  "${inventoryStats['current_stock'] ?? 0} Eggs",
+                 value:
+    "${NumberFormat('#,##,###').format(inventoryStats['current_stock'] ?? 0)} Eggs",
                               subtitle: "View detailed breakdown",
                               icon: Icons.inventory_2_outlined,
                               iconColor: Colors.black87,
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () => _openDetailsModal(
-                              "Stock Value Breakdown",
-                              inventoryStats["breakdowns"]["stock_value"],
-                              "currency",
-                            ),
-                            child: InventoryCard(
-                              title: "Stock Value",
-                              value:
-                                  "₹ ${(inventoryStats['stock_value'] ?? 0).toString()}",
-                              subtitle: "Today's inventory valuation",
-                              icon: Icons.currency_rupee,
-                              iconColor: Colors.green,
-                            ),
-                          ),
+                          // GestureDetector(
+                          //   onTap: () => _openDetailsModal(
+                          //     "Stock Value Breakdown",
+                          //     inventoryStats["breakdowns"]["stock_value"],
+                          //     "currency",
+                          //   ),
+                          //   child: InventoryCard(
+                          //     title: "Stock Value",
+                          //     value:
+                          //         "₹ ${(inventoryStats['stock_value'] ?? 0).toString()}",
+                          //     subtitle: "Today's inventory valuation",
+                          //     icon: Icons.currency_rupee,
+                          //     iconColor: Colors.green,
+                          //   ),
+                          // ),
                         ],
                       ),
 
@@ -1122,7 +1270,8 @@ print("Purchases Count: ${(results[2] as List).length}");
       return const SizedBox.shrink();
     }
 
-    final breakdowns = inventoryStats["breakdowns"] as Map<String, dynamic>;
+   final breakdowns =
+    (inventoryStats["breakdowns"] as Map<String, dynamic>?) ?? {};
 
     final openingStock = _getValueForCategory(
       breakdowns["opening_stock"] ?? inventoryStats["category_stock"],
