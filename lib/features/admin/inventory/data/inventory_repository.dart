@@ -192,4 +192,26 @@ class InventoryRepository {
       throw Exception("Error updating manual stock: $e");
     }
   }
+
+  Future<Map<String, dynamic>> fetchBranchDashboard(
+  int branchId,
+) async {
+  try {
+    final response = await http.get(
+      Uri.parse(ApiConstants.branchDashboard(branchId)),
+      headers: {"Accept": "application/json"},
+    );
+
+    print("BRANCH STATUS = ${response.statusCode}");
+    print("BRANCH RESPONSE = ${response.body}");
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+
+    throw Exception("Failed to load branch dashboard");
+  } catch (e) {
+    throw Exception("Error fetching branch dashboard: $e");
+  }
+}
 }

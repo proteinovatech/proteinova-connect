@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/services/credit_ledger_service.dart';
+import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 
 class CreditLedgerScreen extends StatefulWidget {
@@ -41,13 +43,7 @@ class CreditLedgerScreen extends StatefulWidget {
                   style: const TextStyle(color: Colors.grey, fontSize: 14),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                Text(value, style: AppTextStyles.headingText16),
               ],
             ),
           ),
@@ -56,9 +52,14 @@ class CreditLedgerScreen extends StatefulWidget {
     );
   }
 
-  static Widget _dropdown(String hint) {
+  static Widget _dropdown(
+    String hint,
+    String? value,
+    List<DropdownMenuItem<String>> items,
+    ValueChanged<String?> onChanged,
+  ) {
     return DropdownButtonFormField<String>(
-      value: null,
+      value: value,
       decoration: InputDecoration(
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 12,
@@ -67,8 +68,8 @@ class CreditLedgerScreen extends StatefulWidget {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
       hint: Text(hint),
-      items: const [DropdownMenuItem(value: "1", child: Text("Option 1"))],
-      onChanged: (value) {},
+      items: items,
+      onChanged: onChanged,
     );
   }
 }
@@ -85,6 +86,19 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
   int pendingCustomers = 0;
   int clearedCustomers = 0;
 
+  final inrFormatter = NumberFormat.currency(
+    locale: 'en_IN',
+    symbol: '₹',
+    decimalDigits: 0,
+  );
+  final TextEditingController searchController = TextEditingController();
+  final formatter = NumberFormat('#,##0.00');
+  List<dynamic> filteredCustomers = [];
+
+  String selectedLocation = "all";
+  String selectedBranch = "all";
+  String selectedStatus = "all";
+
   List<dynamic> customers = [];
   bool isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 768;
@@ -95,6 +109,24 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
 
   bool isDesktop(BuildContext context) =>
       MediaQuery.of(context).size.width >= 1200;
+
+  static const double customerWidth = 250;
+  static const double phoneWidth = 150;
+  static const double locationWidth = 150;
+  static const double chargedWidth = 150;
+  static const double paidWidth = 150;
+  static const double balanceWidth = 150;
+  static const double statusWidth = 120;
+  static const double lastTxnWidth = 180;
+  static const double tableWidth =
+      customerWidth +
+      phoneWidth +
+      locationWidth +
+      chargedWidth +
+      paidWidth +
+      balanceWidth +
+      statusWidth +
+      lastTxnWidth;
   @override
   void initState() {
     super.initState();
@@ -105,23 +137,29 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
     try {
       setState(() {
         isLoading = true;
+        error = '';
       });
 
       final data = await _service.getCreditLedger();
 
+      final summary = data['summary'] ?? {};
+
       setState(() {
-        totalOutstanding = (data['totalOutstanding'] ?? 0).toDouble();
+        totalOutstanding =
+            double.tryParse(summary['total_outstanding'].toString()) ?? 0.0;
 
-        totalCharged = (data['totalCharged'] ?? 0).toDouble();
+        totalCharged =
+            double.tryParse(summary['total_charged'].toString()) ?? 0.0;
 
-        totalReceived = (data['totalReceived'] ?? 0).toDouble();
+        totalReceived =
+            double.tryParse(summary['total_paid'].toString()) ?? 0.0;
 
-        pendingCustomers = data['pendingCustomers'] ?? 0;
+        pendingCustomers = summary['pending_count'] ?? 0;
 
-        clearedCustomers = data['clearedCustomers'] ?? 0;
+        clearedCustomers = summary['cleared_count'] ?? 0;
 
-        customers = data['customers'] ?? [];
-
+        customers = List<Map<String, dynamic>>.from(data['customers'] ?? []);
+        filteredCustomers = List<Map<String, dynamic>>.from(customers);
         isLoading = false;
       });
     } catch (e) {
@@ -132,6 +170,55 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
 
       print("API Error: $e");
     }
+  }
+
+  void searchCustomer() {
+    final query = searchController.text.trim().toLowerCase();
+
+    setState(() {
+      if (query.isEmpty) {
+        filteredCustomers = List.from(customers);
+      } else {
+        filteredCustomers = customers.where((customer) {
+          final name =
+              customer['customer_name']?.toString().toLowerCase() ?? '';
+
+          return name.contains(query);
+        }).toList();
+      }
+    });
+  }
+
+  void applyFilters() {
+    setState(() {
+      filteredCustomers = customers.where((customer) {
+        bool matchesLocation = true;
+        bool matchesBranch = true;
+        bool matchesStatus = true;
+
+        // Location filter
+        if (selectedLocation != "all") {
+          matchesLocation =
+              customer['location_type']?.toString().toLowerCase() ==
+              selectedLocation;
+        }
+
+        // Branch filter
+        if (selectedBranch != "all") {
+          matchesBranch =
+              customer['sold_location']?.toString().toLowerCase() ==
+              selectedBranch.toLowerCase();
+        }
+
+        // Status filter
+        if (selectedStatus != "all") {
+          matchesStatus =
+              customer['status']?.toString().toLowerCase() == selectedStatus;
+        }
+
+        return matchesLocation && matchesBranch && matchesStatus;
+      }).toList();
+    });
   }
 
   @override
@@ -152,12 +239,10 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            SizedBox(height: getHeight(context, 13)),
                             Text(
                               "Credit Ledger",
-                              style: TextStyle(
-                                fontSize: getWidth(context, 28),
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: AppTextStyles.headingText25,
                             ),
                             SizedBox(height: getHeight(context, 6)),
                             const Text(
@@ -239,7 +324,7 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
                     icon: Icons.account_balance_wallet_outlined,
                     iconColor: Colors.red,
                     title: "Total Outstanding",
-                    value: "₹ ${totalOutstanding.toStringAsFixed(2)}",
+                    value: "${formatter.format(totalOutstanding)}",
                   ),
                 ),
                 SizedBox(
@@ -248,7 +333,7 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
                     icon: Icons.currency_rupee,
                     iconColor: Colors.deepPurple,
                     title: "Total Charged",
-                    value: "₹ ${totalCharged.toStringAsFixed(2)}",
+                    value: "${formatter.format(totalCharged)}",
                   ),
                 ),
                 SizedBox(
@@ -257,7 +342,7 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
                     icon: Icons.check_circle,
                     iconColor: Colors.green,
                     title: "Total Received",
-                    value: "₹ ${totalReceived.toStringAsFixed(2)}",
+                    value: "${formatter.format(totalReceived)}",
                   ),
                 ),
                 SizedBox(
@@ -297,6 +382,7 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
                     children: [
                       Expanded(
                         child: TextField(
+                          controller: searchController,
                           decoration: InputDecoration(
                             hintText: "Search customer name...",
                             prefixIcon: const Icon(Icons.search),
@@ -313,7 +399,7 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
                         height: 56,
                         width: 120,
                         child: ElevatedButton(
-                          onPressed: fetchCreditLedger,
+                          onPressed: searchCustomer,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xff08152F),
                             shape: RoundedRectangleBorder(
@@ -343,22 +429,90 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
 
                   const SizedBox(height: 12),
 
-                  CreditLedgerScreen._dropdown("All Locations"),
+                  CreditLedgerScreen._dropdown(
+                    "All Location",
+                    selectedLocation,
+                    const [
+                      DropdownMenuItem(
+                        value: "all",
+                        child: Text("All Locations"),
+                      ),
+                      DropdownMenuItem(
+                        value: "branch",
+                        child: Text("Branch only"),
+                      ),
+                      DropdownMenuItem(
+                        value: "warehouse",
+                        child: Text("Warehouse only"),
+                      ),
+                    ],
+                    (value) {
+                      setState(() {
+                        selectedLocation = value!;
+                      });
+                    },
+                  ),
 
                   const SizedBox(height: 12),
 
-                  CreditLedgerScreen._dropdown("All Branches/Warehouse"),
+                  CreditLedgerScreen._dropdown(
+                    "All Branches/Warehouse",
+                    selectedBranch,
+                    const [
+                      DropdownMenuItem(
+                        value: "all",
+                        child: Text("All Branches/Warehouse"),
+                      ),
+                      DropdownMenuItem(
+                        value: "warehouse",
+                        child: Text("Warehouse"),
+                      ),
+                      DropdownMenuItem(value: "gunjur", child: Text("GUNJUR")),
+                      DropdownMenuItem(
+                        value: "krpuram",
+                        child: Text("KRPURAM"),
+                      ),
+                      DropdownMenuItem(
+                        value: "sarjapuram",
+                        child: Text("SARJAPURAM"),
+                      ),
+                    ],
+                    (value) {
+                      setState(() {
+                        selectedBranch = value!;
+                      });
+                    },
+                  ),
 
                   const SizedBox(height: 12),
 
-                  CreditLedgerScreen._dropdown("All Status"),
+                  CreditLedgerScreen._dropdown(
+                    "All Status",
+                    selectedStatus,
+                    const [
+                      DropdownMenuItem(value: "all", child: Text("All Status")),
+                      DropdownMenuItem(
+                        value: "pending",
+                        child: Text("Pending Only"),
+                      ),
+                      DropdownMenuItem(
+                        value: "cleared",
+                        child: Text("Cleared Only"),
+                      ),
+                    ],
+                    (value) {
+                      setState(() {
+                        selectedStatus = value!;
+                      });
+                    },
+                  ),
 
                   const SizedBox(height: 16),
 
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: fetchCreditLedger,
+                      onPressed: applyFilters,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xffF5C400),
                         padding: const EdgeInsets.symmetric(vertical: 18),
@@ -394,7 +548,10 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                         children: [
-                          const TextSpan(text: "Customer Balances "),
+                          TextSpan(
+                            text: "Customer Balances ",
+                            style: AppTextStyles.headingText20,
+                          ),
                           TextSpan(
                             text: "(${customers.length} customers)",
                             style: const TextStyle(
@@ -407,61 +564,192 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
                       ),
                     ),
                   ),
+
                   const Divider(height: 1),
+
+                  // Header Row
                   Expanded(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(
-                            Icons.people_outline,
-                            size: 60,
-                            color: Colors.grey,
+                    child: filteredCustomers.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(
+                                  Icons.people_outline,
+                                  size: 60,
+                                  color: Colors.grey,
+                                ),
+                                SizedBox(height: 12),
+                                Text(
+                                  "No credit transactions found",
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: SingleChildScrollView(
+                              child: DataTable(
+                                columnSpacing: 40,
+                                headingRowColor: WidgetStateProperty.all(
+                                  const Color(0xFFF3F4F6),
+                                ),
+                                columns: const [
+                                  DataColumn(
+                                    label: Text(
+                                      "Customer Name",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Text(
+                                      "Phone",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Text(
+                                      "Location",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Text(
+                                      "Total Charged",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Text(
+                                      "Total Paid",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Text(
+                                      "Balance",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Text(
+                                      "Last Transaction",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                rows: filteredCustomers.map<DataRow>((
+                                  customer,
+                                ) {
+                                  return DataRow(
+                                    cells: [
+                                      DataCell(
+                                        Text(
+                                          customer['customer_name'] ?? '',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+
+                                      DataCell(
+                                        Text(customer['customer_number'] ?? ''),
+                                      ),
+
+                                      DataCell(
+                                        Text(customer['sold_location'] ?? ''),
+                                      ),
+
+                                      DataCell(
+                                        Text(
+                                          inrFormatter.format(
+                                            double.tryParse(
+                                                  customer['total_charged']
+                                                          ?.toString() ??
+                                                      '0',
+                                                ) ??
+                                                0,
+                                          ),
+                                          style: const TextStyle(
+                                            color: Colors.deepPurpleAccent,
+                                          ),
+                                        ),
+                                      ),
+
+                                      DataCell(
+                                        Text(
+                                          inrFormatter.format(
+                                            double.tryParse(
+                                                  customer['total_paid']
+                                                          ?.toString() ??
+                                                      '0',
+                                                ) ??
+                                                0,
+                                          ),
+                                          style: const TextStyle(
+                                            color: Colors.green,
+                                          ),
+                                        ),
+                                      ),
+
+                                      DataCell(
+                                        Text(
+                                          inrFormatter.format(
+                                            double.tryParse(
+                                                  customer['outstanding_balance']
+                                                          ?.toString() ??
+                                                      '0',
+                                                ) ??
+                                                0,
+                                          ),
+                                          style: const TextStyle(
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                      ),
+
+                                      DataCell(
+                                        Text(
+                                          customer['last_transaction_date'] !=
+                                                  null
+                                              ? DateFormat('d/M/yyyy').format(
+                                                  DateTime.parse(
+                                                    customer['last_transaction_date'],
+                                                  ),
+                                                )
+                                              : '-',
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }).toList(),
+                              ),
+                            ),
                           ),
-                          SizedBox(height: 12),
-                          Text(
-                            "No credit transactions found",
-                            style: TextStyle(color: Colors.grey, fontSize: 16),
-                          ),
-                        ],
-                      ),
-                    ),
                   ),
                 ],
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _responsiveCard(
-    BuildContext context, {
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String value,
-  }) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    double width;
-
-    if (screenWidth >= 1200) {
-      width = (screenWidth - 140) / 5;
-    } else if (screenWidth >= 768) {
-      width = (screenWidth - 80) / 2;
-    } else {
-      width = screenWidth - getWidth(context, 40);
-    }
-
-    return SizedBox(
-      width: width,
-      child: CreditLedgerScreen._summaryCard(
-        icon: icon,
-        iconColor: iconColor,
-        title: title,
-        value: value,
       ),
     );
   }
