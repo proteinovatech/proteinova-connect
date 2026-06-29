@@ -20,6 +20,8 @@ import 'package:proteinova_connect/features/branch/inventory/presentation/invent
 import 'package:proteinova_connect/features/branch/ledger/bloc/ledger_bloc.dart';
 import 'package:proteinova_connect/features/branch/ledger/presentation/ledger_screen.dart';
 import 'package:proteinova_connect/features/branch/report/bloc/report_bloc.dart';
+import 'package:proteinova_connect/features/branch/report/bloc/report_event.dart';
+import 'package:proteinova_connect/features/branch/report/presentation/expense_report.dart';
 import 'package:proteinova_connect/features/branch/report/presentation/report_screen.dart';
 import 'package:proteinova_connect/features/branch/sales/presentation/sales.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
@@ -100,12 +102,12 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
   final List<Widget> pages = [
     BranchDashboard(),
     Sales(),
-    BlocProvider(
-      create: (_) => InventoryBloc()..add(FetchInventoryEvent()),
 
-      child: Inventory(),
-    ),
+    // BlocProvider(
+    //   create: (_) => InventoryBloc()..add(FetchInventoryEvent()),
 
+    //   child: Inventory(),
+    // ),
     DailyClosing(),
   ];
 
@@ -125,7 +127,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
           children: [
             _buildNavItem(Icons.grid_view, 0),
             _buildNavItem(Icons.shopping_cart_outlined, 1),
-            _buildNavItem(Icons.inventory_2_outlined, 2),
+            // _buildNavItem(Icons.inventory_2_outlined, 2),
             _buildNavItem(Icons.receipt_long, 3),
             _buildNavItem(Icons.menu_outlined, 4),
           ],
@@ -177,8 +179,8 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
         return "Dashboard";
       case 1:
         return "Sales";
-      case 2:
-        return "Inventory";
+      // case 2:
+      //   return "Inventory";
       case 3:
         return "Daily closing";
       case 4:
@@ -244,46 +246,53 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                       child: const DamageEntryScreen(),
                     ),
                   ),
-              ExpansionTile(
-  leading: const Icon(Icons.analytics_outlined),
-  title: const Text(
-    "Report",
-    style: TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w500,
-    ),
-  ),
-  childrenPadding: const EdgeInsets.only(left: 30),
-  children: [
-    ListTile(
-      leading: const Icon(Icons.receipt_long_outlined, size: 20),
-      title: const Text("Expense Report"),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ExpenseReportScreen(),
-          ),
-        );
-      },
-    ),
-    ListTile(
-      leading: const Icon(Icons.bar_chart_outlined, size: 20),
-      title: const Text("Branch Sales Report"),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => BlocProvider(
-              create: (_) => ReportBloc(),
-              child: const ReportScreen(branchId: 11),
-            ),
-          ),
-        );
-      },
-    ),
-  ],
-),
+                  ExpansionTile(
+                    leading: const Icon(Icons.analytics_outlined),
+                    title: const Text(
+                      "Report",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    childrenPadding: const EdgeInsets.only(left: 30),
+                    children: [
+                      ListTile(
+                        leading: const Icon(
+                          Icons.receipt_long_outlined,
+                          size: 20,
+                        ),
+                        title: const Text("Expense Report"),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => BlocProvider(
+                                create: (_) => ReportBloc()
+                                  ..add(FetchBranchReportEvent(branchId: 11)),
+                                child: ExpenseReport(),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.bar_chart_outlined, size: 20),
+                        title: const Text("Branch Sales Report"),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => BlocProvider(
+                                create: (_) => ReportBloc(),
+                                child: const ReportScreen(),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                   //  _menuTile(Icons.money, "Admin in", AdminInventory()),
                   const SizedBox(height: 20),
                   Divider(),
@@ -307,26 +316,25 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
     );
   }
 
- Widget _menuTile(
-  IconData icon,
-  String title,
-  Widget? page, {
-  VoidCallback? onTap,
-}) {
-  return ListTile(
-    leading: Icon(icon),
-    title: Text(title),
-    onTap: onTap ??
-        () {
-          if (page != null) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => page),
-            );
-          }
-        },
-  );
-}}
+  Widget _menuTile(
+    IconData icon,
+    String title,
+    Widget? page, {
+    VoidCallback? onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      onTap:
+          onTap ??
+          () {
+            if (page != null) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+            }
+          },
+    );
+  }
+}
 
 // Widget _sectionTitle(String title) {
 //   return Padding(

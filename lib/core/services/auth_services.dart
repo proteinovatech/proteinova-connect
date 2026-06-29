@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:proteinova_connect/core/config/api_config.dart';
 
 class AuthService {
-  static final String baseUrl = dotenv.env['BASE_URL']!;
+  static final String baseUrl = dotenv.env['VITE_BACKEND_URL']!;
   static Future<Map<String, dynamic>?> login({
     required String email,
     required String password,

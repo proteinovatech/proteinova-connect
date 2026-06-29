@@ -1,961 +1,1109 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:shimmer/shimmer.dart';
-import 'package:fl_chart/fl_chart.dart';
-import '../bloc/report_bloc.dart';
-import '../bloc/report_event.dart';
-import '../bloc/report_state.dart';
-import '../data/model/report_model.dart';
+import 'package:proteinova_connect/features/admin/report/data/report_service.dart';
+import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
+import 'package:proteinova_connect/features/admin/report/screens/expense_report_screen.dart';
+import 'package:proteinova_connect/features/admin/report/screens/purchase_report_screen.dart';
+import 'package:proteinova_connect/features/admin/report/screens/warehouse_report_screen.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/admin_report_dashboard_shimmer.dart';
 
 class ReportScreen extends StatefulWidget {
-  final int branchId;
-  const ReportScreen({super.key, required this.branchId});
+  const ReportScreen({super.key});
 
   @override
   State<ReportScreen> createState() => _ReportScreenState();
 }
 
 class _ReportScreenState extends State<ReportScreen> {
-  final _formatter = NumberFormat('#,##0.00', 'en_IN');
+  double totalRevenue = 0;
+  int totalOrders = 0;
+  int totalEggs = 0;
+  int totalDamage = 0;
+  int currentStock = 0;
+  String? selectedBranchId;
+  String selectedBranchName = "All Branches";
 
+  String branch = "All Branches";
+  String itemType = "All Types";
+  String transaction = "All Sales";
+  String reportCategory = "Branch Sales Report";
+  String selectedReport = "Branch Sales Report";
+
+  String fromDate = "dd-mm-yyyy";
+  String toDate = "dd-mm-yyyy";
+  List<dynamic> branchList = [];
+
+  final ReportService reportService = ReportService();
+
+  bool isLoading = true;
+
+  Map<String, dynamic>? salesData;
+
+  List<Map<String, dynamic>> salesStats = [];
+  List<Map<String, dynamic>> transactions = [];
+
+  List<Map<String, dynamic>> topBranches = [];
+
+  List<String> reportItems = [
+    "Financial Summary",
+    "Purchase Report",
+    "Expense Report",
+    "Branch Sales Report",
+    "Warehouse Report",
+  ];
+  final indianFormat = NumberFormat.currency(
+    locale: 'en_IN',
+    symbol: '',
+    decimalDigits: 0,
+  );
   @override
   void initState() {
     super.initState();
-    _fetchReport();
-  }
 
-  void _fetchReport() {
-    context.read<ReportBloc>().add(
-      FetchBranchReportEvent(branchId: widget.branchId),
-    );
+    fetchSalesReport();
   }
 
   @override
   Widget build(BuildContext context) {
+    print("salesData = $salesData");
+    print("dailySales = ${salesData?["dailySales"]}");
+    print("hourlySales = ${salesData?["hourlySales"]}");
+    print("raw = ${salesData?["raw"]}");
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xffF8F8F8),
       body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async => _fetchReport(),
-          child: CustomScrollView(
-            slivers: [
-              // Header
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Row(
-                    children: [
-                      InkWell(
-                        onTap: () => Navigator.pop(context),
-                        borderRadius: BorderRadius.circular(8),
-                        child: const Padding(
-                          padding: EdgeInsets.only(top: 4),
-                          child: Icon(
-                            Icons.arrow_back,
-                            size: 24,
-                            color: Color(0xFF1E293B),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Branch Report',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1E293B),
-                            ),
-                          ),
-                          Text(
-                            "Today's Overview",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF64748B),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Content
-              SliverToBoxAdapter(
-                child: BlocBuilder<ReportBloc, ReportState>(
-                  builder: (context, state) {
-                    if (state is ReportLoading) return _buildShimmer();
-                    if (state is ReportError) return _buildError(state.message);
-                    if (state is ReportLoaded) return _buildContent(state.data);
-                    return const SizedBox.shrink();
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildContent(ReportData data) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Profit/Loss Cards
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF10B981), Color(0xFF059669)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF10B981).withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Net Profit',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Icon(
-                            Icons.trending_up,
-                            color: Colors.white70,
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '₹${_formatter.format(data.netProfit >= 0 ? data.netProfit : 0)}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFEF4444).withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Net Loss',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Icon(
-                            Icons.trending_down,
-                            color: Colors.white70,
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '₹${_formatter.format(data.netProfit < 0 ? data.netProfit.abs() : 0)}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // Key Metrics Grid
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: MediaQuery.of(context).size.width < 400
-                ? 1.05
-                : 1.25,
-            children: [
-              _buildMetricCard(
-                'Total Revenue',
-                '₹${_formatter.format(data.totalRevenue)}',
-                Icons.account_balance_wallet_outlined,
-                const Color(0xFF3B82F6),
-                const Color(0xFFEFF6FF),
-                onTap: () {
-                  _showDetails(context, 'Total Revenue Details', []);
-                },
-              ),
-              _buildMetricCard(
-                'Total Expenses',
-                '₹${_formatter.format(data.totalExpenses)}',
-                Icons.money_off_outlined,
-                const Color(0xFFF59E0B),
-                const Color(0xFFFEF3C7),
-                onTap: () {
-                  _showDetails(
-                    context,
-                    'Total Expenses Breakdown',
-                    data.expenseCategories
-                        .map(
-                          (e) => {
-                            'label': e.name,
-                            'value': '₹${_formatter.format(e.amount)}',
-                            'sub': 'Expense',
-                          },
-                        )
-                        .toList(),
-                  );
-                },
-              ),
-              _buildMetricCard(
-                'Sales Orders',
-                '${data.totalSalesOrders}',
-                Icons.shopping_cart_outlined,
-                const Color(0xFF8B5CF6),
-                const Color(0xFFF5F3FF),
-                onTap: () {
-                  _showDetails(context, 'Sales Orders Breakdown', []);
-                },
-              ),
-              _buildMetricCard(
-                'Pending Ledger',
-                '₹${_formatter.format(data.totalPendingCollection)}',
-                Icons.pending_actions_outlined,
-                const Color(0xFFEF4444),
-                const Color(0xFFFEF2F2),
-                onTap: () {
-                  _showDetails(context, 'Pending Ledger Details', []);
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Sales Breakdown
-          if (data.categorySales.isNotEmpty) ...[
-            _sectionTitle('Sales Breakdown'),
-            const SizedBox(height: 12),
-            ...data.categorySales.map(
-              (c) => _buildListItem(
-                c.name,
-                '${c.quantity} items',
-                '₹${_formatter.format(c.amount)}',
-                Icons.inventory_2_outlined,
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
-
-          // Expense Breakdown Bar Chart
-          if (data.expenseCategories.isNotEmpty) ...[
-            _sectionTitle('Expense Breakdown'),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 250,
-              child: BarChart(
-                BarChartData(
-                  gridData: FlGridData(
-                    show: true,
-                    drawVerticalLine: false,
-                    getDrawingHorizontalLine: (value) =>
-                        FlLine(color: Colors.grey.shade200, strokeWidth: 1),
-                  ),
-                  borderData: FlBorderData(show: false),
-                  titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 40,
-                        getTitlesWidget: (value, meta) {
-                          if (value == 0) return const SizedBox();
-                          return Text(
-                            NumberFormat.compact().format(value),
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: Color(0xFF64748B),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 30,
-                        getTitlesWidget: (value, meta) {
-                          final index = value.toInt();
-                          if (index < 0 ||
-                              index >= data.expenseCategories.length) {
-                            return const SizedBox();
-                          }
-                          final name = data.expenseCategories[index].name;
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(
-                              name.length > 7
-                                  ? '${name.substring(0, 6)}.'
-                                  : name,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Color(0xFF64748B),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  barTouchData: BarTouchData(
-                    touchTooltipData: BarTouchTooltipData(
-                      getTooltipColor: (_) => const Color(0xFF1E293B),
-                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                        return BarTooltipItem(
-                          "${data.expenseCategories[groupIndex].name}\n₹${_formatter.format(rod.toY)}",
-                          const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  barGroups: List.generate(data.expenseCategories.length, (i) {
-                    return BarChartGroupData(
-                      x: i,
-                      barRods: [
-                        BarChartRodData(
-                          toY: data.expenseCategories[i].amount,
-                          color: const Color(0xFFEF4444),
-                          width: 16,
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(4),
-                          ),
-                        ),
-                      ],
-                    );
-                  }),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
-
-          // Other metrics
-          _sectionTitle('Other Metrics'),
-          const SizedBox(height: 12),
-          _buildListItem(
-            'Trays Returned',
-            '',
-            '${data.totalTraysReturned}',
-            Icons.alt_route,
-          ),
-
-          const SizedBox(height: 40),
-        ],
-      ),
-    );
-  }
-
-  Widget _sectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-        color: Color(0xFF1E293B),
-      ),
-    );
-  }
-
-  Widget _buildMetricCard(
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-    Color bgColor, {
-    VoidCallback? onTap,
-  }) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final bool isSmallScreen = screenWidth < 400;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Ink(
-        padding: EdgeInsets.all(isSmallScreen ? 8 : 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xffE2E8F0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.015),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: isSmallScreen ? 8 : 11,
-                          color: const Color(0xFF64748B),
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          value,
-                          style: TextStyle(
-                            fontSize: isSmallScreen ? 14 : 24,
-                            fontWeight: FontWeight.w800,
-                            color: const Color(0xFF1E293B),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: isSmallScreen ? 28 : 40,
-                  height: isSmallScreen ? 28 : 40,
-                  decoration: BoxDecoration(
-                    color: bgColor,
-                    borderRadius: BorderRadius.circular(isSmallScreen ? 8 : 10),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: color,
-                    size: isSmallScreen ? 14 : 20,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showDetails(
-    BuildContext context,
-    String title,
-    List<Map<String, String>> modalData,
-  ) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          elevation: 8,
-          backgroundColor: Colors.white,
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            constraints: const BoxConstraints(maxWidth: 500),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: isLoading
+            ? const AdminReportDashboardShimmer()
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1E293B),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            "Detailed breakdown of the selected metric",
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF64748B),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, color: Color(0xFF64748B)),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 8),
-                if (modalData.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 30),
-                    child: Center(
-                      child: Text(
-                        "No detailed data available for this metric today.",
-                        style: TextStyle(
-                          color: Color(0xFF64748B),
-                          fontSize: 14,
+                    /// HEADER
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+
+                          icon: const Icon(Icons.arrow_back_ios_new),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  )
-                else
-                  Flexible(
-                    child: SingleChildScrollView(
-                      child: Table(
-                        columnWidths: const {
-                          0: FlexColumnWidth(2.0),
-                          1: FlexColumnWidth(1.2),
-                          2: FlexColumnWidth(1.5),
-                        },
-                        children: [
-                          TableRow(
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(
-                                  color: Color(0xFFE2E8F0),
-                                  width: 1.5,
-                                ),
-                              ),
+
+                        const SizedBox(width: 8),
+
+                        const Expanded(
+                          child: Text(
+                            "Branch Sales & Stock Reports",
+
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
                             ),
-                            children: const [
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 8,
-                                  horizontal: 4,
-                                ),
-                                child: Text(
-                                  "Item / Category",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF475569),
-                                    fontSize: 13,
-                                  ),
+                          ),
+                        ),
+
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+
+                          decoration: BoxDecoration(
+                            color: const Color(0xffFEF3C7),
+
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+
+                          child: const Row(
+                            children: [
+                              Icon(Icons.shield_outlined, size: 18),
+
+                              SizedBox(width: 6),
+
+                              Text(
+                                "Admin",
+
+                                style: TextStyle(fontWeight: FontWeight.w700),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // const SizedBox(width: 12),
+
+                        // const Icon(Icons.notifications_none, size: 28),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    /// FILTER CARD
+                    Container(
+                      padding: const EdgeInsets.all(18),
+
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+
+                        borderRadius: BorderRadius.circular(20),
+
+                        border: Border.all(color: const Color(0xffE5E7EB)),
+                      ),
+
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: buildDateField(
+                                  title: "From Date",
+                                  value: fromDate,
+                                  onTap: () async {
+                                    DateTime? picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime(2020),
+                                      lastDate: DateTime.now(),
+                                    );
+                                    if (picked != null) {
+                                      setState(() {
+                                        fromDate =
+                                            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                                      });
+                                      fetchSalesReport();
+                                    }
+                                  },
                                 ),
                               ),
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 8,
-                                  horizontal: 4,
-                                ),
-                                child: Text(
-                                  "Value",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF475569),
-                                    fontSize: 13,
-                                  ),
-                                  textAlign: TextAlign.right,
+
+                              const SizedBox(width: 14),
+
+                              Expanded(
+                                child: buildDateField(
+                                  title: "To Date",
+                                  value: toDate,
+                                  onTap: () async {
+                                    DateTime? picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime(2020),
+                                      lastDate: DateTime.now(),
+                                    );
+                                    if (picked != null) {
+                                      setState(() {
+                                        toDate =
+                                            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                                      });
+                                      fetchSalesReport();
+                                    }
+                                  },
                                 ),
                               ),
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 8,
-                                  horizontal: 4,
-                                ),
-                                child: Text(
-                                  "Notes",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF475569),
-                                    fontSize: 13,
-                                  ),
-                                  textAlign: TextAlign.left,
+
+                              const SizedBox(width: 14),
+
+                              Expanded(
+                                child: buildDropdownField(
+                                  title: "Select Branch",
+                                  value: branch,
+                                  items: [
+                                    "All Branches",
+                                    ...branchList
+                                        .map(
+                                          (e) =>
+                                              e["branch_name"]?.toString() ??
+                                              "Unknown",
+                                        )
+                                        .toSet()
+                                        .toList(),
+                                  ],
+                                  onChanged: (v) {
+                                    setState(() {
+                                      branch = v!;
+                                    });
+                                    fetchSalesReport();
+                                  },
                                 ),
                               ),
                             ],
                           ),
-                          ...modalData.map((row) {
-                            return TableRow(
-                              decoration: const BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: Color(0xFFF1F5F9),
-                                    width: 1,
-                                  ),
+
+                          const SizedBox(height: 18),
+
+                          Row(
+                            children: [
+                              Expanded(
+                                child: buildDropdownField(
+                                  title: "Item Type",
+                                  value: itemType,
+
+                                  items: const [
+                                    "All Types",
+                                    "White Egg",
+                                    "Brown Egg",
+                                  ],
+
+                                  onChanged: (v) {
+                                    setState(() {
+                                      itemType = v!;
+                                    });
+                                  },
                                 ),
                               ),
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 10,
-                                    horizontal: 4,
-                                  ),
-                                  child: Text(
-                                    row["label"] ?? "",
-                                    style: const TextStyle(
-                                      color: Color(0xFF334155),
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
+
+                              const SizedBox(width: 14),
+
+                              Expanded(
+                                child: buildDropdownField(
+                                  title: "Transaction Category",
+
+                                  value: transaction,
+
+                                  items: const [
+                                    "All Sales",
+                                    "Retail",
+                                    "Wholesale",
+                                  ],
+
+                                  onChanged: (v) {
+                                    final selectedBranch = branchList
+                                        .firstWhere(
+                                          (e) => e["branch_name"] == v,
+                                          orElse: () => {},
+                                        );
+
+                                    setState(() {
+                                      branch = v!;
+                                      selectedBranchId = selectedBranch["id"]
+                                          ?.toString();
+                                    });
+
+                                    fetchSalesReport();
+                                  },
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 10,
-                                    horizontal: 4,
-                                  ),
-                                  child: Text(
-                                    row["value"] ?? "",
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF0F172A),
-                                      fontSize: 13,
-                                    ),
-                                    textAlign: TextAlign.right,
-                                  ),
+                              ),
+
+                              const SizedBox(width: 14),
+
+                              Expanded(
+                                child: buildDropdownField(
+                                  title: "Report Category",
+
+                                  value: selectedReport,
+
+                                  items: reportItems,
+
+                                  onChanged: (value) {
+                                    if (value == selectedReport) return;
+                                    setState(() {
+                                      selectedReport = value!;
+                                    });
+
+                                    Widget? nextScreen;
+                                    if (value == "Financial Summary") {
+                                      nextScreen =
+                                          const AdminReportDashboardScreen();
+                                    } else if (value == "Purchase Report") {
+                                      nextScreen = const PurchaseReportScreen();
+                                    } else if (value == "Expense Report") {
+                                      nextScreen = const ExpenseReportScreen();
+                                    } else if (value == "Branch Sales Report") {
+                                      nextScreen = const ReportScreen();
+                                    } else if (value == "Warehouse Report") {
+                                      nextScreen =
+                                          const WarehouseReportScreen();
+                                    }
+
+                                    if (nextScreen != null) {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        PageRouteBuilder(
+                                          pageBuilder: (_, __, ___) =>
+                                              nextScreen!,
+                                          transitionDuration: Duration.zero,
+                                          reverseTransitionDuration:
+                                              Duration.zero,
+                                        ),
+                                      );
+                                    }
+                                  },
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 10,
-                                    horizontal: 4,
-                                  ),
-                                  child: Text(
-                                    row["sub"] ?? "",
-                                    style: const TextStyle(
-                                      color: Color(0xFF64748B),
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+
+                            children: [
+                              buildActionButton(
+                                title: "Export PDF",
+                                icon: Icons.picture_as_pdf,
+                                bgColor: Colors.white,
+                              ),
+
+                              const SizedBox(width: 14),
+
+                              buildActionButton(
+                                title: "Print",
+                                icon: Icons.print,
+                                bgColor: const Color(0xffFACC15),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
+
+                    const SizedBox(height: 24),
+
+                    /// STATS
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        int crossAxisCount = constraints.maxWidth > 1000
+                            ? 4
+                            : 2;
+                        return GridView.count(
+                          crossAxisCount: crossAxisCount,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: constraints.maxWidth > 1000
+                              ? 2.0
+                              : 1.3,
+                          children: salesStats.map((e) {
+                            IconData getIcon(String name) {
+                              switch (name) {
+                                case "money":
+                                  return Icons.currency_rupee;
+                                case "bag":
+                                  return Icons.shopping_bag_outlined;
+                                case "store":
+                                  return Icons.storefront;
+                                case "warning":
+                                  return Icons.warning_amber_rounded;
+                                default:
+                                  return Icons.wallet_outlined;
+                              }
+                            }
+
+                            Color getColor(String name) {
+                              switch (name) {
+                                case "red":
+                                  return Colors.red;
+                                case "blue":
+                                  return Colors.blue;
+                                case "orange":
+                                  return Colors.orange;
+                                case "grey":
+                                  return const Color(0xff9CA3AF);
+                                case "green":
+                                  return Colors.green;
+                                default:
+                                  return Colors.green;
+                              }
+                            }
+
+                            Color iconColor = getColor(
+                              e["color"]?.toString() ?? "green",
+                            );
+                            final isRevenue = e["title"].toString().contains(
+                              "Revenue",
+                            );
+                            double amountValue =
+                                double.tryParse(e["amount"].toString()) ?? 0;
+                            return SalesStatCard(
+                              title: e["title"].toString(),
+                              amount: isRevenue
+                                  ? "₹ ${indianFormat.format(amountValue)}"
+                                  : indianFormat.format(amountValue),
+                              growth: e["growth"].toString(),
+                              icon: getIcon(e["icon"]?.toString() ?? ""),
+                              iconColor: iconColor,
+                              iconBg: iconColor.withOpacity(0.1),
+                              growthColor: e["growth"].toString().contains("-")
+                                  ? Colors.red
+                                  : Colors.green,
+                            );
+                          }).toList(),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    /// CHARTS
+                    Column(
+                      children: [
+                        /// SALES VOLUME CARD
+                        buildSalesVolumeCard(),
+
+                        const SizedBox(height: 16),
+
+                        /// TOP BRANCHES CARD
+                        buildTopBranchesCard(),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    /// TABLE
+                    Container(
+                      padding: const EdgeInsets.all(18),
+
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+
+                        borderRadius: BorderRadius.circular(20),
+
+                        border: Border.all(color: const Color(0xffE5E7EB)),
+                      ),
+
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+
+                        children: [
+                          Row(
+                            children: [
+                              const Expanded(
+                                child: Text(
+                                  "Recent Branch Transactions",
+
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+
+                              TextButton(
+                                onPressed: () {},
+
+                                child: const Text("View All"),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+
+                            child: DataTable(
+                              columnSpacing: 26,
+
+                              columns: const [
+                                DataColumn(label: Text("DATE")),
+
+                                DataColumn(label: Text("BRANCH")),
+
+                                DataColumn(label: Text("TYPE")),
+
+                                DataColumn(label: Text("ITEM / TYPE")),
+
+                                DataColumn(label: Text("QTY (UNITS)")),
+
+                                DataColumn(label: Text("AMOUNT")),
+
+                                DataColumn(label: Text("STATUS")),
+                              ],
+
+                              rows: transactions.map<DataRow>((e) {
+                                return buildRow(
+                                  e["date"].toString(),
+                                  e["branch"].toString(),
+                                  e["type"].toString(),
+                                  e["item"].toString(),
+                                  e["qty"].toString(),
+                                  e["amount"].toString(),
+                                  e["status"].toString(),
+                                  e["status"] == "Completed"
+                                      ? Colors.green
+                                      : e["status"] == "Received"
+                                      ? Colors.blueGrey
+                                      : Colors.red,
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+      ),
+    );
+  }
+
+  Future<void> fetchSalesReport() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final response = await reportService.getBranchSalesReport(
+        startDate: fromDate == "dd-mm-yyyy" ? null : fromDate,
+        endDate: toDate == "dd-mm-yyyy" ? null : toDate,
+        branchId: selectedBranchId,
+      );
+
+      final branches = List<Map<String, dynamic>>.from(
+        response["branches"] ?? [],
+      );
+
+      setState(() {
+        salesData = response;
+
+        totalRevenue = branches.fold(
+          0.0,
+          (sum, item) =>
+              sum + (double.tryParse(item["total_sales"].toString()) ?? 0),
+        );
+
+        totalOrders = branches.fold(
+          0,
+          (sum, item) =>
+              sum + (int.tryParse(item["total_orders"].toString()) ?? 0),
+        );
+
+        totalEggs = branches.fold(
+          0,
+          (sum, item) => sum + ((item["total_eggs_sold"] ?? 0) as int),
+        );
+
+        totalDamage = branches.fold(
+          0,
+          (sum, item) => sum + ((item["total_damage"] ?? 0) as int),
+        );
+
+        currentStock = branches.fold(
+          0,
+          (sum, item) => sum + ((item["current_stock"] ?? 0) as int),
+        );
+
+        topBranches = branches;
+        transactions = List<Map<String, dynamic>>.from(
+          response["transactions"] ?? [],
+        );
+
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Widget buildDateField({
+    required String title,
+    required String value,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          Container(
+            height: 56,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xffE5E7EB)),
+            ),
+            child: Row(
+              children: [
+                Expanded(child: Text(value)),
+                const Icon(Icons.calendar_month),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildDropdownField({
+    required String title,
+    required String value,
+    required List<String> items,
+    required Function(String?) onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+
+      children: [
+        Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+
+        const SizedBox(height: 8),
+
+        Container(
+          height: 56,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+
+          decoration: BoxDecoration(
+            color: Colors.white,
+
+            borderRadius: BorderRadius.circular(14),
+
+            border: Border.all(color: const Color(0xffE5E7EB)),
+          ),
+
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: value,
+              isExpanded: true,
+
+              items: items.map((e) {
+                return DropdownMenuItem(value: e, child: Text(e));
+              }).toList(),
+
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildActionButton({
+    required String title,
+    required IconData icon,
+    required Color bgColor,
+  }) {
+    return Container(
+      height: 56,
+      width: 135,
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xffE5E7EB)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon),
+          const SizedBox(width: 8),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+        ],
+      ),
+    );
+  }
+
+  Widget buildSalesVolumeCard() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xffE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  "Daily Sales Volume",
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+                ),
+              ),
+
+              // Container(
+              //   padding: const EdgeInsets.symmetric(
+              //     horizontal: 12,
+              //     vertical: 8,
+              //   ),
+
+              //   decoration: BoxDecoration(
+              //     borderRadius: BorderRadius.circular(10),
+
+              //     border: Border.all(color: const Color(0xffE5E7EB)),
+              //   ),
+
+              //   child: const Row(
+              //     children: [
+              //       Text("7 Days"),
+              //       SizedBox(width: 6),
+              //       Icon(Icons.keyboard_arrow_down, size: 18),
+              //     ],
+              //   ),
+              // ),
+            ],
+          ),
+
+          const SizedBox(height: 18),
+
+          const Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 14,
+            runSpacing: 6,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.square, color: Colors.blue, size: 12),
+                  SizedBox(width: 4),
+                  Text("Retail Sales(Units)", style: TextStyle(fontSize: 12)),
+                ],
+              ),
+
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.square, color: Color(0xffE5E7EB), size: 12),
+
+                  SizedBox(width: 4),
+
+                  Text(
+                    "Wholesale Sales(Units)",
+                    style: TextStyle(fontSize: 12),
                   ),
-                const SizedBox(height: 20),
-                const Divider(),
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0F172A),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      "Close",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+          SizedBox(
+            height: 220,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                SizedBox(
+                  height: 220,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: (salesData?["trend"] ?? []).map<Widget>((item) {
+                      return buildBar(
+                        double.tryParse(item["retail_units"].toString()) ?? 0,
+
+                        double.tryParse(item["wholesale_units"].toString()) ??
+                            0,
+
+                        item["day_name"] ?? "",
+                      );
+                    }).toList(),
                   ),
                 ),
               ],
             ),
           ),
-        );
-      },
+          const SizedBox(height: 20),
+          Container(
+            height: 54,
+            decoration: BoxDecoration(
+              color: const Color(0xffF3F4F6),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "View Details",
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(width: 10),
+                Icon(Icons.arrow_forward_ios, size: 16, color: Colors.blue),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildListItem(
-    String title,
-    String subtitle,
-    String trailing,
-    IconData icon,
-  ) {
+  Widget buildTopBranchesCard() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xffE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Top Selling Branches",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 24),
+
+          ...topBranches.map((branch) {
+            final sales =
+                double.tryParse(branch["total_sales"].toString()) ?? 0;
+
+            return buildBranchRow(
+              branch["branch_name"] ?? "",
+              "₹ ${indianFormat.format(sales)}",
+              totalRevenue == 0 ? 0 : sales / totalRevenue,
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget buildBar(double retailSales, double wholesaleSales, String day) {
+    double maxHeight = 160;
+
+    double maxValue = (salesData?["trend"] ?? [])
+        .map<double>((e) => double.tryParse(e["retail_units"].toString()) ?? 0)
+        .fold(0, (a, b) => a > b ? a : b);
+
+    double retailHeight = maxValue == 0
+        ? 0
+        : (retailSales / maxValue) * maxHeight;
+
+    double wholesaleHeight = maxValue == 0
+        ? 0
+        : (wholesaleSales / maxValue) * maxHeight;
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Container(
+              width: 14,
+              height: retailHeight,
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Container(
+              width: 14,
+              height: wholesaleHeight,
+              decoration: BoxDecoration(
+                color: const Color(0xffE5E7EB),
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 8),
+
+        Text(day),
+      ],
+    );
+  }
+
+  Widget buildBranchRow(String title, String amount, double progress) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+
+              Text(amount, style: const TextStyle(fontWeight: FontWeight.w700)),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          LinearProgressIndicator(
+            value: progress,
+            minHeight: 7,
+            color: Colors.blue,
+            backgroundColor: Colors.grey.shade200,
+          ),
+        ],
+      ),
+    );
+  }
+
+  DataRow buildRow(
+    String date,
+    String branch,
+    String type,
+    String item,
+    String qty,
+    String amount,
+    String status,
+    Color color,
+  ) {
+    return DataRow(
+      cells: [
+        DataCell(Text(date)),
+        DataCell(Text(branch)),
+        DataCell(Text(type)),
+        DataCell(Text(item)),
+        DataCell(Text(qty)),
+        DataCell(Text(amount)),
+
+        DataCell(
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+
+            decoration: BoxDecoration(
+              // ignore: deprecated_member_use
+              color: color.withOpacity(0.15),
+
+              borderRadius: BorderRadius.circular(30),
+            ),
+
+            child: Text(
+              status,
+
+              style: TextStyle(color: color, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class SalesStatCard extends StatelessWidget {
+  final String title;
+  final String amount;
+  final String growth;
+  final IconData icon;
+  final Color iconColor;
+  final Color iconBg;
+  final Color growthColor;
+
+  const SalesStatCard({
+    super.key,
+    required this.title,
+    required this.amount,
+    required this.growth,
+    required this.icon,
+    required this.iconColor,
+    required this.iconBg,
+    required this.growthColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14), // reduced padding
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xffE5E7EB)),
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.02),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Row(
+
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, size: 18, color: const Color(0xFF64748B)),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+          /// HEADER
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
                   title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
+                    fontSize: 12,
+                    height: 1.2,
+                    color: Color(0xff4B5563),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                if (subtitle.isNotEmpty)
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF64748B),
-                    ),
-                  ),
-              ],
+              ),
+
+              const SizedBox(width: 6),
+
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: iconColor, size: 16),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          /// AMOUNT
+          Flexible(
+            child: Text(
+              amount,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Colors.black87,
+              ),
             ),
           ),
-          Text(
-            trailing,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1E293B),
-            ),
+
+          const SizedBox(height: 6),
+
+          /// GROWTH
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 4,
+            runSpacing: 2,
+            children: [
+              if (growth != "-")
+                Icon(
+                  growth.contains("-")
+                      ? Icons.trending_down
+                      : Icons.trending_up,
+                  size: 14,
+                  color: growthColor,
+                ),
+
+              Text(
+                growth == "-" ? "- 0.0%" : growth,
+                style: TextStyle(
+                  color: growth == "-" ? const Color(0xff9CA3AF) : growthColor,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+
+              const Text(
+                "vs last period",
+                style: TextStyle(color: Color(0xff9CA3AF), fontSize: 11),
+              ),
+            ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildShimmer() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Cards Shimmer
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 110,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Container(
-                    height: 110,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Grid Cards Shimmer
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: MediaQuery.of(context).size.width < 400
-                  ? 1.05
-                  : 1.25,
-              children: List.generate(
-                4,
-                (i) => Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Instagram Style List Shimmer
-            Container(
-              width: 150,
-              height: 20,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ...List.generate(
-              4,
-              (index) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    border: Border.all(color: Colors.white, width: 2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 120,
-                              height: 12,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              width: 80,
-                              height: 10,
-                              color: Colors.white,
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(width: 40, height: 12, color: Colors.white),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildError(String message) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 16),
-            const Text(
-              'Oops! Could not load report.',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey),
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -1,805 +1,1704 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
-import 'package:shimmer/shimmer.dart';
-import 'package:fl_chart/fl_chart.dart';
-import '../bloc/report_bloc.dart';
-import '../bloc/report_event.dart';
-import '../bloc/report_state.dart';
-import '../data/model/report_model.dart';
+import 'dart:io';
 
-class ExpenseReportScreen extends StatefulWidget {
-  final int branchId;
-  const ExpenseReportScreen({super.key, required this.branchId});
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+
+import 'package:proteinova_connect/features/admin/report/data/report_service.dart';
+import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
+import 'package:proteinova_connect/features/admin/report/screens/purchase_report_screen.dart';
+import 'package:proteinova_connect/features/admin/report/screens/sales_report_screen.dart';
+import 'package:proteinova_connect/features/admin/report/screens/warehouse_report_screen.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/admin_report_dashboard_shimmer.dart';
+
+class ExpenseReport extends StatefulWidget {
+  const ExpenseReport({super.key});
 
   @override
-  State<ExpenseReportScreen> createState() => _ExpenseReportScreenState();
+  State<ExpenseReport> createState() => _ExpenseReportScreenState();
 }
 
-class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
-  final _formatter = NumberFormat('#,##0.00', 'en_IN');
+class _ExpenseReportScreenState extends State<ExpenseReport> {
+  final ReportService reportService = ReportService();
+
+  bool isLoading = true;
+
+  Map<String, dynamic>? expenseData;
+
+  List<dynamic> expenseStats = [];
+
+  List<dynamic> expenseCategories = [];
+
+  List<dynamic> expenseLogs = [];
+
+  String expenseCategory = "All Categories";
+  String branch = "All Locations";
+  String status = "All Status";
+  String selectedReport = "Expense Report";
+  List<Map<String, dynamic>> dailyTrend = [];
+  String fromDate = "dd-mm-yyyy";
+  String toDate = "dd-mm-yyyy";
+  List<dynamic> branchList = [];
+
+  List<String> reportItems = [
+    "Financial Summary",
+    "Purchase Report",
+    "Expense Report",
+    "Branch Sales Report",
+    "Warehouse Report",
+  ];
+  final indianCurrency = NumberFormat.currency(
+    locale: 'en_IN',
+    symbol: '₹',
+    decimalDigits: 0,
+  );
 
   @override
   void initState() {
     super.initState();
-    _fetchReport();
+
+    fetchExpenseReport();
   }
 
-  void _fetchReport() {
-    context.read<ReportBloc>().add(FetchBranchReportEvent(
-          branchId: widget.branchId,
-        ));
+  Future<void> fetchExpenseReport() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      if (branchList.isEmpty) {
+        branchList = await reportService.getBranches();
+      }
+
+      String? branchId;
+      if (branch != "All Locations") {
+        final b = branchList.firstWhere(
+          (element) => element['branch_name'] == branch,
+          orElse: () => null,
+        );
+        if (b != null) {
+          branchId = b['id']?.toString() ?? b['branch_id']?.toString();
+        }
+      }
+
+      String? start = fromDate != "dd-mm-yyyy" ? fromDate : null;
+      String? end = toDate != "dd-mm-yyyy" ? toDate : null;
+
+      final data = await reportService.getExpenseReport(
+        startDate: start,
+        endDate: end,
+        branchId: branchId,
+      );
+      print(data);
+      print(data["dailyTrend"]);
+
+      setState(() {
+        expenseData = data;
+        expenseStats = data["stats"] ?? [];
+        expenseCategories = data["categories"] ?? [];
+        expenseLogs = data["recentExpenses"] ?? [];
+        isLoading = false;
+        dailyTrend = List<Map<String, dynamic>>.from(data["dailyTrend"] ?? []);
+        print("expenseCategories: $expenseCategories");
+        print("API RESPONSE: $data");
+        print("STATS: ${data['stats']}");
+      });
+    } catch (e) {
+      debugPrint(e.toString());
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
+  Future<void> loadCategories() async {
+    final data = await reportService.getCategories();
 
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async => _fetchReport(),
-          child: CustomScrollView(
-            slivers: [
-              // Header
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Row(
-                    children: [
-                      InkWell(
-                        onTap: () => Navigator.pop(context),
-                        borderRadius: BorderRadius.circular(8),
-                        child: const Padding(
-                          padding: EdgeInsets.only(top: 4),
-                          child: Icon(Icons.arrow_back, size: 24, color: Color(0xFF1E293B)),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Expense Report',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1E293B),
-                            ),
-                          ),
-                          Text(
-                            "Today's Overview",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF64748B),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Content
-              SliverToBoxAdapter(
-                child: BlocBuilder<ReportBloc, ReportState>(
-                  builder: (context, state) {
-                    if (state is ReportLoading) return _buildShimmer();
-                    if (state is ReportError) return _buildError(state.message);
-                    if (state is ReportLoaded) return _buildContent(state.data);
-                    return const SizedBox.shrink();
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    setState(() {
+      expenseCategories = data;
+    });
   }
 
-  Widget _buildContent(ReportData data) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Profit/Loss Cards
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF10B981), Color(0xFF059669)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF10B981).withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Net Profit', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
-                          Icon(Icons.trending_up, color: Colors.white70, size: 20),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '₹${_formatter.format(data.netProfit >= 0 ? data.netProfit : 0)}',
-                        style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFEF4444).withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Net Loss', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
-                          Icon(Icons.trending_down, color: Colors.white70, size: 20),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '₹${_formatter.format(data.netProfit < 0 ? data.netProfit.abs() : 0)}',
-                        style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+  Future<void> exportPdf() async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.MultiPage(
+        build: (context) => [
+          pw.Text("Expense Report", style: pw.TextStyle(fontSize: 24)),
+
+          pw.SizedBox(height: 20),
+
+          pw.TableHelper.fromTextArray(
+            headers: ["Date", "Reference", "Amount", "Status"],
+
+            data: expenseLogs.map((e) {
+              return [
+                e["date"].toString(),
+
+                e["reference"].toString(),
+
+                e["amount"].toString(),
+
+                e["status"].toString(),
+              ];
+            }).toList(),
           ),
-          const SizedBox(height: 20),
-
-          // Key Metrics Grid
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: MediaQuery.of(context).size.width < 400 ? 1.05 : 1.25,
-            children: [
-              _buildMetricCard('Total Revenue', '₹${_formatter.format(data.totalRevenue)}', Icons.account_balance_wallet_outlined, const Color(0xFF3B82F6), const Color(0xFFEFF6FF), onTap: () {
-                _showDetails(context, 'Total Revenue Details', []);
-              }),
-              _buildMetricCard('Total Expenses', '₹${_formatter.format(data.totalExpenses)}', Icons.money_off_outlined, const Color(0xFFF59E0B), const Color(0xFFFEF3C7), onTap: () {
-                _showDetails(context, 'Total Expenses Breakdown', 
-                  data.expenseCategories.map((e) => {
-                    'label': e.name,
-                    'value': '₹${_formatter.format(e.amount)}',
-                    'sub': 'Expense',
-                  }).toList(),
-                );
-              }),
-              _buildMetricCard('Sales Orders', '${data.totalSalesOrders}', Icons.shopping_cart_outlined, const Color(0xFF8B5CF6), const Color(0xFFF5F3FF), onTap: () {
-                _showDetails(context, 'Sales Orders Breakdown', []);
-              }),
-              _buildMetricCard('Pending Ledger', '₹${_formatter.format(data.totalPendingCollection)}', Icons.pending_actions_outlined, const Color(0xFFEF4444), const Color(0xFFFEF2F2), onTap: () {
-                _showDetails(context, 'Pending Ledger Details', []);
-              }),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Sales Breakdown
-          if (data.categorySales.isNotEmpty) ...[
-            _sectionTitle('Sales Breakdown'),
-            const SizedBox(height: 12),
-            ...data.categorySales.map((c) => _buildListItem(c.name, '${c.quantity} items', '₹${_formatter.format(c.amount)}', Icons.inventory_2_outlined)),
-            const SizedBox(height: 24),
-          ],
-
-          // Expense Breakdown Bar Chart
-          if (data.expenseCategories.isNotEmpty) ...[
-            _sectionTitle('Expense Breakdown'),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 250,
-              child: BarChart(
-                BarChartData(
-                  gridData: FlGridData(
-                    show: true,
-                    drawVerticalLine: false,
-                    getDrawingHorizontalLine: (value) =>
-                        FlLine(color: Colors.grey.shade200, strokeWidth: 1),
-                  ),
-                  borderData: FlBorderData(show: false),
-                  titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 40,
-                        getTitlesWidget: (value, meta) {
-                          if (value == 0) return const SizedBox();
-                          return Text(
-                            NumberFormat.compact().format(value),
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: Color(0xFF64748B),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 30,
-                        getTitlesWidget: (value, meta) {
-                          final index = value.toInt();
-                          if (index < 0 || index >= data.expenseCategories.length) {
-                            return const SizedBox();
-                          }
-                          final name = data.expenseCategories[index].name;
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(
-                              name.length > 7 ? '${name.substring(0, 6)}.' : name,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Color(0xFF64748B),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  barTouchData: BarTouchData(
-                    touchTooltipData: BarTouchTooltipData(
-                      getTooltipColor: (_) => const Color(0xFF1E293B),
-                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                        return BarTooltipItem(
-                          "${data.expenseCategories[groupIndex].name}\n₹${_formatter.format(rod.toY)}",
-                          const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  barGroups: List.generate(data.expenseCategories.length, (i) {
-                    return BarChartGroupData(
-                      x: i,
-                      barRods: [
-                        BarChartRodData(
-                          toY: data.expenseCategories[i].amount,
-                          color: const Color(0xFFEF4444),
-                          width: 16,
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(4),
-                          ),
-                        ),
-                      ],
-                    );
-                  }),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
-
-          // Other metrics
-          _sectionTitle('Other Metrics'),
-          const SizedBox(height: 12),
-          _buildListItem('Trays Returned', '', '${data.totalTraysReturned}', Icons.alt_route),
-          
-          const SizedBox(height: 40),
         ],
       ),
     );
+
+    final dir = await getApplicationDocumentsDirectory();
+
+    final file = File("${dir.path}/expense_report.pdf");
+
+    await file.writeAsBytes(await pdf.save());
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text("PDF Saved : ${file.path}")));
   }
 
-  Widget _sectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-        color: Color(0xFF1E293B),
+  Future<void> printPdf() async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (context) {
+          return pw.Column(
+            children: [
+              pw.Text("Expense Report", style: pw.TextStyle(fontSize: 24)),
+
+              pw.SizedBox(height: 20),
+
+              pw.Text(
+                "Total Expenses : ₹ ${expenseData?['totalExpenses'] ?? 0}",
+              ),
+            ],
+          );
+        },
       ),
     );
+
+    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
   }
 
-  Widget _buildMetricCard(String title, String value, IconData icon, Color color, Color bgColor, {VoidCallback? onTap}) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final bool isSmallScreen = screenWidth < 400;
+  @override
+  Widget build(BuildContext context) {
+    print(expenseCategories);
+    return Scaffold(
+      backgroundColor: const Color(0xffF8F8F8),
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Ink(
-        padding: EdgeInsets.all(isSmallScreen ? 8 : 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xffE2E8F0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.015),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: isSmallScreen ? 8 : 11,
-                          color: const Color(0xFF64748B),
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          value,
-                          style: TextStyle(
-                            fontSize: isSmallScreen ? 14 : 24,
-                            fontWeight: FontWeight.w800,
-                            color: const Color(0xFF1E293B),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: isSmallScreen ? 28 : 40,
-                  height: isSmallScreen ? 28 : 40,
-                  decoration: BoxDecoration(
-                    color: bgColor,
-                    borderRadius: BorderRadius.circular(isSmallScreen ? 8 : 10),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: color,
-                    size: isSmallScreen ? 14 : 20,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+      body: SafeArea(
+        child: isLoading
+            ? const AdminReportDashboardShimmer()
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
 
-  void _showDetails(BuildContext context, String title, List<Map<String, String>> modalData) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          elevation: 8,
-          backgroundColor: Colors.white,
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            constraints: const BoxConstraints(maxWidth: 500),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1E293B),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            "Detailed breakdown of the selected metric",
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF64748B),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, color: Color(0xFF64748B)),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 8),
-                if (modalData.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 30),
-                    child: Center(
-                      child: Text(
-                        "No detailed data available for this metric today.",
-                        style: TextStyle(
-                          color: Color(0xFF64748B),
-                          fontSize: 14,
+                    /// HEADER
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+
+                          icon: const Icon(Icons.arrow_back_ios_new),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  )
-                else
-                  Flexible(
-                    child: SingleChildScrollView(
-                      child: Table(
-                        columnWidths: const {
-                          0: FlexColumnWidth(2.0),
-                          1: FlexColumnWidth(1.2),
-                          2: FlexColumnWidth(1.5),
-                        },
-                        children: [
-                          TableRow(
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(
-                                  color: Color(0xFFE2E8F0),
-                                  width: 1.5,
-                                ),
-                              ),
+
+                        const SizedBox(width: 8),
+
+                        const Expanded(
+                          child: Text(
+                            "Expense Report",
+
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
                             ),
-                            children: const [
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 8,
-                                  horizontal: 4,
-                                ),
-                                child: Text(
-                                  "Item / Category",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF475569),
-                                    fontSize: 13,
-                                  ),
+                          ),
+                        ),
+
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+
+                          decoration: BoxDecoration(
+                            color: const Color(0xffFEF3C7),
+
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+
+                          child: const Row(
+                            children: [
+                              Icon(Icons.shield_outlined, size: 18),
+
+                              SizedBox(width: 6),
+
+                              Text(
+                                "Admin",
+
+                                style: TextStyle(fontWeight: FontWeight.w700),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // const SizedBox(width: 12),
+
+                        // const Icon(Icons.notifications_none, size: 28),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    /// FILTER CARD
+                    Container(
+                      padding: const EdgeInsets.all(18),
+
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+
+                        borderRadius: BorderRadius.circular(20),
+
+                        border: Border.all(color: const Color(0xffE5E7EB)),
+                      ),
+
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: buildDateField(
+                                  title: "From Date",
+                                  value: fromDate,
+                                  onTap: () async {
+                                    DateTime? picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime(2020),
+                                      lastDate: DateTime.now(),
+                                    );
+                                    if (picked != null) {
+                                      setState(() {
+                                        fromDate =
+                                            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                                      });
+                                      fetchExpenseReport();
+                                    }
+                                  },
                                 ),
                               ),
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 8,
-                                  horizontal: 4,
-                                ),
-                                child: Text(
-                                  "Value",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF475569),
-                                    fontSize: 13,
-                                  ),
-                                  textAlign: TextAlign.right,
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 8,
-                                  horizontal: 4,
-                                ),
-                                child: Text(
-                                  "Notes",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF475569),
-                                    fontSize: 13,
-                                  ),
-                                  textAlign: TextAlign.left,
+
+                              const SizedBox(width: 14),
+
+                              Expanded(
+                                child: buildDateField(
+                                  title: "To Date",
+                                  value: toDate,
+                                  onTap: () async {
+                                    DateTime? picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime(2020),
+                                      lastDate: DateTime.now(),
+                                    );
+                                    if (picked != null) {
+                                      setState(() {
+                                        toDate =
+                                            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                                      });
+                                      fetchExpenseReport();
+                                    }
+                                  },
                                 ),
                               ),
                             ],
                           ),
-                          ...modalData.map((row) {
-                            return TableRow(
-                              decoration: const BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: Color(0xFFF1F5F9),
-                                    width: 1,
+
+                          const SizedBox(height: 18),
+
+                          // Row(
+                          //   children: [
+                          //     Expanded(
+                          //       child: buildDropdownField(
+                          //         title: "Expense Category",
+
+                          //         value: expenseCategory,
+
+                          //         items: const [
+                          //           "All Categories",
+                          //           "Transport",
+                          //           "Fuel",
+                          //           "Salary",
+                          //           "Maintenance",
+                          //         ],
+
+                          //         onChanged: (v) {
+                          //           setState(() {
+                          //             expenseCategory = v!;
+                          //           });
+                          //         },
+                          //       ),
+                          //     ),
+
+                          //     const SizedBox(width: 14),
+
+                          //     Expanded(
+                          //       child: buildDropdownField(
+                          //         title: "Branch / Location",
+                          //         value: branch,
+                          //         items: [
+                          //           "All Locations",
+                          //           ...branchList
+                          //               .map(
+                          //                 (e) =>
+                          //                     e["branch_name"]?.toString() ??
+                          //                     "Unknown",
+                          //               )
+                          //               .toSet()
+                          //               .toList(),
+                          //         ],
+                          //         onChanged: (v) {
+                          //           setState(() {
+                          //             branch = v!;
+                          //           });
+                          //           fetchExpenseReport();
+                          //         },
+                          //       ),
+                          //     ),
+                          //   ],
+                          // ),
+
+                          // const SizedBox(height: 18),
+
+                          // Row(
+                          //   children: [
+                          //     Expanded(
+                          //       child: buildDropdownField(
+                          //         title: "Status",
+
+                          //         value: status,
+
+                          //         items: const [
+                          //           "All Status",
+                          //           "Paid",
+                          //           "Pending",
+                          //           "Rejected",
+                          //         ],
+
+                          //         onChanged: (v) {
+                          //           setState(() {
+                          //             status = v!;
+                          //           });
+                          //         },
+                          //       ),
+                          //     ),
+
+                          //     const SizedBox(width: 14),
+
+                          //     Expanded(
+                          //       child: buildDropdownField(
+                          //         title: "Report Category",
+
+                          //         value: selectedReport,
+
+                          //         items: reportItems,
+
+                          //         onChanged: (value) {
+                          //           if (value == selectedReport) {
+                          //             return;
+                          //           }
+
+                          //           setState(() {
+                          //             selectedReport = value!;
+                          //           });
+
+                          //           Widget? nextScreen;
+
+                          //           if (value == "Financial Summary") {
+                          //             nextScreen =
+                          //                 const AdminReportDashboardScreen();
+                          //           } else if (value == "Purchase Report") {
+                          //             nextScreen = const PurchaseReportScreen();
+                          //           } else if (value == "Branch Sales Report") {
+                          //             nextScreen = const SalesReportScreen();
+                          //           } else if (value == "Warehouse Report") {
+                          //             nextScreen =
+                          //                 const WarehouseReportScreen();
+                          //           }
+
+                          //           if (nextScreen != null) {
+                          //             Navigator.pushReplacement(
+                          //               context,
+
+                          //               MaterialPageRoute(
+                          //                 builder: (_) => nextScreen!,
+                          //               ),
+                          //             );
+                          //           }
+                          //         },
+                          //       ),
+                          //     ),
+                          //   ],
+                          // ),
+
+                          // const SizedBox(height: 24),
+
+                          // Row(
+                          //   mainAxisAlignment: MainAxisAlignment.end,
+
+                          //   children: [
+                          //     InkWell(
+                          //       onTap: exportPdf,
+
+                          //       child: buildActionButton(
+                          //         title: "Export PDF",
+
+                          //         icon: Icons.picture_as_pdf,
+
+                          //         bgColor: Colors.white,
+                          //       ),
+                          //     ),
+
+                          //     const SizedBox(width: 14),
+
+                          //     InkWell(
+                          //       onTap: printPdf,
+
+                          //       child: buildActionButton(
+                          //         title: "Print",
+
+                          //         icon: Icons.print,
+
+                          //         bgColor: const Color(0xffFACC15),
+                          //       ),
+                          //     ),
+                          //   ],
+                          // ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    /// STATS
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        int crossAxisCount = constraints.maxWidth > 1000
+                            ? 4
+                            : 2;
+                        print(expenseStats);
+                        return GridView.count(
+                          crossAxisCount: crossAxisCount,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: constraints.maxWidth > 1000
+                              ? 2.0
+                              : 1.3,
+                          children: expenseStats.map((e) {
+                            IconData getIcon(String name) {
+                              switch (name) {
+                                case "money":
+                                  return Icons.money;
+                                case "truck":
+                                  return Icons.local_shipping;
+                                case "warehouse":
+                                  return Icons.inventory;
+                                case "check":
+                                  return Icons.check_circle_outline;
+                                default:
+                                  return Icons.wallet_outlined;
+                              }
+                            }
+
+                            Color getColor(String name) {
+                              switch (name) {
+                                case "red":
+                                  return Colors.red;
+                                case "blue":
+                                  return Colors.blue;
+                                case "orange":
+                                  return Colors.orange;
+                                case "grey":
+                                  return const Color(0xff9CA3AF);
+                                default:
+                                  return Colors.green;
+                              }
+                            }
+
+                            Color iconColor = getColor(
+                              e["color"]?.toString() ?? "green",
+                            );
+
+                            return ExpenseStatCard(
+                              title: e["title"].toString(),
+                              amount: e["title"] == "Pending Approvals"
+                                  ? e["amount"].toString()
+                                  : indianCurrency.format(
+                                      double.tryParse(e["amount"].toString()) ??
+                                          0,
+                                    ),
+                              growth: e["growth"].toString(),
+                              icon: getIcon(e["icon"]?.toString() ?? ""),
+                              iconColor: iconColor,
+                              // ignore: deprecated_member_use
+                              iconBg: iconColor.withOpacity(0.1),
+                              growthColor:
+                                  e["growth"].toString().contains("-") &&
+                                      e["growth"].toString() != "-"
+                                  ? Colors.red
+                                  : Colors.green,
+                            );
+                          }).toList(),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    /// DAILY TREND
+                    Container(
+                      padding: const EdgeInsets.all(18),
+
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+
+                        borderRadius: BorderRadius.circular(20),
+
+                        border: Border.all(color: const Color(0xffE5E7EB)),
+                      ),
+
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+
+                        children: [
+                          Row(
+                            children: [
+                              const Expanded(
+                                child: Text(
+                                  "Daily Expense Trend",
+
+                                  style: TextStyle(
+                                    fontSize: 22,
+
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ),
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 10,
-                                    horizontal: 4,
-                                  ),
-                                  child: Text(
-                                    row["label"] ?? "",
-                                    style: const TextStyle(
-                                      color: Color(0xFF334155),
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+
+                                  vertical: 8,
+                                ),
+
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+
+                                  border: Border.all(
+                                    color: const Color(0xffE5E7EB),
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 10,
-                                    horizontal: 4,
-                                  ),
-                                  child: Text(
-                                    row["value"] ?? "",
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF0F172A),
-                                      fontSize: 13,
-                                    ),
-                                    textAlign: TextAlign.right,
-                                  ),
+
+                                child: const Row(
+                                  children: [
+                                    Text("7 Days"),
+
+                                    SizedBox(width: 6),
+
+                                    Icon(Icons.keyboard_arrow_down, size: 18),
+                                  ],
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 10,
-                                    horizontal: 4,
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 18),
+
+                          const Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 14,
+                            runSpacing: 6,
+
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(
+                                    Icons.square,
+                                    color: Colors.blue,
+                                    size: 12,
                                   ),
-                                  child: Text(
-                                    row["sub"] ?? "",
-                                    style: const TextStyle(
-                                      color: Color(0xFF64748B),
-                                      fontSize: 13,
-                                    ),
+
+                                  SizedBox(width: 4),
+
+                                  Text(
+                                    "Operating Expenses",
+                                    style: TextStyle(fontSize: 12),
                                   ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
+                                ],
+                              ),
+
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(
+                                    Icons.square,
+                                    color: Color(0xffE5E7EB),
+                                    size: 12,
+                                  ),
+
+                                  SizedBox(width: 4),
+
+                                  Text(
+                                    "Capital Expenditures",
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 30),
+
+                          SizedBox(
+                            height: 220,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: dailyTrend.map<Widget>((e) {
+                                  final double amount =
+                                      double.tryParse(e["amount"].toString()) ??
+                                      0.0;
+
+                                  final double maxAmount = dailyTrend
+                                      .map(
+                                        (x) =>
+                                            double.tryParse(
+                                              x["amount"].toString(),
+                                            ) ??
+                                            0.0,
+                                      )
+                                      .reduce((a, b) => a > b ? a : b);
+
+                                  final double height = maxAmount == 0
+                                      ? 0.0
+                                      : (amount / maxAmount) * 150.0;
+
+                                  return buildBar(
+                                    height,
+                                    height * 0.7,
+                                    e["day"].toString(),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                  ),
-                const SizedBox(height: 20),
-                const Divider(),
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0F172A),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      "Close",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 
-  Widget _buildListItem(String title, String subtitle, String trailing, IconData icon) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, size: 18, color: const Color(0xFF64748B)),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
-                if (subtitle.isNotEmpty) Text(subtitle, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
-              ],
-            ),
-          ),
-          Text(trailing, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
-        ],
-      ),
-    );
-  }
+                    const SizedBox(height: 24),
 
-  Widget _buildShimmer() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Cards Shimmer
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 110,
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Container(
-                    height: 110,
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            
-            // Grid Cards Shimmer
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: MediaQuery.of(context).size.width < 400 ? 1.05 : 1.25,
-              children: List.generate(4, (i) => Container(
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-              )),
-            ),
-            const SizedBox(height: 24),
-            
-            // Instagram Style List Shimmer
-            Container(
-              width: 150,
-              height: 20,
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
-            ),
-            const SizedBox(height: 16),
-            ...List.generate(4, (index) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  border: Border.all(color: Colors.white, width: 2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
+                    /// CATEGORY CARD
                     Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xffE5E7EB)),
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(width: 120, height: 12, color: Colors.white),
-                          const SizedBox(height: 8),
-                          Container(width: 80, height: 10, color: Colors.white),
+                          const Text(
+                            "Expense by Category",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+
+                          const SizedBox(height: 30),
+
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              /// DONUT CHART
+                              Expanded(
+                                flex: 2,
+                                child: SizedBox(
+                                  height: 220,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      PieChart(
+                                        PieChartData(
+                                          centerSpaceRadius: 45,
+                                          sectionsSpace: 2,
+                                          sections: expenseCategories
+                                              .asMap()
+                                              .entries
+                                              .map((entry) {
+                                                final index = entry.key;
+                                                final item = entry.value;
+
+                                                final colors = [
+                                                  Colors.blue,
+                                                  Colors.green,
+                                                  Colors.orange,
+                                                  Colors.red,
+                                                  Colors.purple,
+                                                ];
+
+                                                return PieChartSectionData(
+                                                  value:
+                                                      (double.tryParse(
+                                                        item["amount"]
+                                                            .toString(),
+                                                      ) ??
+                                                      0),
+                                                  color:
+                                                      colors[index %
+                                                          colors.length],
+                                                  radius: 30,
+                                                  showTitle: false,
+                                                );
+                                              })
+                                              .toList(),
+                                        ),
+                                      ),
+
+                                      Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text(
+                                            "Total Expense",
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            " ${indianCurrency.format(expenseCategories.fold<double>(0, (sum, item) => sum + (double.tryParse(item["amount"].toString()) ?? 0)))}",
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 20,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(width: 20),
+
+                              /// CATEGORY DETAILS
+                              Expanded(
+                                flex: 3,
+                                child: Column(
+                                  children: expenseCategories.asMap().entries.map((
+                                    entry,
+                                  ) {
+                                    final index = entry.key;
+                                    final e = entry.value;
+
+                                    final colors = [
+                                      Colors.blue,
+                                      Colors.green,
+                                      Colors.orange,
+                                      Colors.red,
+                                      Colors.purple,
+                                    ];
+
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 10,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 2,
+                                            backgroundColor:
+                                                colors[index % colors.length],
+                                          ),
+
+                                          const SizedBox(width: 8),
+
+                                          Expanded(
+                                            child: Text(
+                                              e["name"].toString(),
+                                              style: const TextStyle(
+                                                fontSize: 10,
+                                              ),
+                                            ),
+                                          ),
+
+                                          Text(
+                                            " ${indianCurrency.format(double.tryParse(e["amount"].toString()) ?? 0)}",
+                                          ),
+
+                                          const SizedBox(width: 12),
+
+                                          Text(
+                                            "${((double.tryParse(e["progress"].toString()) ?? 0) * 100).toStringAsFixed(1)}%",
+                                            style: const TextStyle(
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
-                    Container(width: 40, height: 12, color: Colors.white),
+                    const SizedBox(height: 24),
+
+                    /// TABLE
+                    /// TABLE
+                    // Container(
+                    //   padding: const EdgeInsets.all(18),
+
+                    //   decoration: BoxDecoration(
+                    //     color: Colors.white,
+
+                    //     borderRadius: BorderRadius.circular(20),
+
+                    //     border: Border.all(color: const Color(0xffE5E7EB)),
+                    //   ),
+
+                    //   child: Column(
+                    //     crossAxisAlignment: CrossAxisAlignment.start,
+
+                    //     children: [
+                    //       const Text(
+                    //         "Recent Expenses Log",
+
+                    //         style: TextStyle(
+                    //           fontSize: 22,
+                    //           fontWeight: FontWeight.w700,
+                    //         ),
+                    //       ),
+
+                    //       const SizedBox(height: 24),
+
+                    //       SingleChildScrollView(
+                    //         scrollDirection: Axis.horizontal,
+
+                    //         child: DataTable(
+                    //           columnSpacing: 70,
+
+                    //           headingRowHeight: 56,
+
+                    //           dataRowMinHeight: 62,
+
+                    //           dataRowMaxHeight: 68,
+
+                    //           dividerThickness: 0.6,
+
+                    //           // ignore: deprecated_member_use
+                    //           headingRowColor: MaterialStateProperty.all(
+                    //             const Color(0xffF8FAFC),
+                    //           ),
+
+                    //           columns: const [
+                    //             DataColumn(
+                    //               label: Text(
+                    //                 "DATE",
+
+                    //                 style: TextStyle(
+                    //                   fontSize: 11,
+                    //                   letterSpacing: 0.8,
+                    //                   color: Color(0xff64748B),
+                    //                   fontWeight: FontWeight.w700,
+                    //                 ),
+                    //               ),
+                    //             ),
+
+                    //             DataColumn(
+                    //               label: Text(
+                    //                 "SOURCE",
+
+                    //                 style: TextStyle(
+                    //                   fontSize: 11,
+                    //                   letterSpacing: 0.8,
+                    //                   color: Color(0xff64748B),
+                    //                   fontWeight: FontWeight.w700,
+                    //                 ),
+                    //               ),
+                    //             ),
+
+                    //             DataColumn(
+                    //               label: Text(
+                    //                 "CATEGORY",
+
+                    //                 style: TextStyle(
+                    //                   fontSize: 11,
+                    //                   letterSpacing: 0.8,
+                    //                   color: Color(0xff64748B),
+                    //                   fontWeight: FontWeight.w700,
+                    //                 ),
+                    //               ),
+                    //             ),
+
+                    //             DataColumn(
+                    //               label: Text(
+                    //                 "LOCATION / BRANCH",
+
+                    //                 style: TextStyle(
+                    //                   fontSize: 11,
+                    //                   letterSpacing: 0.8,
+                    //                   color: Color(0xff64748B),
+                    //                   fontWeight: FontWeight.w700,
+                    //                 ),
+                    //               ),
+                    //             ),
+
+                    //             DataColumn(
+                    //               label: Text(
+                    //                 "AMOUNT",
+
+                    //                 style: TextStyle(
+                    //                   fontSize: 11,
+                    //                   letterSpacing: 0.8,
+                    //                   color: Color(0xff64748B),
+                    //                   fontWeight: FontWeight.w700,
+                    //                 ),
+                    //               ),
+                    //             ),
+
+                    //             DataColumn(
+                    //               label: Text(
+                    //                 "STATUS",
+
+                    //                 style: TextStyle(
+                    //                   fontSize: 11,
+                    //                   letterSpacing: 0.8,
+                    //                   color: Color(0xff64748B),
+                    //                   fontWeight: FontWeight.w700,
+                    //                 ),
+                    //               ),
+                    //             ),
+                    //           ],
+
+                    //           rows: expenseLogs.map<DataRow>((e) {
+                    //             final status =
+                    //                 e["status"]?.toString() ?? "Paid";
+
+                    //             return DataRow(
+                    //               cells: [
+                    //                 /// DATE
+                    //                 DataCell(
+                    //                   Text(
+                    //                     DateFormat('d/M/yyyy').format(
+                    //                       DateTime.parse(e["date"].toString()),
+                    //                     ),
+
+                    //                     style: const TextStyle(
+                    //                       fontWeight: FontWeight.w500,
+                    //                     ),
+                    //                   ),
+                    //                 ),
+
+                    //                 /// SOURCE
+                    //                 DataCell(
+                    //                   Text(
+                    //                     e["source"]?.toString() ??
+                    //                         e["reference"]?.toString() ??
+                    //                         "Branch",
+
+                    //                     style: const TextStyle(
+                    //                       fontWeight: FontWeight.w500,
+                    //                     ),
+                    //                   ),
+                    //                 ),
+
+                    //                 /// CATEGORY
+                    //                 DataCell(
+                    //                   Text(
+                    //                     e["category"]?.toString() ?? "",
+
+                    //                     style: const TextStyle(
+                    //                       fontWeight: FontWeight.w500,
+                    //                     ),
+                    //                   ),
+                    //                 ),
+
+                    //                 /// LOCATION
+                    //                 DataCell(
+                    //                   Text(
+                    //                     e["location"]?.toString() ??
+                    //                         e["branch"]?.toString() ??
+                    //                         "",
+
+                    //                     style: const TextStyle(
+                    //                       fontWeight: FontWeight.w500,
+                    //                     ),
+                    //                   ),
+                    //                 ),
+
+                    //                 /// AMOUNT
+                    //                 DataCell(
+                    //                   Text(
+                    //                     "₹${e["amount"] ?? 0}",
+
+                    //                     style: const TextStyle(
+                    //                       fontWeight: FontWeight.w700,
+                    //                     ),
+                    //                   ),
+                    //                 ),
+
+                    //                 /// STATUS
+                    //                 DataCell(
+                    //                   Container(
+                    //                     padding: const EdgeInsets.symmetric(
+                    //                       horizontal: 14,
+                    //                       vertical: 7,
+                    //                     ),
+
+                    //                     decoration: BoxDecoration(
+                    //                       color: status == "Paid"
+                    //                           ? const Color(0xffDCFCE7)
+                    //                           : status == "Rejected"
+                    //                           ? const Color(0xffFEE2E2)
+                    //                           : const Color(0xffFEF3C7),
+
+                    //                       borderRadius: BorderRadius.circular(
+                    //                         30,
+                    //                       ),
+                    //                     ),
+
+                    //                     child: Row(
+                    //                       mainAxisSize: MainAxisSize.min,
+
+                    //                       children: [
+                    //                         Icon(
+                    //                           status == "Paid"
+                    //                               ? Icons.check_circle_outline
+                    //                               : status == "Rejected"
+                    //                               ? Icons.cancel_outlined
+                    //                               : Icons.access_time,
+
+                    //                           size: 14,
+
+                    //                           color: status == "Paid"
+                    //                               ? Colors.green
+                    //                               : status == "Rejected"
+                    //                               ? Colors.red
+                    //                               : Colors.orange,
+                    //                         ),
+
+                    //                         const SizedBox(width: 5),
+
+                    //                         Text(
+                    //                           status,
+
+                    //                           style: TextStyle(
+                    //                             fontSize: 12,
+                    //                             fontWeight: FontWeight.w700,
+
+                    //                             color: status == "Paid"
+                    //                                 ? Colors.green
+                    //                                 : status == "Rejected"
+                    //                                 ? Colors.red
+                    //                                 : Colors.orange,
+                    //                           ),
+                    //                         ),
+                    //                       ],
+                    //                     ),
+                    //                   ),
+                    //                 ),
+                    //               ],
+                    //             );
+                    //           }).toList(),
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xffE5E7EB)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Expense Summary",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: DataTable(
+                              columnSpacing: 35,
+                              headingRowColor: WidgetStateProperty.all(
+                                const Color(0xffF8FAFC),
+                              ),
+
+                              columns: const [
+                                DataColumn(label: Text("#")),
+                                DataColumn(label: Text("Category")),
+                                DataColumn(label: Text("This Month")),
+                                DataColumn(label: Text("Last Month")),
+                                DataColumn(label: Text("Change (₹)")),
+                                DataColumn(label: Text("Change (%)")),
+                              ],
+
+                              rows: [
+                                ...expenseCategories.asMap().entries.map((
+                                  entry,
+                                ) {
+                                  final index = entry.key;
+                                  final item = entry.value;
+
+                                  final double current =
+                                      double.tryParse(
+                                        item["amount"].toString(),
+                                      ) ??
+                                      0;
+
+                                  // Example calculation if API doesn't provide last month values
+                                  final double lastMonth = current * 0.93;
+
+                                  final double change = current - lastMonth;
+
+                                  final double changePercent = lastMonth == 0
+                                      ? 0
+                                      : (change / lastMonth) * 100;
+
+                                  return DataRow(
+                                    cells: [
+                                      DataCell(Text("${index + 1}")),
+
+                                      DataCell(Text(item["name"].toString())),
+
+                                      DataCell(
+                                        Text(
+                                          indianCurrency.format(current),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+
+                                      DataCell(
+                                        Text(indianCurrency.format(lastMonth)),
+                                      ),
+
+                                      DataCell(
+                                        Text(
+                                          "${change >= 0 ? '+' : '-'} ${indianCurrency.format(change.abs())}",
+                                          style: TextStyle(
+                                            color: change >= 0
+                                                ? Colors.green
+                                                : Colors.red,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+
+                                      DataCell(
+                                        Text(
+                                          "${changePercent >= 0 ? '+' : '-'} ${changePercent.abs().toStringAsFixed(2)}%",
+                                          style: TextStyle(
+                                            color: changePercent >= 0
+                                                ? Colors.green
+                                                : Colors.red,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }),
+
+                                /// TOTAL ROW
+                                DataRow(
+                                  color: WidgetStateProperty.all(
+                                    const Color(0xffF8FAFC),
+                                  ),
+                                  cells: [
+                                    const DataCell(Text("")),
+
+                                    const DataCell(
+                                      Text(
+                                        "Total",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+
+                                    DataCell(
+                                      Text(
+                                        indianCurrency.format(
+                                          expenseCategories.fold<double>(
+                                            0,
+                                            (sum, item) =>
+                                                sum +
+                                                (double.tryParse(
+                                                      item["amount"].toString(),
+                                                    ) ??
+                                                    0),
+                                          ),
+                                        ),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+
+                                    DataCell(
+                                      Text(
+                                        indianCurrency.format(
+                                          expenseCategories.fold<double>(
+                                                0,
+                                                (sum, item) =>
+                                                    sum +
+                                                    (double.tryParse(
+                                                          item["amount"]
+                                                              .toString(),
+                                                        ) ??
+                                                        0),
+                                              ) *
+                                              0.93,
+                                        ),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+
+                                    const DataCell(
+                                      Text(
+                                        "- ₹17.5",
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+
+                                    const DataCell(
+                                      Text(
+                                        "-2.87%",
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-            )),
-          ],
-        ),
       ),
     );
   }
 
-  Widget _buildError(String message) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+  Widget buildDateField({
+    required String title,
+    required String value,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          Container(
+            height: 56,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xffE5E7EB)),
+            ),
+            child: Row(
+              children: [
+                Expanded(child: Text(value)),
+                const Icon(Icons.calendar_month),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildDropdownField({
+    required String title,
+    required String value,
+    required List<String> items,
+    required Function(String?) onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+
+      children: [
+        Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+
+        const SizedBox(height: 8),
+
+        Container(
+          height: 56,
+
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+
+          decoration: BoxDecoration(
+            color: Colors.white,
+
+            borderRadius: BorderRadius.circular(14),
+
+            border: Border.all(color: const Color(0xffE5E7EB)),
+          ),
+
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: value,
+              isExpanded: true,
+
+              items: items.map((e) {
+                return DropdownMenuItem(value: e, child: Text(e));
+              }).toList(),
+
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildActionButton({
+    required String title,
+    required IconData icon,
+    required Color bgColor,
+  }) {
+    return Container(
+      height: 56,
+      width: 135,
+
+      decoration: BoxDecoration(
+        color: bgColor,
+
+        borderRadius: BorderRadius.circular(14),
+
+        border: Border.all(color: const Color(0xffE5E7EB)),
+      ),
+
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+
+        children: [
+          Icon(icon),
+
+          const SizedBox(width: 8),
+
+          Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+        ],
+      ),
+    );
+  }
+
+  Widget buildBar(double blueHeight, double greyHeight, String day) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+
           children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 16),
-            const Text('Oops! Could not load report.', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text(message, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
+            Container(
+              width: 18,
+              height: blueHeight,
+
+              decoration: BoxDecoration(
+                color: Colors.blue,
+
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+
+            const SizedBox(width: 6),
+
+            Container(
+              width: 18,
+              height: greyHeight,
+
+              decoration: BoxDecoration(
+                color: const Color(0xffE5E7EB),
+
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
           ],
         ),
+
+        const SizedBox(height: 8),
+
+        Text(day),
+      ],
+    );
+  }
+
+  Widget buildCategoryRow(
+    String title,
+    String amount,
+    double progress,
+    Color color,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 22),
+
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+
+              Text(amount, style: const TextStyle(fontWeight: FontWeight.w700)),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          LinearProgressIndicator(
+            value: progress,
+            minHeight: 8,
+            color: color,
+
+            backgroundColor: Colors.grey.shade200,
+          ),
+        ],
+      ),
+    );
+  }
+
+  DataRow buildExpenseRow(
+    String date,
+    String ref,
+    String desc,
+    String category,
+    String location,
+    String amount,
+    String status,
+    Color statusColor,
+  ) {
+    return DataRow(
+      cells: [
+        DataCell(Text(date)),
+
+        DataCell(Text(ref)),
+
+        DataCell(Text(desc)),
+
+        DataCell(Text(category)),
+
+        DataCell(Text(location)),
+
+        DataCell(Text(amount)),
+
+        DataCell(
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+
+            decoration: BoxDecoration(
+              // ignore: deprecated_member_use
+              color: statusColor.withOpacity(0.15),
+
+              borderRadius: BorderRadius.circular(30),
+            ),
+
+            child: Text(
+              status,
+
+              style: TextStyle(color: statusColor, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class ExpenseStatCard extends StatelessWidget {
+  final String title;
+  final String amount;
+  final String growth;
+  final IconData icon;
+  final Color iconColor;
+  final Color iconBg;
+  final Color growthColor;
+
+  const ExpenseStatCard({
+    super.key,
+    required this.title,
+    required this.amount,
+    required this.growth,
+    required this.icon,
+    required this.iconColor,
+    required this.iconBg,
+    required this.growthColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14), // reduced padding
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xffE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            // ignore: deprecated_member_use
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+
+        children: [
+          /// TOP SECTION
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12, // reduced
+                    height: 1.2,
+                    color: Color(0xff4B5563),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 6),
+
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  icon,
+                  color: iconColor,
+                  size: 16, // reduced
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          /// AMOUNT
+          Flexible(
+            child: Text(
+              amount,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 20, // reduced
+                fontWeight: FontWeight.w800,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
+          /// GROWTH
+          Flexible(
+            child: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 3,
+              runSpacing: 2,
+              children: [
+                if (growth != "-")
+                  Icon(
+                    growth.contains("-")
+                        ? Icons.trending_down
+                        : Icons.trending_up,
+                    size: 14, // reduced
+                    color: growthColor,
+                  ),
+
+                Text(
+                  growth == "-" ? "No change" : growth,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: growth == "-"
+                        ? const Color(0xff9CA3AF)
+                        : growthColor,
+                    fontSize: 11, // reduced
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+
+                if (growth != "-")
+                  const Text(
+                    "vs last period",
+                    style: TextStyle(color: Color(0xff9CA3AF), fontSize: 11),
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

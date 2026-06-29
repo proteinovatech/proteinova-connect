@@ -68,7 +68,7 @@ class ReportService {
         (salesResponse.data['branches'] as List<dynamic>?) ?? [];
     final expensesList = expenseResponse.data as List<dynamic>? ?? [];
     final purchasesList =
-    (purchaseResponse.data['data'] as List<dynamic>?) ?? [];
+        (purchaseResponse.data['data'] as List<dynamic>?) ?? [];
 
     Map<String, double> branchExpenses = {};
     for (var exp in expensesList) {
@@ -199,7 +199,6 @@ class ReportService {
     String? endDate,
     String? branchId,
   }) async {
-   
     final response = await dio.get(
       '/api/reports/branch-sales',
       queryParameters: {
@@ -208,63 +207,20 @@ class ReportService {
         'branchId': branchId,
       },
     );
-  
 
-    final list = (response.data['branches'] as List<dynamic>?) ?? [];
-    final trend = (response.data["trend"] as List<dynamic>?) ?? [];
-    
-    double totalSales = 0;
-    int totalOrders = 0;
-    for (var item in list) {
-      totalSales +=
-          double.tryParse(item['total_sales']?.toString() ?? '0') ?? 0;
-      totalOrders += int.tryParse(item['total_orders']?.toString() ?? '0') ?? 0;
-    }
+    print("BRANCH SALES RESPONSE = ${response.data}");
+
+    final branches = (response.data['branches'] as List<dynamic>?) ?? [];
+
+    final trend = (response.data['trend'] as List<dynamic>?) ?? [];
 
     return {
-      "stats": [
-        {
-          "title": "Total Sales Revenue",
-          "amount": totalSales.toStringAsFixed(0),
-          "growth": "+8.4%",
-          "icon": "money",
-          "color": "blue",
-        },
-        {
-          "title": "Total Units Sold",
-          "amount": totalOrders.toString(),
-          "growth": "+2.4%",
-          "icon": "bag",
-          "color": "green",
-        },
-        {
-          "title": "Branch Stock Available",
-          "amount": "68.3k",
-          "growth": "-2.4%",
-          "icon": "store",
-          "color": "orange",
-        },
-        {
-          "title": "Spoilage / Damaged Rate",
-          "amount": "1.2%",
-          "growth": "-0.5%",
-          "icon": "warning",
-          "color": "red",
-        },
-      ],
-      "topBranches": list
-          .map(
-            (e) => {
-              "name": e["branch_name"],
-              "sales": e["total_sales"],
-              "progress": 0.5,
-            },
-          )
-          .toList(),
-      "hourlySales": [],
-       "dailySales": trend,
-      "raw": list,
-      
+      "branches": branches,
+      "trend": trend,
+      "transactions": [],
+
+      // keep original response if needed
+      "raw": response.data,
     };
   }
 
@@ -295,8 +251,7 @@ class ReportService {
       totalExpense += amount;
 
       String category = item['category']?.toString() ?? 'Other';
-      categoryMap[category] =
-    (categoryMap[category] ?? 0) + amount;
+      categoryMap[category] = (categoryMap[category] ?? 0) + amount;
       if (category == 'TRANSPORT') {
         logisticsExpense += amount;
       }
@@ -332,8 +287,8 @@ class ReportService {
     final trendData = dailyMap.entries
         .map((e) => {'day': e.key, 'amount': e.value})
         .toList();
-print("CATEGORY MAP = $categoryMap");
-print("CATEGORIES = $categories");
+    print("CATEGORY MAP = $categoryMap");
+    print("CATEGORIES = $categories");
     return {
       "stats": [
         {
@@ -392,10 +347,9 @@ print("CATEGORIES = $categories");
       queryParameters: {'startDate': startDate, 'endDate': endDate},
     );
 
-    final list =
-    (response.data['data'] as List<dynamic>?) ?? [];
+    final list = (response.data['data'] as List<dynamic>?) ?? [];
     print("RAW PURCHASE RESPONSE = ${response.data}");
-print("PURCHASE LIST = $list");
+    print("PURCHASE LIST = $list");
 
     double totalSpend = 0;
     int totalTrays = 0;

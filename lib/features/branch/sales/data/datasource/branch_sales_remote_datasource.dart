@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class BranchSalesRemoteDatasource {
-  static String baseUrl = dotenv.env['BASE_URL'] ?? "";
+  static String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? "";
 
   // ──────────────────────────────────────────────
   // POST /api/branch/sales  →  createSale
