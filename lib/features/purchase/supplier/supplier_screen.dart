@@ -235,8 +235,7 @@ void didChangeDependencies() {
             supplier:
                 supplier.companyName,
 
-            orderId:
-                "ID-${index + 1}",
+            orderId: "SUP-${supplier.id}",
 
             location:
                 supplier.location,
