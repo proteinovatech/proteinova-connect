@@ -4,7 +4,7 @@ class ReportData {
   final int totalSalesOrders;
   final double totalPendingCollection;
   final int totalTraysReturned;
-  
+
   // Breakdown lists
   final List<CategorySale> categorySales;
   final List<ExpenseCategory> expenseCategories;
@@ -23,16 +23,24 @@ class ReportData {
 
   factory ReportData.fromJson(Map<String, dynamic> json) {
     return ReportData(
-      totalRevenue: double.tryParse(json['total_revenue']?.toString() ?? '0') ?? 0.0,
-      totalExpenses: double.tryParse(json['total_expenses']?.toString() ?? '0') ?? 0.0,
+      totalRevenue:
+          double.tryParse(json['total_revenue']?.toString() ?? '0') ?? 0.0,
+      totalExpenses:
+          double.tryParse(json['total_expenses']?.toString() ?? '0') ?? 0.0,
       totalSalesOrders: json['total_sales_orders'] ?? 0,
-      totalPendingCollection: double.tryParse(json['total_pending_collection']?.toString() ?? '0') ?? 0.0,
+      totalPendingCollection:
+          double.tryParse(
+            json['total_pending_collection']?.toString() ?? '0',
+          ) ??
+          0.0,
       totalTraysReturned: json['total_trays_returned'] ?? 0,
-      categorySales: (json['category_sales'] as List<dynamic>?)
+      categorySales:
+          (json['category_sales'] as List<dynamic>?)
               ?.map((e) => CategorySale.fromJson(e))
               .toList() ??
           [],
-      expenseCategories: (json['expense_categories'] as List<dynamic>?)
+      expenseCategories:
+          (json['expense_categories'] as List<dynamic>?)
               ?.map((e) => ExpenseCategory.fromJson(e))
               .toList() ??
           [],
@@ -45,7 +53,11 @@ class CategorySale {
   final double amount;
   final int quantity;
 
-  CategorySale({required this.name, required this.amount, required this.quantity});
+  CategorySale({
+    required this.name,
+    required this.amount,
+    required this.quantity,
+  });
 
   factory CategorySale.fromJson(Map<String, dynamic> json) {
     return CategorySale(
@@ -66,6 +78,26 @@ class ExpenseCategory {
     return ExpenseCategory(
       name: json['name'] ?? 'Unknown',
       amount: double.tryParse(json['amount']?.toString() ?? '0') ?? 0.0,
+    );
+  }
+}
+
+class BranchReportModel {
+  final List branches;
+  final List trend;
+  final List transactions;
+
+  BranchReportModel({
+    required this.branches,
+    required this.trend,
+    required this.transactions,
+  });
+
+  factory BranchReportModel.fromJson(Map<String, dynamic> json) {
+    return BranchReportModel(
+      branches: json["branches"] ?? [],
+      trend: json["trend"] ?? [],
+      transactions: json["transactions"] ?? [],
     );
   }
 }

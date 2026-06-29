@@ -167,12 +167,11 @@ class _DailyClosingState extends State<DailyClosing> {
                           child: _buildCashSummary(data, isClosed, difference),
                         ),
 
-                        SizedBox(
-                          width: (width - 48) / 2,
+                        // SizedBox(
+                        //   width: (width - 48) / 2,
 
-                          child: _buildOnlineSummary(data),
-                        ),
-
+                        //   child: _buildOnlineSummary(data),
+                        // ),
                         SizedBox(
                           width: (width - 48) / 2,
 
@@ -225,8 +224,7 @@ class _DailyClosingState extends State<DailyClosing> {
 
                         const SizedBox(height: 16),
 
-                        _buildOnlineSummary(data),
-
+                        // _buildOnlineSummary(data),
                         const SizedBox(height: 16),
 
                         _buildSalesExpenseSummary(data),
@@ -543,42 +541,42 @@ class _DailyClosingState extends State<DailyClosing> {
     );
   }
 
-  Widget _buildOnlineSummary(DailyClosingModel data) {
-    return _buildCard(
-      title: "Online Transaction Summary",
-      child: Column(
-        children: [
-          _buildSummaryItem(
-            "Expenses (UPI)",
-            "-₹${data.onlineSummary.upi.expense.toStringAsFixed(2)}",
-          ),
-          _buildSummaryItem(
-            "Closing UPI",
-            "₹${data.onlineSummary.upi.closing.toStringAsFixed(2)}",
-          ),
-          const SizedBox(height: 8),
-          _buildSummaryItem(
-            "Card Sales",
-            "₹${data.onlineSummary.card.sales.toStringAsFixed(2)}",
-          ),
-          _buildSummaryItem(
-            "Expenses (Card)",
-            "-₹${data.onlineSummary.card.expense.toStringAsFixed(2)}",
-          ),
-          _buildSummaryItem(
-            "Closing Card",
-            "₹${data.onlineSummary.card.closing.toStringAsFixed(2)}",
-          ),
-          const Divider(),
-          _buildSummaryItem(
-            "Total Collection",
-            "₹${data.onlineSummary.totalCollection.toStringAsFixed(2)}",
-            isBold: true,
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildOnlineSummary(DailyClosingModel data) {
+  //   return _buildCard(
+  //     title: "Online Transaction Summary",
+  //     child: Column(
+  //       children: [
+  //         _buildSummaryItem(
+  //           "Expenses (UPI)",
+  //           "-₹${data.onlineSummary.upi.expense.toStringAsFixed(2)}",
+  //         ),
+  //         _buildSummaryItem(
+  //           "Closing UPI",
+  //           "₹${data.onlineSummary.upi.closing.toStringAsFixed(2)}",
+  //         ),
+  //         const SizedBox(height: 8),
+  //         _buildSummaryItem(
+  //           "Card Sales",
+  //           "₹${data.onlineSummary.card.sales.toStringAsFixed(2)}",
+  //         ),
+  //         _buildSummaryItem(
+  //           "Expenses (Card)",
+  //           "-₹${data.onlineSummary.card.expense.toStringAsFixed(2)}",
+  //         ),
+  //         _buildSummaryItem(
+  //           "Closing Card",
+  //           "₹${data.onlineSummary.card.closing.toStringAsFixed(2)}",
+  //         ),
+  //         const Divider(),
+  //         _buildSummaryItem(
+  //           "Total Collection",
+  //           "₹${data.onlineSummary.totalCollection.toStringAsFixed(2)}",
+  //           isBold: true,
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildSalesExpenseSummary(DailyClosingModel data) {
     return Column(

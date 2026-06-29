@@ -50,10 +50,10 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
     "Warehouse Report",
   ];
   final indianCurrency = NumberFormat.currency(
-  locale: 'en_IN',
-  symbol: '₹',
-  decimalDigits: 0,
-);
+    locale: 'en_IN',
+    symbol: '₹',
+    decimalDigits: 0,
+  );
 
   @override
   void initState() {
@@ -92,7 +92,7 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
         branchId: branchId,
       );
       print(data);
-print(data["dailyTrend"]);
+      print(data["dailyTrend"]);
 
       setState(() {
         expenseData = data;
@@ -100,8 +100,7 @@ print(data["dailyTrend"]);
         expenseCategories = data["categories"] ?? [];
         expenseLogs = data["recentExpenses"] ?? [];
         isLoading = false;
-        dailyTrend =
-        List<Map<String, dynamic>>.from(data["dailyTrend"] ?? []);
+        dailyTrend = List<Map<String, dynamic>>.from(data["dailyTrend"] ?? []);
         print("expenseCategories: $expenseCategories");
         print("API RESPONSE: $data");
         print("STATS: ${data['stats']}");
@@ -111,19 +110,16 @@ print(data["dailyTrend"]);
       setState(() {
         isLoading = false;
       });
-      
     }
   }
 
   Future<void> loadCategories() async {
-  final data = await reportService.getCategories(
-  
-  );
+    final data = await reportService.getCategories();
 
-  setState(() {
-    expenseCategories = data;
-  });
-}
+    setState(() {
+      expenseCategories = data;
+    });
+  }
 
   Future<void> exportPdf() async {
     final pdf = pw.Document();
@@ -193,7 +189,7 @@ print(data["dailyTrend"]);
 
   @override
   Widget build(BuildContext context) {
-     print(expenseCategories);
+    print(expenseCategories);
     return Scaffold(
       backgroundColor: const Color(0xffF8F8F8),
 
@@ -502,7 +498,7 @@ print(data["dailyTrend"]);
                         int crossAxisCount = constraints.maxWidth > 1000
                             ? 4
                             : 2;
-                            print(expenseStats);
+                        print(expenseStats);
                         return GridView.count(
                           crossAxisCount: crossAxisCount,
                           shrinkWrap: true,
@@ -551,9 +547,10 @@ print(data["dailyTrend"]);
                               title: e["title"].toString(),
                               amount: e["title"] == "Pending Approvals"
                                   ? e["amount"].toString()
-                                  :  indianCurrency.format(
-                                     double.tryParse(e["amount"].toString()) ?? 0,
-                                  ),
+                                  : indianCurrency.format(
+                                      double.tryParse(e["amount"].toString()) ??
+                                          0,
+                                    ),
                               growth: e["growth"].toString(),
                               icon: getIcon(e["icon"]?.toString() ?? ""),
                               iconColor: iconColor,
@@ -633,82 +630,82 @@ print(data["dailyTrend"]);
                           const SizedBox(height: 18),
 
                           const Wrap(
-  crossAxisAlignment: WrapCrossAlignment.center,
-  spacing: 14,
-  runSpacing: 6,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 14,
+                            runSpacing: 6,
 
-  children: [
-    Row(
-      mainAxisSize: MainAxisSize.min,
-      children: const [
-        Icon(
-          Icons.square,
-          color: Colors.blue,
-          size: 12,
-        ),
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(
+                                    Icons.square,
+                                    color: Colors.blue,
+                                    size: 12,
+                                  ),
 
-        SizedBox(width: 4),
+                                  SizedBox(width: 4),
 
-        Text(
-          "Operating Expenses",
-          style: TextStyle(
-            fontSize: 12,
-          ),
-        ),
-      ],
-    ),
+                                  Text(
+                                    "Operating Expenses",
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ],
+                              ),
 
-    Row(
-      mainAxisSize: MainAxisSize.min,
-      children: const [
-        Icon(
-          Icons.square,
-          color: Color(0xffE5E7EB),
-          size: 12,
-        ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(
+                                    Icons.square,
+                                    color: Color(0xffE5E7EB),
+                                    size: 12,
+                                  ),
 
-        SizedBox(width: 4),
+                                  SizedBox(width: 4),
 
-        Text(
-          "Capital Expenditures",
-          style: TextStyle(
-            fontSize: 12,
-          ),
-        ),
-      ],
-    ),
-  ],
-),
+                                  Text(
+                                    "Capital Expenditures",
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                           const SizedBox(height: 30),
 
                           SizedBox(
                             height: 220,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: dailyTrend.map<Widget>((e) {
+                                  final double amount =
+                                      double.tryParse(e["amount"].toString()) ??
+                                      0.0;
 
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  final double maxAmount = dailyTrend
+                                      .map(
+                                        (x) =>
+                                            double.tryParse(
+                                              x["amount"].toString(),
+                                            ) ??
+                                            0.0,
+                                      )
+                                      .reduce((a, b) => a > b ? a : b);
 
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                                  final double height = maxAmount == 0
+                                      ? 0.0
+                                      : (amount / maxAmount) * 150.0;
 
-                              children: [
-                             ...dailyTrend.map((e) {
-        final amount =
-            double.tryParse(e["amount"].toString()) ?? 0;
-
-        final maxAmount = dailyTrend
-            .map((x) => double.tryParse(x["amount"].toString()) ?? 0)
-            .reduce((a, b) => a > b ? a : b);
-
-        final height = (amount / maxAmount) * 150;
-
-        print("${e["day"]} -> $height");
-
-        return buildBar(
-          height,
-          height * 0.7,
-          e["day"].toString(),
-        );
-      }),
-                              ],
+                                  return buildBar(
+                                    height,
+                                    height * 0.7,
+                                    e["day"].toString(),
+                                  );
+                                }).toList(),
+                              ),
                             ),
                           ),
                         ],
@@ -716,7 +713,6 @@ print(data["dailyTrend"]);
                     ),
 
                     const SizedBox(height: 24),
-                    
 
                     /// CATEGORY CARD
                     Container(
@@ -745,16 +741,14 @@ print(data["dailyTrend"]);
                           ),
 
                           const SizedBox(height: 24),
-                          
-                             
+
                           ...expenseCategories.map((e) {
                             return buildCategoryRow(
-                              
                               e["name"].toString(),
 
                               indianCurrency.format(
-  double.tryParse(e["amount"].toString()) ?? 0,
-),
+                                double.tryParse(e["amount"].toString()) ?? 0,
+                              ),
 
                               double.tryParse(e["progress"].toString()) ?? 0.0,
 
@@ -904,8 +898,8 @@ print(data["dailyTrend"]);
                                     DataCell(
                                       Text(
                                         DateFormat('d/M/yyyy').format(
-  DateTime.parse(e["date"].toString()),
-),
+                                          DateTime.parse(e["date"].toString()),
+                                        ),
 
                                         style: const TextStyle(
                                           fontWeight: FontWeight.w500,
@@ -1294,121 +1288,119 @@ class ExpenseStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-   return Container(
-  padding: const EdgeInsets.all(14), // reduced padding
-  decoration: BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(12),
-    border: Border.all(color: const Color(0xffE5E7EB)),
-    boxShadow: [
-      BoxShadow(
-        // ignore: deprecated_member_use
-        color: Colors.black.withOpacity(0.02),
-        blurRadius: 10,
-        offset: const Offset(0, 4),
-      ),
-    ],
-  ),
-
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    mainAxisSize: MainAxisSize.min,
-
-    children: [
-      /// TOP SECTION
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 12, // reduced
-                height: 1.2,
-                color: Color(0xff4B5563),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 6),
-
-          Container(
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              icon,
-              color: iconColor,
-              size: 16, // reduced
-            ),
+    return Container(
+      padding: const EdgeInsets.all(14), // reduced padding
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xffE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            // ignore: deprecated_member_use
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
 
-      const SizedBox(height: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
 
-      /// AMOUNT
-      Flexible(
-        child: Text(
-          amount,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 20, // reduced
-            fontWeight: FontWeight.w800,
-            color: Colors.black87,
-          ),
-        ),
-      ),
-
-      const SizedBox(height: 6),
-
-      /// GROWTH
-      Flexible(
-        child: Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
-          spacing: 3,
-          runSpacing: 2,
-          children: [
-            if (growth != "-")
-              Icon(
-                growth.contains("-")
-                    ? Icons.trending_down
-                    : Icons.trending_up,
-                size: 14, // reduced
-                color: growthColor,
-              ),
-
-            Text(
-              growth == "-" ? "No change" : growth,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: growth == "-"
-                    ? const Color(0xff9CA3AF)
-                    : growthColor,
-                fontSize: 11, // reduced
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-
-            if (growth != "-")
-              const Text(
-                "vs last period",
-                style: TextStyle(
-                  color: Color(0xff9CA3AF),
-                  fontSize: 11,
+        children: [
+          /// TOP SECTION
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12, // reduced
+                    height: 1.2,
+                    color: Color(0xff4B5563),
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-          ],
-        ),
+
+              const SizedBox(width: 6),
+
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  icon,
+                  color: iconColor,
+                  size: 16, // reduced
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          /// AMOUNT
+          Flexible(
+            child: Text(
+              amount,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 20, // reduced
+                fontWeight: FontWeight.w800,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
+          /// GROWTH
+          Flexible(
+            child: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 3,
+              runSpacing: 2,
+              children: [
+                if (growth != "-")
+                  Icon(
+                    growth.contains("-")
+                        ? Icons.trending_down
+                        : Icons.trending_up,
+                    size: 14, // reduced
+                    color: growthColor,
+                  ),
+
+                Text(
+                  growth == "-" ? "No change" : growth,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: growth == "-"
+                        ? const Color(0xff9CA3AF)
+                        : growthColor,
+                    fontSize: 11, // reduced
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+
+                if (growth != "-")
+                  const Text(
+                    "vs last period",
+                    style: TextStyle(color: Color(0xff9CA3AF), fontSize: 11),
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
-    ],
-  ),
-); }
+    );
+  }
 }
