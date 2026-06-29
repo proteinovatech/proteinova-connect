@@ -5,16 +5,25 @@ import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_bloc.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_event.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_state.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/supplier_model.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/supplier_request_model.dart';
 
 class AddSuppliers extends StatefulWidget {
-  const AddSuppliers({super.key});
+  final SupplierModel? supplier;
+
+  const AddSuppliers({
+    super.key,
+    this.supplier,
+  });
 
   @override
   State<AddSuppliers> createState() => _AddSuppliersState();
 }
 
 class _AddSuppliersState extends State<AddSuppliers> {
+
+  bool get isEdit => widget.supplier != null;
+
    final TextEditingController supplierController =
       TextEditingController();
 
@@ -30,9 +39,44 @@ class _AddSuppliersState extends State<AddSuppliers> {
   final TextEditingController locationController =
     TextEditingController();
 
+  final TextEditingController gstController =
+    TextEditingController();
+
+
   String region = "Select region";
 
   String status = "Active";
+
+  @override
+void initState() {
+  super.initState();
+
+  if (isEdit) {
+    supplierController.text =
+    widget.supplier?.companyName ?? "";
+
+contactController.text =
+    widget.supplier?.supplierName ?? "";
+
+emailController.text =
+    widget.supplier?.email ?? "";
+
+phoneController.text =
+    widget.supplier?.phoneNumber ?? "";
+
+locationController.text =
+    widget.supplier?.location ?? "";
+
+gstController.text =
+    widget.supplier?.gstNumber ?? "";
+    print("GST Controller: ${gstController.text}");
+
+status =
+    widget.supplier?.status == "INACTIVE"
+        ? "Inactive"
+        : "Active";
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -68,13 +112,9 @@ class _AddSuppliersState extends State<AddSuppliers> {
           elevation: 0,
           automaticallyImplyLeading: false,
       
-          title: const Text(
-            "Add New Supplier",
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
+          title: Text(
+            isEdit ? "Edit Supplier" : "Add New Supplier",
+            style: AppTextStyles.headingText22
           ),
       
           actions: [
@@ -329,6 +369,31 @@ class _AddSuppliersState extends State<AddSuppliers> {
                   ),
       
                   const SizedBox(height: 28),
+                   Text(
+                    "GST Number (Optional)",
+                    style: AppTextStyles.buttonText16
+                  ),
+      
+                  const SizedBox(height: 8),
+      
+                  TextField(
+                  controller: gstController,
+                  decoration: InputDecoration(
+                    hintText: "e.g.22AAAA0000A1Z5",
+                    border: OutlineInputBorder(
+                      borderRadius:
+                          BorderRadius.circular(16),
+                    ),
+                    contentPadding:
+                        const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 18,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 28),
+      
       
                   /// BUTTONS
                   Row(
@@ -376,10 +441,11 @@ class _AddSuppliersState extends State<AddSuppliers> {
                       //   ),
                       // ),
                       ElevatedButton(
+                        
                         onPressed: () {
       
         final supplier = SupplierRequestModel(
-      
+        id: isEdit ? widget.supplier?.id : null,
       supplierCompanyName:
           supplierController.text,
       
@@ -397,11 +463,19 @@ class _AddSuppliersState extends State<AddSuppliers> {
       
       status:
           status.toUpperCase(),
+
+      gstNumber: 
+      gstController.text
         );
-      
-        context.read<SupplierBloc>().add(
+       if (isEdit) {
+    context.read<SupplierBloc>().add(
+      UpdateSupplierEvent(supplier),
+    );
+  } else {
+    context.read<SupplierBloc>().add(
       AddSupplierEvent(supplier),
-        );
+    );
+  }
       },
                                    style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xfffacc15),
@@ -425,8 +499,8 @@ class _AddSuppliersState extends State<AddSuppliers> {
           color: Colors.black,
         ),
       )
-    : const Text(
-        "Save Supplier",
+    : Text(
+         isEdit ? "Edit Supplier" : "Add New Supplier",
         style: TextStyle(
           fontWeight: FontWeight.w600,
         ),

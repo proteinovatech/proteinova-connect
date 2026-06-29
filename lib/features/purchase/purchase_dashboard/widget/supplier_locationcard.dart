@@ -301,7 +301,7 @@ Align(
             ),
             ),
             SizedBox(height: size.height*0.02),
-             const Text("Delivery Date",
+             const Text("Expected Arrival Date",
                 style: AppTextStyles.buttonText16),
             SizedBox(height: getHeight(context, 6)),
 

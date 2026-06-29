@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
+import 'package:proteinova_connect/features/admin/supplier/screens/add_suppliers.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_bloc.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_event.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_state.dart';
@@ -254,6 +255,22 @@ void didChangeDependencies() {
 
             contactnumber:
                 supplier.phoneNumber,
+            
+            onEdit: () async {
+          print("GST: ${supplier.gstNumber}");
+  final updated = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => AddSuppliers(supplier:supplier,
+    ),
+  ));
+
+  if (updated == true) {
+    context.read<SupplierBloc>().add(
+      FetchSuppliers(),
+    );
+  }
+},
           );
         },
       );
@@ -381,7 +398,6 @@ class PurchaseCards extends StatelessWidget {
   final Color statusColor;
   final Color textColor;
   final String supplier;
-
   final String orderId;
   final String location;
   final String email;
@@ -389,6 +405,7 @@ class PurchaseCards extends StatelessWidget {
   final String itemboxes;
   final String contactperson;
   final String contactnumber;
+  final VoidCallback? onEdit;
 
   const PurchaseCards({
     super.key,
@@ -403,6 +420,7 @@ class PurchaseCards extends StatelessWidget {
     required this.itemboxes,
     required this.contactperson,
     required this.contactnumber,
+    this.onEdit
   });
 
   @override
@@ -528,6 +546,25 @@ class PurchaseCards extends StatelessWidget {
                   bgColor: Colors.green.shade100,
                   textColor: Colors.green,
                 ),
+
+                SizedBox(width: getWidth(context, 8)),
+
+InkWell(
+  onTap: onEdit,
+  borderRadius: BorderRadius.circular(getWidth(context, 8)),
+  child: Container(
+    padding: EdgeInsets.all(getWidth(context, 6)),
+    decoration: BoxDecoration(
+      color: Colors.blue.shade50,
+      borderRadius: BorderRadius.circular(getWidth(context, 8)),
+    ),
+    child: Icon(
+      Icons.edit_outlined,
+      size: getWidth(context, 18),
+      color: Colors.blue,
+    ),
+  ),
+),
               ],
             ),
           ],

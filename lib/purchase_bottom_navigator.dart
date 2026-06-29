@@ -16,6 +16,7 @@ import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/sup
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/purchase_repository.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/supplier_repository.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/presentation/newpurchase.dart';
+import 'package:proteinova_connect/features/purchase/purchase_report/purchase_report.dart';
 import 'package:proteinova_connect/features/purchase/supplier/supplier_screen.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/presentation/purchase_dashboard.dart';
 import 'package:proteinova_connect/features/purchase/warehouse_stock_updates.dart';
@@ -256,21 +257,21 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
                                   // Divider(color: Colors.grey.shade200),
 
                                   _buildSettingTile(
-                                    icon: Icons.stacked_bar_chart_outlined,
+                                    icon: Icons.shopping_bag_outlined,
                                     title: "Purchase Report",
                                   onTap: () {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
-                                            const PurchaseReportScreen(),
+                                            const PurchaseReport(),
                                       ),
                                     );
                                   },
                                   ),
                                   Divider(color: Colors.grey.shade200),
                                   _buildSettingTile(
-                                    icon: Icons.inventory_2_outlined,
+                                    icon: Icons.local_shipping_outlined,
                                     title: "Warehouse Stock Updates",
                                   onTap: () {
                                     Navigator.push(
@@ -458,7 +459,7 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
           children: [
             _buildNavItem(Icons.grid_view, 0),
             _buildNavItem(Icons.shopping_cart, 1),
-            _buildNavItem(Icons.local_shipping_outlined, 2),
+            _buildNavItem(Icons.group_outlined, 2),
             _buildNavItem(Icons.storefront_outlined, 3),
             _buildNavItem(Icons.menu, 4),
           ],

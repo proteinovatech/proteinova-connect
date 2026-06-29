@@ -99,8 +99,9 @@ void initState() {
   ];
 
   final List<String> trayType = [
-    "Plastic Tray",
-    "Paper Tray",
+    "Paper(Stock:50)",
+    "Plastic(Stock:20104)",
+    "Plastic 30(Stock:20104)"
   ];
 
   void updateProduct(int index) {

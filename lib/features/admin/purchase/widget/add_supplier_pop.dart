@@ -29,6 +29,9 @@ class _AddSupplierPopupState extends State<AddSupplierPopup> {
       TextEditingController();
   final TextEditingController locationController =
     TextEditingController();
+  final TextEditingController gstController =
+    TextEditingController();
+
 
   String region = "Select region";
   String status = "Active";
@@ -405,6 +408,9 @@ class _AddSupplierPopupState extends State<AddSupplierPopup> {
       
       status:
           status.toUpperCase(),
+
+      gstNumber: 
+             gstController.text
         );
       
         context.read<SupplierBloc>().add(

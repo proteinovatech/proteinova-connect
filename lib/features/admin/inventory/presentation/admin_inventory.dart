@@ -105,7 +105,7 @@ print("category_stock = ${rawStats['category_stock']}");
   "damaged_stock": cards["damaged_stock"] ?? 0,
   "today_tray_sold": cards["today_tray_sold"] ?? 0,
   "today_expense": cards["today_expense"] ?? 0,
-  "category_stock": rawStats["stock_summary"] ?? [],
+  "category_stock": rawStats["category_stock"] ?? [],
 };    // Auto-select first category if none selected
         if (selectedCategoryName == null) {
          final catStock =
@@ -152,7 +152,7 @@ print("category_stock = ${rawStats['category_stock']}");
         "damaged_stock": cards["damaged_stock"] ?? 0,
         "today_tray_sold": cards["today_tray_sold"] ?? 0,
         "today_expense": cards["today_expense"] ?? 0,
-        "category_stock": rawStats["stock_summary"] ?? [],
+        "category_stock": rawStats["category_stock"] ?? [],
       };
 
       _isLoading = false;
@@ -196,7 +196,7 @@ Future<void> loadAllBranches() async {
       traySold += (cards["today_tray_sold"] ?? 0) as int;
       todayExpense += (cards["today_expense"] ?? 0) as int;
       combinedCategoryStock.addAll(
-  (branch["stock_summary"] as List?) ?? [],
+  (branch["category_stock"] as List?) ?? [],
 );
       
     }
@@ -910,7 +910,7 @@ Future<void> loadAllBranches() async {
     "${NumberFormat('#,##,###').format(inventoryStats['opening_stock'] ?? 0)} Eggs",
                               subtitle: "Stock at start of day",
                               icon: Icons.inventory_2_outlined,
-                              iconColor: Colors.black87,
+                              iconColor: Colors.lightBlue,
                             ),
                           ),
                           GestureDetector(
@@ -926,7 +926,7 @@ Future<void> loadAllBranches() async {
                            value:
     "${NumberFormat('#,##,###').format(inventoryStats['closing_stock'] ?? 0)} Eggs",
                               subtitle: "Current available stock",
-                              icon: Icons.local_shipping_outlined,
+                              icon: Icons.inventory_2_outlined,
                               iconColor: Colors.green,
                             ),
                           ),
@@ -953,7 +953,7 @@ Future<void> loadAllBranches() async {
     "${NumberFormat('#,##,###').format(inventoryStats['incoming_stock'] ?? 0)} Eggs",
                               subtitle: "Stock in transit",
                               icon: Icons.local_shipping_outlined,
-                              iconColor: Colors.green,
+                              iconColor: Colors.blue,
                             ),
                           ),
                           GestureDetector(
@@ -969,7 +969,7 @@ Future<void> loadAllBranches() async {
     "${NumberFormat('#,##,###').format(inventoryStats['today_tray_sold'] ?? 0)} Eggs",
                               subtitle: "Total eggs sold today",
                               icon: Icons.send_outlined,
-                              iconColor: Colors.black87,
+                              iconColor: Colors.deepPurpleAccent,
                             ),
                           ),
                           GestureDetector(
@@ -985,7 +985,7 @@ Future<void> loadAllBranches() async {
     "${NumberFormat('#,##,###').format(inventoryStats['current_stock'] ?? 0)} Eggs",
                               subtitle: "View detailed breakdown",
                               icon: Icons.inventory_2_outlined,
-                              iconColor: Colors.black87,
+                              iconColor: Colors.orange,
                             ),
                           ),
                           // GestureDetector(
