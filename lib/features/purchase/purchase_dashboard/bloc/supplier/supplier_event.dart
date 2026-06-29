@@ -13,3 +13,9 @@ class SearchSupplierEvent extends SupplierEvent {
 
   SearchSupplierEvent(this.query);
 }
+
+class UpdateSupplierEvent extends SupplierEvent {
+  final SupplierRequestModel supplier;
+
+  UpdateSupplierEvent(this.supplier);
+}

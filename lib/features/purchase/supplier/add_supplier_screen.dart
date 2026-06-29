@@ -30,6 +30,9 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
   final TextEditingController locationController =
     TextEditingController();
 
+   final TextEditingController gstController =
+      TextEditingController();  
+
   String region = "Select region";
 
   String status = "Active";
@@ -252,6 +255,8 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
       
       
                   const SizedBox(height: 18),
+
+                  
       
                   /// EMAIL + PHONE
                   Row(
@@ -322,13 +327,40 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
       ),
         ),
       ),
+      
                           ],
+
                         ),
                       ),
                     ],
                   ),
       
                   const SizedBox(height: 28),
+                   Text(
+                    "GST Number (Optional)",
+                    style: AppTextStyles.buttonText16
+                  ),
+      
+                  const SizedBox(height: 8),
+      
+                  TextField(
+                  controller: gstController,
+                  decoration: InputDecoration(
+                    hintText: "e.g.22AAAA0000A1Z5",
+                    border: OutlineInputBorder(
+                      borderRadius:
+                          BorderRadius.circular(16),
+                    ),
+                    contentPadding:
+                        const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 18,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 28),
+      
       
                   /// BUTTONS
                   Row(
@@ -394,6 +426,11 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
       
       supplierLocation:
           locationController.text,
+
+      gstNumber:
+          gstController.text,
+
+      
       
       status:
           status.toUpperCase(),
@@ -434,6 +471,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                       ),
                     ],
                   ),
+                  
                 ],
               ),
             ),

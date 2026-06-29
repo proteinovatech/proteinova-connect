@@ -75,6 +75,33 @@ void initState() {
     }
 
 if (state is PurchaseLoaded) {
+
+   final today = DateTime.now();
+
+bool isToday(String? date) {
+  if (date == null || date.isEmpty) return false;
+
+  final d = DateTime.parse(date);
+
+  return d.year == today.year &&
+      d.month == today.month &&
+      d.day == today.day;
+}
+                     
+  final todayTransit = state.purchases.where((p) {
+  return p["movement_status"] != "RECEIVED" &&
+      isToday(p["expected_arrival"]);
+}).length;
+
+final todayReached = state.purchases.where((p) {
+  return p["movement_status"] == "RECEIVED" &&
+      isToday(p["expected_arrival"]);
+}).length;
+
+final totalReceived = state.purchases.where((p) {
+  return p["movement_status"] == "RECEIVED";
+}).length;
+                  
  
 
   final arrivals = state.purchases.where(
@@ -93,6 +120,15 @@ final availableStock = state.purchases.where(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+
+                _buildOverviewCards( 
+                  todayTransit,
+                  todayReached,
+                  totalReceived,
+                  ),
+                const SizedBox(height: 15),
+
+                      
 
           /// New Stock Arrivals
           Text(
@@ -245,6 +281,126 @@ final availableStock = state.purchases.where(
 
     
   ));}
+    Widget _buildOverviewCards( int todayTransit,
+  int todayReached,
+  int totalReceived,) {
+    
+  final cards = [
+    {
+      "title": "TODAY IN TRANSIT",
+      "count":todayTransit ,
+      "icon": Icons.local_shipping,
+      "color": Colors.blue,
+    },
+    {
+      "title": "TODAY REACHED",
+      "count":todayReached,
+      "icon": Icons.check_circle,
+      "color": Colors.green,
+    },
+    {
+      "title": "TOTAL RECEIVED",
+      "count": totalReceived ,
+      "icon": Icons.inventory,
+      "color": Colors.orange,
+    },
+  ];
+
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      final cardWidth = (constraints.maxWidth - 12) / 2;
+
+      return Column(
+        children: [
+          // First row
+          Row(
+            children: [
+              SizedBox(
+                width: cardWidth,
+                child: _overviewCard(cards[0]),
+              ),
+              const SizedBox(width: 12),
+              SizedBox(
+                width: cardWidth,
+                child: _overviewCard(cards[1]),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Second row - centered
+          Center(
+            child: SizedBox(
+              width: cardWidth,
+              child: _overviewCard(cards[2]),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+Widget _overviewCard(Map card) {
+  return Container(
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+  color: Colors.white,
+  borderRadius: BorderRadius.circular(18),
+  border: Border(
+    top: BorderSide(
+      color: card["color"] as Color,
+      width: 4,
+    ),
+  ),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.black12,
+      blurRadius: 10,
+      offset: Offset(0, 3),
+    ),
+  ],
+),
+    child: Row(
+      children: [
+        Container(
+          height: 55,
+          width: 55,
+          decoration: BoxDecoration(
+            color: (card["color"] as Color).withOpacity(.12),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Icon(
+            card["icon"],
+            color: card["color"],
+            size: 28,
+          ),
+        ),
+
+        const SizedBox(width: 16),
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                card["title"],
+                style: AppTextStyles.bodyText12
+              ),
+              const SizedBox(height: 6),
+              Text(
+                "${card["count"]}",
+                style:AppTextStyles.headingText20
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 
 
   }

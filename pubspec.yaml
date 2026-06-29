@@ -97,6 +97,8 @@ flutter:
   assets:
       - assets/
       - .env
+      - assets/fonts/NotoSans-Regular.ttf
+      - assets/fonts/NotoSans-Bold.ttf
       
 
      

@@ -6,6 +6,7 @@ class SupplierModel {
   final String phoneNumber;
   final String location;
   final String status;
+  final String gstNumber;
 
   SupplierModel({
     required this.id,
@@ -15,6 +16,7 @@ class SupplierModel {
     required this.phoneNumber,
     required this.location,
     required this.status,
+    required this.gstNumber
   });
 
   factory SupplierModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class SupplierModel {
       phoneNumber: json['phone_number'] as String? ?? '',
       location: json['supplier_location'] as String? ?? '',
       status: json['status'] as String? ?? '',
+      gstNumber: json['gst_number'] as String? ?? '',
     );
   }
 }

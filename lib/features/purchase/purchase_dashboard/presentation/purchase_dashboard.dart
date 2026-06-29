@@ -10,6 +10,7 @@ import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/sup
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/supplier/supplier_event.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/purchase_repository.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/repository/supplier_repository.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/presentation/invoice_generator.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/presentation/newpurchase.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/purchase/purchase_bloc.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/bloc/purchase/purchase_event.dart';
@@ -112,31 +113,32 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("PO-${purchase["id"]}", style: AppTextStyles.headingText22),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: purchaseStatus == "PURCHASED" ? Colors.green.withOpacity(0.1) : Colors.amber.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          purchaseStatus,
-                          style: TextStyle(
-                            color: purchaseStatus == "PURCHASED" ? Colors.green : Colors.amber.shade800,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
+                      Text("Purchase Details", style: AppTextStyles.headingText22),
+                      // Container(
+                      //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      //   decoration: BoxDecoration(
+                      //     color: purchaseStatus == "PURCHASED" ? Colors.green.withOpacity(0.1) : Colors.amber.withOpacity(0.1),
+                      //     borderRadius: BorderRadius.circular(8),
+                      //   ),
+                      //   child: Text(
+                      //     purchaseStatus,
+                      //     style: TextStyle(
+                      //       color: purchaseStatus == "PURCHASED" ? Colors.green : Colors.amber.shade800,
+                      //       fontWeight: FontWeight.bold,
+                      //       fontSize: 12,
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
                   const Divider(),
                   const SizedBox(height: 10),
 
                   // Supplier details
+                   _buildDetailRow("PO Number", purchase["id"] != null ? "PO-${purchase["id"]}" : "--"),
                   _buildDetailRow("Supplier Name", purchase['supplier_company_name'] ?? '--'),
-                  _buildDetailRow("Origin Location", purchase['location'] ?? '--'),
-                  _buildDetailRow("Warehouse", purchase['warehouse_location'] ?? '--'),
+                  // _buildDetailRow("Origin Location", purchase['location'] ?? '--'),
+                  _buildDetailRow("Location", purchase['warehouse_location'] ?? '--'),
                   _buildDetailRow("Expected Arrival", purchase['expected_arrival'] ?? '--'),
                   
                   const SizedBox(height: 16),
@@ -164,101 +166,52 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
                           _buildDetailRow("Category", item["egg_category_grade"] ?? ""),
                           _buildDetailRow("Trays / Eggs", "$qty Trays (${qty * 30} eggs)"),
                           _buildDetailRow("Rate / Minus", "₹${price.toStringAsFixed(2)} / -₹${deduction.toStringAsFixed(2)}"),
-                          _buildDetailRow("Tray Type", item["tray_type"] ?? "--"),
-                          _buildDetailRow("Final Cost", "₹${cost.toStringAsFixed(2)}", isBold: true),
+                          // _buildDetailRow("Tray Type", item["tray_type"] ?? "--"),
+                          // _buildDetailRow("Final Cost", "₹${cost.toStringAsFixed(2)}", isBold: true),
                         ],
                       ),
                     );
                   }).toList(),
 
                   const Divider(),
-                  _buildDetailRow("Items Total Cost", "₹${itemsCost.toStringAsFixed(2)}"),
-                  _buildDetailRow("Additional Costs", "₹${additionalTotal.toStringAsFixed(2)}"),
+                  // _buildDetailRow("Items Total Cost", "₹${itemsCost.toStringAsFixed(2)}"),
+                  // _buildDetailRow("Additional Costs", "₹${additionalTotal.toStringAsFixed(2)}"),
                   _buildDetailRow("Grand Total", "₹${grandTotal.toStringAsFixed(2)}", isBold: true),
                   
                   const SizedBox(height: 16),
-                  const Text("Broker & Driver Details", style: AppTextStyles.formInputs15dark),
-                  const SizedBox(height: 8),
-                  _buildDetailRow("Broker Name / Num", "$brokerName / $brokerNum"),
-                  _buildDetailRow("Driver Name / Num", "$driverName / $driverNum"),
-                  _buildDetailRow("Vehicle No / Type", "$vehicleNum / $vehicleType"),
+                  // const Text("Broker & Driver Details", style: AppTextStyles.formInputs15dark),
+                  // const SizedBox(height: 8),
+                  // _buildDetailRow("Broker Name / Num", "$brokerName / $brokerNum"),
+                  // _buildDetailRow("Driver Name / Num", "$driverName / $driverNum"),
+                  // _buildDetailRow("Vehicle No / Type", "$vehicleNum / $vehicleType"),
 
-                  const SizedBox(height: 16),
-                  const Text("Payment Details", style: AppTextStyles.formInputs15dark),
-                  const SizedBox(height: 8),
-                  _buildDetailRow("Method", paymentMethod),
-                  if (upiApp.isNotEmpty) _buildDetailRow("UPI App", upiApp),
-                  if (otherUpi.isNotEmpty) _buildDetailRow("Reference", otherUpi),
-                  _buildDetailRow("Amount Paid", "₹${paymentAmt.toStringAsFixed(2)}"),
-                  _buildDetailRow("Debt Remaining", "₹${debtAmt.toStringAsFixed(2)}"),
+                  // const SizedBox(height: 16),
+                  // const Text("Payment Details", style: AppTextStyles.formInputs15dark),
+                  // const SizedBox(height: 8),
+                  _buildDetailRow("Payment Method", paymentMethod),
+                  // if (upiApp.isNotEmpty) _buildDetailRow("UPI App", upiApp),
+                  // if (otherUpi.isNotEmpty) _buildDetailRow("Reference", otherUpi),
+                  // _buildDetailRow("Amount Paid", "₹${paymentAmt.toStringAsFixed(2)}"),
+                  // _buildDetailRow("Debt Remaining", "₹${debtAmt.toStringAsFixed(2)}"),
 
                   const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Mock Invoice Download Started..."), backgroundColor: Colors.green),
-                            );
-                          },
-                          icon: const Icon(Icons.download_outlined),
-                          label: const Text("Download Invoice"),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      if (purchaseStatus == "PENDING")
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.pop(context); // Close details modal
-                              
-                              final request = PurchaseRequest(
-                                supplierId: purchase["supplier_id"] ?? 0,
-                                supplierName: purchase["supplier_company_name"] ?? "",
-                                location: purchase["location"] ?? "",
-                                warehouseLocation: purchase["warehouse_location"] ?? "",
-                                expectedArrival: purchase["expected_arrival"] ?? "",
-                                driverName: driverName,
-                                driverNumber: driverNum,
-                                vehicleNumber: vehicleNum,
-                                vehicleType: vehicleType,
-                                loadingCharge: load,
-                                unloadingCharge: unload,
-                                transportCharge: trans,
-                                miscExpense: misc,
-                                purchaseStatus: purchaseStatus,
-                                brokerFee: 0.0,
-                                brokerNumber: brokerNum,
-                                brokerName: brokerName,
-                                description: purchase["description"] ?? "",
-                                items: items.map((e) {
-                                  return PurchaseItem(
-                                    eggCategoryGrade: e["egg_category_grade"] ?? "",
-                                    trays: e["trays"] ?? 0,
-                                    capacity: e["capacity"] ?? 30,
-                                    perEggPrice: double.tryParse(e["per_egg_price"]?.toString() ?? "0") ?? 0.0,
-                                    marketPriceMinus: double.tryParse(e["market_price_minus"]?.toString() ?? "0") ?? 0.0,
-                                    neccRate: double.tryParse(e["necc_rate"]?.toString() ?? "0") ?? 0.0,
-                                    trayType: e["tray_type"] ?? "",
-                                  );
-                                }).toList(),
-                              );
-
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => Checkout(purchase: request),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(backgroundColor: AppColors.amber600, foregroundColor: Colors.black),
-                            child: const Text("Checkout"),
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
+ SizedBox(
+  width: double.infinity,
+   child: ElevatedButton.icon(
+     onPressed: () async {
+       await InvoiceGenerator.generate(
+          purchase: Map<String, dynamic>.from(purchase),
+   items: List<Map<String, dynamic>>.from(items),
+       );
+     },
+     icon: const Icon(Icons.download),
+     label: const Text("Download Bill"),
+     style: ElevatedButton.styleFrom(
+       backgroundColor: AppColors.amber600,
+       foregroundColor: Colors.deepPurpleAccent,
+     ),
+   ),
+ ),            ],
               );
             },
           ),
@@ -337,7 +290,31 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
                     if (state is! PurchaseLoaded) {
                       return const SizedBox();
                     }
+                    final today = DateTime.now();
 
+bool isToday(String? date) {
+  if (date == null || date.isEmpty) return false;
+
+  final d = DateTime.parse(date);
+
+  return d.year == today.year &&
+      d.month == today.month &&
+      d.day == today.day;
+}
+                     
+  final todayTransit = state.purchases.where((p) {
+  return p["movement_status"] != "RECEIVED" &&
+      isToday(p["expected_arrival"]);
+}).length;
+
+final todayReached = state.purchases.where((p) {
+  return p["movement_status"] == "RECEIVED" &&
+      isToday(p["expected_arrival"]);
+}).length;
+
+final totalReceived = state.purchases.where((p) {
+  return p["movement_status"] == "RECEIVED";
+}).length;
                     // Extract unique suppliers for filter dropdown
                     final uniqueSuppliers = ["All Suppliers"] + state.purchases
                         .map((p) => (p['supplier_company_name'] ?? '').toString())
@@ -375,6 +352,11 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
                             "Manage Purchase orders and Incoming stocks.",
                             style: AppTextStyles.bodyText16,
                           ),
+                          const SizedBox(height: 15),
+
+                          _buildOverviewCards( todayTransit,
+  todayReached,
+  totalReceived,),
                           const SizedBox(height: 15),
 
                           // Dynamic Search Bar
@@ -536,4 +518,124 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
       ),
     );
   }
+
+  Widget _buildOverviewCards( int todayTransit,
+  int todayReached,
+  int totalReceived,) {
+    
+  final cards = [
+    {
+      "title": "TODAY IN TRANSIT",
+      "count":todayTransit ,
+      "icon": Icons.local_shipping,
+      "color": Colors.blue,
+    },
+    {
+      "title": "TODAY REACHED",
+      "count":todayReached,
+      "icon": Icons.check_circle,
+      "color": Colors.green,
+    },
+    {
+      "title": "TOTAL RECEIVED",
+      "count": totalReceived ,
+      "icon": Icons.inventory,
+      "color": Colors.orange,
+    },
+  ];
+
+   return LayoutBuilder(
+    builder: (context, constraints) {
+      final cardWidth = (constraints.maxWidth - 12) / 2;
+
+      return Column(
+        children: [
+          // First row
+          Row(
+            children: [
+              SizedBox(
+                width: cardWidth,
+                child: _overviewCard(cards[0]),
+              ),
+              const SizedBox(width: 12),
+              SizedBox(
+                width: cardWidth,
+                child: _overviewCard(cards[1]),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Second row - centered
+          Center(
+            child: SizedBox(
+              width: cardWidth,
+              child: _overviewCard(cards[2]),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+Widget _overviewCard(Map card) {
+  return Container(
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+  color: Colors.white,
+  borderRadius: BorderRadius.circular(18),
+  border: Border(
+    top: BorderSide(
+      color: card["color"] as Color,
+      width: 4,
+    ),
+  ),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.black12,
+      blurRadius: 10,
+      offset: Offset(0, 3),
+    ),
+  ],
+),
+    child: Row(
+      children: [
+        Container(
+          height: 55,
+          width: 55,
+          decoration: BoxDecoration(
+            color: (card["color"] as Color).withOpacity(.12),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Icon(
+            card["icon"],
+            color: card["color"],
+            size: 28,
+          ),
+        ),
+
+        const SizedBox(width: 16),
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                card["title"],
+                style: AppTextStyles.bodyText12
+              ),
+              const SizedBox(height: 6),
+              Text(
+                "${card["count"]}",
+                style: AppTextStyles.headingText20
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
 }

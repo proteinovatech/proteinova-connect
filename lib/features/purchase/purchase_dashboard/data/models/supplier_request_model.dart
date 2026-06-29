@@ -5,14 +5,19 @@ class SupplierRequestModel {
   final String phoneNumber;
   final String supplierLocation;
   final String status;
+  final String gstNumber;
+   final int? id;
 
   SupplierRequestModel({
+     this.id,
     required this.supplierCompanyName,
     required this.supplierName,
     required this.email,
     required this.phoneNumber,
     required this.supplierLocation,
     required this.status,
+    required this.gstNumber
+   
   });
 
   factory SupplierRequestModel.fromJson(
@@ -36,7 +41,10 @@ class SupplierRequestModel {
 
       status:
           json["status"] ?? "",
-    );
+
+      gstNumber: 
+           json["gst_number"] ?? ""
+    ); 
   }
 
   Map<String, dynamic> toJson() {
@@ -58,6 +66,9 @@ class SupplierRequestModel {
 
       "status":
           status,
+
+      "gst_number":
+          gstNumber,
     };
   }
 }
