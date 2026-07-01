@@ -420,6 +420,45 @@ class ReportService {
       };
     }).toList();
 
+    final spendBySupplier = suppliers.map((e) {
+  return {
+    "name": e["name"],
+    "value": "₹ ${NumberFormat('#,##,##0', 'en_IN').format(e["amount"])}",
+  };
+}).toList();
+
+final volumeBySupplier = supplierMap.entries.map((e) {
+  final supplierRows = list.where((x) => x["supplier_name"] == e.key);
+
+  int trays = 0;
+
+  for (var row in supplierRows) {
+    trays += int.tryParse(row["total_trays"].toString()) ?? 0;
+  }
+
+  return {
+    "name": e.key,
+    "value": trays,
+  };
+}).toList();
+
+final supplierList = supplierMap.entries.map((e) {
+  return {
+    "name": e.key,
+    "value": list.where((x) => x["supplier_name"] == e.key).length,
+  };
+}).toList();
+
+final totalOrdersList = list.map((e) {
+  return {
+    "name": e["supplier_name"] ?? "-",
+    "value": "Order #${e["id"]}",
+    "details": e["date"] != null
+        ? DateFormat("dd/MM/yyyy")
+            .format(DateTime.parse(e["date"].toString()))
+        : "-",
+  };
+}).toList();
     return {
       "stats": [
         {
@@ -439,9 +478,9 @@ class ReportService {
         {
           "title": "Avg Unit Cost",
           "amount": avgCost.toStringAsFixed(2),
-          "growth": "-1.4%",
+          "growth": "+5.2%",
           "icon": "calculator",
-          "color": "orange",
+          "color": "green",
         },
         {
           "title": "Active Suppliers",
@@ -454,7 +493,12 @@ class ReportService {
       "suppliers": suppliers,
       "monthlySummary": list,
       "monthlyTrend": monthlyTrend,
+      "spendBySupplier": spendBySupplier,
+  "volumeBySupplier": volumeBySupplier,
+  "supplierList": supplierList,
+  
       "raw": list,
+      "totalOrders": totalOrdersList,
     };
   }
 

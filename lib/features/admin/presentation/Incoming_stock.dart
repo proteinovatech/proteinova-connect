@@ -30,27 +30,50 @@ class _IncomingStockState extends State<IncomingStock> {
     _fetchData();
   }
 
-  Future<void> _fetchData() async {
-    setState(() => isLoading = true);
-    try {
-      final data = await _repository.fetchInventoryData();
-      final purchasesList = await _repository.fetchPurchases();
+Future<void> _fetchData() async {
+  setState(() => isLoading = true);
 
-      if (!mounted) return; // Added check here
-      setState(() {
-        inventoryModel = data;
-        purchases = purchasesList;
-        isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return; // Added check here
-      setState(() => isLoading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Connection Error: $e")));
-    }
+  try {
+    print("Step 1");
+
+    final data = await _repository.fetchInventoryData();
+    print("Step 2");
+
+    final purchasesList = await _repository.fetchPurchases();
+    print("Step 3");
+
+    print("Purchases count: ${purchasesList.length}");
+
+   print("Purchases: ${purchases.length}");
+
+for (int i = 0; i < purchases.length; i++) {
+  try {
+    final p = purchases[i];
+    print("Index: $i");
+    print(p);
+  } catch (e) {
+    print("Error at index $i: $e");
   }
+}
 
+    if (!mounted) return;
+
+    setState(() {
+      inventoryModel = data;
+      purchases = purchasesList;
+      isLoading = false;
+    });
+
+    print("Step 4");
+  } catch (e, stackTrace) {
+    print("ERROR: $e");
+    print(stackTrace);
+
+    if (!mounted) return;
+
+    setState(() => isLoading = false);
+  }
+}
   Future<void> _receiveStock(int dispatchId) async {
     Navigator.push(
       context,
@@ -78,14 +101,12 @@ class _IncomingStockState extends State<IncomingStock> {
     }
   }
 
-  List<PurchaseModel> get _activePurchases {
-    return purchases.where((p) {
-      final pStatus = p.purchaseStatus.toUpperCase();
-      return pStatus != "RECEIVED" && pStatus != "CANCELLED";
-    }).toList();
-  }
+List<PurchaseModel> get _activePurchases {
+  return purchases;
+}
 
-  List<PurchaseModel> get _filteredPurchases {
+
+List<PurchaseModel> get _filteredPurchases {
     List<PurchaseModel> list = _activePurchases;
 
     if (searchQuery.isNotEmpty) {
@@ -992,6 +1013,7 @@ class _IncomingStockState extends State<IncomingStock> {
 
   @override
   Widget build(BuildContext context) {
+  
     if (isLoading) {
       return const Scaffold(
         body: Center(child: AdminIncomingStockQueueSkeletonLoader()),
@@ -1214,56 +1236,60 @@ class _IncomingStockState extends State<IncomingStock> {
                 const SizedBox(height: 16),
 
                 /// TABLE
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade200),
+   Container(
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(12),
+    border: Border.all(color: Colors.grey.shade200),
+  ),
+  child: SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    child: SizedBox(
+      width: 800, // Set according to your table width
+      child: Column(
+        children: [
+          buildTableHeader(),
+
+          if (isLoading)
+            const Padding(
+              padding: EdgeInsets.all(40.0),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (_filteredPurchases.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(40.0),
+              child: Center(child: Text("No records found")),
+            )
+          else
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _filteredPurchases.length,
+              itemBuilder: (context, index) {
+                final p = _filteredPurchases[index];
+
+                return InkWell(
+                  onTap: () => _receiveStock(p.id),
+                  child: buildTableRow(
+                    po: p.poNumber,
+                    date: _formatDate(p.createdAt),
+                    supplier: p.supplierName,
+                    location: p.location.isEmpty ? "N/A" : p.location,
+                    quantity: "${p.totalQuantity} Eggs",
+                    type: p.productName,
+                    purchaseStatus: p.purchaseStatus,
+                    movementStatus: p.movementStatus,
+                    onReceive: () => _receiveStock(p.id),
+                    onMarkArrival: () => _markArrival(p.id),
                   ),
-                  child: Column(
-                    children: [
-                      buildTableHeader(),
-                      if (isLoading)
-                        const Padding(
-                          padding: EdgeInsets.all(40.0),
-                          child: Center(child: CircularProgressIndicator()),
-                        )
-                      else if (_filteredPurchases.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.all(40.0),
-                          child: Center(child: Text("No records found")),
-                        )
-                      else
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _filteredPurchases.length,
-                          itemBuilder: (context, index) {
-                            final p = _filteredPurchases[index];
-                            return InkWell(
-                              onTap: () => _receiveStock(p.id),
-                              child: buildTableRow(
-                                po: "PO-${p.poNumber}",
-                                date: _formatDate(p.createdAt),
-                                supplier: p.supplierName,
-                                location: p.location.isEmpty
-                                    ? "N/A"
-                                    : p.location,
-                                quantity: "${p.totalQuantity} Eggs",
-                                type: p.productName,
-                                purchaseStatus: p.purchaseStatus,
-                                movementStatus: p.movementStatus,
-                                onReceive: () => _receiveStock(p.id),
-                                onMarkArrival: () => _markArrival(p.id),
-                              ),
-                            );
-                          },
-                        ),
-                    ],
-                  ),
-                ),
-              ],
+                );
+              },
             ),
+        ],
+      ),
+    ),
+  ),
+)      ]),
           ),
         ),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
+import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/admin/report/data/report_service.dart';
 import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/expense_report_screen.dart';
@@ -41,7 +42,7 @@ class _PurchaseReportState extends State<PurchaseReport> {
   List<dynamic> supplierList = [];
   List<dynamic> branches = [];
   String? selectedBranch;
-
+   List<dynamic> totalOrdersList = [];
   List<dynamic> avgUnitCost = [];
   List<dynamic> monthlySummary = [];
   List<Map<String, dynamic>> monthlyTrend = [];
@@ -162,9 +163,33 @@ class _PurchaseReportState extends State<PurchaseReport> {
 
                           child: const Row(
                             children: [
+
                               Expanded(
                                 child: Text(
-                                  "SUPPLIER / PURCHASE",
+                                  "DATE",
+
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12,
+                                    color: Color(0xff94A3B8),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  "SUPPLIER",
+
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12,
+                                    color: Color(0xff94A3B8),
+                                  ),
+                                ),
+                              ),
+
+                              Expanded(
+                                child: Text(
+                                  "CATEGORY",
 
                                   style: TextStyle(
                                     fontWeight: FontWeight.w700,
@@ -186,17 +211,7 @@ class _PurchaseReportState extends State<PurchaseReport> {
                                 ),
                               ),
 
-                              Expanded(
-                                child: Text(
-                                  "DETAILS",
-
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 12,
-                                    color: Color(0xff94A3B8),
-                                  ),
-                                ),
-                              ),
+                             
                             ],
                           ),
                         ),
@@ -216,13 +231,28 @@ class _PurchaseReportState extends State<PurchaseReport> {
 
                             child: Row(
                               children: [
+
                                 Expanded(
                                   child: Text(
-                                    e["name"].toString(),
+                                    e["date"].toString(),
 
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                    style: AppTextStyles.bodyText12
+                                  ),
+                                ),
+
+                                Expanded(
+                                  child: Text(
+                                    e["supplier_company_name"].toString(),
+
+                                    style:AppTextStyles.bodyText12dark
+                                  ),
+                                ),
+
+                                Expanded(
+                                  child: Text(
+                                    e["category"].toString(),
+
+                                    style: AppTextStyles.bodyText12
                                   ),
                                 ),
 
@@ -230,21 +260,11 @@ class _PurchaseReportState extends State<PurchaseReport> {
                                   child: Text(
                                     e["value"].toString(),
 
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                    style: AppTextStyles.bodyText12dark
                                   ),
                                 ),
 
-                                Expanded(
-                                  child: Text(
-                                    e["details"].toString(),
-
-                                    style: const TextStyle(
-                                      color: Color(0xff64748B),
-                                    ),
-                                  ),
-                                ),
+                               
                               ],
                             ),
                           );
@@ -343,7 +363,7 @@ class _PurchaseReportState extends State<PurchaseReport> {
                               SizedBox(width: 6),
 
                               Text(
-                                "Admin",
+                                "Purchase",
 
                                 style: TextStyle(fontWeight: FontWeight.w700),
                               ),
@@ -659,15 +679,19 @@ class _PurchaseReportState extends State<PurchaseReport> {
                                 subtitle:
                                     "Detailed purchase data for your selection",
 
-                                rows: spendBySupplier.map<Map<String, dynamic>>(
-                                  (s) {
-                                    return {
-                                      "name": s["name"].toString(),
-                                      "value": s["value"].toString(),
-                                      "details": "Total Spend",
-                                    };
-                                  },
-                                ).toList(),
+                                 rows: monthlySummary.map<Map<String, dynamic>>((e) {
+    return {
+      "date": DateFormat("dd/MM/yyyy").format(
+        DateTime.parse(e["date"]),
+      ),
+      "supplier_company_name": e["supplier_company_name"] ?? "",
+      "category": e["category"] ?? "",
+      "value":
+          "₹ ${NumberFormat('#,##,##0', 'en_IN').format(
+        double.tryParse(e["total_amount"].toString()) ?? 0,
+      )}",
+    };
+  }).toList(),
                               );
                             } else if (e["title"] == "Purchase Volume" ||
                                 e["title"] == "Total Volume (Units)") {
@@ -677,15 +701,17 @@ class _PurchaseReportState extends State<PurchaseReport> {
                                 subtitle:
                                     "Detailed purchase data for your selection",
 
-                                rows: volumeBySupplier
-                                    .map<Map<String, dynamic>>((s) {
-                                      return {
-                                        "name": s["name"].toString(),
-                                        "value": s["value"].toString(),
-                                        "details": "Trays",
-                                      };
-                                    })
-                                    .toList(),
+                            rows: monthlySummary.map<Map<String, dynamic>>((e) {
+  return {
+    "date": DateFormat("dd/MM/yyyy").format(
+      DateTime.parse(e["date"].toString()),
+    ),
+    "supplier_company_name":
+        e["supplier_company_name"]?.toString() ?? "",
+    "category": e["category"]?.toString() ?? "",
+    "value": e["total_trays"]?.toString() ?? "",
+  };
+}).toList(),
                               );
                             } else if (e["title"] == "Supplier Count" ||
                                 e["title"] == "Active Suppliers") {
@@ -695,33 +721,48 @@ class _PurchaseReportState extends State<PurchaseReport> {
                                 subtitle:
                                     "Detailed purchase data for your selection",
 
-                                rows: supplierList.map<Map<String, dynamic>>((
-                                  s,
-                                ) {
-                                  return {
-                                    "name": s["name"].toString(),
-                                    "value": s["value"].toString(),
-                                    "details": "Purchase Records",
-                                  };
-                                }).toList(),
-                              );
-                            } else if (e["title"] == "Avg Unit Cost") {
+rows: supplierList.map<Map<String, dynamic>>((supplier) {
+  final supplierName = supplier["name"].toString();
+
+  // Find the first purchase of this supplier
+  final supplierData = monthlySummary.firstWhere(
+    (order) => order["supplier_name"]?.toString() == supplierName,
+    orElse: () => <String, dynamic>{},
+  );
+
+  final totalOrders = monthlySummary.where((order) {
+    return order["supplier_name"]?.toString() == supplierName;
+  }).length;
+
+  return {
+    "date": "-",
+    "supplier_company_name":
+        supplierData["supplier_company_name"]?.toString() ?? "-",
+    "category": "-",
+    "value": totalOrders.toString(),
+  };
+}).toList(), );
+                            } else if (e["title"] == "Total Orders") {
                               showPurchaseBottomSheet(
-                                title: "Avg Unit Cost by Purchase",
+                                title: "Total Orders",
 
                                 subtitle:
-                                    "Detailed purchase data for your selection",
+                                    "Detailed purchase orders",
 
-                                rows: avgUnitCost.map<Map<String, dynamic>>((
-                                  s,
-                                ) {
-                                  return {
-                                    "name": s["name"].toString(),
-                                    "value": s["value"].toString(),
-                                    "details": s["details"].toString(),
-                                  };
-                                }).toList(),
-                              );
+ rows: monthlySummary.map<Map<String, dynamic>>((e) {
+  return {
+    "date": DateFormat("dd/MM/yyyy").format(
+      DateTime.parse(e["date"].toString()),
+    ),
+    "supplier_company_name":
+        e["supplier_company_name"]?.toString() ?? "",
+    "category": e["category"]?.toString() ?? "",
+     "value":
+          "₹ ${NumberFormat('#,##,##0', 'en_IN').format(
+        double.tryParse(e["total_amount"].toString()) ?? 0,
+      )}",
+  };
+}).toList(),                      );
                             }
                           },
                         );
@@ -1204,7 +1245,8 @@ print("PURCHASE REPORT DATA = $data");
             suppliers.map((e) {
               return {"name": e["name"], "value": e["count"] ?? 1};
             }).toList();
-        avgUnitCost = data["avgUnitCost"] ?? [];
+           
+        totalOrdersList = data["totalOrders"] ?? [];
          monthlyTrend =
       List<Map<String, dynamic>>.from(
         data["monthlyTrend"] ?? [],
