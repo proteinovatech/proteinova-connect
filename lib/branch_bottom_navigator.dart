@@ -128,8 +128,8 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
             _buildNavItem(Icons.grid_view, 0),
             _buildNavItem(Icons.shopping_cart_outlined, 1),
             // _buildNavItem(Icons.inventory_2_outlined, 2),
-            _buildNavItem(Icons.receipt_long, 3),
-            _buildNavItem(Icons.menu_outlined, 4),
+            _buildNavItem(Icons.receipt_long, 2),
+            _buildNavItem(Icons.menu_outlined, 3),
           ],
         ),
       ),
@@ -141,7 +141,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
 
     return GestureDetector(
       onTap: () {
-        if (index == 4) {
+        if (index == 3) {
           _openSideMenu();
         } else {
           setState(() {
@@ -181,9 +181,9 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
         return "Sales";
       // case 2:
       //   return "Inventory";
-      case 3:
+      case 2:
         return "Daily closing";
-      case 4:
+      case 3:
         return "Menu";
       default:
         return "";

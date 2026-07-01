@@ -22,6 +22,8 @@ class _LedgerScreenState extends State<LedgerScreen> {
   @override
   void initState() {
     super.initState();
+    print("Ledger Branch ID: ${widget.branchId}");
+
     context.read<LedgerBloc>().add(FetchLedgerEvent(widget.branchId));
   }
 

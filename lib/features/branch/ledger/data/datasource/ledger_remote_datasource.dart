@@ -6,16 +6,26 @@ import '../model/ledger_model.dart';
 class LedgerRemoteDatasource {
   Future<List<LedgerEntry>> fetchLedger(int branchId) async {
     try {
+      final url = ApiConstants.ledger(branchId);
+
+      print("Ledger API URL => $url");
+      print("Branch ID => $branchId");
+
       final response = await http.get(
-        Uri.parse(ApiConstants.ledger(branchId)),
+        Uri.parse(url),
         headers: {'Accept': 'application/json'},
       );
 
+      print("Status Code => ${response.statusCode}");
+      print("Response Body => ${response.body}");
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+
         final List<dynamic> list = data['data'] is List
             ? data['data']
             : (data is List ? data : []);
+
         return list.map((e) => LedgerEntry.fromJson(e)).toList();
       } else {
         throw Exception('Failed to load ledger (${response.statusCode})');
@@ -49,7 +59,9 @@ class LedgerRemoteDatasource {
           final data = jsonDecode(response.body);
           throw Exception(data['message'] ?? 'Failed to record payment');
         } catch (_) {
-          throw Exception('Server returned an invalid response (${response.statusCode})');
+          throw Exception(
+            'Server returned an invalid response (${response.statusCode})',
+          );
         }
       }
     } catch (e) {
