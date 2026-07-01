@@ -386,25 +386,28 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
     bool isLogout = false,
     VoidCallback? onTap,
   }) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: const Color(0xfff8fafc),
-          borderRadius: BorderRadius.circular(10),
+    return Material(
+        color: Colors.transparent,
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: isLogout ? Colors.red : Colors.black87),
         ),
-        child: Icon(icon, color: isLogout ? Colors.red : Colors.black87),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: isLogout ? Colors.red : Colors.black,
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: isLogout ? Colors.red : Colors.black,
+          ),
         ),
+        
+        onTap: onTap,
       ),
-      
-      onTap: onTap,
     );
   }
   final List<Widget> pages = [

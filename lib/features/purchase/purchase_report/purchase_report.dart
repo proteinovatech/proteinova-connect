@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/features/admin/report/data/report_service.dart';
 import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/expense_report_screen.dart';
@@ -370,77 +371,87 @@ class _PurchaseReportState extends State<PurchaseReport> {
                         border: Border.all(color: const Color(0xffE5E7EB)),
                       ),
 
-                      child: Column(
+                      child:
+                       Column(
                         children: [
-                          Wrap(
-                             spacing: 14,
-                             runSpacing: 14,
-                            children: [
-                              Expanded(
-                                child: buildDateField(
-                                  title: "From Date",
-                                  value: fromDate,
-                                  onTap: () async {
-                                    DateTime? picked = await showDatePicker(
-                                      context: context,
-                                      initialDate: DateTime.now(),
-                                      firstDate: DateTime(2020),
-                                      lastDate: DateTime.now(),
-                                    );
-                                    if (picked != null) {
-                                      setState(() {
-                                        fromDate =
-                                            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-                                      });
-                                      fetchPurchaseReport();
-                                    }
-                                  },
-                                ),
-                              ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+  children: [
+    Expanded(
+      child: buildDateField(
+        title: "From Date",
+        value: fromDate,
+        onTap: () async {
+          DateTime? picked = await showDatePicker(
+            context: context,
+            initialDate: DateTime.now(),
+            firstDate: DateTime(2020),
+            lastDate: DateTime.now(),
+          );
+          if (picked != null) {
+            setState(() {
+            fromDate =
+    "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year.toString().substring(2)}";});
+          }
+        },
+      ),
+    ),
 
-                              const SizedBox(width: 14),
+    const SizedBox(width: 14),
 
-                              Expanded(
-                                child: buildDateField(
-                                  title: "To Date",
-                                  value: toDate,
-                                  onTap: () async {
-                                    DateTime? picked = await showDatePicker(
-                                      context: context,
-                                      initialDate: DateTime.now(),
-                                      firstDate: DateTime(2020),
-                                      lastDate: DateTime.now(),
-                                    );
-                                    if (picked != null) {
-                                      setState(() {
-                                        toDate =
-                                            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-                                      });
-                                      fetchPurchaseReport();
-                                    }
-                                  },
-                                ),
-                              ),
+    Expanded(
+      child: buildDateField(
+        title: "To Date",
+        value: toDate,
+        onTap: () async {
+          DateTime? picked = await showDatePicker(
+            context: context,
+            initialDate: DateTime.now(),
+            firstDate: DateTime(2020),
+            lastDate: DateTime.now(),
+          );
+          if (picked != null) {
+            setState(() {
+             toDate =
+    "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year.toString().substring(2)}"; });
+          }
+        },
+      ),
+    ),
 
-                              const SizedBox(width: 14),
-
-                              Expanded(
-                                child: buildDropdownField(
-                                  title: "View Mode",
-
-                                  value: viewMode,
-
-                                  items: const ["Monthly", "Weekly", "Yearly"],
-
-                                  onChanged: (v) {
-                                    setState(() {
-                                      viewMode = v!;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                      ),
+    const SizedBox(width: 10),
+   SizedBox(
+  width: 56,
+  height: 56,
+  child: ElevatedButton(
+    onPressed: fetchPurchaseReport,
+    style: ElevatedButton.styleFrom(
+      backgroundColor: const Color(0xffFACC15),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+    child: const Icon(
+      Icons.search,
+      color: Colors.black,
+    ),
+  ),
+),
+  ],
+),
+                 
+                          
+                      
+                          buildDropdownField(
+                            title: "View Mode",
+                            value: viewMode,
+                            items: const ["Monthly", "Weekly", "Yearly"],
+                            onChanged: (v) {
+                              setState(() {
+                                viewMode = v!;
+                              });
+                            },
+                          ),
 
                           const SizedBox(height: 18),
 
@@ -566,7 +577,7 @@ class _PurchaseReportState extends State<PurchaseReport> {
                     ),
 
                     const SizedBox(height: 24),
-
+                     
                     /// STATS
                     GridView.count(
                       crossAxisCount: MediaQuery.of(context).size.width > 1000
@@ -1164,8 +1175,17 @@ class _PurchaseReportState extends State<PurchaseReport> {
 print("PURCHASE REPORT DATA = $data");
       setState(() {
         purchaseData = data;
-
+    
         purchaseStats = data["stats"] ?? [];
+        final int totalOrders =
+    (data["monthlySummary"] as List?)?.length ?? 0;
+        for (var stat in purchaseStats) {
+  if (stat["title"] == "Avg Unit Cost") {
+    stat["title"] = "Total Orders";
+    stat["amount"] = totalOrders.toString();
+    break;
+  }
+}
 
         suppliers = data["suppliers"] ?? [];
 
