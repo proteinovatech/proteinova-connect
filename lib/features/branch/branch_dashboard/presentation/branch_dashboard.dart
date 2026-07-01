@@ -850,56 +850,54 @@ class _BranchDashboardState extends State<BranchDashboard> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                      GridView.builder(
-  shrinkWrap: true,
-  physics: const NeverScrollableScrollPhysics(),
-  padding: const EdgeInsets.all(12),
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          padding: const EdgeInsets.all(12),
 
-  itemCount: dashboardModel.stockSummary.length,
+                          itemCount: dashboardModel.stockSummary.length,
 
-  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-    crossAxisCount: width >= 1000
-        ? 3
-        : width >= 600
-            ? 2
-            : 1,
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: width >= 1000
+                                    ? 3
+                                    : width >= 600
+                                    ? 2
+                                    : 1,
 
-    crossAxisSpacing: 12,
-    mainAxisSpacing: 12,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
 
-    // REMOVE childAspectRatio
-    // REMOVE mainAxisExtent
+                                // REMOVE childAspectRatio
+                                // REMOVE mainAxisExtent
 
-    // Add this
-    mainAxisExtent: 190,
-  ),
+                                // Add this
+                                mainAxisExtent: 190,
+                              ),
 
-  itemBuilder: (context, index) {
-    return Align(
-      alignment: Alignment.topCenter,
-      child: _buildStockSummaryCard(
-        dashboardModel.stockSummary[index],
-      ),
-    );
-  },
-),
+                          itemBuilder: (context, index) {
+                            return Align(
+                              alignment: Alignment.topCenter,
+                              child: _buildStockSummaryCard(
+                                dashboardModel.stockSummary[index],
+                              ),
+                            );
+                          },
+                        ),
                         const SizedBox(height: 32),
 
                         // Low Stock Alerts & Offers Grid
                         if (width >= 600)
-                          SizedBox(
-                            height: 180,
-
+                          IntrinsicHeight(
                             child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Expanded(
                                   child: _buildActiveOffers(
                                     dashboardModel.activeOffers,
                                   ),
                                 ),
-
                                 const SizedBox(width: 12),
-
                                 Expanded(
                                   child: _buildLowStockAlerts(
                                     dashboardModel.lowStockAlerts,
@@ -1364,10 +1362,10 @@ class _BranchDashboardState extends State<BranchDashboard> {
 
   Widget _buildActiveOffers(List<ActiveOffer> offers) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
@@ -1608,7 +1606,7 @@ class _BranchDashboardState extends State<BranchDashboard> {
                         Text(
                           alert.title,
                           style: const TextStyle(
-                            fontSize: 15,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF1E293B),
                           ),
