@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proteinova_connect/features/branch/damage_entry/presentations/damage_entry_shimmer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch/damage_entry/bloc/damage_bloc.dart';
@@ -79,6 +80,10 @@ class _DamageEntryScreenState extends State<DamageEntryScreen> {
           },
           child: BlocBuilder<DamageBloc, DamageState>(
             builder: (context, state) {
+               if (state.isLoadingCategories || state.isLoadingHistory) {
+    return const DamageEntryShimmer();
+  }
+
               final selectedCatData = state.categories.firstWhere(
                 (c) => c.eggCategoryGrade == state.selectedCategory,
                 orElse: () => DamageCategoryModel(

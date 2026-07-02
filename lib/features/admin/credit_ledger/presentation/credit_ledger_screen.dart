@@ -20,6 +20,14 @@ class CreditLedgerScreen extends StatefulWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+         boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.08),
+        blurRadius: 10,
+        spreadRadius: 1,
+        offset: const Offset(0, 4), // Horizontal, Vertical
+      ),
+    ],
       ),
       child: Row(
         children: [
@@ -226,7 +234,7 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final cardWidth = (screenWidth - 56) / 2;
     return Scaffold(
-      backgroundColor: const Color(0xffF5F7FB),
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -373,6 +381,14 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
+                 boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.08),
+        blurRadius: 10,
+        spreadRadius: 1,
+        offset: const Offset(0, 4), // Horizontal, Vertical
+      ),
+    ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -534,6 +550,14 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
+                 boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.08),
+        blurRadius: 10,
+        spreadRadius: 1,
+        offset: const Offset(0, 4), // Horizontal, Vertical
+      ),
+    ],
               ),
               child: Column(
                 children: [

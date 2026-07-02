@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/features/branch/customer_trays/data/model/customer_tray_model.dart';
 import 'package:proteinova_connect/features/branch/customer_trays/data/service/customer_tray_service.dart';
+import 'package:proteinova_connect/features/branch/customer_trays/presentation/customer_tray_ledger_shimmer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class CustomerTrayEvent {}
@@ -86,6 +87,9 @@ CustomerTray? selectedTray;
   }
   @override
   Widget build(BuildContext context) {
+     if (isLoading) {
+    return const CustomerTrayLedgerShimmer();
+  }
     return Scaffold(
         backgroundColor: AppColors.background1,
             body: Padding(
@@ -183,9 +187,7 @@ CustomerTray? selectedTray;
         
            Expanded(
   child: isLoading
-      ? const Center(
-          child: CircularProgressIndicator(),
-        )
+      ? const CustomerTrayLedgerShimmer()
       : trays.isEmpty
           ? const Center(
               child: Text("No tray records found"),

@@ -1388,9 +1388,26 @@ class _SalesState extends State<Sales> {
 
     try {
       final order = await _repository.fetchSingleSale(orderId.toString());
+       print("===== ORDER DATA =====");
+      print(order);
+print(order.runtimeType);
+
+if (order is Map) {
+  order.forEach((key, value) {
+    print("$key -> $value (${value.runtimeType})");
+  });
+}
       if (mounted) {
         Navigator.pop(context);
-        _showOrderModal(order);
+        try {
+    _showOrderModal(order);
+  } catch (e, stackTrace) {
+    print("================================");
+    print("BOTTOM SHEET ERROR");
+    print(e);
+    print(stackTrace);
+    print("================================");
+  }
       }
     } catch (e) {
       if (mounted) {
@@ -1406,6 +1423,17 @@ class _SalesState extends State<Sales> {
     final order = data['data'] ?? data;
     final screenHeight = MediaQuery.of(context).size.height;
     final isTablet = MediaQuery.of(context).size.width >= _Breakpoints.mobile;
+    num toNum(dynamic value) {
+  if (value == null) return 0;
+
+  if (value is num) return value;
+
+  return num.tryParse(value.toString()) ?? 0;
+}
+num getNum(dynamic value) {
+  if (value is num) return value;
+  return num.tryParse(value?.toString() ?? '0') ?? 0;
+}
 
     showModalBottomSheet(
       context: context,
@@ -1445,7 +1473,7 @@ class _SalesState extends State<Sales> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Invoice #${order['invoice_no']}",
+                                "Invoice #${order['id']}",
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -1485,7 +1513,7 @@ class _SalesState extends State<Sales> {
                             child: _modalInfoColumn(
                               "CUSTOMER",
                               order['customer_name'] ?? "Walk-in Customer",
-                              order['customer_phone'] ?? "N/A",
+                              order['customer_number'] ?? "N/A",
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -1493,7 +1521,7 @@ class _SalesState extends State<Sales> {
                             child: _modalInfoColumn(
                               "PAYMENT",
                               order['payment_method'] ?? "CASH",
-                              "Status: ${order['payment_status']}",
+                              "Status: ${order['payment_method'] ?? 'N/A'}",
                             ),
                           ),
                         ],
@@ -1544,7 +1572,7 @@ class _SalesState extends State<Sales> {
                               ),
                             ),
                             Text(
-                              "₹${((item['subtotal'] ?? 0) as num).toLocaleString()}",
+                              "₹${toNum(item['subtotal']).toLocaleString()}",
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 15,
@@ -1566,19 +1594,19 @@ class _SalesState extends State<Sales> {
                         children: [
                           _summaryRow(
                             "Subtotal",
-                            "₹${((order['total_amount'] ?? 0) as num).toLocaleString()}",
+                            "₹${getNum(order['total_amount']).toLocaleString()}",
                             Colors.white70,
                           ),
                           const SizedBox(height: 12),
                           _summaryRow(
                             "Discount",
-                            "-₹${((order['discount_amount'] ?? 0) as num).toLocaleString()}",
+                            "-₹${toNum(order['discount_amount']).toLocaleString()}",
                             Colors.redAccent,
                           ),
                           const Divider(height: 24, color: Colors.white12),
                           _summaryRow(
                             "Grand Total",
-                            "₹${((order['net_amount'] ?? order['amount'] ?? 0) as num).toLocaleString()}",
+                            "₹${toNum(order['net_amount'] ?? order['amount']).toLocaleString()}",
                             Colors.white,
                             isBold: true,
                           ),
