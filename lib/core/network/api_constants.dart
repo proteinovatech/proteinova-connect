@@ -31,8 +31,8 @@ class ApiConstants {
       "$baseUrl/api/branch/expenses?branch_id=$branchId";
   static final String expenseSubmit = "$baseUrl/api/branch/expenses";
   // Ledger (placeholder — backend team must implement)
-  static String ledger(int branchId) =>
-      "$baseUrl/api/branch/ledger?branch_id=$branchId";
+  static String ledger() =>
+      "$baseUrl/api/ledgers/admin/credit?location_type=branch";
   static final String ledgerPayment = "$baseUrl/api/branch/ledger/payment";
 
   // Report (placeholder — backend team must implement)

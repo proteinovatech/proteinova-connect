@@ -224,7 +224,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                     "Ledger",
                     BlocProvider(
                       create: (_) => LedgerBloc(),
-                      child: LedgerScreen(branchId: 11),
+                      child: LedgerScreen(),
                     ),
                   ),
                   _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),

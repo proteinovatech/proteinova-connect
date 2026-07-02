@@ -18,36 +18,50 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
   ) async {
     emit(LedgerLoading());
     try {
-      final entries = await _repository.fetchLedger(event.branchId);
-      emit(LedgerLoaded(entries));
+      final ledger = await _repository.fetchLedger();
+      print("Summary => ${ledger.summary.totalOutstanding}");
+print("Charged => ${ledger.summary.totalCharged}");
+print("Paid => ${ledger.summary.totalPaid}");
+      emit(LedgerLoaded(ledger));
     } catch (e) {
       emit(LedgerError(e.toString()));
     }
   }
 
-  Future<void> _onRecordPayment(
-    RecordPaymentEvent event,
-    Emitter<LedgerState> emit,
-  ) async {
-    // Keep current entries visible while submitting
-    final currentEntries = state is LedgerLoaded
-        ? (state as LedgerLoaded).entries
-        : state is PaymentSuccess
-            ? (state as PaymentSuccess).entries
-            : <LedgerEntry>[];
+Future<void> _onRecordPayment(
+  RecordPaymentEvent event,
+  Emitter<LedgerState> emit,
+) async {
+  final currentLedger = state is LedgerLoaded
+      ? (state as LedgerLoaded).ledger
+      : state is PaymentSuccess
+          ? (state as PaymentSuccess).ledger
+          : LedgerModel(
+               summary: Summary(
+    totalOutstanding: 0,
+    totalCharged: 0,
+    totalPaid: 0,
+    pendingCount: 0,
+    clearedCount: 0,
+  ),
+              customers: [],
+              branches: [],
+            );
 
-    emit(PaymentSubmitting(currentEntries));
-    try {
-      await _repository.recordPayment(
-        customerId: event.customerId,
-        amount: event.amount,
-        branchId: event.branchId,
-      );
-      // Re-fetch to get updated balances
-      final updatedEntries = await _repository.fetchLedger(event.branchId);
-      emit(PaymentSuccess(updatedEntries));
-    } catch (e) {
-      emit(PaymentFailure(currentEntries, e.toString()));
-    }
+  emit(PaymentSubmitting(currentLedger));
+
+  try {
+    await _repository.recordPayment(
+      customerId: event.customerId,
+      amount: event.amount,
+      branchId: event.branchId,
+    );
+
+    final updatedLedger = await _repository.fetchLedger();
+
+    emit(PaymentSuccess(updatedLedger));
+  } catch (e) {
+    emit(PaymentFailure(currentLedger, e.toString()));
   }
+}
 }

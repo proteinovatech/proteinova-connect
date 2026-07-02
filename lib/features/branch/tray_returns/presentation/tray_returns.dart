@@ -9,6 +9,7 @@ import 'package:proteinova_connect/features/branch/branch_dashboard/widget/stock
 import 'package:proteinova_connect/features/branch/tray_returns/bloc/tray_return_bloc.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/data/model/tray_return_model.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_records.dart';
+import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_return_shimmer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TrayReturn extends StatefulWidget {
@@ -67,9 +68,7 @@ class _TrayReturnState extends State<TrayReturn> {
           }
 
           if (state is TrayReturnLoading && model == null) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
+            return const TrayReturnShimmer();
           }
 
           // Define empty/default data if model is null (e.g. on error or initial load)

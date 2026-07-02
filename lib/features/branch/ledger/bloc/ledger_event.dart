@@ -1,9 +1,6 @@
 abstract class LedgerEvent {}
 
-class FetchLedgerEvent extends LedgerEvent {
-  final int branchId;
-  FetchLedgerEvent(this.branchId);
-}
+class FetchLedgerEvent extends LedgerEvent {}
 
 class RecordPaymentEvent extends LedgerEvent {
   final int customerId;

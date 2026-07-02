@@ -4,6 +4,7 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/branch/addexpense/bloc/expense_bloc.dart';
 import 'package:proteinova_connect/features/branch/addexpense/presentation/addexpense.dart';
+import 'package:proteinova_connect/features/branch/addexpense/presentation/expense_management/presentation/expense_shimmer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ExpenseManagement extends StatefulWidget {
@@ -61,11 +62,12 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
           }
         },
 builder: (context, state) {
-  final isLoading =
-      state is ExpenseLoading ||
-      state is ExpenseInitial ||
-      state is ExpenseSubmitting;
+   final bool isLoading =
+      state is ExpenseLoading || state is ExpenseInitial;
 
+  if (isLoading) {
+    return const ExpenseShimmer();
+  }
   final expenses =
       state is ExpenseLoaded ? state.expenses : [];
 
@@ -104,7 +106,7 @@ builder: (context, state) {
                   ),
                   const SizedBox(height: 10),
                   const Divider(),
-                  if (isLoading) const LinearProgressIndicator(minHeight: 2),
+                 
                   const SizedBox(height: 10),
 
                   // Summary Cards

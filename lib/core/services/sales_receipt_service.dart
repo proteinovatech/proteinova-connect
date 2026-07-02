@@ -13,29 +13,39 @@ class SalesReceiptService {
       return SalesItem(
         eggCategoryGrade: item['egg_category_grade'] ?? "Eggs",
         eggs: item['total_eggs'] ?? 0,
-        price:
-            (item['rate_per_tray'] ?? 0) /
-            30, // Rough estimate if only tray rate available
+      price: (double.tryParse(item['rate_per_tray']?.toString() ?? '0') ?? 0.0) / 30, // Rough estimate if only tray rate available
         total: (item['subtotal'] ?? 0).toDouble(),
       );
     }).toList();
 
     return generateAndPrintReceipt(
-      saleId: order['invoice_no'] ?? order['order_id'] ?? "N/A",
+      saleId:  order['order_id'] ?? "N/A",
       customerName:
           order['customer_name'] ?? order['customer'] ?? "Walk-in Customer",
-      customerNumber: order['customer_phone'] ?? "",
+      customerNumber: order['customer_number'] ?? "",
       date:
           order['created_at'] ??
           order['date'] ??
           DateTime.now().toIso8601String(),
       items: items,
-      subtotal: (order['total_amount'] ?? 0).toDouble(),
-      discount: (order['discount_amount'] ?? 0).toDouble(),
-      total: (order['net_amount'] ?? order['amount'] ?? 0).toDouble(),
+      subtotal:
+    double.tryParse(order['total_amount']?.toString() ?? '0') ?? 0.0,
+
+      discount:
+    double.tryParse(order['discount_amount']?.toString() ?? '0') ?? 0.0,
+
+      total:
+    double.tryParse(
+      (order['net_amount'] ?? order['amount'] ?? order['total_amount'])
+          ?.toString() ??
+      '0',
+    ) ??
+    0.0,
+
+     trayCharges:
+    double.tryParse(order['tray_charges']?.toString() ?? '0') ?? 0.0,
       paymentMethod: order['payment_method'] ?? "CASH",
       branchName: order['branch_name'] ?? order['sold_location'],
-      trayCharges: (order['tray_charges'] ?? 0).toDouble(),
       isThermal: isThermal,
     );
   }

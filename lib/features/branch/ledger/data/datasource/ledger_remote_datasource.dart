@@ -4,12 +4,11 @@ import 'package:proteinova_connect/core/network/api_constants.dart';
 import '../model/ledger_model.dart';
 
 class LedgerRemoteDatasource {
-  Future<List<LedgerEntry>> fetchLedger(int branchId) async {
+  Future<LedgerModel> fetchLedger() async {
     try {
-      final url = ApiConstants.ledger(branchId);
+      final url = ApiConstants.ledger();
 
-      print("Ledger API URL => $url");
-      print("Branch ID => $branchId");
+      
 
       final response = await http.get(
         Uri.parse(url),
@@ -26,7 +25,7 @@ class LedgerRemoteDatasource {
             ? data['data']
             : (data is List ? data : []);
 
-        return list.map((e) => LedgerEntry.fromJson(e)).toList();
+       return LedgerModel.fromJson(data);
       } else {
         throw Exception('Failed to load ledger (${response.statusCode})');
       }

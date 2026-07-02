@@ -7,28 +7,32 @@ class LedgerInitial extends LedgerState {}
 class LedgerLoading extends LedgerState {}
 
 class LedgerLoaded extends LedgerState {
-  final List<LedgerEntry> entries;
+  final LedgerModel ledger;
 
-  LedgerLoaded(this.entries);
+  LedgerLoaded(this.ledger);
 }
 
 class LedgerError extends LedgerState {
   final String message;
+
   LedgerError(this.message);
 }
 
 class PaymentSubmitting extends LedgerState {
-  final List<LedgerEntry> entries;
-  PaymentSubmitting(this.entries);
+  final LedgerModel ledger;
+
+  PaymentSubmitting(this.ledger);
 }
 
 class PaymentSuccess extends LedgerState {
-  final List<LedgerEntry> entries;
-  PaymentSuccess(this.entries);
+  final LedgerModel ledger;
+
+  PaymentSuccess(this.ledger);
 }
 
 class PaymentFailure extends LedgerState {
-  final List<LedgerEntry> entries;
+  final LedgerModel ledger;
   final String message;
-  PaymentFailure(this.entries, this.message);
+
+  PaymentFailure(this.ledger, this.message);
 }
