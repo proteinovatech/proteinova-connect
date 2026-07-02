@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/features/admin/report/data/report_service.dart';
@@ -6,6 +7,7 @@ import 'package:proteinova_connect/features/admin/report/screens/expense_report_
 import 'package:proteinova_connect/features/admin/report/screens/purchase_report_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/warehouse_report_screen.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_report_dashboard_shimmer.dart';
+import 'package:proteinova_connect/features/branch/report/widget/salescategory.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -200,163 +202,211 @@ class _ReportScreenState extends State<ReportScreen> {
                                 ),
                               ),
 
-                              const SizedBox(width: 14),
+                              // const SizedBox(width: 14),
 
-                              Expanded(
-                                child: buildDropdownField(
-                                  title: "Select Branch",
-                                  value: branch,
-                                  items: [
-                                    "All Branches",
-                                    ...branchList
-                                        .map(
-                                          (e) =>
-                                              e["branch_name"]?.toString() ??
-                                              "Unknown",
-                                        )
-                                        .toSet()
-                                        .toList(),
-                                  ],
-                                  onChanged: (v) {
-                                    setState(() {
-                                      branch = v!;
-                                    });
-                                    fetchSalesReport();
-                                  },
-                                ),
-                              ),
+                              // Expanded(
+                              //   child: buildDropdownField(
+                              //     title: "Select Branch",
+                              //     value: branch,
+                              //     items: [
+                              //       "All Branches",
+                              //       ...branchList
+                              //           .map(
+                              //             (e) =>
+                              //                 e["branch_name"]?.toString() ??
+                              //                 "Unknown",
+                              //           )
+                              //           .toSet()
+                              //           .toList(),
+                              //     ],
+                              //     onChanged: (v) {
+                              //       setState(() {
+                              //         branch = v!;
+                              //       });
+                              //       fetchSalesReport();
+                              //     },
+                              //   ),
+                              // ),
                             ],
                           ),
 
-                          const SizedBox(height: 18),
+                          // const SizedBox(height: 18),
 
-                          Row(
-                            children: [
-                              Expanded(
-                                child: buildDropdownField(
-                                  title: "Item Type",
-                                  value: itemType,
+                          // Row(
+                          //   children: [
+                          //     Expanded(
+                          //       child: buildDropdownField(
+                          //         title: "Item Type",
+                          //         value: itemType,
 
-                                  items: const [
-                                    "All Types",
-                                    "White Egg",
-                                    "Brown Egg",
-                                  ],
+                          //         items: const [
+                          //           "All Types",
+                          //           "White Egg",
+                          //           "Brown Egg",
+                          //         ],
 
-                                  onChanged: (v) {
-                                    setState(() {
-                                      itemType = v!;
-                                    });
-                                  },
-                                ),
-                              ),
+                          //         onChanged: (v) {
+                          //           setState(() {
+                          //             itemType = v!;
+                          //           });
+                          //         },
+                          //       ),
+                          //     ),
 
-                              const SizedBox(width: 14),
+                          //     const SizedBox(width: 14),
 
-                              Expanded(
-                                child: buildDropdownField(
-                                  title: "Transaction Category",
+                          //     Expanded(
+                          //       child: buildDropdownField(
+                          //         title: "Transaction Category",
 
-                                  value: transaction,
+                          //         value: transaction,
 
-                                  items: const [
-                                    "All Sales",
-                                    "Retail",
-                                    "Wholesale",
-                                  ],
+                          //         items: const [
+                          //           "All Sales",
+                          //           "Retail",
+                          //           "Wholesale",
+                          //         ],
 
-                                  onChanged: (v) {
-                                    final selectedBranch = branchList
-                                        .firstWhere(
-                                          (e) => e["branch_name"] == v,
-                                          orElse: () => {},
-                                        );
+                          //         onChanged: (v) {
+                          //           final selectedBranch = branchList
+                          //               .firstWhere(
+                          //                 (e) => e["branch_name"] == v,
+                          //                 orElse: () => {},
+                          //               );
 
-                                    setState(() {
-                                      branch = v!;
-                                      selectedBranchId = selectedBranch["id"]
-                                          ?.toString();
-                                    });
+                          //           setState(() {
+                          //             branch = v!;
+                          //             selectedBranchId = selectedBranch["id"]
+                          //                 ?.toString();
+                          //           });
 
-                                    fetchSalesReport();
-                                  },
-                                ),
-                              ),
+                          //           fetchSalesReport();
+                          //         },
+                          //       ),
+                          //     ),
 
-                              const SizedBox(width: 14),
+                          //     const SizedBox(width: 14),
 
-                              Expanded(
-                                child: buildDropdownField(
-                                  title: "Report Category",
+                          //     Expanded(
+                          //       child: buildDropdownField(
+                          //         title: "Report Category",
 
-                                  value: selectedReport,
+                          //         value: selectedReport,
 
-                                  items: reportItems,
+                          //         items: reportItems,
 
-                                  onChanged: (value) {
-                                    if (value == selectedReport) return;
-                                    setState(() {
-                                      selectedReport = value!;
-                                    });
+                          //         onChanged: (value) {
+                          //           if (value == selectedReport) return;
+                          //           setState(() {
+                          //             selectedReport = value!;
+                          //           });
 
-                                    Widget? nextScreen;
-                                    if (value == "Financial Summary") {
-                                      nextScreen =
-                                          const AdminReportDashboardScreen();
-                                    } else if (value == "Purchase Report") {
-                                      nextScreen = const PurchaseReportScreen();
-                                    } else if (value == "Expense Report") {
-                                      nextScreen = const ExpenseReportScreen();
-                                    } else if (value == "Branch Sales Report") {
-                                      nextScreen = const ReportScreen();
-                                    } else if (value == "Warehouse Report") {
-                                      nextScreen =
-                                          const WarehouseReportScreen();
-                                    }
+                          //           Widget? nextScreen;
+                          //           if (value == "Financial Summary") {
+                          //             nextScreen =
+                          //                 const AdminReportDashboardScreen();
+                          //           } else if (value == "Purchase Report") {
+                          //             nextScreen = const PurchaseReportScreen();
+                          //           } else if (value == "Expense Report") {
+                          //             nextScreen = const ExpenseReportScreen();
+                          //           } else if (value == "Branch Sales Report") {
+                          //             nextScreen = const ReportScreen();
+                          //           } else if (value == "Warehouse Report") {
+                          //             nextScreen =
+                          //                 const WarehouseReportScreen();
+                          //           }
 
-                                    if (nextScreen != null) {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        PageRouteBuilder(
-                                          pageBuilder: (_, __, ___) =>
-                                              nextScreen!,
-                                          transitionDuration: Duration.zero,
-                                          reverseTransitionDuration:
-                                              Duration.zero,
-                                        ),
-                                      );
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
+                          //           if (nextScreen != null) {
+                          //             Navigator.pushReplacement(
+                          //               context,
+                          //               PageRouteBuilder(
+                          //                 pageBuilder: (_, __, ___) =>
+                          //                     nextScreen!,
+                          //                 transitionDuration: Duration.zero,
+                          //                 reverseTransitionDuration:
+                          //                     Duration.zero,
+                          //               ),
+                          //             );
+                          //           }
+                          //         },
+                          //       ),
+                          //     ),
+                          //   ],
+                          // ),
 
-                          const SizedBox(height: 24),
+                          // const SizedBox(height: 24),
 
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
+                          // Row(
+                          //   mainAxisAlignment: MainAxisAlignment.end,
 
-                            children: [
-                              buildActionButton(
-                                title: "Export PDF",
-                                icon: Icons.picture_as_pdf,
-                                bgColor: Colors.white,
-                              ),
+                          //   children: [
+                          //     buildActionButton(
+                          //       title: "Export PDF",
+                          //       icon: Icons.picture_as_pdf,
+                          //       bgColor: Colors.white,
+                          //     ),
 
-                              const SizedBox(width: 14),
+                          //     const SizedBox(width: 14),
 
-                              buildActionButton(
-                                title: "Print",
-                                icon: Icons.print,
-                                bgColor: const Color(0xffFACC15),
-                              ),
-                            ],
-                          ),
+                          //     buildActionButton(
+                          //       title: "Print",
+                          //       icon: Icons.print,
+                          //       bgColor: const Color(0xffFACC15),
+                          //     ),
+                          //   ],
+                          // ),
                         ],
                       ),
                     ),
+                    const SizedBox(height: 25),
 
+                    /// DASHBOARD CARDS
+                    GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 1.0,
+                      children: [
+                        dashboardCard(
+                          "TOTAL SALES",
+                          "₹ ${indianFormat.format(totalRevenue)}",
+                          Icons.trending_up,
+                          Colors.blue,
+                        ),
+
+                        dashboardCard(
+                          "TOTAL ORDERS",
+                          totalOrders.toString(),
+                          Icons.inventory_2_outlined,
+                          Colors.green,
+                        ),
+
+                        dashboardCard(
+                          "TOTAL DAMAGED EGGS",
+                          totalDamage.toString(),
+                          Icons.shopping_bag_outlined,
+                          Colors.red,
+                        ),
+
+                        dashboardCard(
+                          "AVERAGE ORDER VALUE",
+                          totalOrders == 0
+                              ? "₹0"
+                              : "₹${(totalRevenue / totalOrders).toStringAsFixed(0)}",
+                          Icons.currency_rupee,
+                          Colors.orange,
+                        ),
+
+                        dashboardCard(
+                          "TOTAL CUSTOMERS",
+                          transactions.length.toString(),
+                          Icons.people_outline,
+                          Colors.teal,
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 24),
 
                     /// STATS
@@ -532,6 +582,31 @@ class _ReportScreenState extends State<ReportScreen> {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 20),
+                    SalesCategoryCard(),
+                    const SizedBox(height: 20),
+                    Column(
+                      children: [
+                        buildSalesSummaryCard(),
+
+                        const SizedBox(height: 16),
+
+                        buildTopProductsCard(),
+
+                        const SizedBox(height: 16),
+
+                        buildTopCustomersCard(),
+
+                        const SizedBox(height: 16),
+
+                        buildPaymentModeCard(),
+
+                        const SizedBox(height: 16),
+                        buildNewVsRepeatCard(),
+                        const SizedBox(height: 16),
+                        buildDamagedEggsCard(),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -548,51 +623,48 @@ class _ReportScreenState extends State<ReportScreen> {
       final response = await reportService.getBranchSalesReport(
         startDate: fromDate == "dd-mm-yyyy" ? null : fromDate,
         endDate: toDate == "dd-mm-yyyy" ? null : toDate,
-        branchId: selectedBranchId,
       );
 
-      final branches = List<Map<String, dynamic>>.from(
-        response["branches"] ?? [],
+      final sales = List<Map<String, dynamic>>.from(
+        response["data"]["sales"] ?? [],
       );
-
       setState(() {
-        salesData = response;
-
-        totalRevenue = branches.fold(
+        salesData = response["data"];
+        totalRevenue = sales.fold(
           0.0,
           (sum, item) =>
-              sum + (double.tryParse(item["total_sales"].toString()) ?? 0),
+              sum + (double.tryParse(item["total_amount"].toString()) ?? 0),
         );
 
-        totalOrders = branches.fold(
+        totalOrders = sales.length;
+
+        totalEggs = sales.fold(
           0,
           (sum, item) =>
-              sum + (int.tryParse(item["total_orders"].toString()) ?? 0),
+              sum + (int.tryParse(item["total_eggs_sold"].toString()) ?? 0),
         );
 
-        totalEggs = branches.fold(
-          0,
-          (sum, item) => sum + ((item["total_eggs_sold"] ?? 0) as int),
-        );
+        totalDamage = response["totalDamages"] ?? 0;
 
-        totalDamage = branches.fold(
-          0,
-          (sum, item) => sum + ((item["total_damage"] ?? 0) as int),
-        );
-
-        currentStock = branches.fold(
-          0,
-          (sum, item) => sum + ((item["current_stock"] ?? 0) as int),
-        );
-
-        topBranches = branches;
-        transactions = List<Map<String, dynamic>>.from(
-          response["transactions"] ?? [],
-        );
+        transactions = sales.map((item) {
+          return {
+            "date": item["sale_date"],
+            "branch": item["customer_name"],
+            "type": item["sold_to"],
+            "item": "Egg Sales",
+            "qty": item["total_eggs_sold"],
+            "amount": item["total_amount"],
+            "status": item["balance_amount"] == "0.00"
+                ? "Completed"
+                : "Pending",
+          };
+        }).toList();
 
         isLoading = false;
       });
     } catch (e) {
+      print("API ERROR: $e");
+
       setState(() {
         isLoading = false;
       });
@@ -899,9 +971,7 @@ class _ReportScreenState extends State<ReportScreen> {
             ),
           ],
         ),
-
         const SizedBox(height: 8),
-
         Text(day),
       ],
     );
@@ -979,6 +1049,373 @@ class _ReportScreenState extends State<ReportScreen> {
       ],
     );
   }
+
+  Widget dashboardCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Align(
+            alignment: Alignment.topRight,
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+
+          const SizedBox(height: 10),
+
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildSalesOverviewCard() {
+    return Container(
+      height: 450,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Sales Overview",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+          Expanded(child: buildSalesVolumeCard()),
+        ],
+      ),
+    );
+  }
+
+  Widget buildSalesSummaryCard() {
+    final rows = [
+      ["1", "Total Sales (₹)", "₹ 165", "11.32%"],
+      ["2", "Total Orders", "1", "10.15%"],
+      ["3", "Total Quantity", "30", "8.45%"],
+      ["4", "Avg Order Value (₹)", "₹ 165", "1.06%"],
+      ["5", "Total Customers", "1", "9.28%"],
+    ];
+
+    return dashboardContainer(
+      title: "Sales Summary",
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: DataTable(
+            columnSpacing: 30,
+            headingRowHeight: 50,
+            dataRowMinHeight: 55,
+            dataRowMaxHeight: 60,
+            columns: const [
+              DataColumn(label: Text("#")),
+              DataColumn(label: Text("Metric")),
+              DataColumn(label: Text("This Month")),
+              DataColumn(label: Text("Change")),
+            ],
+            rows: rows.map((e) {
+              return DataRow(
+                cells: [
+                  DataCell(Text(e[0])),
+
+                  DataCell(
+                    SizedBox(
+                      width: 120,
+                      child: Text(e[1], overflow: TextOverflow.ellipsis),
+                    ),
+                  ),
+
+                  DataCell(Text(e[2])),
+
+                  DataCell(
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.trending_up,
+                          size: 15,
+                          color: Colors.green,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          e[3],
+                          style: const TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildTopProductsCard() {
+    final products = [
+      ["without tray", "120", "80.00"],
+      ["Plastic tray (With egg)", "30", "20.00"],
+    ];
+
+    return dashboardContainer(
+      title: "Top 5 Products by Sales",
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: DataTable(
+            columns: const [
+              DataColumn(label: Text("#")),
+              DataColumn(label: Text("Product Name")),
+              DataColumn(label: Text("Sales (₹)")),
+              DataColumn(label: Text("%")),
+            ],
+            rows: [
+              ...products.asMap().entries.map((entry) {
+                return DataRow(
+                  cells: [
+                    DataCell(Text("${entry.key + 1}")),
+                    DataCell(Text(entry.value[0])),
+                    DataCell(Text("₹ ${entry.value[1]}")),
+                    DataCell(Text("${entry.value[2]}%")),
+                  ],
+                );
+              }),
+
+              const DataRow(
+                cells: [
+                  DataCell(Text("")),
+                  DataCell(
+                    Text(
+                      "Total",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DataCell(
+                    Text(
+                      "₹ 150",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DataCell(
+                    Text("100%", style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildTopCustomersCard() {
+    return dashboardContainer(
+      title: "Top 5 Customers by Sales",
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: DataTable(
+            columns: const [
+              DataColumn(label: Text("#")),
+              DataColumn(label: Text("Customer Name")),
+              DataColumn(label: Text("Orders")),
+              DataColumn(label: Text("Sales (₹)")),
+            ],
+            rows: const [
+              DataRow(
+                cells: [
+                  DataCell(Text("1")),
+                  DataCell(Text("abc")),
+                  DataCell(Text("1")),
+                  DataCell(Text("₹ 165")),
+                ],
+              ),
+              DataRow(
+                cells: [
+                  DataCell(Text("")),
+                  DataCell(
+                    Text(
+                      "Total",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DataCell(
+                    Text("1", style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  DataCell(
+                    Text(
+                      "₹ 165",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildPaymentModeCard() {
+    return dashboardContainer(
+      title: "Sales by Payment Mode",
+      child: Column(
+        children: [
+          SizedBox(
+            height: 150,
+            child: PieChart(
+              PieChartData(
+                centerSpaceRadius: 40,
+                sections: [
+                  PieChartSectionData(
+                    value: 165,
+                    color: Colors.orange,
+                    radius: 20,
+                    showTitle: false,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          Row(
+            children: const [
+              CircleAvatar(radius: 5, backgroundColor: Colors.orange),
+              SizedBox(width: 10),
+              Text("CASH"),
+              Spacer(),
+              Text("₹ 165", style: TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildNewVsRepeatCard() {
+    return dashboardContainer(
+      title: "New vs Repeat Customers",
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+
+          const Text(
+            "1",
+            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+          ),
+
+          const Text("Total"),
+
+          const SizedBox(height: 30),
+
+          customerRow(Colors.blue, "New Customers", "0 (0.00%)"),
+
+          const SizedBox(height: 20),
+
+          customerRow(Colors.green, "Repeat Customers", "0 (0.00%)"),
+        ],
+      ),
+    );
+  }
+
+  Widget customerRow(Color color, String title, String value) {
+    return Row(
+      children: [
+        CircleAvatar(radius: 5, backgroundColor: color),
+        const SizedBox(width: 10),
+        Expanded(child: Text(title)),
+        Text(value),
+      ],
+    );
+  }
+
+  Widget buildDamagedEggsCard() {
+    return dashboardContainer(
+      title: "Damaged Eggs Breakdown",
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.inventory_2_outlined, color: Colors.red),
+          ),
+
+          const SizedBox(width: 12),
+
+          const Expanded(child: Text("White correct size")),
+
+          const Text(
+            "100 Eggs",
+            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget dashboardContainer({required String title, required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 20),
+
+          child,
+        ],
+      ),
+    );
+  }
 }
 
 class SalesStatCard extends StatelessWidget {
@@ -1050,7 +1487,7 @@ class SalesStatCard extends StatelessWidget {
                   color: iconBg,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: iconColor, size: 16),
+                child: Icon(icon, color: iconColor, size: 14),
               ),
             ],
           ),
@@ -1064,7 +1501,7 @@ class SalesStatCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 20,
+                fontSize: 16,
                 fontWeight: FontWeight.w800,
                 color: Colors.black87,
               ),

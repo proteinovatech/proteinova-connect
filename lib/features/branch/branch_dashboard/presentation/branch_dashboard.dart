@@ -12,6 +12,7 @@ import 'package:proteinova_connect/features/branch/branch_dashboard/presentation
 import 'package:proteinova_connect/features/branch/branch_dashboard/data/model/dashboard_model.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/data/repository/dashboard_repository.dart';
 import 'package:proteinova_connect/features/branch/sales/presentation/sales_entry.dart';
+import 'package:shimmer/shimmer.dart';
 
 class BranchDashboard extends StatefulWidget {
   const BranchDashboard({super.key});
@@ -315,19 +316,12 @@ class _BranchDashboardState extends State<BranchDashboard> {
         builder: (context, state) {
           // LOADING STATE
           if (state is DashboardLoading) {
-            return const Scaffold(
+            return Scaffold(
               backgroundColor: Colors.white,
-              body: Center(
+              body: SingleChildScrollView(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(color: Color(0xFF2563EB)),
-                    SizedBox(height: 16),
-                    Text(
-                      "Loading dashboard data...",
-                      style: TextStyle(color: Color(0xFF64748B), fontSize: 15),
-                    ),
-                  ],
+                  children: [buildShimmerLoader()],
                 ),
               ),
             );
@@ -1949,6 +1943,61 @@ class _BranchDashboardState extends State<BranchDashboard> {
                 );
               },
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget shimmerCard({double height = 120, double width = double.infinity}) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade100,
+      child: Container(
+        height: height,
+        width: width,
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+    );
+  }
+
+  Widget buildShimmerLoader() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // Summary cards
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 4,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.4,
+            ),
+            itemBuilder: (context, index) {
+              return shimmerCard(height: 120);
+            },
+          ),
+
+          const SizedBox(height: 20),
+
+          // Sales chart placeholder
+          shimmerCard(height: 250),
+
+          // Products section
+          shimmerCard(height: 180),
+
+          // Damage report section
+          shimmerCard(height: 180),
+
+          // Transactions section
+          shimmerCard(height: 300),
         ],
       ),
     );
