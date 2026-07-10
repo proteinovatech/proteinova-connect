@@ -69,35 +69,82 @@ class Filters {
 }
 
 class Cards {
-  final num refundCredit;
-  final num damagedTrays;
-  final num totalReturnedThisMonth;
-  final num goodTrays;
+  final int openingTrays;
+  final int incomingTrays;
+  final int returnedTrays;
+  final int closingTrays;
+  final int emptyTrays;
+
+  final int openingEmptyPlastic;
+  final int openingEmptyPaper;
+  final int openingFilledPlastic;
+  final int openingFilledPaper;
+
+  final int inEmptyPlastic;
+  final int inEmptyPaper;
+  final int inFilledPlastic;
+  final int inFilledPaper;
+
+  final int returnedPlastic;
+  final int returnedPaper;
+
+  final int emptyPlastic;
+  final int emptyPaper;
+
+  final int filledPlastic;
+  final int filledPaper;
 
   Cards({
-    required this.refundCredit,
-    required this.damagedTrays,
-    required this.totalReturnedThisMonth,
-    required this.goodTrays,
+    required this.openingTrays,
+    required this.incomingTrays,
+    required this.returnedTrays,
+    required this.closingTrays,
+    required this.emptyTrays,
+    required this.openingEmptyPlastic,
+    required this.openingEmptyPaper,
+    required this.openingFilledPlastic,
+    required this.openingFilledPaper,
+    required this.inEmptyPlastic,
+    required this.inEmptyPaper,
+    required this.inFilledPlastic,
+    required this.inFilledPaper,
+    required this.returnedPlastic,
+    required this.returnedPaper,
+    required this.emptyPlastic,
+    required this.emptyPaper,
+    required this.filledPlastic,
+    required this.filledPaper,
   });
 
-  factory Cards.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory Cards.fromJson(Map<String, dynamic> json) {
     return Cards(
-      refundCredit:
-          json["refund_credit"] ?? 0,
-      damagedTrays:
-          json["damaged_trays"] ?? 0,
-      totalReturnedThisMonth:
-          json["total_returned_this_month"] ??
-              0,
-      goodTrays:
-          json["good_trays"] ?? 0,
+      openingTrays: json["opening_trays"] ?? 0,
+      incomingTrays: json["incoming_trays"] ?? 0,
+      returnedTrays: json["returned_trays"] ?? 0,
+      closingTrays: json["closing_trays"] ?? 0,
+      emptyTrays: json["empty_trays"] ?? 0,
+
+      openingEmptyPlastic: json["opening_empty_plastic"] ?? 0,
+      openingEmptyPaper: json["opening_empty_paper"] ?? 0,
+      openingFilledPlastic: json["opening_filled_plastic"] ?? 0,
+      openingFilledPaper: json["opening_filled_paper"] ?? 0,
+
+      inEmptyPlastic: json["in_empty_plastic"] ?? 0,
+      inEmptyPaper: json["in_empty_paper"] ?? 0,
+      inFilledPlastic: json["in_filled_plastic"] ?? 0,
+      inFilledPaper: json["in_filled_paper"] ?? 0,
+
+      returnedPlastic: json["returned_plastic"] ?? 0,
+      returnedPaper: json["returned_paper"] ?? 0,
+
+      emptyPlastic: json["empty_plastic"] ?? 0,
+      emptyPaper: json["empty_paper"] ?? 0,
+
+      filledPlastic: json["filled_plastic"] ?? 0,
+      filledPaper: json["filled_paper"] ?? 0,
     );
   }
 }
-
 class RefundCreditSummary {
   final num totalRefund;
   final num pendingRefund;

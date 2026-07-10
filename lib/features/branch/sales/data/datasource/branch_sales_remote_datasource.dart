@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart' as dio;
+import 'package:proteinova_connect/core/config/api_config.dart';
+import 'package:proteinova_connect/features/branch/sales/data/model/mobile_inventory_model.dart';
 
 class BranchSalesRemoteDatasource {
   static String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? "";
@@ -339,4 +342,20 @@ class BranchSalesRemoteDatasource {
       throw Exception("Failed to load pending sales");
     }
   }
+
+ Future<MobileInventoryModel> getMobileInventory() async {
+  final response = await http.get(
+    Uri.parse("$baseUrl${ApiConfig.mobileInventory}"),
+  );
+
+  print("MOBILE INVENTORY => ${response.body}");
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+
+    return MobileInventoryModel.fromJson(data);
+  } else {
+    throw Exception("Failed to load mobile inventory");
+  }
+}
 }

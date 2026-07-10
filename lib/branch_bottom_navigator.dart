@@ -127,7 +127,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
           children: [
             _buildNavItem(Icons.grid_view, 0),
             _buildNavItem(Icons.shopping_cart_outlined, 1),
-            _buildNavItem(Icons.inventory_2_outlined, 2),
+            _buildNavItem(Icons.local_shipping_outlined, 2),
             _buildNavItem(Icons.receipt_long, 3),
             _buildNavItem(Icons.menu_outlined, 4),
           ],
@@ -180,7 +180,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
       case 1:
         return "Sales";
       case 2:
-        return "Inventory";
+        return "Stock Receive";
       case 3:
         return "Daily closing";
       case 4:
@@ -229,7 +229,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                   ),
                   _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
 
-                  _menuTile(Icons.money, "Expenses", ExpenseManagement()),
+                  _menuTile(Icons.money, "Expenses Overview", ExpenseManagement()),
                   _menuTile(
                     Icons.inventory_2_outlined,
                     "Customer trays",

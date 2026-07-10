@@ -86,3 +86,22 @@ class OfferModel {
     );
   }
 }
+class InventoryByBranch {
+  final int branchId;
+  final String category;
+  final int totalEggs;
+
+  InventoryByBranch({
+    required this.branchId,
+    required this.category,
+    required this.totalEggs,
+  });
+
+  factory InventoryByBranch.fromJson(Map<String, dynamic> json) {
+    return InventoryByBranch(
+      branchId: json["branch_id"] ?? 0,
+      category: json["category"] ?? "",
+      totalEggs: json["total_eggs"] ?? 0,
+    );
+  }
+}

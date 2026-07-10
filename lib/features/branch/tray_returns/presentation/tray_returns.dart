@@ -72,14 +72,28 @@ class _TrayReturnState extends State<TrayReturn> {
           }
 
           // Define empty/default data if model is null (e.g. on error or initial load)
-          final cards =
-              model?.cards ??
-              Cards(
-                refundCredit: 0,
-                damagedTrays: 0,
-                totalReturnedThisMonth: 0,
-                goodTrays: 0,
-              );
+          final cards = model?.cards ??
+    Cards(
+      openingTrays: 0,
+      incomingTrays: 0,
+      returnedTrays: 0,
+      closingTrays: 0,
+      emptyTrays: 0,
+      openingEmptyPlastic: 0,
+      openingEmptyPaper: 0,
+      openingFilledPlastic: 0,
+      openingFilledPaper: 0,
+      inEmptyPlastic: 0,
+      inEmptyPaper: 0,
+      inFilledPlastic: 0,
+      inFilledPaper: 0,
+      returnedPlastic: 0,
+      returnedPaper: 0,
+      emptyPlastic: 0,
+      emptyPaper: 0,
+      filledPlastic: 0,
+      filledPaper: 0,
+    );
           final dataList = model?.data ?? [];
 
           return Padding(
@@ -154,74 +168,110 @@ class _TrayReturnState extends State<TrayReturn> {
                   if (state is TrayReturnLoading)
                     const LinearProgressIndicator(minHeight: 2),
                   SizedBox(height: size.height * 0.02),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => _showFilteredModal(
-                            context,
-                            "Damaged",
-                            dataList
-                                .where((r) => r.condition == 'DAMAGED')
-                                .toList(),
-                          ),
-                          child: Stockdetails(
-                            title: "Damaged",
-                            value: "${cards.damagedTrays} trays",
-                            icon: Icons.dangerous_outlined,
-                            iconBg: const Color(0xfffef2f2),
-                            iconColor: Colors.red,
-                            highlightUnit: true,
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: getWidth(context, 6)),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => _showFilteredModal(
-                            context,
-                            "Returned This Month",
-                            dataList,
-                          ),
-                          child: Stock(
-                            title: "Returned This Month",
-                            value: "${cards.totalReturnedThisMonth}",
-                            percent: "MONTH",
-                            subtitle: "Current Month",
-                            icon: Icons.inventory,
-                            iconBg: const Color(0xffeff6ff),
-                            iconColor: Colors.blue,
-                            highlightUnit: true,
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: getWidth(context, 6)),
-                    ],
-                  ),
+Wrap(
+  spacing: 12,
+  runSpacing: 12,
+  children: [
+    SizedBox(
+      width: 170,
+      child: _trayCard(
+        title: "Opening Tray",
+        icon: Icons.inventory_2_outlined,
+        iconColor: Colors.blue,
+        iconBg: const Color(0xffeff6ff),
+        total: cards.openingTrays,
+        emptyPlastic: cards.openingEmptyPlastic,
+        emptyPaper: cards.openingEmptyPaper,
+        filledPlastic: cards.openingFilledPlastic,
+        filledPaper: cards.openingFilledPaper,
+      ),
+    ),
+
+    SizedBox(
+      width: 170,
+      child: _trayCard(
+        title: "Incoming Tray",
+        icon: Icons.download,
+        iconColor: Colors.green,
+        iconBg: const Color(0xffecfdf5),
+        total: cards.incomingTrays,
+        emptyPlastic: cards.inEmptyPlastic,
+        emptyPaper: cards.inEmptyPaper,
+        filledPlastic: cards.inFilledPlastic,
+        filledPaper: cards.inFilledPaper,
+      ),
+    ),
+
+    SizedBox(
+      width: 170,
+      child: _trayCard(
+        title: "Tray Return",
+        icon: Icons.refresh,
+        iconColor: Colors.red,
+        iconBg: const Color(0xfffef2f2),
+        total: cards.returnedTrays,
+        emptyPlastic: cards.returnedPlastic,
+        emptyPaper: cards.returnedPaper,
+        filledPlastic: 0,
+        filledPaper: 0,
+      ),
+    ),
+
+    SizedBox(
+      width: 170,
+      child: _trayCard(
+        title: "Closing Tray",
+        icon: Icons.check_circle_outline,
+        iconColor: Colors.indigo,
+        iconBg: const Color(0xffeef2ff),
+        total: cards.closingTrays,
+        emptyPlastic: cards.emptyPlastic,
+        emptyPaper: cards.emptyPaper,
+        filledPlastic: cards.filledPlastic,
+        filledPaper: cards.filledPaper,
+      ),
+    ),
+
+    SizedBox(
+      width: 170,
+      child: _trayCard(
+        title: "Empty Tray",
+        icon: Icons.inventory,
+        iconColor: Colors.grey,
+        iconBg: const Color(0xfff8fafc),
+        total: cards.emptyTrays,
+        emptyPlastic: cards.emptyPlastic,
+        emptyPaper: cards.emptyPaper,
+        filledPlastic: 0,
+        filledPaper: 0,
+      ),
+    ),
+  ],
+),
                   SizedBox(height: size.height * 0.02),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => _showFilteredModal(
-                            context,
-                            "Good Condition",
-                            dataList
-                                .where((r) => r.condition == 'GOOD')
-                                .toList(),
-                          ),
-                          child: Stockdetails(
-                            title: "Good Condition",
-                            value: "${cards.goodTrays} trays",
-                            icon: Icons.check_circle_outline,
-                            iconBg: const Color(0xffecfdf5),
-                            iconColor: Colors.green,
-                            highlightUnit: true,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  // Row(
+                  //   children: [
+                  //     Expanded(
+                  //       child: GestureDetector(
+                  //         onTap: () => _showFilteredModal(
+                  //           context,
+                  //           "Good Condition",
+                  //           dataList
+                  //               .where((r) => r.condition == 'GOOD')
+                  //               .toList(),
+                  //         ),
+                  //         child: Stockdetails(
+                  //           title: "Good Condition",
+                  //           value: "${cards.goodTrays} trays",
+                  //           icon: Icons.check_circle_outline,
+                  //           iconBg: const Color(0xffecfdf5),
+                  //           iconColor: Colors.green,
+                  //           highlightUnit: true,
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
 
                   // SizedBox(height: size.height * 0.02),
                   // Container(
@@ -469,6 +519,119 @@ class _TrayReturnState extends State<TrayReturn> {
       ),
     );
   }
+
+  Widget _trayCard({
+  required String title,
+  required IconData icon,
+  required Color iconColor,
+  required Color iconBg,
+  required int total,
+  required int emptyPlastic,
+  required int emptyPaper,
+  required int filledPlastic,
+  required int filledPaper,
+}) {
+  return Card(
+    color: Colors.white,
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              CircleAvatar(
+                radius: 15,
+                backgroundColor: iconBg,
+                child: Icon(
+                  icon,
+                  color: iconColor,
+                  size: 18,
+                ),
+              )
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: "$total",
+                  style: const TextStyle(
+                    fontSize: 28,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const TextSpan(
+                  text: " Trays",
+                  style: TextStyle(
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _miniValue("Empty Plastic", emptyPlastic),
+              _miniValue("Empty Paper", emptyPaper),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _miniValue("Plastic\n(With Egg)", filledPlastic),
+              _miniValue("Paper\n(With Egg)", filledPaper),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+  Widget _miniValue(String title, int value) {
+  return Expanded(
+    child: Column(
+      children: [
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 11,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          "$value",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   Widget summaryBox({
     required String title,

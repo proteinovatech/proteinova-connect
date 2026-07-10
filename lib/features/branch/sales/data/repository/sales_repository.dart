@@ -1,3 +1,5 @@
+import 'package:proteinova_connect/features/branch/sales/data/model/mobile_inventory_model.dart';
+
 import '../datasource/branch_sales_remote_datasource.dart';
 import '../model/sales_entry_model.dart';
 
@@ -34,4 +36,8 @@ class SalesRepository {
   Future<Map<String, dynamic>> rejectSale({required int approvalId}) async {
     return await _datasource.rejectSale(approvalId: approvalId);
   }
+
+ Future<MobileInventoryModel> getMobileInventory() async {
+  return await _datasource.getMobileInventory();
+}
 }

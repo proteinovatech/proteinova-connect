@@ -233,9 +233,9 @@ class _DailyClosingState extends State<DailyClosing> {
 
                         _buildClosingStockValue(data),
 
-                        const SizedBox(height: 16),
+                        // const SizedBox(height: 16),
 
-                        _buildNotesChecklist(data, isClosed),
+                        // _buildNotesChecklist(data, isClosed),
 
                         const SizedBox(height: 16),
 
