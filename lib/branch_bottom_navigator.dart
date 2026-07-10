@@ -103,11 +103,11 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
     BranchDashboard(),
     Sales(),
 
-    // BlocProvider(
-    //   create: (_) => InventoryBloc()..add(FetchInventoryEvent()),
+    BlocProvider(
+      create: (_) => InventoryBloc()..add(FetchInventoryEvent()),
 
-    //   child: Inventory(),
-    // ),
+      child: Inventory(),
+    ),
     DailyClosing(),
   ];
 
@@ -127,9 +127,9 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
           children: [
             _buildNavItem(Icons.grid_view, 0),
             _buildNavItem(Icons.shopping_cart_outlined, 1),
-            // _buildNavItem(Icons.inventory_2_outlined, 2),
-            _buildNavItem(Icons.receipt_long, 2),
-            _buildNavItem(Icons.menu_outlined, 3),
+            _buildNavItem(Icons.inventory_2_outlined, 2),
+            _buildNavItem(Icons.receipt_long, 3),
+            _buildNavItem(Icons.menu_outlined, 4),
           ],
         ),
       ),
@@ -141,7 +141,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
 
     return GestureDetector(
       onTap: () {
-        if (index == 3) {
+        if (index == 4) {
           _openSideMenu();
         } else {
           setState(() {
@@ -179,11 +179,11 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
         return "Dashboard";
       case 1:
         return "Sales";
-      // case 2:
-      //   return "Inventory";
       case 2:
-        return "Daily closing";
+        return "Inventory";
       case 3:
+        return "Daily closing";
+      case 4:
         return "Menu";
       default:
         return "";

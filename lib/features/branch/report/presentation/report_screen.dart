@@ -8,6 +8,7 @@ import 'package:proteinova_connect/features/admin/report/screens/purchase_report
 import 'package:proteinova_connect/features/admin/report/screens/warehouse_report_screen.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_report_dashboard_shimmer.dart';
 import 'package:proteinova_connect/features/branch/report/widget/salescategory.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -30,17 +31,19 @@ class _ReportScreenState extends State<ReportScreen> {
   String transaction = "All Sales";
   String reportCategory = "Branch Sales Report";
   String selectedReport = "Branch Sales Report";
-
+  List<Map<String, dynamic>> paymentModes = [];
   String fromDate = "dd-mm-yyyy";
   String toDate = "dd-mm-yyyy";
   List<dynamic> branchList = [];
+  List<Map<String, dynamic>> salesTrend = [];
 
   final ReportService reportService = ReportService();
 
   bool isLoading = true;
 
   Map<String, dynamic>? salesData;
-
+  List<Map<String, dynamic>> branchSales = [];
+  List<Map<String, dynamic>> topProducts = [];
   List<Map<String, dynamic>> salesStats = [];
   List<Map<String, dynamic>> transactions = [];
 
@@ -53,6 +56,7 @@ class _ReportScreenState extends State<ReportScreen> {
     "Branch Sales Report",
     "Warehouse Report",
   ];
+
   final indianFormat = NumberFormat.currency(
     locale: 'en_IN',
     symbol: '',
@@ -105,32 +109,32 @@ class _ReportScreenState extends State<ReportScreen> {
                           ),
                         ),
 
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
+                        // Container(
+                        //   padding: const EdgeInsets.symmetric(
+                        //     horizontal: 14,
+                        //     vertical: 8,
+                        //   ),
 
-                          decoration: BoxDecoration(
-                            color: const Color(0xffFEF3C7),
+                        //   decoration: BoxDecoration(
+                        //     color: const Color(0xffFEF3C7),
 
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                        //     borderRadius: BorderRadius.circular(12),
+                        //   ),
 
-                          child: const Row(
-                            children: [
-                              Icon(Icons.shield_outlined, size: 18),
+                        //   child: const Row(
+                        //     children: [
+                        //       Icon(Icons.shield_outlined, size: 18),
 
-                              SizedBox(width: 6),
+                        //       SizedBox(width: 6),
 
-                              Text(
-                                "Admin",
+                        //       Text(
+                        //         "Admin",
 
-                                style: TextStyle(fontWeight: FontWeight.w700),
-                              ),
-                            ],
-                          ),
-                        ),
+                        //         style: TextStyle(fontWeight: FontWeight.w700),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
 
                         // const SizedBox(width: 12),
 
@@ -501,89 +505,89 @@ class _ReportScreenState extends State<ReportScreen> {
                     const SizedBox(height: 24),
 
                     /// TABLE
-                    Container(
-                      padding: const EdgeInsets.all(18),
+                    // Container(
+                    //   padding: const EdgeInsets.all(18),
 
-                      decoration: BoxDecoration(
-                        color: Colors.white,
+                    //   decoration: BoxDecoration(
+                    //     color: Colors.white,
 
-                        borderRadius: BorderRadius.circular(20),
+                    //     borderRadius: BorderRadius.circular(20),
 
-                        border: Border.all(color: const Color(0xffE5E7EB)),
-                      ),
+                    //     border: Border.all(color: const Color(0xffE5E7EB)),
+                    //   ),
 
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    //   child: Column(
+                    //     crossAxisAlignment: CrossAxisAlignment.start,
 
-                        children: [
-                          Row(
-                            children: [
-                              const Expanded(
-                                child: Text(
-                                  "Recent Branch Transactions",
+                    //     children: [
+                    //       Row(
+                    //         children: [
+                    //           const Expanded(
+                    //             child: Text(
+                    //               "Recent Branch Transactions",
 
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
+                    //               style: TextStyle(
+                    //                 fontSize: 22,
+                    //                 fontWeight: FontWeight.w700,
+                    //               ),
+                    //             ),
+                    //           ),
 
-                              TextButton(
-                                onPressed: () {},
+                    //           TextButton(
+                    //             onPressed: () {},
 
-                                child: const Text("View All"),
-                              ),
-                            ],
-                          ),
+                    //             child: const Text("View All"),
+                    //           ),
+                    //         ],
+                    //       ),
 
-                          const SizedBox(height: 20),
+                    //       const SizedBox(height: 20),
 
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
+                    //       SingleChildScrollView(
+                    //         scrollDirection: Axis.horizontal,
 
-                            child: DataTable(
-                              columnSpacing: 26,
+                    //         child: DataTable(
+                    //           columnSpacing: 26,
 
-                              columns: const [
-                                DataColumn(label: Text("DATE")),
+                    //           columns: const [
+                    //             DataColumn(label: Text("DATE")),
 
-                                DataColumn(label: Text("BRANCH")),
+                    //             DataColumn(label: Text("BRANCH")),
 
-                                DataColumn(label: Text("TYPE")),
+                    //             DataColumn(label: Text("TYPE")),
 
-                                DataColumn(label: Text("ITEM / TYPE")),
+                    //             DataColumn(label: Text("ITEM / TYPE")),
 
-                                DataColumn(label: Text("QTY (UNITS)")),
+                    //             DataColumn(label: Text("QTY (UNITS)")),
 
-                                DataColumn(label: Text("AMOUNT")),
+                    //             DataColumn(label: Text("AMOUNT")),
 
-                                DataColumn(label: Text("STATUS")),
-                              ],
+                    //             DataColumn(label: Text("STATUS")),
+                    //           ],
 
-                              rows: transactions.map<DataRow>((e) {
-                                return buildRow(
-                                  e["date"].toString(),
-                                  e["branch"].toString(),
-                                  e["type"].toString(),
-                                  e["item"].toString(),
-                                  e["qty"].toString(),
-                                  e["amount"].toString(),
-                                  e["status"].toString(),
-                                  e["status"] == "Completed"
-                                      ? Colors.green
-                                      : e["status"] == "Received"
-                                      ? Colors.blueGrey
-                                      : Colors.red,
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    //           rows: transactions.map<DataRow>((e) {
+                    //             return buildRow(
+                    //               e["date"].toString(),
+                    //               e["branch"].toString(),
+                    //               e["type"].toString(),
+                    //               e["item"].toString(),
+                    //               e["qty"].toString(),
+                    //               e["amount"].toString(),
+                    //               e["status"].toString(),
+                    //               e["status"] == "Completed"
+                    //                   ? Colors.green
+                    //                   : e["status"] == "Received"
+                    //                   ? Colors.blueGrey
+                    //                   : Colors.red,
+                    //             );
+                    //           }).toList(),
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
                     const SizedBox(height: 20),
-                    SalesCategoryCard(),
+                    SalesCategoryCard(branchSales: branchSales),
                     const SizedBox(height: 20),
                     Column(
                       children: [
@@ -619,46 +623,92 @@ class _ReportScreenState extends State<ReportScreen> {
       setState(() {
         isLoading = true;
       });
+      if (branchList.isEmpty) {
+        branchList = await reportService.getBranches();
+      }
 
+      print("Branch List: $branchList");
+      final prefs = await SharedPreferences.getInstance();
+      final role = prefs.getString("role");
+      final branchId = prefs.getInt("branch_id");
       final response = await reportService.getBranchSalesReport(
         startDate: fromDate == "dd-mm-yyyy" ? null : fromDate,
         endDate: toDate == "dd-mm-yyyy" ? null : toDate,
+        branchId: role == "branch" ? branchId.toString() : null,
       );
 
-      final sales = List<Map<String, dynamic>>.from(
-        response["data"]["sales"] ?? [],
+      print(response);
+      final trend = List<Map<String, dynamic>>.from(response["trend"] ?? []);
+      print("Trend Data = $trend");
+
+      print("Role: $role");
+      print("Branch ID: $branchId");
+      paymentModes = List<Map<String, dynamic>>.from(
+        response["payment_modes"] ?? [],
       );
-      setState(() {
-        salesData = response["data"];
-        totalRevenue = sales.fold(
-          0.0,
-          (sum, item) =>
-              sum + (double.tryParse(item["total_amount"].toString()) ?? 0),
+      List<Map<String, dynamic>> branches = List<Map<String, dynamic>>.from(
+        response["branches"] ?? [],
+      );
+
+      String? loggedInBranchName;
+      print("Branch List = $branchList");
+      if (role == "branch") {
+        final branchInfo = branchList.firstWhere(
+          (e) => e["id"] == branchId,
+          orElse: () => {},
         );
 
-        totalOrders = sales.length;
+        if (branchInfo.isNotEmpty) {
+          loggedInBranchName = branchInfo["branch_name"];
+        }
+      }
+      if (role == "branch" && loggedInBranchName != null) {
+        branches = branches.where((b) {
+          return b["branch_name"] == loggedInBranchName;
+        }).toList();
+      }
+      branches.sort((a, b) {
+        final salesA = double.tryParse(a["total_sales"].toString()) ?? 0;
+        final salesB = double.tryParse(b["total_sales"].toString()) ?? 0;
+        return salesB.compareTo(salesA);
+      });
+      setState(() {
+        branchSales = branches;
+      });
 
-        totalEggs = sales.fold(
+      setState(() {
+        topBranches = branches;
+        branchSales = branches;
+        salesTrend = trend;
+        topProducts = List<Map<String, dynamic>>.from(
+          response["products"] ?? [],
+        );
+        print("Sales Trend = $salesTrend");
+        // Total Revenue
+        totalRevenue = branches.fold<double>(
           0,
           (sum, item) =>
-              sum + (int.tryParse(item["total_eggs_sold"].toString()) ?? 0),
+              sum + (double.tryParse(item["total_sales"].toString()) ?? 0),
         );
 
-        totalDamage = response["totalDamages"] ?? 0;
+        // Total Orders
+        totalOrders = branches.fold<int>(
+          0,
+          (sum, item) =>
+              sum + (int.tryParse(item["total_orders"].toString()) ?? 0),
+        );
 
-        transactions = sales.map((item) {
-          return {
-            "date": item["sale_date"],
-            "branch": item["customer_name"],
-            "type": item["sold_to"],
-            "item": "Egg Sales",
-            "qty": item["total_eggs_sold"],
-            "amount": item["total_amount"],
-            "status": item["balance_amount"] == "0.00"
-                ? "Completed"
-                : "Pending",
-          };
-        }).toList();
+        // Total Eggs
+        totalEggs = branches.fold<int>(
+          0,
+          (sum, item) => sum + (item["total_eggs_sold"] as int? ?? 0),
+        );
+
+        // Total Damage
+        totalDamage = branches.fold<int>(
+          0,
+          (sum, item) => sum + (item["total_damage"] as int? ?? 0),
+        );
 
         isLoading = false;
       });
@@ -857,14 +907,16 @@ class _ReportScreenState extends State<ReportScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     crossAxisAlignment: CrossAxisAlignment.end,
-                    children: (salesData?["trend"] ?? []).map<Widget>((item) {
+                    children: salesTrend.map<Widget>((item) {
                       return buildBar(
                         double.tryParse(item["retail_units"].toString()) ?? 0,
 
                         double.tryParse(item["wholesale_units"].toString()) ??
                             0,
 
-                        item["day_name"] ?? "",
+                        DateFormat(
+                          "dd MMM",
+                        ).format(DateTime.parse(item["sale_date"])),
                       );
                     }).toList(),
                   ),
@@ -934,9 +986,9 @@ class _ReportScreenState extends State<ReportScreen> {
   Widget buildBar(double retailSales, double wholesaleSales, String day) {
     double maxHeight = 160;
 
-    double maxValue = (salesData?["trend"] ?? [])
-        .map<double>((e) => double.tryParse(e["retail_units"].toString()) ?? 0)
-        .fold(0, (a, b) => a > b ? a : b);
+    double maxValue = salesTrend
+        .map((e) => (e["retail_units"] as num).toDouble())
+        .fold<double>(0.0, (a, b) => a > b ? a : b);
 
     double retailHeight = maxValue == 0
         ? 0
@@ -1115,14 +1167,6 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Widget buildSalesSummaryCard() {
-    final rows = [
-      ["1", "Total Sales (₹)", "₹ 165", "11.32%"],
-      ["2", "Total Orders", "1", "10.15%"],
-      ["3", "Total Quantity", "30", "8.45%"],
-      ["4", "Avg Order Value (₹)", "₹ 165", "1.06%"],
-      ["5", "Total Customers", "1", "9.28%"],
-    ];
-
     return dashboardContainer(
       title: "Sales Summary",
       child: SingleChildScrollView(
@@ -1140,40 +1184,24 @@ class _ReportScreenState extends State<ReportScreen> {
               DataColumn(label: Text("This Month")),
               DataColumn(label: Text("Change")),
             ],
-            rows: rows.map((e) {
+            rows: branchSales.asMap().entries.map((entry) {
+              final index = entry.key;
+              final item = entry.value;
+
               return DataRow(
                 cells: [
-                  DataCell(Text(e[0])),
+                  DataCell(Text("${index + 1}")),
 
                   DataCell(
                     SizedBox(
                       width: 120,
-                      child: Text(e[1], overflow: TextOverflow.ellipsis),
+                      child: Text(item["branch_name"].toString()),
                     ),
                   ),
 
-                  DataCell(Text(e[2])),
+                  DataCell(Text("₹ ${item["total_sales"]}")),
 
-                  DataCell(
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.trending_up,
-                          size: 15,
-                          color: Colors.green,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          e[3],
-                          style: const TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  DataCell(Text(item["total_orders"].toString())),
                 ],
               );
             }).toList(),
@@ -1184,10 +1212,7 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Widget buildTopProductsCard() {
-    final products = [
-      ["without tray", "120", "80.00"],
-      ["Plastic tray (With egg)", "30", "20.00"],
-    ];
+    final products = topProducts;
 
     return dashboardContainer(
       title: "Top 5 Products by Sales",
@@ -1204,36 +1229,35 @@ class _ReportScreenState extends State<ReportScreen> {
             ],
             rows: [
               ...products.asMap().entries.map((entry) {
+                final index = entry.key;
+                final item = entry.value;
+
+                final sales =
+                    double.tryParse(item["total_sales"].toString()) ?? 0;
+
+                final totalSales = products.fold<double>(
+                  0,
+                  (sum, e) =>
+                      sum + (double.tryParse(e["total_sales"].toString()) ?? 0),
+                );
+
+                final percentage = totalSales == 0
+                    ? 0
+                    : (sales / totalSales) * 100;
+
                 return DataRow(
                   cells: [
-                    DataCell(Text("${entry.key + 1}")),
-                    DataCell(Text(entry.value[0])),
-                    DataCell(Text("₹ ${entry.value[1]}")),
-                    DataCell(Text("${entry.value[2]}%")),
+                    DataCell(Text("${index + 1}")),
+
+                    // Branch name because product doesn't exist
+                    DataCell(Text(item["branch_name"])),
+
+                    DataCell(Text("₹ ${sales.toStringAsFixed(2)}")),
+
+                    DataCell(Text("${percentage.toStringAsFixed(2)}%")),
                   ],
                 );
-              }),
-
-              const DataRow(
-                cells: [
-                  DataCell(Text("")),
-                  DataCell(
-                    Text(
-                      "Total",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  DataCell(
-                    Text(
-                      "₹ 150",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  DataCell(
-                    Text("100%", style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
+              }).toList(),
             ],
           ),
         ),
@@ -1292,36 +1316,67 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Widget buildPaymentModeCard() {
+    final double totalSales = branchSales.fold<double>(
+      0,
+      (sum, item) =>
+          sum + (double.tryParse(item["total_sales"].toString()) ?? 0),
+    );
     return dashboardContainer(
       title: "Sales by Payment Mode",
       child: Column(
         children: [
           SizedBox(
-            height: 150,
-            child: PieChart(
-              PieChartData(
-                centerSpaceRadius: 40,
-                sections: [
-                  PieChartSectionData(
-                    value: 165,
-                    color: Colors.orange,
-                    radius: 20,
-                    showTitle: false,
+            height: 180,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                PieChart(
+                  PieChartData(
+                    centerSpaceRadius: 55,
+                    sectionsSpace: 2,
+                    sections: [
+                      PieChartSectionData(
+                        value: totalSales,
+                        color: Colors.orange,
+                        radius: 22,
+                        showTitle: false,
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "Total Sales",
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "₹ ${indianFormat.format(totalSales)}",
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-
           const SizedBox(height: 16),
 
           Row(
-            children: const [
-              CircleAvatar(radius: 5, backgroundColor: Colors.orange),
-              SizedBox(width: 10),
-              Text("CASH"),
-              Spacer(),
-              Text("₹ 165", style: TextStyle(fontWeight: FontWeight.bold)),
+            children: [
+              const CircleAvatar(radius: 5, backgroundColor: Colors.orange),
+              const SizedBox(width: 10),
+              const Text("CASH"),
+              const Spacer(),
+              Text(
+                "₹ ${indianFormat.format(totalSales)}",
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ],
           ),
         ],

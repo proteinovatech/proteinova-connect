@@ -36,4 +36,52 @@ class ReportService {
 
     throw Exception('Failed to fetch report (${response.statusCode})');
   }
+
+  Future<List<dynamic>> getBranches() async {
+    final uri = Uri.parse('$baseUrl/api/branches');
+
+    final response = await http.get(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      if (data is List) {
+        return data;
+      }
+
+      if (data is Map<String, dynamic>) {
+        return List<dynamic>.from(data["data"] ?? []);
+      }
+    }
+
+    throw Exception("Failed to fetch branches");
+  }
+
+  Future<List<dynamic>> getExpenseReport({
+    String? startDate,
+    String? endDate,
+    String? branchId,
+  }) async {
+    final uri = Uri.parse('$baseUrl/api/reports/expense').replace(
+      queryParameters: {
+        if (startDate != null) 'startDate': startDate,
+        if (endDate != null) 'endDate': endDate,
+        if (branchId != null) 'branchId': branchId,
+      },
+    );
+    print("Base URL: $baseUrl");
+    print("Expense API URL: $uri");
+
+    final response = await http.get(uri);
+    print("Response: ${response.body}");
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as List<dynamic>;
+    }
+
+    throw Exception("Failed to fetch Expense Report");
+  }
 }

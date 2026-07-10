@@ -58,7 +58,9 @@ class _ReceivestockState extends State<Receivestock> {
   Future<void> fetchReceiveDetails() async {
     try {
       final response = await http.get(
-        Uri.parse("${ApiConstants.baseUrl}/api/branch/incoming-stock/$branchId/dispatch/${widget.dispatchid}"),
+        Uri.parse(
+          "${ApiConstants.baseUrl}/api/branch/incoming-stock/$branchId/dispatch/${widget.dispatchid}",
+        ),
         headers: {"Accept": "application/json"},
       );
 
@@ -86,10 +88,14 @@ class _ReceivestockState extends State<Receivestock> {
                 final val = int.tryParse(controller.text) ?? 0;
                 if (val < 0) {
                   controller.text = "0";
-                  controller.selection = const TextSelection.collapsed(offset: 1);
+                  controller.selection = const TextSelection.collapsed(
+                    offset: 1,
+                  );
                 } else if (val > maxEggs) {
                   controller.text = maxEggs.toString();
-                  controller.selection = TextSelection.collapsed(offset: maxEggs.toString().length);
+                  controller.selection = TextSelection.collapsed(
+                    offset: maxEggs.toString().length,
+                  );
                 }
                 if (mounted) {
                   setState(() {
@@ -106,7 +112,9 @@ class _ReceivestockState extends State<Receivestock> {
             isLoading = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Failed to fetch details: ${response.statusCode}")),
+            SnackBar(
+              content: Text("Failed to fetch details: ${response.statusCode}"),
+            ),
           );
         }
       }
@@ -115,9 +123,9 @@ class _ReceivestockState extends State<Receivestock> {
         setState(() {
           isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error fetching details: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error fetching details: $e")));
       }
     }
   }
@@ -125,7 +133,9 @@ class _ReceivestockState extends State<Receivestock> {
   Future<void> handleArrival() async {
     try {
       final response = await http.put(
-        Uri.parse("${ApiConstants.baseUrl}/api/branch/incoming-stock/$branchId/dispatch/${widget.dispatchid}/arrival"),
+        Uri.parse(
+          "${ApiConstants.baseUrl}/api/branch/incoming-stock/$branchId/dispatch/${widget.dispatchid}/arrival",
+        ),
         headers: {"Accept": "application/json"},
       );
       if (response.statusCode == 200) {
@@ -138,15 +148,17 @@ class _ReceivestockState extends State<Receivestock> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Failed to mark arrival: ${response.statusCode}")),
+            SnackBar(
+              content: Text("Failed to mark arrival: ${response.statusCode}"),
+            ),
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error marking arrival: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error marking arrival: $e")));
       }
     }
   }
@@ -159,7 +171,9 @@ class _ReceivestockState extends State<Receivestock> {
     try {
       if (receivedItems.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("CRITICAL ERROR: Receive data is missing or empty!")),
+          const SnackBar(
+            content: Text("CRITICAL ERROR: Receive data is missing or empty!"),
+          ),
         );
         setState(() {
           isSubmitting = false;
@@ -174,7 +188,9 @@ class _ReceivestockState extends State<Receivestock> {
         final int damagedEggs = damagedTrays[item["product"]] ?? 0;
 
         // Convert damaged eggs back to trays for the backend (mark the whole tray if any eggs are damaged)
-        final int traysToMarkDamaged = eggsPerTray > 0 ? (damagedEggs / eggsPerTray).ceil() : 0;
+        final int traysToMarkDamaged = eggsPerTray > 0
+            ? (damagedEggs / eggsPerTray).ceil()
+            : 0;
 
         return {
           "egg_category_grade": item["product"],
@@ -183,7 +199,9 @@ class _ReceivestockState extends State<Receivestock> {
       }).toList();
 
       final response = await http.post(
-        Uri.parse("${ApiConstants.baseUrl}/api/branch/incoming-stock/$branchId/dispatch/${widget.dispatchid}/receive"),
+        Uri.parse(
+          "${ApiConstants.baseUrl}/api/branch/incoming-stock/$branchId/dispatch/${widget.dispatchid}/receive",
+        ),
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
@@ -199,7 +217,11 @@ class _ReceivestockState extends State<Receivestock> {
         final resData = jsonDecode(response.body);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(resData["message"] ?? "Stock received successfully!")),
+            SnackBar(
+              content: Text(
+                resData["message"] ?? "Stock received successfully!",
+              ),
+            ),
           );
           Navigator.pop(context, true);
         }
@@ -207,16 +229,16 @@ class _ReceivestockState extends State<Receivestock> {
         final resData = jsonDecode(response.body);
         final errorMsg = resData["error"] ?? "Failed to confirm receive";
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("SERVER ERROR: $errorMsg")),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("SERVER ERROR: $errorMsg")));
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error confirming receive: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error confirming receive: $e")));
       }
     } finally {
       if (mounted) {
@@ -243,11 +265,7 @@ class _ReceivestockState extends State<Receivestock> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final String status = receiveInfo["status"] ?? "";
@@ -264,7 +282,10 @@ class _ReceivestockState extends State<Receivestock> {
             children: [
               // Header Back Button & Bar
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
                 color: AppColors.background,
                 child: Row(
                   children: [
@@ -275,7 +296,11 @@ class _ReceivestockState extends State<Receivestock> {
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
                           children: const [
-                            Icon(Icons.arrow_back, color: Color(0xFF6B7280), size: 20),
+                            Icon(
+                              Icons.arrow_back,
+                              color: Color(0xFF6B7280),
+                              size: 20,
+                            ),
                             SizedBox(width: 8),
                             Text(
                               "Back to Inventory",
@@ -309,7 +334,10 @@ class _ReceivestockState extends State<Receivestock> {
                               children: [
                                 Text(
                                   "Receive Stock: ",
-                                  style: AppTextStyles.headingText22.copyWith(fontSize: 24, fontWeight: FontWeight.bold),
+                                  style: AppTextStyles.headingText22.copyWith(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                                 Text(
                                   receiveInfo["receive_no"] ?? "",
@@ -329,15 +357,26 @@ class _ReceivestockState extends State<Receivestock> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF2563EB),
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                                 elevation: 0,
                               ),
-                              child: const Text("Mark Arrival", style: TextStyle(fontWeight: FontWeight.bold)),
+                              child: const Text(
+                                "Mark Arrival",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
                             )
                           else if (status == "ARRIVAL")
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF16A34A),
                                 borderRadius: BorderRadius.circular(8),
@@ -356,7 +395,10 @@ class _ReceivestockState extends State<Receivestock> {
                       const SizedBox(height: 8),
                       Text(
                         "Manage and receive incoming shipments from warehouse to update branch inventory",
-                        style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                       const SizedBox(height: 24),
 
@@ -365,9 +407,15 @@ class _ReceivestockState extends State<Receivestock> {
                           ? Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Expanded(flex: 3, child: _buildReceivedInfoCard()),
+                                Expanded(
+                                  flex: 3,
+                                  child: _buildReceivedInfoCard(),
+                                ),
                                 const SizedBox(width: 24),
-                                Expanded(flex: 4, child: _buildReceivedItemsCard()),
+                                Expanded(
+                                  flex: 4,
+                                  child: _buildReceivedItemsCard(),
+                                ),
                                 const SizedBox(width: 24),
                                 Expanded(flex: 3, child: _buildSummaryCard()),
                               ],
@@ -413,7 +461,14 @@ class _ReceivestockState extends State<Receivestock> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Received Info", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B))),
+          const Text(
+            "Received Info",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Color(0xFF1E293B),
+            ),
+          ),
           const SizedBox(height: 12),
           Divider(color: Colors.grey.shade200),
           const SizedBox(height: 12),
@@ -421,20 +476,29 @@ class _ReceivestockState extends State<Receivestock> {
             children: [
               TableRow(
                 children: [
-                  _buildLabelValueCell("Dispatch Code", receiveInfo["dispatch_code"] ?? "N/A"),
-                  _buildLabelValueCell("Dispatch Date", formatLocalDate(receiveInfo["dispatch_date"])),
+                  _buildLabelValueCell(
+                    "Dispatch Code",
+                    receiveInfo["dispatch_code"] ?? "N/A",
+                  ),
+                  _buildLabelValueCell(
+                    "Dispatch Date",
+                    formatLocalDate(receiveInfo["dispatch_date"]),
+                  ),
                 ],
               ),
               const TableRow(
-                children: [
-                  SizedBox(height: 16),
-                  SizedBox(height: 16),
-                ],
+                children: [SizedBox(height: 16), SizedBox(height: 16)],
               ),
               TableRow(
                 children: [
-                  _buildLabelValueCell("Vehicle No.", receiveInfo["vehicle_number"] ?? "N/A"),
-                  _buildLabelValueCell("Driver Name", receiveInfo["driver_name"] ?? "N/A"),
+                  _buildLabelValueCell(
+                    "Vehicle No.",
+                    receiveInfo["vehicle_number"] ?? "N/A",
+                  ),
+                  _buildLabelValueCell(
+                    "Driver Name",
+                    receiveInfo["driver_name"] ?? "N/A",
+                  ),
                 ],
               ),
             ],
@@ -450,11 +514,22 @@ class _ReceivestockState extends State<Receivestock> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("From", style: TextStyle(fontSize: 11, color: Color(0xFF2563EB), fontWeight: FontWeight.w600)),
+                const Text(
+                  "From",
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF2563EB),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   receiveInfo["from_supplier"] ?? "N/A",
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1E3A8A)),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Color(0xFF1E3A8A),
+                  ),
                 ),
               ],
             ),
@@ -468,9 +543,19 @@ class _ReceivestockState extends State<Receivestock> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+        ),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Color(0xFF1E293B))),
+        Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+            color: Color(0xFF1E293B),
+          ),
+        ),
       ],
     );
   }
@@ -486,7 +571,14 @@ class _ReceivestockState extends State<Receivestock> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Received Items", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B))),
+          const Text(
+            "Received Items",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Color(0xFF1E293B),
+            ),
+          ),
           const SizedBox(height: 12),
           Divider(color: Colors.grey.shade200),
           const SizedBox(height: 12),
@@ -501,27 +593,45 @@ class _ReceivestockState extends State<Receivestock> {
             children: [
               TableRow(
                 decoration: const BoxDecoration(
-                  border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1.5)),
+                  border: Border(
+                    bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+                  ),
                 ),
                 children: [
                   _buildTableCell("Id", isHeader: true),
                   _buildTableCell("Product", isHeader: true),
                   _buildTableCell("Tray Type", isHeader: true),
-                  _buildTableCell("Trays", isHeader: true, textAlign: TextAlign.center),
-                  _buildTableCell("Eggs", isHeader: true, textAlign: TextAlign.right),
+                  _buildTableCell(
+                    "Trays",
+                    isHeader: true,
+                    textAlign: TextAlign.center,
+                  ),
+                  _buildTableCell(
+                    "Eggs",
+                    isHeader: true,
+                    textAlign: TextAlign.right,
+                  ),
                 ],
               ),
               ...receivedItems.map((item) {
                 return TableRow(
                   decoration: BoxDecoration(
-                    border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
+                    border: Border(
+                      bottom: BorderSide(color: Colors.grey.shade100),
+                    ),
                   ),
                   children: [
                     _buildTableCell(item["id"].toString()),
                     _buildTableCell(item["product"] ?? "N/A"),
                     _buildTableCell(item["tray_type"] ?? "N/A"),
-                    _buildTableCell(item["trays"].toString(), textAlign: TextAlign.center),
-                    _buildTableCell(formatNumber(item["eggs"]), textAlign: TextAlign.right),
+                    _buildTableCell(
+                      item["trays"].toString(),
+                      textAlign: TextAlign.center,
+                    ),
+                    _buildTableCell(
+                      formatNumber(item["eggs"]),
+                      textAlign: TextAlign.right,
+                    ),
                   ],
                 );
               }),
@@ -538,17 +648,29 @@ class _ReceivestockState extends State<Receivestock> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Total", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+                const Text(
+                  "Total",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E293B),
+                  ),
+                ),
                 Row(
                   children: [
                     Text(
                       "${summary["total_trays"] ?? 0} Trays",
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E293B),
+                      ),
                     ),
                     const SizedBox(width: 24),
                     Text(
                       "${formatNumber(summary["total_eggs"])} Eggs",
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E293B),
+                      ),
                     ),
                   ],
                 ),
@@ -574,7 +696,14 @@ class _ReceivestockState extends State<Receivestock> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
-              Text("Shipment Summary", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B))),
+              Text(
+                "Shipment Summary",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
               Icon(Icons.description_outlined, color: Color(0xFF2563EB)),
             ],
           ),
@@ -582,7 +711,10 @@ class _ReceivestockState extends State<Receivestock> {
           Divider(color: Colors.grey.shade200),
           const SizedBox(height: 12),
           _buildSummaryRowItem("Total Trays", summary["total_trays"]),
-          _buildSummaryRowItem("Total Eggs", formatNumber(summary["total_eggs"])),
+          _buildSummaryRowItem(
+            "Total Eggs",
+            formatNumber(summary["total_eggs"]),
+          ),
           _buildSummaryRowItem("Plastic Trays", summary["plastic_trays"]),
           _buildSummaryRowItem("Paper Trays", summary["paper_trays"]),
           _buildSummaryRowItem("Empty Trays", summary["empty_trays"]),
@@ -597,10 +729,17 @@ class _ReceivestockState extends State<Receivestock> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Color(0xFF64748B), fontSize: 14)),
+          Text(
+            label,
+            style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
+          ),
           Text(
             (value ?? 0).toString(),
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1E293B)),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: Color(0xFF1E293B),
+            ),
           ),
         ],
       ),
@@ -620,7 +759,11 @@ class _ReceivestockState extends State<Receivestock> {
         children: [
           const Text(
             "Tray Details (Inspection)",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF1E293B)),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: Color(0xFF1E293B),
+            ),
           ),
           const SizedBox(height: 16),
           if (isDesktop)
@@ -635,14 +778,32 @@ class _ReceivestockState extends State<Receivestock> {
               children: [
                 TableRow(
                   decoration: const BoxDecoration(
-                    border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1.5)),
+                    border: Border(
+                      bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+                    ),
                   ),
                   children: [
                     _buildTableCell("Product Grade", isHeader: true),
-                    _buildTableCell("Tray Type", isHeader: true, textAlign: TextAlign.center),
-                    _buildTableCell("Expected (Eggs)", isHeader: true, textAlign: TextAlign.center),
-                    _buildTableCell("Damaged (Eggs)", isHeader: true, textAlign: TextAlign.center),
-                    _buildTableCell("Good (Eggs)", isHeader: true, textAlign: TextAlign.center),
+                    _buildTableCell(
+                      "Tray Type",
+                      isHeader: true,
+                      textAlign: TextAlign.center,
+                    ),
+                    _buildTableCell(
+                      "Expected (Eggs)",
+                      isHeader: true,
+                      textAlign: TextAlign.center,
+                    ),
+                    _buildTableCell(
+                      "Damaged (Eggs)",
+                      isHeader: true,
+                      textAlign: TextAlign.center,
+                    ),
+                    _buildTableCell(
+                      "Good (Eggs)",
+                      isHeader: true,
+                      textAlign: TextAlign.center,
+                    ),
                   ],
                 ),
                 ...receivedItems.map((item) {
@@ -654,12 +815,20 @@ class _ReceivestockState extends State<Receivestock> {
 
                   return TableRow(
                     decoration: BoxDecoration(
-                      border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
+                      border: Border(
+                        bottom: BorderSide(color: Colors.grey.shade100),
+                      ),
                     ),
                     children: [
                       _buildTableCell(product),
-                      _buildTableCell(item["tray_type"] ?? "N/A", textAlign: TextAlign.center),
-                      _buildTableCell(formatNumber(expected), textAlign: TextAlign.center),
+                      _buildTableCell(
+                        item["tray_type"] ?? "N/A",
+                        textAlign: TextAlign.center,
+                      ),
+                      _buildTableCell(
+                        formatNumber(expected),
+                        textAlign: TextAlign.center,
+                      ),
                       // Damaged input
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -670,20 +839,35 @@ class _ReceivestockState extends State<Receivestock> {
                             child: TextField(
                               controller: controller,
                               keyboardType: TextInputType.number,
-                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
                               textAlign: TextAlign.center,
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red,
+                              ),
                               decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                  horizontal: 8,
+                                ),
                                 isDense: true,
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
                       // Good eggs
-                      _buildTableCell(formatNumber(good), textAlign: TextAlign.center, textColor: Colors.green, isBold: true),
+                      _buildTableCell(
+                        formatNumber(good),
+                        textAlign: TextAlign.center,
+                        textColor: Colors.green,
+                        isBold: true,
+                      ),
                     ],
                   );
                 }),
@@ -709,12 +893,28 @@ class _ReceivestockState extends State<Receivestock> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(product, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      Text(
+                        product,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
                       const SizedBox(height: 10),
                       Row(
                         children: [
-                          Expanded(child: _buildInspectionStackItem("Tray Type", item["tray_type"] ?? "N/A")),
-                          Expanded(child: _buildInspectionStackItem("Expected Eggs", formatNumber(expected))),
+                          Expanded(
+                            child: _buildInspectionStackItem(
+                              "Tray Type",
+                              item["tray_type"] ?? "N/A",
+                            ),
+                          ),
+                          Expanded(
+                            child: _buildInspectionStackItem(
+                              "Expected Eggs",
+                              formatNumber(expected),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -725,20 +925,37 @@ class _ReceivestockState extends State<Receivestock> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text("Damaged (Eggs)", style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                                const Text(
+                                  "Damaged (Eggs)",
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ),
                                 const SizedBox(height: 6),
                                 SizedBox(
                                   width: 120,
                                   child: TextField(
                                     controller: controller,
                                     keyboardType: TextInputType.number,
-                                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
                                     textAlign: TextAlign.center,
-                                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.red,
+                                    ),
                                     decoration: InputDecoration(
-                                      contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            vertical: 8,
+                                            horizontal: 8,
+                                          ),
                                       isDense: true,
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -749,11 +966,21 @@ class _ReceivestockState extends State<Receivestock> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text("Good (Eggs)", style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                                const Text(
+                                  "Good (Eggs)",
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ),
                                 const SizedBox(height: 10),
                                 Text(
                                   formatNumber(good),
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.green),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.green,
+                                  ),
                                 ),
                               ],
                             ),
@@ -776,12 +1003,20 @@ class _ReceivestockState extends State<Receivestock> {
             ),
             child: Row(
               children: const [
-                Icon(Icons.warning_amber_rounded, color: Color(0xFFD97706), size: 20),
+                Icon(
+                  Icons.warning_amber_rounded,
+                  color: Color(0xFFD97706),
+                  size: 20,
+                ),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     "Damage trays will be excluded from your usable stock and logged for audit.",
-                    style: TextStyle(color: Color(0xFFB45309), fontSize: 13, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      color: Color(0xFFB45309),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
@@ -796,21 +1031,39 @@ class _ReceivestockState extends State<Receivestock> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+        ),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Color(0xFF1E293B))),
+        Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+            color: Color(0xFF1E293B),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildTableCell(String text, {bool isHeader = false, TextAlign textAlign = TextAlign.left, Color? textColor, bool isBold = false}) {
+  Widget _buildTableCell(
+    String text, {
+    bool isHeader = false,
+    TextAlign textAlign = TextAlign.left,
+    Color? textColor,
+    bool isBold = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       child: Text(
         text,
         textAlign: textAlign,
         style: TextStyle(
-          fontWeight: isHeader ? FontWeight.bold : (isBold ? FontWeight.bold : FontWeight.normal),
+          fontWeight: isHeader
+              ? FontWeight.bold
+              : (isBold ? FontWeight.bold : FontWeight.normal),
           color: isHeader
               ? const Color(0xFF64748B)
               : (textColor ?? const Color(0xFF1E293B)),
@@ -831,21 +1084,34 @@ class _ReceivestockState extends State<Receivestock> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Notes", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B))),
+          const Text(
+            "Notes",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Color(0xFF1E293B),
+            ),
+          ),
           const SizedBox(height: 10),
           TextField(
             controller: notesController,
             maxLines: 4,
             decoration: InputDecoration(
               hintText: "Enter any additional notes...",
-              hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+              hintStyle: const TextStyle(
+                color: Color(0xFF94A3B8),
+                fontSize: 14,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
+                borderSide: const BorderSide(
+                  color: Color(0xFF2563EB),
+                  width: 2,
+                ),
               ),
               filled: true,
               fillColor: const Color(0xFFF8FAFC),
@@ -858,11 +1124,22 @@ class _ReceivestockState extends State<Receivestock> {
               OutlinedButton(
                 onPressed: () => Navigator.pop(context),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 14,
+                  ),
                   side: const BorderSide(color: Color(0xFFCBD5E1)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
-                child: const Text("Cancel", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475569))),
+                child: const Text(
+                  "Cancel",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF475569),
+                  ),
+                ),
               ),
               const SizedBox(width: 16),
               ElevatedButton(
@@ -870,21 +1147,32 @@ class _ReceivestockState extends State<Receivestock> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2563EB),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   elevation: 0,
                 ),
                 child: isSubmitting
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : Row(
                         children: const [
                           Icon(Icons.verified_outlined, size: 18),
                           SizedBox(width: 8),
-                          Text("Confirm Receive", style: TextStyle(fontWeight: FontWeight.bold)),
+                          Text(
+                            "Confirm Receive",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ],
                       ),
               ),

@@ -77,7 +77,7 @@ class _InventoryState extends State<Inventory> {
     }
 
     try {
-      final String baseUrl = dotenv.env['BASE_URL'] ?? "";
+      final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? "";
       final response = await http.put(
         Uri.parse("$baseUrl/api/dispatch/$rawId/status"),
         headers: {
@@ -107,12 +107,13 @@ class _InventoryState extends State<Inventory> {
           ).showSnackBar(SnackBar(content: Text(errMsg)));
         }
       }
-    } catch (err) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Failed to mark arrival: $err")));
-      }
+    } catch (e, stackTrace) {
+      debugPrint("Error : $e");
+      debugPrint("Stack : $stackTrace");
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
@@ -378,7 +379,7 @@ class _InventoryState extends State<Inventory> {
       crossAxisCount: crossAxisCount,
       mainAxisSpacing: spacing,
       crossAxisSpacing: spacing,
-      childAspectRatio: childAspectRatio,
+      childAspectRatio: 1.2,
       children: [
         ShipmentCard(
           title: "Expected Today",
@@ -401,6 +402,7 @@ class _InventoryState extends State<Inventory> {
           icon: Icons.send_outlined,
           iconColor: Colors.orange,
         ),
+
         ShipmentCard(
           title: "Delayed in Transit",
           count: "${cards["delayed_in_transit"] ?? 0} Shipments",
@@ -789,7 +791,7 @@ class _InventoryState extends State<Inventory> {
                         const SizedBox(width: 8),
                         IconButton(
                           icon: const Icon(
-                            Icons.file_download_outlined,
+                            Icons.visibility_outlined,
                             color: Color(0xFF64748B),
                             size: 20,
                           ),
@@ -1061,7 +1063,7 @@ class _InventoryState extends State<Inventory> {
                   const SizedBox(width: 8),
                   IconButton(
                     icon: const Icon(
-                      Icons.file_download_outlined,
+                      Icons.visibility_outlined,
                       color: Color(0xFF64748B),
                     ),
                     onPressed: () {

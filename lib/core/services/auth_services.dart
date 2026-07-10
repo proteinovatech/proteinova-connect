@@ -15,6 +15,8 @@ class AuthService {
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({"email": email, "password": password, "role": role}),
     );
+    print("Login Status: ${response.statusCode}");
+    print("Login Response: ${response.body}");
     print(email);
     print(password);
     print(role);

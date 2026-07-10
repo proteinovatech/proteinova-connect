@@ -7,11 +7,8 @@ import 'package:http/http.dart' as http;
 import 'inventory_event.dart';
 import 'inventory_state.dart';
 
-class InventoryBloc
-    extends Bloc<InventoryEvent, InventoryState> {
-
+class InventoryBloc extends Bloc<InventoryEvent, InventoryState> {
   InventoryBloc() : super(InventoryInitial()) {
-
     on<FetchInventoryEvent>(_fetchInventory);
 
     on<RefreshInventoryEvent>(_fetchInventory);
@@ -21,13 +18,11 @@ class InventoryBloc
     InventoryEvent event,
     Emitter<InventoryState> emit,
   ) async {
-
     emit(InventoryLoading());
 
     try {
-
-      final String baseUrl =
-          dotenv.env['BASE_URL'] ?? "";
+      final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? "";
+      print("BASE URL : $baseUrl");
 
       int branchId = 1;
       if (event is FetchInventoryEvent && event.branchId != null) {
@@ -37,31 +32,21 @@ class InventoryBloc
       }
 
       final response = await http.get(
-        Uri.parse(
-          "$baseUrl/api/branch/incoming-stock/$branchId",
-        ),
+        Uri.parse("$baseUrl/api/branch/incoming-stock/$branchId"),
       );
 
-      if (response.statusCode == 200) {
+      print("Branch ID : $branchId");
 
+      if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
         emit(InventoryLoaded(data));
-
+        print(data);
       } else {
-
-        emit(
-          InventoryError(
-            "Failed : ${response.statusCode}",
-          ),
-        );
+        emit(InventoryError("Failed : ${response.statusCode}"));
       }
-
     } catch (e) {
-
-      emit(
-        InventoryError(e.toString()),
-      );
+      emit(InventoryError(e.toString()));
     }
   }
 }

@@ -7,12 +7,13 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
-import 'package:proteinova_connect/features/admin/report/data/report_service.dart';
 import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/purchase_report_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/sales_report_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/warehouse_report_screen.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_report_dashboard_shimmer.dart';
+import 'package:proteinova_connect/features/branch/report/data/service/branch_report_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ExpenseReport extends StatefulWidget {
   const ExpenseReport({super.key});
@@ -64,6 +65,8 @@ class _ExpenseReportScreenState extends State<ExpenseReport> {
   }
 
   Future<void> fetchExpenseReport() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? branchId = prefs.getInt("branch_id")?.toString();
     try {
       setState(() {
         isLoading = true;
@@ -73,53 +76,139 @@ class _ExpenseReportScreenState extends State<ExpenseReport> {
         branchList = await reportService.getBranches();
       }
 
+      final prefs = await SharedPreferences.getInstance();
+
+      String? role = prefs.getString("role");
+      int? savedBranchId = prefs.getInt("branch_id");
+
+      print("Saved Role: $role");
+      print("Saved Branch ID: $savedBranchId");
+
       String? branchId;
-      if (branch != "All Locations") {
-        final b = branchList.firstWhere(
-          (element) => element['branch_name'] == branch,
-          orElse: () => null,
-        );
-        if (b != null) {
-          branchId = b['id']?.toString() ?? b['branch_id']?.toString();
+
+      if (role == "branch") {
+        // Branch user -> use logged-in branch
+        branchId = savedBranchId?.toString();
+      } else {
+        // Admin -> use dropdown
+        if (branch != "All Locations") {
+          final selectedBranch = branchList.firstWhere(
+            (e) => e["branch_name"] == branch,
+            orElse: () => {},
+          );
+
+          if (selectedBranch.isNotEmpty) {
+            branchId = selectedBranch["id"].toString();
+          }
         }
       }
+      print("Final Branch ID: $branchId");
 
-      String? start = fromDate != "dd-mm-yyyy" ? fromDate : null;
-      String? end = toDate != "dd-mm-yyyy" ? toDate : null;
-
-      final data = await reportService.getExpenseReport(
-        startDate: start,
-        endDate: end,
+      final response = await reportService.getExpenseReport(
+        startDate: fromDate == "dd-mm-yyyy" ? null : fromDate,
+        endDate: toDate == "dd-mm-yyyy" ? null : toDate,
         branchId: branchId,
       );
-      print(data);
-      print(data["dailyTrend"]);
+      print("Branch ID: $branchId");
+      print("Response Length: ${response.length}");
+      expenseLogs = response;
+      Map<String, double> dailyMap = {};
+
+      for (final item in expenseLogs) {
+        final date = item["date"].toString().substring(0, 10);
+        final amount = double.tryParse(item["amount"].toString()) ?? 0;
+
+        dailyMap[date] = (dailyMap[date] ?? 0) + amount;
+      }
+
+      dailyTrend = dailyMap.entries.map((e) {
+        return {"day": e.key, "amount": e.value};
+      }).toList();
+      print("Daily Trend Generated: $dailyTrend");
+
+      Map<String, double> categoryMap = {};
+
+      for (final item in expenseLogs) {
+        final category = item["category"].toString();
+        final amount = double.tryParse(item["amount"].toString()) ?? 0;
+
+        categoryMap[category] = (categoryMap[category] ?? 0) + amount;
+      }
+
+      final totalCategoryExpense = categoryMap.values.fold<double>(
+        0,
+        (sum, value) => sum + value,
+      );
+
+      expenseCategories = categoryMap.entries.map((e) {
+        return {
+          "name": e.key,
+          "amount": e.value,
+          "progress": totalCategoryExpense == 0
+              ? 0
+              : e.value / totalCategoryExpense,
+        };
+      }).toList();
+      print("Expense Categories Generated: $expenseCategories");
+
+      double totalExpense = 0;
+      Set<String> uniqueDates = {};
+
+      for (final item in expenseLogs) {
+        totalExpense += double.tryParse(item["amount"].toString()) ?? 0;
+
+        uniqueDates.add(item["date"].toString().substring(0, 10));
+      }
+
+      int totalBills = expenseLogs.length;
+
+      double avgDailyExpense = uniqueDates.isEmpty
+          ? 0
+          : totalExpense / uniqueDates.length;
+
+      expenseStats = [
+        {
+          "title": "Total Expenses",
+          "amount": totalExpense,
+          "icon": "money",
+          "color": "red",
+          "growth": "-",
+        },
+        {
+          "title": "Total Bills",
+          "amount": totalBills,
+          "icon": "truck",
+          "color": "blue",
+          "growth": "-",
+        },
+        {
+          "title": "AVG. Daily Expenses",
+          "amount": avgDailyExpense,
+          "icon": "check",
+          "color": "grey",
+          "growth": "-",
+        },
+      ];
+      print("Stats : $expenseStats");
 
       setState(() {
-        expenseData = data;
-        expenseStats = data["stats"] ?? [];
-        expenseCategories = data["categories"] ?? [];
-        expenseLogs = data["recentExpenses"] ?? [];
+        expenseLogs = response; // response is already a List
+        expenseData = {"recentExpenses": expenseLogs};
+
         isLoading = false;
-        dailyTrend = List<Map<String, dynamic>>.from(data["dailyTrend"] ?? []);
-        print("expenseCategories: $expenseCategories");
-        print("API RESPONSE: $data");
-        print("STATS: ${data['stats']}");
       });
-    } catch (e) {
-      debugPrint(e.toString());
+
+      print("Categories : $expenseCategories");
+      print("Daily Trend : $dailyTrend");
+      print("Expense Logs : $expenseLogs");
+    } catch (e, stackTrace) {
+      debugPrint("Expense API Error: $e");
+      debugPrint(stackTrace.toString());
+
       setState(() {
         isLoading = false;
       });
     }
-  }
-
-  Future<void> loadCategories() async {
-    final data = await reportService.getCategories();
-
-    setState(() {
-      expenseCategories = data;
-    });
   }
 
   Future<void> exportPdf() async {
@@ -228,32 +317,32 @@ class _ExpenseReportScreenState extends State<ExpenseReport> {
                           ),
                         ),
 
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
+                        // Container(
+                        //   padding: const EdgeInsets.symmetric(
+                        //     horizontal: 14,
+                        //     vertical: 8,
+                        //   ),
 
-                          decoration: BoxDecoration(
-                            color: const Color(0xffFEF3C7),
+                        //   decoration: BoxDecoration(
+                        //     color: const Color(0xffFEF3C7),
 
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                        //     borderRadius: BorderRadius.circular(12),
+                        //   ),
 
-                          child: const Row(
-                            children: [
-                              Icon(Icons.shield_outlined, size: 18),
+                        //   child: const Row(
+                        //     children: [
+                        //       Icon(Icons.shield_outlined, size: 18),
 
-                              SizedBox(width: 6),
+                        //       SizedBox(width: 6),
 
-                              Text(
-                                "Admin",
+                        //       Text(
+                        //         "Admin",
 
-                                style: TextStyle(fontWeight: FontWeight.w700),
-                              ),
-                            ],
-                          ),
-                        ),
+                        //         style: TextStyle(fontWeight: FontWeight.w700),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
 
                         // const SizedBox(width: 12),
 
@@ -546,7 +635,7 @@ class _ExpenseReportScreenState extends State<ExpenseReport> {
 
                             return ExpenseStatCard(
                               title: e["title"].toString(),
-                              amount: e["title"] == "Pending Approvals"
+                              amount: (e["title"] == "Total Bills")
                                   ? e["amount"].toString()
                                   : indianCurrency.format(
                                       double.tryParse(e["amount"].toString()) ??
@@ -677,35 +766,44 @@ class _ExpenseReportScreenState extends State<ExpenseReport> {
 
                           SizedBox(
                             height: 220,
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: dailyTrend.map<Widget>((e) {
-                                  final double amount =
-                                      double.tryParse(e["amount"].toString()) ??
-                                      0.0;
+                            child: LineChart(
+                              LineChartData(
+                                lineBarsData: [
+                                  LineChartBarData(
+                                    isCurved: true,
+                                    spots: dailyTrend.asMap().entries.map((
+                                      entry,
+                                    ) {
+                                      return FlSpot(
+                                        entry.key.toDouble(),
+                                        (entry.value["amount"] as num)
+                                            .toDouble(),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ],
+                                titlesData: FlTitlesData(
+                                  bottomTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+                                      getTitlesWidget: (value, meta) {
+                                        if (value.toInt() >=
+                                            dailyTrend.length) {
+                                          return const SizedBox();
+                                        }
 
-                                  final double maxAmount = dailyTrend
-                                      .map(
-                                        (x) =>
-                                            double.tryParse(
-                                              x["amount"].toString(),
-                                            ) ??
-                                            0.0,
-                                      )
-                                      .reduce((a, b) => a > b ? a : b);
+                                        final date =
+                                            dailyTrend[value.toInt()]["day"]
+                                                .toString();
 
-                                  final double height = maxAmount == 0
-                                      ? 0.0
-                                      : (amount / maxAmount) * 150.0;
-
-                                  return buildBar(
-                                    height,
-                                    height * 0.7,
-                                    e["day"].toString(),
-                                  );
-                                }).toList(),
+                                        return Text(
+                                          date.substring(5), // MM-DD
+                                          style: const TextStyle(fontSize: 10),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -1183,21 +1281,26 @@ class _ExpenseReportScreenState extends State<ExpenseReport> {
                                   final index = entry.key;
                                   final item = entry.value;
 
-                                  final double current =
+                                  final current =
                                       double.tryParse(
                                         item["amount"].toString(),
                                       ) ??
                                       0;
-
-                                  // Example calculation if API doesn't provide last month values
-                                  final double lastMonth = current * 0.93;
-
-                                  final double change = current - lastMonth;
-
-                                  final double changePercent = lastMonth == 0
-                                      ? 0
-                                      : (change / lastMonth) * 100;
-
+                                  final lastMonth =
+                                      double.tryParse(
+                                        item["lastMonth"].toString(),
+                                      ) ??
+                                      0;
+                                  final change =
+                                      double.tryParse(
+                                        item["change"].toString(),
+                                      ) ??
+                                      0;
+                                  final changePercent =
+                                      double.tryParse(
+                                        item["changePercent"].toString(),
+                                      ) ??
+                                      0;
                                   return DataRow(
                                     cells: [
                                       DataCell(Text("${index + 1}")),

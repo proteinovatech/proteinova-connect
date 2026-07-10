@@ -2,11 +2,16 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class SalesCategoryCard extends StatelessWidget {
-  const SalesCategoryCard({super.key});
+  final List<Map<String, dynamic>> branchSales;
+  const SalesCategoryCard({super.key, required this.branchSales});
 
   @override
   Widget build(BuildContext context) {
-    final totalSales = 165.0;
+    final double totalSales = branchSales.fold<double>(
+      0.0,
+      (sum, item) =>
+          sum + (double.tryParse(item["total_sales"].toString()) ?? 0.0),
+    );
 
     final categories = [
       {
