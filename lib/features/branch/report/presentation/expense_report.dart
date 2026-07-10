@@ -28,7 +28,7 @@ class _ExpenseReportScreenState extends State<ExpenseReport> {
   bool isLoading = true;
 
   Map<String, dynamic>? expenseData;
-
+  String selectedPeriod = "Daily";
   List<dynamic> expenseStats = [];
 
   List<dynamic> expenseCategories = [];
@@ -217,7 +217,7 @@ class _ExpenseReportScreenState extends State<ExpenseReport> {
     pdf.addPage(
       pw.MultiPage(
         build: (context) => [
-          pw.Text("Expense Report", style: pw.TextStyle(fontSize: 24)),
+          pw.Text("Branch Expense Report", style: pw.TextStyle(fontSize: 24)),
 
           pw.SizedBox(height: 20),
 
@@ -261,7 +261,10 @@ class _ExpenseReportScreenState extends State<ExpenseReport> {
         build: (context) {
           return pw.Column(
             children: [
-              pw.Text("Expense Report", style: pw.TextStyle(fontSize: 24)),
+              pw.Text(
+                "Branch Expense Report",
+                style: pw.TextStyle(fontSize: 24),
+              ),
 
               pw.SizedBox(height: 20),
 
@@ -308,7 +311,7 @@ class _ExpenseReportScreenState extends State<ExpenseReport> {
 
                         const Expanded(
                           child: Text(
-                            "Expense Report",
+                            "Branch Expense Report",
 
                             style: TextStyle(
                               fontSize: 24,
@@ -384,7 +387,6 @@ class _ExpenseReportScreenState extends State<ExpenseReport> {
                                         fromDate =
                                             "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
                                       });
-                                      fetchExpenseReport();
                                     }
                                   },
                                 ),
@@ -408,15 +410,13 @@ class _ExpenseReportScreenState extends State<ExpenseReport> {
                                         toDate =
                                             "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
                                       });
-                                      fetchExpenseReport();
                                     }
                                   },
                                 ),
                               ),
                             ],
                           ),
-
-                          const SizedBox(height: 18),
+                          const SizedBox(height: 16),
 
                           // Row(
                           //   children: [
@@ -544,38 +544,54 @@ class _ExpenseReportScreenState extends State<ExpenseReport> {
                           // ),
 
                           // const SizedBox(height: 24),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
 
-                          // Row(
-                          //   mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              InkWell(
+                                onTap: exportPdf,
 
-                          //   children: [
-                          //     InkWell(
-                          //       onTap: exportPdf,
+                                child: buildActionButton(
+                                  title: "Export",
 
-                          //       child: buildActionButton(
-                          //         title: "Export PDF",
+                                  icon: Icons.picture_as_pdf,
 
-                          //         icon: Icons.picture_as_pdf,
+                                  bgColor: Colors.white,
+                                ),
+                              ),
 
-                          //         bgColor: Colors.white,
-                          //       ),
-                          //     ),
+                              const SizedBox(width: 14),
+                              GestureDetector(
+                                onTap: () {
+                                  fetchExpenseReport();
+                                },
+                                child: Container(
+                                  height: 52,
+                                  width: 52,
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(
+                                    Icons.search,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
 
-                          //     const SizedBox(width: 14),
+                              // InkWell(
+                              //   onTap: printPdf,
 
-                          //     InkWell(
-                          //       onTap: printPdf,
+                              //   child: buildActionButton(
+                              //     title: "Print",
 
-                          //       child: buildActionButton(
-                          //         title: "Print",
+                              //     icon: Icons.print,
 
-                          //         icon: Icons.print,
-
-                          //         bgColor: const Color(0xffFACC15),
-                          //       ),
-                          //     ),
-                          //   ],
-                          // ),
+                              //     bgColor: const Color(0xffFACC15),
+                              //   ),
+                              // ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -679,7 +695,7 @@ class _ExpenseReportScreenState extends State<ExpenseReport> {
                             children: [
                               const Expanded(
                                 child: Text(
-                                  "Daily Expense Trend",
+                                  "Expense Trend",
 
                                   style: TextStyle(
                                     fontSize: 22,
@@ -689,29 +705,60 @@ class _ExpenseReportScreenState extends State<ExpenseReport> {
                                 ),
                               ),
 
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
+                              PopupMenuButton<String>(
+                                onSelected: (value) {
+                                  setState(() {
+                                    selectedPeriod = value;
+                                  });
 
-                                  vertical: 8,
-                                ),
-
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-
-                                  border: Border.all(
-                                    color: const Color(0xffE5E7EB),
+                                  // Call API based on selected option
+                                  if (value == "Daily") {}
+                                },
+                                itemBuilder: (context) => const [
+                                  PopupMenuItem(
+                                    value: "Daily",
+                                    child: Text("Daily"),
                                   ),
-                                ),
-
-                                child: const Row(
-                                  children: [
-                                    Text("7 Days"),
-
-                                    SizedBox(width: 6),
-
-                                    Icon(Icons.keyboard_arrow_down, size: 18),
-                                  ],
+                                  // PopupMenuItem(
+                                  //   value: "Weekly",
+                                  //   child: Text("Weekly"),
+                                  // ),
+                                  // PopupMenuItem(
+                                  //   value: "Monthly",
+                                  //   child: Text("Monthly"),
+                                  // ),
+                                  // PopupMenuItem(
+                                  //   value: "Yearly",
+                                  //   child: Text("Yearly"),
+                                  // ),
+                                ],
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        selectedPeriod,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      const Icon(
+                                        Icons.keyboard_arrow_down,
+                                        size: 18,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],

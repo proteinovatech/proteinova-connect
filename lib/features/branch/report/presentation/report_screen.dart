@@ -1,7 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:proteinova_connect/features/admin/report/data/report_service.dart';
+import 'package:proteinova_connect/features/branch/report/data/service/branch_report_service.dart';
 import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/expense_report_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/purchase_report_screen.dart';
@@ -25,7 +25,7 @@ class _ReportScreenState extends State<ReportScreen> {
   int currentStock = 0;
   String? selectedBranchId;
   String selectedBranchName = "All Branches";
-
+  int totalCustomers = 0;
   String branch = "All Branches";
   String itemType = "All Types";
   String transaction = "All Sales";
@@ -100,7 +100,7 @@ class _ReportScreenState extends State<ReportScreen> {
 
                         const Expanded(
                           child: Text(
-                            "Branch Sales & Stock Reports",
+                            "Branch Report",
 
                             style: TextStyle(
                               fontSize: 24,
@@ -176,7 +176,6 @@ class _ReportScreenState extends State<ReportScreen> {
                                         fromDate =
                                             "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
                                       });
-                                      fetchSalesReport();
                                     }
                                   },
                                 ),
@@ -200,7 +199,6 @@ class _ReportScreenState extends State<ReportScreen> {
                                         toDate =
                                             "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
                                       });
-                                      fetchSalesReport();
                                     }
                                   },
                                 ),
@@ -337,28 +335,45 @@ class _ReportScreenState extends State<ReportScreen> {
                           //     ),
                           //   ],
                           // ),
+                          const SizedBox(height: 24),
 
-                          // const SizedBox(height: 24),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
 
-                          // Row(
-                          //   mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              buildActionButton(
+                                title: "Export",
+                                icon: Icons.picture_as_pdf,
+                                bgColor: Colors.white,
+                              ),
 
-                          //   children: [
-                          //     buildActionButton(
-                          //       title: "Export PDF",
-                          //       icon: Icons.picture_as_pdf,
-                          //       bgColor: Colors.white,
-                          //     ),
+                              const SizedBox(width: 12),
 
-                          //     const SizedBox(width: 14),
+                              GestureDetector(
+                                onTap: () {
+                                  fetchSalesReport();
+                                },
+                                child: Container(
+                                  height: 52,
+                                  width: 52,
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(
+                                    Icons.search,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
 
-                          //     buildActionButton(
-                          //       title: "Print",
-                          //       icon: Icons.print,
-                          //       bgColor: const Color(0xffFACC15),
-                          //     ),
-                          //   ],
-                          // ),
+                              // buildActionButton(
+                              //   title: "Print",
+                              //   icon: Icons.print,
+                              //   bgColor: const Color(0xffFACC15),
+                              // ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -371,43 +386,57 @@ class _ReportScreenState extends State<ReportScreen> {
                       crossAxisCount: 2,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
-                      childAspectRatio: 1.0,
+                      childAspectRatio: 0.9,
                       children: [
                         dashboardCard(
-                          "TOTAL SALES",
-                          "₹ ${indianFormat.format(totalRevenue)}",
-                          Icons.trending_up,
-                          Colors.blue,
+                          title: "TOTAL\nSALES",
+                          value: "₹ ${indianFormat.format(totalRevenue)}",
+                          icon: Icons.trending_up,
+                          iconColor: const Color(0xff3B82F6),
+                          iconBg: const Color(0xffEFF6FF),
+                          growth: "11.32%",
+                          isPositive: true,
                         ),
 
                         dashboardCard(
-                          "TOTAL ORDERS",
-                          totalOrders.toString(),
-                          Icons.inventory_2_outlined,
-                          Colors.green,
+                          title: "TOTAL\nORDERS",
+                          value: totalOrders.toString(),
+                          icon: Icons.inventory_2_outlined,
+                          iconColor: const Color(0xff22C55E),
+                          iconBg: const Color(0xffECFDF5),
+                          growth: "10.15%",
+                          isPositive: true,
                         ),
 
                         dashboardCard(
-                          "TOTAL DAMAGED EGGS",
-                          totalDamage.toString(),
-                          Icons.shopping_bag_outlined,
-                          Colors.red,
+                          title: "TOTAL\nDAMAGED\nEGGS",
+                          value: totalDamage.toString(),
+                          icon: Icons.shopping_bag_outlined,
+                          iconColor: const Color(0xffEF4444),
+                          iconBg: const Color(0xffFEF2F2),
+                          growth: "2.15%",
+                          isPositive: false,
                         ),
 
                         dashboardCard(
-                          "AVERAGE ORDER VALUE",
-                          totalOrders == 0
+                          title: "AVERAGE\nORDER\nVALUE",
+                          value: totalOrders == 0
                               ? "₹0"
                               : "₹${(totalRevenue / totalOrders).toStringAsFixed(0)}",
-                          Icons.currency_rupee,
-                          Colors.orange,
+                          icon: Icons.currency_rupee,
+                          iconColor: const Color(0xffF59E0B),
+                          iconBg: const Color(0xffFFFBEB),
+                          growth: "1.06%",
+                          isPositive: true,
                         ),
-
                         dashboardCard(
-                          "TOTAL CUSTOMERS",
-                          transactions.length.toString(),
-                          Icons.people_outline,
-                          Colors.teal,
+                          title: "TOTAL\nCUSTOMERS",
+                          value: totalCustomers.toString(),
+                          icon: Icons.people_outline,
+                          iconColor: const Color(0xff14B8A6),
+                          iconBg: const Color(0xffF0FDFA),
+                          growth: "9.28%",
+                          isPositive: true,
                         ),
                       ],
                     ),
@@ -498,7 +527,7 @@ class _ReportScreenState extends State<ReportScreen> {
                         const SizedBox(height: 16),
 
                         /// TOP BRANCHES CARD
-                        buildTopBranchesCard(),
+                        // buildTopBranchesCard(),
                       ],
                     ),
 
@@ -638,6 +667,10 @@ class _ReportScreenState extends State<ReportScreen> {
       );
 
       print(response);
+      final customerResponse = await reportService.getBranchDetailedSales(
+        branchId: branchId.toString(),
+      );
+      final List sales = customerResponse["sales"] ?? customerResponse;
       final trend = List<Map<String, dynamic>>.from(response["trend"] ?? []);
       print("Trend Data = $trend");
 
@@ -836,7 +869,7 @@ class _ReportScreenState extends State<ReportScreen> {
             children: [
               const Expanded(
                 child: Text(
-                  "Daily Sales Volume",
+                  "Sales Overview",
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
                 ),
               ),
@@ -951,37 +984,37 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  Widget buildTopBranchesCard() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xffE5E7EB)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Top Selling Branches",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 24),
+  // Widget buildTopBranchesCard() {
+  //   return Container(
+  //     padding: const EdgeInsets.all(18),
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(20),
+  //       border: Border.all(color: const Color(0xffE5E7EB)),
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         const Text(
+  //           "Top Selling Branches",
+  //           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+  //         ),
+  //         const SizedBox(height: 24),
 
-          ...topBranches.map((branch) {
-            final sales =
-                double.tryParse(branch["total_sales"].toString()) ?? 0;
+  //         ...topBranches.map((branch) {
+  //           final sales =
+  //               double.tryParse(branch["total_sales"].toString()) ?? 0;
 
-            return buildBranchRow(
-              branch["branch_name"] ?? "",
-              "₹ ${indianFormat.format(sales)}",
-              totalRevenue == 0 ? 0 : sales / totalRevenue,
-            );
-          }).toList(),
-        ],
-      ),
-    );
-  }
+  //           return buildBranchRow(
+  //             branch["branch_name"] ?? "",
+  //             "₹ ${indianFormat.format(sales)}",
+  //             totalRevenue == 0 ? 0 : sales / totalRevenue,
+  //           );
+  //         }).toList(),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget buildBar(double retailSales, double wholesaleSales, String day) {
     double maxHeight = 160;
@@ -1102,44 +1135,103 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  Widget dashboardCard(String title, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Align(
-            alignment: Alignment.topRight,
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color),
+  Widget dashboardCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBg,
+    required String growth,
+    required bool isPositive,
+  }) {
+    return SizedBox(
+      height: 185,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xffE5E7EB)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(.08),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
-          ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// Title + Icon
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      height: 1.6,
+                      color: Color(0xff374151),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
 
-          const SizedBox(height: 20),
+                Container(
+                  height: 34,
+                  width: 34,
+                  decoration: BoxDecoration(
+                    color: iconBg,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: iconColor, size: 18),
+                ),
+              ],
+            ),
 
-          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+            const Spacer(),
 
-          const SizedBox(height: 10),
-
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
+            /// Value
+            Text(
               value,
-              style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Color(0xff111827),
+              ),
             ),
-          ),
-        ],
+
+            const SizedBox(height: 12),
+
+            Row(
+              children: [
+                Icon(
+                  isPositive ? Icons.trending_up : Icons.trending_down,
+                  color: isPositive ? Colors.green : Colors.red,
+                  size: 14,
+                ),
+                const SizedBox(width: 1),
+                const Text(
+                  "vs Last Month",
+                  style: TextStyle(color: Color(0xff6B7280), fontSize: 11),
+                ),
+
+                const Spacer(),
+
+                Text(
+                  growth,
+                  style: TextStyle(
+                    color: isPositive ? Colors.green : Colors.red,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1184,27 +1276,133 @@ class _ReportScreenState extends State<ReportScreen> {
               DataColumn(label: Text("This Month")),
               DataColumn(label: Text("Change")),
             ],
-            rows: branchSales.asMap().entries.map((entry) {
-              final index = entry.key;
-              final item = entry.value;
-
-              return DataRow(
+            rows: [
+              DataRow(
                 cells: [
-                  DataCell(Text("${index + 1}")),
-
+                  const DataCell(Text("1")),
+                  const DataCell(Text("Total Sales (₹)")),
                   DataCell(
-                    SizedBox(
-                      width: 120,
-                      child: Text(item["branch_name"].toString()),
+                    Text(
+                      "₹ ${indianFormat.format(totalRevenue)}",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
-
-                  DataCell(Text("₹ ${item["total_sales"]}")),
-
-                  DataCell(Text(item["total_orders"].toString())),
+                  DataCell(
+                    Row(
+                      children: const [
+                        Icon(Icons.trending_up, color: Colors.green, size: 14),
+                        SizedBox(width: 4),
+                        Text(
+                          "11.32%",
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
-              );
-            }).toList(),
+              ),
+
+              DataRow(
+                cells: [
+                  const DataCell(Text("2")),
+                  const DataCell(Text("Total Orders")),
+                  DataCell(Text(totalOrders.toString())),
+                  DataCell(
+                    Row(
+                      children: const [
+                        Icon(Icons.trending_up, color: Colors.green, size: 14),
+                        SizedBox(width: 4),
+                        Text(
+                          "10.15%",
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              DataRow(
+                cells: [
+                  const DataCell(Text("3")),
+                  const DataCell(Text("Total Quantity")),
+                  DataCell(Text(totalEggs.toString())),
+                  DataCell(
+                    Row(
+                      children: const [
+                        Icon(Icons.trending_up, color: Colors.green, size: 14),
+                        SizedBox(width: 4),
+                        Text(
+                          "8.45%",
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              DataRow(
+                cells: [
+                  const DataCell(Text("4")),
+                  const DataCell(Text("Avg Order Value (₹)")),
+                  DataCell(
+                    Text(
+                      totalOrders == 0
+                          ? "₹0"
+                          : "₹ ${(totalRevenue / totalOrders).toStringAsFixed(0)}",
+                    ),
+                  ),
+                  DataCell(
+                    Row(
+                      children: const [
+                        Icon(Icons.trending_up, color: Colors.green, size: 14),
+                        SizedBox(width: 4),
+                        Text(
+                          "1.06%",
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              DataRow(
+                cells: [
+                  const DataCell(Text("5")),
+                  const DataCell(Text("Total Customers")),
+                  DataCell(Text(totalCustomers.toString())),
+                  DataCell(
+                    Row(
+                      children: const [
+                        Icon(Icons.trending_up, color: Colors.green, size: 14),
+                        SizedBox(width: 4),
+                        Text(
+                          "9.28%",
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

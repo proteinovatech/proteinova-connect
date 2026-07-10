@@ -262,7 +262,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                           Icons.receipt_long_outlined,
                           size: 20,
                         ),
-                        title: const Text("Expense Report"),
+                        title: const Text("Branch Expense Report"),
                         onTap: () {
                           Navigator.push(
                             context,

@@ -84,4 +84,27 @@ class ReportService {
 
     throw Exception("Failed to fetch Expense Report");
   }
+
+  Future<Map<String, dynamic>> getBranchDetailedSales({
+    required String branchId,
+  }) async {
+    final uri = Uri.parse(
+      '$baseUrl/api/reports/branch-detailed-sales',
+    ).replace(queryParameters: {'branchId': branchId});
+
+    debugPrint("Detailed Sales API: $uri");
+
+    final response = await http.get(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    debugPrint("Detailed Sales Response: ${response.body}");
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+
+    throw Exception('Failed to fetch detailed sales (${response.statusCode})');
+  }
 }
