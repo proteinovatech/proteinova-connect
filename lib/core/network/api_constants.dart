@@ -8,7 +8,8 @@ class ApiConstants {
   static final String salesEntry = "$baseUrl/api/sales/entry";
   static final String branchExpenses = "$baseUrl/api/branch/expenses";
   static final String branches = "$baseUrl/api/branches";
-  static final String adminInventory = "$baseUrl/api/admin/inventory";
+ static final String adminInventory =
+    "$baseUrl/api/admin/mobile-inventory";
   static final String receiveStock =
       "$baseUrl/api/admin/receive"; // Requires /:purchaseId
   static final String markArrival =
@@ -34,6 +35,8 @@ class ApiConstants {
   static String ledger() =>
       "$baseUrl/api/ledgers/admin/credit?location_type=branch";
   static final String ledgerPayment = "$baseUrl/api/branch/ledger/payment";
+  static final String getBranches =
+    "$baseUrl/api/branches";
 
   // Report (placeholder — backend team must implement)
   static String branchReport(int branchId) =>

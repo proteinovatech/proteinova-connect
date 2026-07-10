@@ -37,11 +37,12 @@ class _AdminInventoryState extends State<AdminInventory> {
   final int recordsPerPage = 10;
   List<PurchaseModel> purchaseData = [];
   Map<String, dynamic> rawInventoryData = {};
-  Map<String, int> branchIds = {
-  "krpuram": 1,
-  "sarjapura": 2,
-  "gunjur": 3,
-};
+  List<Map<String, dynamic>> branches = [];
+ 
+bool _suppliersLoaded = false;
+bool _purchasesLoaded = false;
+bool _rawInventoryLoaded = false;
+ 
   Map<String, dynamic> inventoryStats = {
     "opening_stock": 0,
     "closing_stock": 0,
@@ -59,65 +60,116 @@ class _AdminInventoryState extends State<AdminInventory> {
   @override
   void initState() {
     super.initState();
-    _loadData();
-     selectedLocation = "all";
-
+  selectedLocation = "All";
+  loadBranches();
+  _loadData();
   loadAllBranches();
+
   }
 
   Future<void> _loadData() async {
-     print("=== _loadData called ===");
+  
     if (!mounted) return;
     setState(() => _isLoading = true);
     try {
-      // Parallel fetch as in React: Promise.all
+       if (selectedLocation == null || selectedLocation == "All") {
+      await loadAllBranches();
+      return;
+    }
+
+    final branchId = int.parse(selectedLocation!);
       final results = await Future.wait([
-        _repository.fetchBranchDashboard(1),
+        _repository.fetchBranchDashboard(branchId),
+        _repository.fetchRawInventoryData(),
         _supplierService.getSuppliers(),
         _repository.fetchPurchases(),
       ]);
-      print("Raw Inventory Data: ${results[0]}");
-print("Suppliers Count: ${(results[1] as List).length}");
-print("Purchases Count: ${(results[2] as List).length}");
+   
+final rawInventory = results[1] as Map<String, dynamic>;
 
-      final rawStats = results[0] as Map<String, dynamic>;
-      final cards = rawStats["cards"] ?? {};
-      final supplierList = results[1] as List<Supplier>;
-      final purchasesList = results[2] as List<PurchaseModel>;
+final inventoryByBranch = List<Map<String, dynamic>>.from(
+  rawInventory["inventory_by_branch"] ?? [],
+);
+
+final openingByBranch = List<Map<String, dynamic>>.from(
+  rawInventory["opening_stock_by_branch"] ?? [],
+);
+
+final categoryLevels = List<Map<String, dynamic>>.from(
+  rawInventory["inventory_levels_by_category"] ?? [],
+);
+final filteredInventoryByBranch = inventoryByBranch.where((item) {
+  
+  return item["branch_id"].toString() == branchId.toString();
+}).toList();
+
+final filteredOpeningByBranch = openingByBranch.where((item) {
+  return item["branch_id"].toString() == branchId.toString();
+}).toList();
+
+
+final supplierList = results[2] as List<Supplier>;
+final purchasesList = results[3] as List<PurchaseModel>;
+
 
       if (!mounted) return;
-      print("cards = $cards");
-print("rawStats = $rawStats");
-print("category_stock = ${rawStats['category_stock']}");
+
+      final selectedInventory =  filteredInventoryByBranch;
+
+final selectedOpening = filteredOpeningByBranch;
+
+final openingStock = selectedOpening.fold<int>(
+  0,
+  (sum, e) => sum + ((e["total_eggs"] ?? 0) as int),
+);
+
+final currentStock = selectedInventory.fold<int>(
+  0,
+  (sum, e) => sum + ((e["total_eggs"] ?? 0) as int),
+);
+
+
+final incomingStock = categoryLevels.fold<int>(
+  0,
+  (sum, e) => sum + ((e["incoming"] ?? 0) as int),
+);
+
+final damagedStock = categoryLevels.fold<int>(
+  0,
+  (sum, e) => sum + ((e["damaged"] ?? 0) as int),
+);
+   
       setState(() {
-        rawInventoryData = rawStats;
+        rawInventoryData = rawInventory;
         suppliers = supplierList;
         purchaseData = purchasesList;
-
+ 
         // Inventory stats parsing
-   inventoryStats = {
-  "opening_stock": cards["opening_stocks"] ?? 0,
-  "closing_stock": cards["closing_stock"] ?? 0,
-  "incoming_stock": cards["incoming_stock_in_transit"] ?? 0,
-  "current_stock": cards["total_eggs_in_stock"] ?? 0,
-  "sales_today": cards["sales_today"] ?? 0,
-  "stock_value": cards["revenue_mtd"] ?? 0,
-  "damaged_stock": cards["damaged_stock"] ?? 0,
-  "today_tray_sold": cards["today_tray_sold"] ?? 0,
-  "today_expense": cards["today_expense"] ?? 0,
-  "category_stock": rawStats["category_stock"] ?? [],
-};    // Auto-select first category if none selected
+  inventoryStats = {
+  "opening_stock": openingStock,
+  "closing_stock": currentStock,
+  "current_stock": currentStock,
+  "incoming_stock": incomingStock,
+  "damaged_stock": damagedStock,
+
+  "inventory_levels_by_category": categoryLevels,
+  "inventory_by_branch": filteredInventoryByBranch,
+  "opening_stock_by_branch": filteredOpeningByBranch,
+  "active_branches": rawInventory["active_branches"] ?? [],
+  "purchase_records": rawInventory["purchase_records"] ?? [],
+};    
+// Auto-select first category if none selected
+
         if (selectedCategoryName == null) {
          final catStock =
-    (inventoryStats["category_stock"] as List<dynamic>?) ?? [];
+    (inventoryStats["inventory_levels_by_category"] as List<dynamic>?) ?? [];
           if (catStock.isNotEmpty) {
             selectedCategoryName =
-                (catStock[0] as Map<String, dynamic>)["egg_category_grade"]?.toString() ??
+                (catStock[0] as Map<String, dynamic>)["category"]?.toString() ??
                 "Unknown";
           }
         }
-        print("Selected Category: $selectedCategoryName");
-
+        
         _isLoading = false;
       });
     } catch (e) {
@@ -132,35 +184,15 @@ print("category_stock = ${rawStats['category_stock']}");
     }
   }
 
-  Future<void> loadBranchData(int branchId) async {
+  Future<void> loadBranches() async {
   try {
-    setState(() => _isLoading = true);
-
-    final rawStats = await _repository.fetchBranchDashboard(branchId);
-
-    final cards = rawStats["cards"] ?? {};
+    final result = await _repository.fetchBranches();
 
     setState(() {
-      rawInventoryData = rawStats;
-
-      inventoryStats = {
-        "opening_stock": cards["opening_stocks"] ?? 0,
-        "closing_stock": cards["closing_stock"] ?? 0,
-        "incoming_stock": cards["incoming_stock_in_transit"] ?? 0,
-        "current_stock": cards["total_eggs_in_stock"] ?? 0,
-        "sales_today": cards["sales_today"] ?? 0,
-        "damaged_stock": cards["damaged_stock"] ?? 0,
-        "today_tray_sold": cards["today_tray_sold"] ?? 0,
-        "today_expense": cards["today_expense"] ?? 0,
-        "category_stock": rawStats["category_stock"] ?? [],
-      };
-
-      _isLoading = false;
+      branches = result;
     });
   } catch (e) {
-    print("Branch Load Error: $e");
-
-    setState(() => _isLoading = false);
+    print(e);
   }
 }
 
@@ -168,61 +200,142 @@ Future<void> loadAllBranches() async {
   try {
     setState(() => _isLoading = true);
 
+     final branchesFuture = _repository.fetchBranches();
+
+    final rawInventoryFuture = _rawInventoryLoaded
+        ? Future.value(rawInventoryData)
+        : _repository.fetchRawInventoryData();
+
+    final suppliersFuture = _suppliersLoaded
+        ? Future.value(suppliers)
+        : _supplierService.getSuppliers();
+
+    final purchasesFuture = _purchasesLoaded
+        ? Future.value(purchaseData)
+        : _repository.fetchPurchases();
+
+         // Wait only for branches
+    final branches = await branchesFuture;
+   
+    // Now start all dashboard requests together
+    final dashboardFuture = Future.wait(
+      branches.map(
+        (branch) => _repository.fetchBranchDashboard(branch["id"]),
+      ),
+    ); 
+
+     // Wait for everything together
     final results = await Future.wait([
-      _repository.fetchBranchDashboard(1),
-      _repository.fetchBranchDashboard(2),
-      _repository.fetchBranchDashboard(3),
+      dashboardFuture,
+      rawInventoryFuture,
+      suppliersFuture,
+      purchasesFuture,
     ]);
 
-    int openingStock = 0;
-    int closingStock = 0;
-    int incomingStock = 0;
-    int currentStock = 0;
-    int salesToday = 0;
-    int damagedStock = 0;
-    int traySold = 0;
-    int todayExpense = 0;
+
+    rawInventoryData =
+        Map<String, dynamic>.from(results[1] as Map);
+    suppliers = results[2] as List<Supplier>;
+    purchaseData = results[3] as List<PurchaseModel>;
+
+    _rawInventoryLoaded = true;
+    _suppliersLoaded = true;
+    _purchasesLoaded = true;
+
+
     List<dynamic> combinedCategoryStock = [];
 
-    for (final branch in results) {
-      final cards = branch["cards"] ?? {};
+    combinedCategoryStock =
+        rawInventoryData["inventory_levels_by_category"] ?? [];
 
-      openingStock += (cards["opening_stocks"] ?? 0) as int;
-      closingStock += (cards["closing_stock"] ?? 0) as int;
-      incomingStock += (cards["incoming_stock_in_transit"] ?? 0) as int;
-      currentStock += (cards["total_eggs_in_stock"] ?? 0) as int;
-      salesToday += (cards["sales_today"] ?? 0) as int;
-      damagedStock += (cards["damaged_stock"] ?? 0) as int;
-      traySold += (cards["today_tray_sold"] ?? 0) as int;
-      todayExpense += (cards["today_expense"] ?? 0) as int;
-      combinedCategoryStock.addAll(
-  (branch["category_stock"] as List?) ?? [],
+         final inventoryByBranch =
+    List<Map<String, dynamic>>.from(
+        rawInventoryData["inventory_by_branch"] ?? []);
+
+final openingByBranch =
+    List<Map<String, dynamic>>.from(
+        rawInventoryData["opening_stock_by_branch"] ?? []);
+
+final incomingByBranch =
+    List<Map<String, dynamic>>.from(
+      rawInventoryData["incoming_stock_by_branch"] ?? [],
+    );
+
+final salesTodayByBranch =
+    List<Map<String, dynamic>>.from(
+      rawInventoryData["sales_today_by_branch"] ?? [],
+    );
+
+final categoryLevels =
+    List<Map<String, dynamic>>.from(
+        rawInventoryData["inventory_levels_by_category"] ?? []); 
+  
+      final openingStock = openingByBranch.fold<int>(
+  0,
+  (sum, item) => sum + ((item["total_eggs"] ?? 0) as int),
 );
-      
-    }
 
+final incomingStock = incomingByBranch.fold<int>(
+  0,
+  (sum, item) => sum + ((item["total_eggs"] ?? 0) as int),
+);
+
+final salesToday = salesTodayByBranch.fold<int>(
+  0,
+  (sum, item) => sum + ((item["total_eggs"] ?? 0) as int),
+);
+
+final currentStock = inventoryByBranch.fold<int>(
+  0,
+  (sum, item) => sum + ((item["total_eggs"] ?? 0) as int),
+);
+
+
+
+final damagedStock = categoryLevels.fold<int>(
+  0,
+  (sum, item) => sum + ((item["damaged"] ?? 0) as int),
+);  
+
+    
     setState(() {
-      inventoryStats = {
-        "opening_stock": openingStock,
-        "closing_stock": closingStock,
-        "incoming_stock": incomingStock,
-        "current_stock": currentStock,
-        "sales_today": salesToday,
-        "damaged_stock": damagedStock,
-        "today_tray_sold": traySold,
-        "today_expense": todayExpense,
-        "category_stock":combinedCategoryStock
-      };
+
+     inventoryStats = {
+  "opening_stock": openingStock,
+  "closing_stock": currentStock,
+  "current_stock": currentStock,
+  "incoming_stock": incomingStock,
+   "sales_today": salesToday,
+  "damaged_stock": damagedStock,
+
+  "inventory_levels_by_category": categoryLevels,
+  "inventory_by_branch": inventoryByBranch,
+  "opening_stock_by_branch": openingByBranch,
+   "incoming_stock_by_branch": incomingByBranch,
+  "sales_today_by_branch": salesTodayByBranch,
+
+  "active_branches": rawInventoryData["active_branches"] ?? [],
+  "purchase_records": rawInventoryData["purchase_records"] ?? [],
+};
+
+      if (selectedCategoryName == null &&
+          combinedCategoryStock.isNotEmpty) {
+        selectedCategoryName =
+            combinedCategoryStock.first["category"]?.toString();
+      }
 
       _isLoading = false;
     });
+
+  
   } catch (e) {
     print("All Branch Load Error: $e");
 
-    setState(() => _isLoading = false);
+    setState(() {
+      _isLoading = false;
+    });
   }
 }
-
   // Filter logic matching React
   List<PurchaseModel> get filteredData {
     final search = searchTerm.toLowerCase();
@@ -294,13 +407,18 @@ Future<void> loadAllBranches() async {
     }
   }
 
-  double getPercent(Map<String, dynamic> item) {
-    final currentStock = inventoryStats["current_stock"] as int;
-    if (currentStock == 0) return 0.0;
+ double getPercent(
+    Map<String, dynamic> item,
+    List<dynamic> categoryStock,
+) {
+  final available = (item["available"] ?? 0) as num;
 
-    final total = int.tryParse(item["total_eggs"]?.toString() ?? "0") ?? 0;
-    return (total / currentStock);
-  }
+  final maxAvailable = categoryStock
+      .map((e) => (e["available"] ?? 0) as num)
+      .reduce((a, b) => a > b ? a : b);
+
+  return maxAvailable == 0 ? 0 : available / maxAvailable;
+}
 
   String formatDate(String dateStr) {
     if (dateStr.isEmpty) return "No Date";
@@ -391,284 +509,388 @@ Future<void> loadAllBranches() async {
     }).toList();
   }
 
-  void _openDetailsModal(String title, dynamic rawData, String type) {
-    List<dynamic> data = [];
-    if (rawData is List) {
-      data = rawData
-          .map((e) => e is Map ? Map<String, dynamic>.from(e) : e)
-          .toList();
-    } else if (rawData is Map) {
-      data = rawData.entries
-          .map(
-            (e) => {
-              "category": e.key.toString(),
-              "total_eggs": int.tryParse(e.value.toString()) ?? 0,
-              "revenue": double.tryParse(e.value.toString()) ?? 0.0,
-              "total_value": double.tryParse(e.value.toString()) ?? 0.0,
-            },
-          )
-          .toList();
-    }
+ void _openDetailsModal(String title, dynamic rawData, String type) {
+  List<dynamic> data = [];
 
-    if ((title.toLowerCase().contains("opening stock") ||
-            title.toLowerCase().contains("incoming stock")) &&
-        data.isNotEmpty) {
-      final expectedKey = title.toLowerCase().contains("opening stock")
-          ? "opening_stock"
-          : "incoming_stock";
-      final expectedTotal =
-          int.tryParse(inventoryStats[expectedKey]?.toString() ?? "0") ?? 0;
-      if (expectedTotal > 0) {
-        final currentTotal = data.fold<int>(0, (sum, item) {
-          final val = item is Map
-              ? (item["total_eggs"] ??
-                    item["total_eggs_expected"] ??
-                    item["total_eggs_unloading"] ??
-                    item["count"] ??
-                    0)
-              : 0;
-          return sum + (int.tryParse(val.toString()) ?? 0);
-        });
-        if (currentTotal > 0 && currentTotal != expectedTotal) {
-          double factor = expectedTotal / currentTotal;
-          int runningSum = 0;
-          for (int i = 0; i < data.length; i++) {
-            if (data[i] is Map) {
-              final val =
-                  int.tryParse((data[i]["total_eggs"] ?? 0).toString()) ?? 0;
-              int scaledVal = (val * factor).round();
-              if (scaledVal < 0) scaledVal = 0;
-              if (i == data.length - 1) {
-                scaledVal = expectedTotal - runningSum;
-                if (scaledVal < 0) scaledVal = 0;
-              } else {
-                runningSum += scaledVal;
-              }
-              data[i] = Map<String, dynamic>.from(data[i] as Map)
-                ..["total_eggs"] = scaledVal;
-            }
+  if (rawData is List) {
+    data = rawData
+        .map((e) => e is Map ? Map<String, dynamic>.from(e) : e)
+        .toList();
+  } else if (rawData is Map) {
+    data = rawData.entries
+        .map(
+          (e) => {
+            "category": e.key.toString(),
+            "total_eggs": int.tryParse(e.value.toString()) ?? 0,
+            "revenue": double.tryParse(e.value.toString()) ?? 0.0,
+            "total_value": double.tryParse(e.value.toString()) ?? 0.0,
+          },
+        )
+        .toList();
+  }
+
+  // Scale opening/incoming stock to match card total
+  if ((title.toLowerCase().contains("opening stock") ||
+          title.toLowerCase().contains("incoming stock")) &&
+      data.isNotEmpty) {
+    final expectedKey = title.toLowerCase().contains("opening stock")
+        ? "opening_stock"
+        : "incoming_stock";
+
+    final expectedTotal =
+        int.tryParse(inventoryStats[expectedKey]?.toString() ?? "0") ?? 0;
+
+    if (expectedTotal > 0) {
+      final currentTotal = data.fold<int>(0, (sum, item) {
+        final value = item is Map
+            ? (item["total_eggs"] ??
+                item["total_eggs_expected"] ??
+                item["total_eggs_unloading"] ??
+                item["count"] ??
+                0)
+            : 0;
+
+        return sum + (int.tryParse(value.toString()) ?? 0);
+      });
+
+      if (currentTotal > 0 && currentTotal != expectedTotal) {
+        final factor = expectedTotal / currentTotal;
+
+        int running = 0;
+
+        for (int i = 0; i < data.length; i++) {
+          final item = Map<String, dynamic>.from(data[i]);
+
+          final original =
+              int.tryParse(item["total_eggs"]?.toString() ?? "0") ?? 0;
+
+          int scaled = (original * factor).round();
+
+          if (i == data.length - 1) {
+            scaled = expectedTotal - running;
+          } else {
+            running += scaled;
           }
+
+          item["total_eggs"] = scaled;
+          data[i] = item;
         }
       }
     }
+  }
+   showDialog(
+  context: context,
+  builder: (BuildContext context) {
+    final isCurrency = type == "currency";
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        final isCurrency = type == "currency";
-        final isDamagedOrStock =
-            title.toLowerCase().contains("stock") ||
-            title.toLowerCase().contains("damaged");
-        final firstColumnHeader = isDamagedOrStock
-            ? "Category"
-            : "Supplier/Location";
+   final isBranchInventory =
+    title.toLowerCase().contains("opening stock") ||
+    title.toLowerCase().contains("closing stock") ||
+    title.toLowerCase().contains("current stock") ||
+    title.toLowerCase().contains("incoming stock") ||
+    title.toLowerCase().contains("sales today");
 
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          elevation: 10,
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            constraints: const BoxConstraints(maxWidth: 500),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      elevation: 10,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        constraints: const BoxConstraints( maxWidth: 700,minWidth: 700,),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E293B),
-                        ),
-                      ),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B),
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, color: Color(0xFF64748B)),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 8),
-                if (data.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 30),
-                    child: Center(
-                      child: Text(
-                        "No detailed data available for this metric yet.",
-                        style: TextStyle(
-                          color: Color(0xFF64748B),
-                          fontSize: 14,
-                        ),
-                        textAlign: TextAlign.center,
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+            const Divider(),
+
+            if (data.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 30),
+                child: Center(
+                  child: Text("No detailed data available."),
+                ),
+              )
+            else
+              Flexible(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                   child: ConstrainedBox(
+                    constraints: const BoxConstraints(minWidth: 460),
+                  child: Table(
+                    border: TableBorder.symmetric(
+                      inside: const BorderSide(
+                        color: Color(0xFFE5E7EB),
                       ),
                     ),
-                  )
-                else
-                  Flexible(
-                    child: SingleChildScrollView(
-                      child: Table(
-                        columnWidths: const {
-                          0: FlexColumnWidth(2),
-                          1: FlexColumnWidth(1.2),
-                        },
-                        children: [
-                          TableRow(
+                    columnWidths: isBranchInventory
+                        ? const {
+                            0: FixedColumnWidth(120),
+                            1: FixedColumnWidth(170),
+                            2: FixedColumnWidth(70),
+                            3: FixedColumnWidth(90),
+                          }
+                        : const {
+                            0: FlexColumnWidth(2),
+                            1: FlexColumnWidth(1),
+                          },
+                    children: [
+                      TableRow(
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF8FAFC),
+                        ),
+                        children: isBranchInventory
+                            ? const [
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Center(
+                                    child: Text(
+                                      "Branch",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Center(
+                                    child: Text(
+                                      "Category",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Center(
+                                    child: Text(
+                                      "Trays",
+                                      textAlign: TextAlign.right,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Center(
+                                    child: Text(
+                                      "Eggs",
+                                      textAlign: TextAlign.right,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ]
+                            : const [
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Text(
+                                    "Category",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Text(
+                                    "Value",
+                                    textAlign: TextAlign.right,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+
+                      ),
+
+                       ...data.map((item) {
+                        if (isBranchInventory) {
+                          final branchName =
+                              item is Map ? item["branch_name"] ?? "-" : "-";
+
+                          final categoryName =
+                              item is Map ? item["category"] ?? "-" : "-";
+
+                          final trays =
+                              item is Map ? item["trays"] ?? 0 : 0;
+
+                          final eggs =
+                              item is Map ? item["total_eggs"] ?? 0 : 0;
+
+                          return TableRow(
                             decoration: const BoxDecoration(
                               border: Border(
                                 bottom: BorderSide(
-                                  color: Color(0xFFE2E8F0),
-                                  width: 1.5,
+                                  color: Color(0xFFF1F5F9),
                                 ),
                               ),
                             ),
                             children: [
                               Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                ),
+                                padding: const EdgeInsets.all(10),
                                 child: Text(
-                                  firstColumnHeader,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF475569),
-                                    fontSize: 13,
-                                  ),
-                                ),
+                                branchName.toString(),
+                                maxLines: 1,
+                               overflow: TextOverflow.ellipsis,
+                               softWrap: false,
+                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                ),
+                                padding: const EdgeInsets.all(10),
                                 child: Text(
-                                  "Value",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF475569),
-                                    fontSize: 13,
-                                  ),
-                                  textAlign: TextAlign.right,
-                                ),
+                               categoryName.toString(),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                softWrap: false,
+                                 ),
                               ),
-                            ],
-                          ),
-                          ...data.map((item) {
-                            final categoryName = item is Map
-                                ? (item["category"] ?? "Unknown")
-                                : "Unknown";
-
-                            dynamic displayValue = "";
-                            if (isCurrency) {
-                              final val = item is Map
-                                  ? (item["revenue"] ??
-                                        item["total_value"] ??
-                                        item["value"] ??
-                                        0)
-                                  : 0;
-                              displayValue =
-                                  "₹${double.tryParse(val.toString())?.toStringAsFixed(2) ?? val}";
-                            } else {
-                              final val = item is Map
-                                  ? (item["total_eggs"] ??
-                                        item["total_eggs_expected"] ??
-                                        item["total_eggs_unloading"] ??
-                                        item["count"] ??
-                                        0)
-                                  : 0;
-                              displayValue =
-                                  "${int.tryParse(val.toString())?.toString() ?? val} Eggs";
-                            }
-
-                            return TableRow(
-                              decoration: const BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: Color(0xFFF1F5F9),
-                                    width: 1,
-                                  ),
+                              Padding(
+                                 padding: const EdgeInsets.all(10),
+                                 child: Align(
+                                alignment: Alignment.center,
+                               child: Text(
+                              trays.toString(),
+                               style: const TextStyle(fontSize: 14),
+                               ),
                                 ),
-                              ),
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 10,
-                                  ),
-                                  child: Text(
-                                    categoryName.toString(),
-                                    style: const TextStyle(
-                                      color: Color(0xFF334155),
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 10,
-                                  ),
-                                  child: Text(
-                                    displayValue.toString(),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF0F172A),
-                                      fontSize: 13,
-                                    ),
-                                    textAlign: TextAlign.right,
-                                  ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
-                        ],
-                      ),
-                    ),
-                  ),
-                const SizedBox(height: 20),
-                const Divider(),
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0F172A),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      "Close",
-                      style: TextStyle(
+                               ),
+                             Padding(
+                         padding: const EdgeInsets.all(10),
+                        child: Align(
+                        alignment: Alignment.center,
+                        child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                        NumberFormat('#,##,###').format(eggs),
+                        style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 13,
+                        fontSize: 14,
+                        ),
+                       ),
+                     ),
                       ),
-                    ),
-                  ),
+                      ),
+                            ],
+                          );
+                        }
+
+                        // Existing two-column layout for other dialogs
+                        final categoryName = item is Map
+                            ? (item["category"] ?? "Unknown")
+                            : "Unknown";
+
+                        dynamic displayValue;
+
+                        if (isCurrency) {
+                          final value = item is Map
+                              ? (item["revenue"] ??
+                                  item["total_value"] ??
+                                  item["value"] ??
+                                  0)
+                              : 0;
+
+                          displayValue =
+                              "₹${double.tryParse(value.toString())?.toStringAsFixed(2) ?? value}";
+                        } else {
+                          final value = item is Map
+                              ? (item["total_eggs"] ??
+                                  item["total_eggs_expected"] ??
+                                  item["total_eggs_unloading"] ??
+                                  item["count"] ??
+                                  0)
+                              : 0;
+
+                          displayValue =
+                              "${NumberFormat('#,##,###').format(int.tryParse(value.toString()) ?? 0)} Eggs";
+                        }
+
+                        return TableRow(
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: Color(0xFFF1F5F9),
+                              ),
+                            ),
+                          ),
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Text(categoryName.toString()),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Text(
+                                displayValue.toString(),
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }).toList(),
+                    ],
+                  ),)
                 ),
-              ],
+              ),
+
+            const SizedBox(height: 20),
+
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F172A),
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text("Close"),
+              ),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
-  }
+  },
+);
+}
+
 
   @override
   Widget build(BuildContext context) {
-    
+  
     if (_isLoading ) {
       return const AdminInventoryOverviewSkeletonLoader();
       
@@ -802,47 +1024,25 @@ Future<void> loadAllBranches() async {
                                         vertical: 14,
                                       ),
                                     ),
-                                    items: const [
-                                      DropdownMenuItem(
-                                        value: "all",
-                                        child: Text("All Branches"),
+                                    items: [
+                                     const DropdownMenuItem<String>(
+                                      value: "All",
+                                      child: Text("All Branches"),
                                       ),
-                                      DropdownMenuItem(
-                                        value: "warehouse",
-                                        child: Text("Warehouse"),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: "gunjur",
-                                        child: Text("GUNJUR"),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: "krpuram",
-                                        child: Text("KRPURAM"),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: "sarjapura",
-                                        child: Text("SARJAPURA"),
-                                      ),
-                                    ],
-                                    onChanged: (value) async {
-  if (value == null) return;
-
-  setState(() {
-    selectedLocation = value;
-  });
-
-  print("Selected Location: $selectedLocation");
-
-  if (value == "all") {
-    await loadAllBranches();
-  } else {
-    final branchId = branchIds[value];
-
-    if (branchId != null) {
-      await loadBranchData(branchId);
-    }
-  }
-},
+                                  ...branches.map((branch) {
+                                    return DropdownMenuItem<String>(
+                                    value: branch["id"].toString(),
+                                    child: Text(branch["branch_name"]),
+                                     );
+                                      }).toList(),
+                                        ],
+                               onChanged: (value) async {
+                                 if (value == null) return;
+                                 setState(() {
+                                  selectedLocation = value;
+                                       });
+                                     await _loadData();
+                                      }
                                   ),
                                 ),
                          ],
@@ -887,7 +1087,7 @@ Future<void> loadAllBranches() async {
                       ),
 
                       SizedBox(height: getHeight(context, 16)),
-
+                      
                       /// GRID CARDS
                       GridView.count(
                         shrinkWrap: true,
@@ -900,8 +1100,7 @@ Future<void> loadAllBranches() async {
                           GestureDetector(
                             onTap: () => _openDetailsModal(
                               "Opening Stock Breakdown",
-                              inventoryStats["breakdowns"]["opening_stock"] ??
-                                  inventoryStats["category_stock"],
+                              inventoryStats["opening_stock_by_branch"] ?? [],
                               "count",
                             ),
                             child: InventoryCard(
@@ -916,9 +1115,7 @@ Future<void> loadAllBranches() async {
                           GestureDetector(
                             onTap: () => _openDetailsModal(
                               "Closing Stock Breakdown",
-                              inventoryStats["breakdowns"]["closing_stock"] ??
-                                  inventoryStats["breakdowns"]["current_stock"] ??
-                                  inventoryStats["category_stock"],
+                               inventoryStats["inventory_by_branch"] ?? [],
                               "count",
                             ),
                             child: InventoryCard(
@@ -933,40 +1130,28 @@ Future<void> loadAllBranches() async {
                           GestureDetector(
                             onTap: () => _openDetailsModal(
                               "Incoming Stock Breakdown",
-                              inventoryStats["breakdowns"]["incoming_stock"] ??
-                                  [
-                                    ...(inventoryStats["breakdowns"]["delayed_in_transit"]
-                                            as List? ??
-                                        []),
-                                    ...(inventoryStats["breakdowns"]["ready_for_unloading"]
-                                            as List? ??
-                                        []),
-                                    ...(inventoryStats["breakdowns"]["expected_today"]
-                                            as List? ??
-                                        []),
-                                  ],
+                              inventoryStats["incoming_stock_by_branch"] ?? [],
                               "count",
                             ),
                             child: InventoryCard(
                               title: "Total Incoming Stock",
-              value:
-    "${NumberFormat('#,##,###').format(inventoryStats['incoming_stock'] ?? 0)} Eggs",
+                              value:"${NumberFormat('#,##,###').
+                              format(inventoryStats['incoming_stock'] ?? 0)} Eggs",
                               subtitle: "Stock in transit",
                               icon: Icons.local_shipping_outlined,
                               iconColor: Colors.blue,
                             ),
                           ),
                           GestureDetector(
-                            onTap: () => _openDetailsModal(
-                              "Sales Today Breakdown",
-                              inventoryStats["breakdowns"]["sales_today"] ??
-                                  inventoryStats["breakdowns"]["sales"],
-                              "count",
-                            ),
+                           onTap: () => _openDetailsModal(
+                          "Sales Today Breakdown",
+                          inventoryStats["sales_today_by_branch"] ?? [],
+                          "count",
+                          ),
                             child: InventoryCard(
                               title: "Sales Today",
-                             value:
-    "${NumberFormat('#,##,###').format(inventoryStats['today_tray_sold'] ?? 0)} Eggs",
+                             value:"${NumberFormat('#,##,###').
+                             format(inventoryStats['sales_today'] ?? 0)} Eggs",
                               subtitle: "Total eggs sold today",
                               icon: Icons.send_outlined,
                               iconColor: Colors.deepPurpleAccent,
@@ -975,8 +1160,7 @@ Future<void> loadAllBranches() async {
                           GestureDetector(
                             onTap: () => _openDetailsModal(
                               "Current Stock Breakdown",
-                              inventoryStats["breakdowns"]["current_stock"] ??
-                                  inventoryStats["category_stock"],
+                               inventoryStats["inventory_by_branch"] ?? [],
                               "count",
                             ),
                             child: InventoryCard(
@@ -1062,7 +1246,9 @@ Future<void> loadAllBranches() async {
   }
 
   Widget _buildCategoryPanel(BuildContext context) {
-    final categoryStock = inventoryStats["category_stock"] as List<dynamic>;
+    debugPrint("inventoryStats = $inventoryStats");
+    final categoryStock =
+    inventoryStats["inventory_levels_by_category"] as List<dynamic>? ?? [];
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1124,9 +1310,9 @@ Future<void> loadAllBranches() async {
               itemBuilder: (context, index) {
                 final item = categoryStock[index] as Map<String, dynamic>;
                 final categoryName = (item["category"] ?? "Unknown").toString();
-                final totalEggs =
-                    int.tryParse(item["total_eggs"]?.toString() ?? "0") ?? 0;
-                final percent = getPercent(item);
+                final available =
+    int.tryParse(item["available"]?.toString() ?? "0") ?? 0;
+                final percent = getPercent(item,categoryStock);
                 final isSelected = selectedCategoryName == categoryName;
 
                 return GestureDetector(
@@ -1190,7 +1376,7 @@ Future<void> loadAllBranches() async {
                               ),
                             ),
                             Text(
-                              totalEggs.toString().replaceAllMapped(
+                              available.toString().replaceAllMapped(
                                 RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
                                 (Match m) => '${m[1]},',
                               ),
@@ -1270,53 +1456,41 @@ Future<void> loadAllBranches() async {
       return const SizedBox.shrink();
     }
 
-   final breakdowns =
-    (inventoryStats["breakdowns"] as Map<String, dynamic>?) ?? {};
+  final inventoryLevels =
+    List<Map<String, dynamic>>.from(
+      inventoryStats["inventory_levels_by_category"] ?? [],
+    );
 
-    final openingStock = _getValueForCategory(
-      breakdowns["opening_stock"] ?? inventoryStats["category_stock"],
-      selectedCategoryName!,
-    );
-    final incomingStock = _getValueForCategory(
-      breakdowns["incoming_stock"] ??
-          [
-            ...(breakdowns["delayed_in_transit"] as List? ?? []),
-            ...(breakdowns["ready_for_unloading"] as List? ?? []),
-            ...(breakdowns["expected_today"] as List? ?? []),
-          ],
-      selectedCategoryName!,
-    );
-    final salesToday = _getValueForCategory(
-      breakdowns["sales_today"] ?? breakdowns["sales"],
-      selectedCategoryName!,
-    );
-    final damagedStock = _getValueForCategory(
-      breakdowns["damaged_stock"] ?? breakdowns["damaged_trays"],
-      selectedCategoryName!,
-    );
-    final currentStock = _getValueForCategory(
-      breakdowns["current_stock"] ?? breakdowns["closing_stock"],
-      selectedCategoryName!,
-    );
+    final category = inventoryLevels.firstWhere(
+  (e) => e["category"] == selectedCategoryName,
+  orElse: () => <String, dynamic>{},
+);
+
+final availableStock =
+    (category["available"] ?? 0) as int;
+
+final incomingStock =
+    (category["incoming"] ?? 0) as int;
+
+final damagedStock =
+    (category["damaged"] ?? 0) as int;
 
     final values = [
-      openingStock,
-      incomingStock,
-      salesToday,
-      damagedStock,
-      currentStock,
+     availableStock,
+     incomingStock,
+     damagedStock
     ];
     final maxVal = values.reduce((a, b) => a > b ? a : b);
     final maxY = maxVal == 0 ? 100.0 : (maxVal * 1.3);
 
     final barColors = [
-      const Color(0xFF64748B), // Opening - Slate
-      const Color(0xFF3B82F6), // Incoming - Blue
-      const Color(0xFF10B981), // Sales - Green
-      const Color(0xFFEF4444), // Damaged - Red
-      const Color(0xFFF59E0B), // Current - Amber
-    ];
-    final barLabels = ["Opening", "Incoming", "Sales", "Damaged", "Current"];
+    const Color.fromARGB(255, 30, 170, 2), // Available
+    const Color(0xFF3B82F6), // Incoming
+    const Color(0xFFEF4444),
+  ];
+    final barLabels = ["Available",
+  "Incoming",
+  "Damaged",];
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1626,8 +1800,12 @@ Future<void> loadAllBranches() async {
   // }
 
   Widget _buildPurchaseOrdersCard(BuildContext context) {
-    final displayedData = currentData;
-    final totalRecords = filteredData.length;
+   final List<Map<String, dynamic>> displayedData =
+    List<Map<String, dynamic>>.from(
+      inventoryStats["purchase_records"] ?? [],
+    );
+
+final totalRecords = displayedData.length;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1705,12 +1883,12 @@ Future<void> loadAllBranches() async {
                       ],
                     ),
                     ...displayedData.map((row) {
-                      final isReceiveEnabled =
-                          row.purchaseStatus.toUpperCase() == "PURCHASED" &&
-                          row.movementStatus.toUpperCase() == "RECEIVED";
-                      final isInTransit =
-                          row.purchaseStatus.toUpperCase() == "PURCHASED" &&
-                          row.movementStatus.toUpperCase() == "IN_TRANSIT";
+                     final status =
+    (row["purchase_status"] ?? "").toString().toUpperCase();
+
+final isReceiveEnabled = status == "PURCHASED";
+
+final isInTransit = status == "IN_TRANSIT";
 
                       return TableRow(
                         decoration: const BoxDecoration(
@@ -1731,7 +1909,7 @@ Future<void> loadAllBranches() async {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  row.poNumber,
+                                  "PO-${row["po_id"]}",
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Color(0xFF1E293B),
@@ -1740,7 +1918,7 @@ Future<void> loadAllBranches() async {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  formatDate(row.createdAt),
+                                  formatDate(row["created_at"]),
                                   style: const TextStyle(
                                     color: Color(0xFF64748B),
                                     fontSize: 11,
@@ -1758,9 +1936,7 @@ Future<void> loadAllBranches() async {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  row.supplierName.isNotEmpty
-                                      ? row.supplierName
-                                      : "N/A",
+                                  row["supplier_company_name"] ?? "N/A",
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Color(0xFF1E293B),
@@ -1769,9 +1945,7 @@ Future<void> loadAllBranches() async {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  row.location.isNotEmpty
-                                      ? row.location
-                                      : "N/A",
+                                  row["supplier_location"] ?? "N/A",
                                   style: const TextStyle(
                                     color: Color(0xFF64748B),
                                     fontSize: 11,
@@ -1786,9 +1960,9 @@ Future<void> loadAllBranches() async {
                               horizontal: 8,
                             ),
                             child: Text(
-                              row.productName.isNotEmpty
-                                  ? row.productName
-                                  : "N/A",
+                              (row["items"] as List).isNotEmpty
+    ? "${row["items"][0]["category"]} (${row["items"][0]["trays"]} Trays)"
+    : "N/A",
                               style: const TextStyle(
                                 color: Color(0xFF334155),
                                 fontSize: 13,
@@ -1809,7 +1983,7 @@ Future<void> loadAllBranches() async {
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
-                                                ReceiveStockScreen(id: row.id),
+                                                ReceiveStockScreen(id: row["po_id"],),
                                           ),
                                         ).then((_) => _loadData());
                                       },
@@ -1869,9 +2043,7 @@ Future<void> loadAllBranches() async {
                                         borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Text(
-                                        row.purchaseStatus.isNotEmpty
-                                            ? row.purchaseStatus
-                                            : "N/A",
+                                        row["purchase_status"] ?? "",
                                         style: const TextStyle(
                                           color: Color(0xFF475569),
                                           fontWeight: FontWeight.w600,

@@ -1025,6 +1025,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
   }
 
   Widget _buildItemsCard() {
+    
     return _buildCard(
       title: "Sales Items",
       trailing: TextButton.icon(
@@ -1045,7 +1046,8 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
               final item = _items[index];
               final available = _getAvailableStock(item.category);
               final costEntry = _getCostForGrade(item.category, item.trays);
-              
+              final loads = (costEntry?['loads'] as List?) ?? [];
+              final firstLoad = loads.isNotEmpty ? loads.first : null;
               return Container(
                 margin: const EdgeInsets.only(bottom: 16),
                 padding: const EdgeInsets.all(12),
@@ -1138,7 +1140,9 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                           children: [
                             const Text("FIFO Purchase Price (per egg)", style: TextStyle(fontSize: 11, color: Colors.grey)),
                             Text(
-                              "₹${double.parse((costEntry['loads']?[0]?['per_egg_purchase_price'] ?? 0).toString()).toStringAsFixed(2)}",
+                              "₹${double.parse(
+  (firstLoad?['per_egg_purchase_price'] ?? 0).toString(),
+).toStringAsFixed(2)}",
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.black87),
                             ),
                           ],
@@ -1149,7 +1153,9 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                           children: [
                             const Text("Expense Rate (per egg)", style: TextStyle(fontSize: 11, color: Colors.grey)),
                             Text(
-                              "₹${double.parse((costEntry['loads']?[0]?['expense_per_egg'] ?? 0).toString()).toStringAsFixed(2)}",
+                              "₹${double.parse(
+  (firstLoad?['expense_per_egg'] ?? 0).toString(),
+).toStringAsFixed(2)}",
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.black87),
                             ),
                           ],

@@ -32,11 +32,6 @@ void didChangeDependencies() {
       );
 }
 
-
-
-
- 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -551,18 +546,12 @@ class PurchaseCards extends StatelessWidget {
 InkWell(
   onTap: onEdit,
   borderRadius: BorderRadius.circular(getWidth(context, 8)),
-  child: Container(
-    padding: EdgeInsets.all(getWidth(context, 6)),
-    decoration: BoxDecoration(
-      color: Colors.blue.shade50,
-      borderRadius: BorderRadius.circular(getWidth(context, 8)),
-    ),
-    child: Icon(
+  child:  Icon(
       Icons.edit_outlined,
       size: getWidth(context, 18),
       color: Colors.blue,
     ),
-  ),
+ 
 ),
               ],
             ),
