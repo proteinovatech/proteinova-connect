@@ -26,27 +26,27 @@ class InventoryRepository {
     }
   }
 
-  Future<Map<String, dynamic>> fetchRawInventoryData() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConstants.adminInventory),
-        headers: {"Accept": "application/json"},
-      );
+ Future<Map<String, dynamic>> fetchRawInventoryData() async {
+  try {
+    final response = await http.get(
+      Uri.parse(ApiConstants.adminInventory),
+      headers: {"Accept": "application/json"},
+    );
 
-       print("STATUS CODE = ${response.statusCode}");
+    print("STATUS CODE = ${response.statusCode}");
     print("RESPONSE BODY = ${response.body}");
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['data'] is Map<String, dynamic> ? data['data'] : (data is Map<String, dynamic> ? data : {});
-      } else {
-        throw Exception("Failed to load raw inventory data");
-      }
-    } catch (e) {
-      throw Exception("Error fetching raw inventory: $e");
-    }
-  }
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
 
+      return Map<String, dynamic>.from(data);
+    } else {
+      throw Exception("Failed to load raw inventory data");
+    }
+  } catch (e) {
+    throw Exception("Error fetching raw inventory: $e");
+  }
+}
   //
   Future<Map<String, dynamic>> fetchPurchaseById(int id) async {
     try {
@@ -197,6 +197,8 @@ class InventoryRepository {
   int branchId,
 ) async {
   try {
+    print("Branch ID: $branchId");
+print("URL: ${ApiConstants.branchDashboard(branchId)}");
     final response = await http.get(
       Uri.parse(ApiConstants.branchDashboard(branchId)),
       headers: {"Accept": "application/json"},
@@ -214,4 +216,32 @@ class InventoryRepository {
     throw Exception("Error fetching branch dashboard: $e");
   }
 }
+Future<List<Map<String, dynamic>>> fetchBranches() async {
+  try {
+    
+    final response = await http.get(
+      Uri.parse(ApiConstants.getBranches), // Your branch list API
+      headers: {
+        "Accept": "application/json",
+      },
+    );
+       print("BRANCH LIST STATUS = ${response.statusCode}");
+    print("BRANCH LIST RESPONSE = ${response.body}");
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      final List<dynamic> branches = data["data"] ?? [];
+
+      return branches
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+    }
+
+    throw Exception("Failed to load branches");
+  } catch (e) {
+    throw Exception("Error fetching branches: $e");
+  }
 }
+}
+
