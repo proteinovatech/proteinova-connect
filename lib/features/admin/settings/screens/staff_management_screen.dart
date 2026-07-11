@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/features/admin/settings/bloc/user/user_bloc.dart';
 import 'package:proteinova_connect/features/admin/settings/screens/profile_screen.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/user_management_shimmer.dart';
 import '../widgets/role_textfield.dart';
 
 class StaffManagementScreen extends StatefulWidget {
@@ -223,7 +224,7 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
                   /// MAIN CONTENT
                   Expanded(
                     child: state is UserLoading
-                         ? const Center(child: CircularProgressIndicator(),)
+                         ? const UserManagementShimmer()
                         : SingleChildScrollView(
                             padding: const EdgeInsets.all(24),
                             child: _buildMainContent( 
@@ -766,55 +767,63 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
           isPassword: true,
         ),
 
-        _buildDropdown(
-          "Role",
-          selectedRole,
-          (formOptions['roles'] as List)
-              .map((r) => r.toString())
-              .toList(),
-          (val) {
-            setState(() {
-              selectedRole = val;
-              selectedBranch = null;
-              selectedWarehouse = null;
-            });
-          },
-        ),
+ _buildDropdown(
+  "Role",
+  selectedRole,
+  const [
+    "admin",
+    "warehouse",
+    "branch",
+    "purchase",
+  ],
+  (val) {
+    setState(() {
+      selectedRole = val;
+      selectedBranch = null;
+      selectedWarehouse = null;
+    });
+     if (selectedRole == "branch")
+    print("Branches: ${formOptions['branches']}");
+  },
+  itemLabels: const [
+    "Admin",
+    "Warehouse",
+    "Branch",
+    "Purchase",
+  ],
+),
+      if (selectedRole == "branch")
+  _buildDropdown(
+    "Assigned Branch",
+    selectedBranch,
+    (formOptions['branches'] as List)
+        .map((b) => b['id'].toString())
+        .toList(),
+    (val) {
+      setState(() => selectedBranch = val);
+    },
+    itemLabels: (formOptions['branches'] as List)
+        .map((b) => b['branch_name'].toString())
+        .toList(),
+    hintText: "Select Branch"    
+  ),
 
-        if (selectedRole?.toLowerCase() == "branch")
-          _buildDropdown(
-            "Assigned Branch",
-            selectedBranch,
-            (formOptions['branches'] as List)
-                .map((b) => b['id'].toString())
-                .toList(),
-            (val) {
-              setState(() => selectedBranch = val);
-            },
-            itemLabels: (formOptions['branches'] as List)
-                .map((b) => b['branch_name'].toString())
-                .toList(),
-          ),
-
-        if ([
-          "admin",
-          "ware house",
-          "purchase",
-        ].contains(selectedRole?.toLowerCase()))
-          _buildDropdown(
-            "Assigned Warehouse",
-            selectedWarehouse,
-            (formOptions['warehouses'] as List)
-                .map((w) => w['id'].toString())
-                .toList(),
-            (val) {
-              setState(() => selectedWarehouse = val);
-            },
-            itemLabels: (formOptions['warehouses'] as List)
-                .map((w) => w['warehouse_name'].toString())
-                .toList(),
-          ),
-      ],
+if (selectedRole != null &&
+    ["admin", "warehouse", "purchase"].contains(selectedRole))
+  _buildDropdown(
+    "Assigned Warehouse",
+    selectedWarehouse,
+    (formOptions['warehouses'] as List)
+        .map((w) => w['id'].toString())
+        .toList(),
+    (val) {
+      setState(() => selectedWarehouse = val);
+    },
+    itemLabels: (formOptions['warehouses'] as List)
+        .map((w) => w['warehouse_name'].toString())
+        .toList(),
+    hintText: "Select Warehouse"
+  ),      ],
     );
   },
 ),  ],
@@ -830,6 +839,7 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
     List<String> items,
     Function(String?) onChanged, {
     List<String>? itemLabels,
+    String? hintText,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -841,6 +851,7 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           value: items.contains(value) ? value : null,
+          hint: Text(hintText ?? "Select"),
           items: List.generate(items.length, (index) {
             return DropdownMenuItem(
               value: items[index],

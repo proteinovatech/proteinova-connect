@@ -3137,6 +3137,7 @@
 // }
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/services/sales_receipt_service.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
@@ -4733,6 +4734,10 @@ Widget _amountCard(String title, String amount) {
                     customerNumberController,
                     hint: "9876543210",
                     keyboardType: TextInputType.phone,
+                     inputFormatters: [
+    FilteringTextInputFormatter.digitsOnly,
+    LengthLimitingTextInputFormatter(10),
+  ],
                     onChanged: lookupCustomer,
                     suffix: customerStatus == 'found'
                         ? const Icon(
@@ -4798,6 +4803,10 @@ Widget _amountCard(String title, String amount) {
                     customerNumberController,
                     hint: "9876543210",
                     keyboardType: TextInputType.phone,
+                     inputFormatters: [
+    FilteringTextInputFormatter.digitsOnly,
+    LengthLimitingTextInputFormatter(10),
+  ],
                     onChanged: lookupCustomer,
                     suffix: customerStatus == 'found'
                         ? const Icon(
@@ -6225,6 +6234,7 @@ Widget _amountCard(String title, String amount) {
     Widget? prefix,
     bool readOnly = false,
     VoidCallback? onTap,
+     List<TextInputFormatter>? inputFormatters,
   }) {
     final width = MediaQuery.of(context).size.width;
 
@@ -6247,6 +6257,7 @@ Widget _amountCard(String title, String amount) {
           keyboardType: keyboardType,
           readOnly: readOnly,
           onTap: onTap,
+           inputFormatters: inputFormatters,
           style: TextStyle(
             fontWeight: FontWeight.w400,
             fontSize: compactTablet ? 11 : 13,
