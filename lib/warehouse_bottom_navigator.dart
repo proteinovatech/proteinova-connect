@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/services/notification_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:proteinova_connect/features/admin/admin%20Damage%20Entry/presentation/admin_damage_entry.dart';
 import 'package:proteinova_connect/features/admin/admin%20customertrays/presentation/admin_customer_trays.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bloc.dart';
 import 'package:proteinova_connect/features/admin/expense/data/repository/expense_repository.dart';
 import 'package:proteinova_connect/features/admin/expense/screens/admin_addexpence_screen.dart';
 import 'package:proteinova_connect/features/admin/inventory/presentation/admin_inventory.dart';
-import 'package:proteinova_connect/features/admin/menu/AssetManagement/bloc/asset_bloc.dart';
 import 'package:proteinova_connect/features/admin/menu/AssetManagement/data/asset_repository.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_receive_bloc.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_receive_event.dart';
@@ -21,7 +19,6 @@ import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/admin/Distribution/presentation/distribution_page.dart';
 import 'package:proteinova_connect/features/admin/expense/screens/admin_expense_screen.dart';
-import 'package:proteinova_connect/features/admin/menu/AssetManagement/presentation/asset_management_page.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/presentation/receive_trays_screen.dart';
 import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
 import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
@@ -32,7 +29,6 @@ import 'package:proteinova_connect/features/admin/purchase_expense/screens/purch
 import 'package:proteinova_connect/features/admin/purchase_expense/bloc/purchase_bloc.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/data/repository/purchase_expense_repository.dart';
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
-import 'package:proteinova_connect/features/branch/addexpense/presentation/addexpense.dart';
 
 class WarehouseBottomNavigator extends StatefulWidget {
   const WarehouseBottomNavigator({super.key});

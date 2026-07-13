@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/core/cache/hive_service/purchase_hive_service.dart';
 import 'package:proteinova_connect/core/network/dio_client.dart';
-import 'package:proteinova_connect/features/admin/settings/screens/profile_screen.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_event.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
@@ -21,7 +20,6 @@ import 'package:proteinova_connect/features/purchase/supplier/supplier_screen.da
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/presentation/purchase_dashboard.dart';
 import 'package:proteinova_connect/features/purchase/warehouse_stock_updates.dart';
 
-import 'features/admin/report/screens/purchase_report_screen.dart';
 
 
 class PurchaseBottomNavigator extends StatefulWidget {
@@ -337,48 +335,48 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
     );
   }
 
-  Widget _buildProfileTile({
-    required IconData icon,
-    required String title,
-    required String value,
-  }) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xfff8fafc),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: Colors.black87),
-        ),
+  // Widget _buildProfileTile({
+  //   required IconData icon,
+  //   required String title,
+  //   required String value,
+  // }) {
+  //   return Row(
+  //     children: [
+  //       Container(
+  //         padding: const EdgeInsets.all(12),
+  //         decoration: BoxDecoration(
+  //           color: const Color(0xfff8fafc),
+  //           borderRadius: BorderRadius.circular(12),
+  //         ),
+  //         child: Icon(icon, color: Colors.black87),
+  //       ),
 
-        const SizedBox(width: 14),
+  //       const SizedBox(width: 14),
 
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-              ),
+  //       Expanded(
+  //         child: Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Text(
+  //               title,
+  //               style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+  //             ),
 
-              const SizedBox(height: 4),
+  //             const SizedBox(height: 4),
 
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
+  //             Text(
+  //               value,
+  //               style: const TextStyle(
+  //                 fontSize: 16,
+  //                 fontWeight: FontWeight.w600,
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
   Widget _buildSettingTile({
     required IconData icon,

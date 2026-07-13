@@ -7,6 +7,7 @@ import 'package:proteinova_connect/features/admin/Receiving branch/bloc/receivin
 import 'package:proteinova_connect/features/admin/Receiving branch/data/models/incoming_dispatch_model.dart';
 import 'package:proteinova_connect/features/admin/Receiving branch/data/models/receiving_dashboard_model.dart';
 import 'package:proteinova_connect/features/admin/Receiving branch/presentation/receive_stock_page.dart';
+import 'package:proteinova_connect/features/admin/skeletonloader/receiving_dashboard_shimmer.dart';
 
 class ReceivingBranchDashboardPage extends StatelessWidget {
   const ReceivingBranchDashboardPage({super.key});
@@ -446,11 +447,7 @@ class _ReceivingBranchDashboardBodyState extends State<ReceivingBranchDashboardB
                 // Loader / Error Overlay
                 if (isLoading)
                   const Expanded(
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.amber600),
-                      ),
-                    ),
+                    child: ReceivingDashboardShimmer(),
                   )
                 else if (state is ReceivingBranchError && dashboardData == null)
                   Expanded(

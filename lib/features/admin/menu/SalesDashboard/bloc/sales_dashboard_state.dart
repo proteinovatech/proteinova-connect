@@ -10,10 +10,11 @@ class SalesDashboardLoading extends SalesDashboardState {}
 class SalesDashboardLoaded extends SalesDashboardState {
   final Map<String, dynamic> salesData;
   final List recentOrders;
-
+  final List<BranchModel> branches;
   SalesDashboardLoaded({
     required this.salesData,
     required this.recentOrders,
+     required this.branches,
   });
 }
 
