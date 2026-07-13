@@ -37,6 +37,19 @@ class ReportService {
     throw Exception('Failed to fetch report (${response.statusCode})');
   }
 
+  //customer count
+  Future<Map<String, dynamic>> getSalesDashboard(String branchId) async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/api/sales?branch_id=$branchId"),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception("Failed to fetch sales dashboard");
+    }
+  }
+
   Future<List<dynamic>> getBranches() async {
     final uri = Uri.parse('$baseUrl/api/branches');
 
@@ -92,19 +105,17 @@ class ReportService {
       '$baseUrl/api/reports/branch-detailed-sales',
     ).replace(queryParameters: {'branchId': branchId});
 
-    debugPrint("Detailed Sales API: $uri");
+    print("URL = $uri");
 
-    final response = await http.get(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-    );
+    final response = await http.get(uri);
 
-    debugPrint("Detailed Sales Response: ${response.body}");
+    print("Status Code = ${response.statusCode}");
+    print("Body = ${response.body}");
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     }
 
-    throw Exception('Failed to fetch detailed sales (${response.statusCode})');
+    throw Exception(response.body);
   }
 }

@@ -36,7 +36,7 @@ class _ReportScreenState extends State<ReportScreen> {
   String toDate = "dd-mm-yyyy";
   List<dynamic> branchList = [];
   List<Map<String, dynamic>> salesTrend = [];
-
+  List<Map<String, dynamic>> recentSales = [];
   final ReportService reportService = ReportService();
 
   bool isLoading = true;
@@ -616,8 +616,11 @@ class _ReportScreenState extends State<ReportScreen> {
                     //   ),
                     // ),
                     const SizedBox(height: 20),
-                    SalesCategoryCard(branchSales: branchSales),
-                    const SizedBox(height: 20),
+                    // SalesCategoryCard(
+                    //   branchSales: branchSales,
+                    //   recentSales: transactions,
+                    // ),
+                    // const SizedBox(height: 20),
                     Column(
                       children: [
                         buildSalesSummaryCard(),
@@ -660,6 +663,9 @@ class _ReportScreenState extends State<ReportScreen> {
       final prefs = await SharedPreferences.getInstance();
       final role = prefs.getString("role");
       final branchId = prefs.getInt("branch_id");
+      final salesDashboard = await reportService.getSalesDashboard(
+        branchId.toString(),
+      );
       final response = await reportService.getBranchSalesReport(
         startDate: fromDate == "dd-mm-yyyy" ? null : fromDate,
         endDate: toDate == "dd-mm-yyyy" ? null : toDate,
@@ -667,10 +673,35 @@ class _ReportScreenState extends State<ReportScreen> {
       );
 
       print(response);
-      final customerResponse = await reportService.getBranchDetailedSales(
+      // final uniqueCustomers = recentSales
+      //     .map((e) => e["customer_number"]?.toString())
+      //     .where((e) => e != null && e.isNotEmpty)
+      //     .toSet();
+
+      // totalCustomers = uniqueCustomers.length;
+      final recentOrders = List<Map<String, dynamic>>.from(
+        salesDashboard["recent_orders"] ?? [],
+      );
+
+      final uniqueCustomers = recentOrders
+          .map((e) => e["customer"]?.toString())
+          .where((e) => e != null && e.isNotEmpty)
+          .toSet();
+
+      final customerCount = uniqueCustomers.length;
+      final salesResponse = await reportService.getBranchDetailedSales(
         branchId: branchId.toString(),
       );
-      final List sales = customerResponse["sales"] ?? customerResponse;
+      print("salesResponse = $salesResponse");
+      print("keys = ${salesResponse.keys}");
+
+      setState(() {
+        recentSales = List<Map<String, dynamic>>.from(
+          salesResponse["sales"] ?? [],
+        );
+      });
+      print(response);
+
       final trend = List<Map<String, dynamic>>.from(response["trend"] ?? []);
       print("Trend Data = $trend");
 
@@ -710,6 +741,7 @@ class _ReportScreenState extends State<ReportScreen> {
       });
 
       setState(() {
+        totalCustomers = customerCount;
         topBranches = branches;
         branchSales = branches;
         salesTrend = trend;
