@@ -1,6 +1,14 @@
 abstract class SalesDashboardEvent {}
 
-class FetchSalesDashboard extends SalesDashboardEvent {}
+class FetchSalesDashboard extends SalesDashboardEvent {
+  final String? branchId;
+  final String? date;
+
+  FetchSalesDashboard({
+    this.branchId,
+    this.date,
+  });
+}
 
 class FetchBranchDashboard extends SalesDashboardEvent {
   final int? branchId;

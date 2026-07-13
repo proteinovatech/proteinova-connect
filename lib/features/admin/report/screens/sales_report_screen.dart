@@ -31,11 +31,11 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
 
   Map<String, dynamic>? salesData;
 
-  List<dynamic> salesStats = ["stats"];
+  List<dynamic> salesStats = [];
 
-  List<dynamic> topBranches = ["topBranches"];
+  List<dynamic> topBranches = [];
 
-  List<dynamic> transactions = ["transactions"];
+  List<dynamic> transactions = [];
   List<String> reportItems = [
     "Financial Summary",
     "Purchase Report",
@@ -563,7 +563,7 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
             "title": "Total Revenue",
             "amount":
                 data["branches"]?.fold<double>(
-                  0,
+                  0.0,
                   (sum, item) =>
                       sum +
                       (double.tryParse(item["total_sales"].toString()) ?? 0),
@@ -600,15 +600,21 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
             "color": "orange",
           },
         ];
-        topBranches = (data["branches"] ?? []).map((branch) {
-          final sales = double.tryParse(branch["total_sales"].toString()) ?? 0;
-          return {
-            "branch": branch["branch_name"],
-            "amount": "₹ ${sales.toStringAsFixed(0)}",
-            "progress": sales / 50000,
-          };
-        }).toList();
-        transactions = data["transactions"] ?? [];
+       topBranches =
+    List<Map<String, dynamic>>.from(
+      (data["branches"] ?? []).map((branch) {
+        final sales =
+            double.tryParse(branch["total_sales"].toString()) ?? 0;
+
+        return {
+          "branch": branch["branch_name"],
+          "amount": "₹ ${sales.toStringAsFixed(0)}",
+          "progress": (sales / 50000).clamp(0.0, 1.0),
+        };
+      }),
+    );
+        transactions =
+    List<Map<String, dynamic>>.from(data["transactions"] ?? []);
         isLoading = false;
         debugPrint("Keys: ${data.keys.toList()}");
         debugPrint("hourlySales: ${data["hourlySales"]}");
@@ -925,9 +931,14 @@ class _SalesReportScreenState extends State<SalesReportScreen> {
   Widget buildBar(double retailSales, double wholesaleSales, String day) {
     double maxHeight = 160;
 
-    double maxValue = (salesData?["trend"] ?? [])
-        .map<double>((e) => double.tryParse(e["retail_units"].toString()) ?? 0)
-        .fold(0, (a, b) => a > b ? a : b);
+    final trend = (salesData?["trend"] as List?) ?? [];
+
+final values = trend
+    .map((e) => (e["retail_units"] as num?)?.toDouble() ?? 0.0)
+    .toList();
+
+final double maxValue =
+    values.isEmpty ? 0.0 : values.reduce((a, b) => a > b ? a : b);
 
     double retailHeight = maxValue == 0
         ? 0

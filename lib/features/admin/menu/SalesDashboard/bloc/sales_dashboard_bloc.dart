@@ -20,38 +20,41 @@ class SalesDashboardBloc
   }
 
   // ── Legacy: Sales table fetch ──
-  Future<void> _onFetchSalesDashboard(
-    FetchSalesDashboard event,
-    Emitter<SalesDashboardState> emit,
-  ) async {
+Future<void> _onFetchSalesDashboard(
+  FetchSalesDashboard event,
+  Emitter<SalesDashboardState> emit,
+) async {
+  emit(SalesDashboardLoading());
 
-    emit(SalesDashboardLoading());
+  try {
+    final branchesRaw = await datasource.getBranchesList();
 
-    try {
+    final branches = branchesRaw
+        .map<BranchModel>((e) => BranchModel.fromJson(e))
+        .toList();
 
-      final response = await datasource.getSales();
+    final response = await datasource.getSales(
+      branchId: event.branchId,
+      date: event.date,
+    );
 
-      final recentOrders =
-          response['sales'] ??
-          response['recent_orders'] ??
-          response['data'] ??
-          [];
+    final recentOrders =
+        response["sales"] ??
+        response["recent_orders"] ??
+        response["data"] ??
+        [];
 
-      emit(
-        SalesDashboardLoaded(
-          salesData: response,
-          recentOrders: recentOrders,
-        ),
-      );
-
-    } catch (e) {
-
-      emit(
-        SalesDashboardError(e.toString()),
-      );
-    }
+    emit(
+      SalesDashboardLoaded(
+        salesData: response,
+        recentOrders: recentOrders,
+        branches: branches,
+      ),
+    );
+  } catch (e) {
+    emit(SalesDashboardError(e.toString()));
   }
-
+}
   // ── Branch Dashboard: initial load ──
   Future<void> _onFetchBranchDashboard(
     FetchBranchDashboard event,
