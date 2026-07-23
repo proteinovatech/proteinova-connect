@@ -46,14 +46,19 @@ void initState() {
           children: [
             Text(
               "Warehouse Stock Updates",
-              style: AppTextStyles.headingText25
+             style: AppTextStyles.headingText25.copyWith(
+  fontSize: getFontSize(context, 22, tablet: 28),
+),
             ),
 
             SizedBox(height: 4),
 
             Text(
               "Track inventory movements and stock changes",
-              style: TextStyle(color: Colors.grey, fontSize: 13),
+              style: TextStyle(
+  color: Colors.grey,
+  fontSize: getFontSize(context, 12, tablet: 14),
+),
             ),
           ],
         ),
@@ -133,7 +138,9 @@ final availableStock = state.purchases.where(
           /// New Stock Arrivals
           Text(
             "New Stock Arrivals",
-            style: AppTextStyles.headingText16,
+            style: AppTextStyles.headingText16.copyWith(
+  fontSize: getFontSize(context, 16, tablet: 20),
+),
           ),
 
           SizedBox(height: getHeight(context, 12)),
@@ -386,12 +393,16 @@ Widget _overviewCard(Map card) {
             children: [
               Text(
                 card["title"],
-                style: AppTextStyles.bodyText12
+                style: AppTextStyles.bodyText12.copyWith(
+  fontSize: getFontSize(context, 11, tablet: 13),
+),
               ),
               const SizedBox(height: 6),
               Text(
                 "${card["count"]}",
-                style:AppTextStyles.headingText20
+                style: AppTextStyles.headingText20.copyWith(
+  fontSize: getFontSize(context, 20, tablet: 24),
+),
               ),
             ],
           ),
@@ -416,6 +427,7 @@ Widget _overviewCard(Map card) {
   required String category,
 required double amount,
 }) {
+  final isTablet = MediaQuery.of(context).size.width >= 600;
   return Container(
     margin: EdgeInsets.only(bottom: getHeight(context, 16)),
     padding: EdgeInsets.all(getWidth(context, 16)),
@@ -450,7 +462,7 @@ required double amount,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: getWidth(context, 12),
+                fontSize: getFontSize(context, 11, tablet: 13),
               ),
             ),
           ),
@@ -466,7 +478,7 @@ required double amount,
                 text: TextSpan(
                   style: TextStyle(
                     color: Colors.black87,
-                    fontSize: getWidth(context, 14),
+                    fontSize: getFontSize(context, 13, tablet: 15),
                   ),
                   children: [
                     TextSpan(
@@ -492,11 +504,15 @@ Row(
         children: [
           Text(
             "Category",
-            style:  AppTextStyles.bodyText10dark
+            style: AppTextStyles.bodyText10dark.copyWith(
+  fontSize: getFontSize(context, 10, tablet: 12),
+),
           ),
           Text(
             category,
-            style:  AppTextStyles.containerText
+            style: AppTextStyles.containerText.copyWith(
+  fontSize: getFontSize(context, 13, tablet: 15),
+),
           ),
         ],
       ),
@@ -507,12 +523,16 @@ Row(
         children: [
           Text(
             "Amount",
-            style: AppTextStyles.bodyText10dark
+            style: AppTextStyles.bodyText10dark.copyWith(
+  fontSize: getFontSize(context, 10, tablet: 12),
+),
           ),
           
           Text(
             "₹${amount.toStringAsFixed(0)}",
-            style: AppTextStyles.containerText
+            style: AppTextStyles.containerText.copyWith(
+  fontSize: getFontSize(context, 13, tablet: 15),
+),
           ),
         ],
       ),
@@ -540,7 +560,7 @@ SizedBox(height: getHeight(context, 12)),
                         time,
                         style: TextStyle(
                           color: Colors.grey.shade700,
-                          fontSize: getWidth(context, 12),
+                          fontSize: getFontSize(context, 11, tablet: 13),
                         ),
                       ),
                     ],
@@ -565,7 +585,7 @@ SizedBox(height: getHeight(context, 12)),
                             ? Colors.green
                             : Colors.blue,
                         fontWeight: FontWeight.w600,
-                        fontSize: getWidth(context, 11),
+                        fontSize: getFontSize(context, 10, tablet: 12),
                       ),
                     ),
                   ),
@@ -579,25 +599,24 @@ SizedBox(height: getHeight(context, 12)),
 SizedBox(height: getHeight(context, 12)),
   
         Container(
-          width: getWidth(context, 35),
-          height: getWidth(context, 35),
-          decoration: BoxDecoration(
-            color: type == "PURCHASE"
+  width: isTablet ? getWidth(context, 42) : getWidth(context, 35),
+  height: isTablet ? getWidth(context, 42) : getWidth(context, 35),
+  decoration: BoxDecoration(
+    color: type == "PURCHASE"
         ? Colors.green
         : AppColors.blue,
-            borderRadius:
-                BorderRadius.circular(getWidth(context, 14)),
-          ),
-          child: Icon(
-             type == "PURCHASE"
+    borderRadius: BorderRadius.circular(
+      isTablet ? getWidth(context, 16) : getWidth(context, 14),
+    ),
+  ),
+  child: Icon(
+    type == "PURCHASE"
         ? Icons.shopping_cart_outlined
         : Icons.local_shipping_outlined,
-    color: type == "PURCHASE"
-        ? Colors.white
-        : Colors.white,
-    size: getWidth(context, 24),
-          ),
-        ),
+    color: Colors.white,
+    size: getFontSize(context, 22, tablet: 26),
+  ),
+),
       ],
     ),
   );

@@ -882,23 +882,21 @@ class _BranchDashboardState extends State<BranchDashboard> {
 
                         // Low Stock Alerts & Offers Grid
                         if (width >= 600)
-                          IntrinsicHeight(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: _buildActiveOffers(
-                                    dashboardModel.activeOffers,
-                                  ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: _buildActiveOffers(
+                                  dashboardModel.activeOffers,
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildLowStockAlerts(
-                                    dashboardModel.lowStockAlerts,
-                                  ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildLowStockAlerts(
+                                  dashboardModel.lowStockAlerts,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           )
                         else
                           Column(

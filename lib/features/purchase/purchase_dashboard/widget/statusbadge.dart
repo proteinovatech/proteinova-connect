@@ -22,9 +22,7 @@ class StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(
-        getWidth(context, 20),
-      ),
+      borderRadius: BorderRadius.circular(getWidth(context, 20)),
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: getWidth(context, 10),
@@ -32,9 +30,7 @@ class StatusBadge extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(
-            getWidth(context, 20),
-          ),
+          borderRadius: BorderRadius.circular(getWidth(context, 20)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -43,17 +39,15 @@ class StatusBadge extends StatelessWidget {
               Icon(
                 icon,
                 color: textColor,
-                size: getWidth(context, 16),
+                size: getFontSize(context, 14, tablet: 16),
               ),
-              SizedBox(
-                width: getWidth(context, 6),
-              ),
+              SizedBox(width: getWidth(context, 6)),
             ],
             Text(
               text,
               style: AppTextStyles.bodyText16.copyWith(
                 color: textColor,
-                fontSize: getWidth(context, 12),
+                fontSize: getFontSize(context, 11, tablet: 13),
                 fontWeight: FontWeight.w600,
               ),
             ),
