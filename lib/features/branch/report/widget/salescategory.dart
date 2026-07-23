@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 
 class SalesCategoryCard extends StatelessWidget {
   final List<Map<String, dynamic>> branchSales;
-  const SalesCategoryCard({super.key, required this.branchSales});
+  final List<Map<String, dynamic>> recentSales;
+  const SalesCategoryCard({
+    super.key,
+    required this.branchSales,
+    required this.recentSales,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -58,16 +63,17 @@ class SalesCategoryCard extends StatelessWidget {
               children: [
                 PieChart(
                   PieChartData(
-                    sectionsSpace: 2,
+                    sectionsSpace: 0,
                     centerSpaceRadius: 58,
-                    sections: categories.map((item) {
-                      return PieChartSectionData(
-                        value: item["amount"] as double,
-                        color: item["color"] as Color,
+                    startDegreeOffset: -90,
+                    sections: [
+                      PieChartSectionData(
+                        value: totalSales == 0 ? 1 : totalSales,
+                        color: const Color(0xFF3B82F6), // Single blue color
                         radius: 22,
                         showTitle: false,
-                      );
-                    }).toList(),
+                      ),
+                    ],
                   ),
                 ),
 
@@ -94,62 +100,94 @@ class SalesCategoryCard extends StatelessWidget {
           ),
 
           const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
-          /// Category List
-          ...categories.map((item) {
-            final amount = item["amount"] as double;
-            final percentage = ((amount / totalSales) * 100);
+          const Text(
+            "Recent Sales Orders",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
 
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 18),
-              child: Column(
+          const SizedBox(height: 15),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: recentSales.length > 5 ? 5 : recentSales.length,
+            separatorBuilder: (_, __) => const Divider(height: 20),
+            itemBuilder: (context, index) {
+              final sale = recentSales[index];
+
+              return Row(
                 children: [
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 5,
-                        backgroundColor: item["color"] as Color,
-                      ),
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.receipt_long_outlined,
+                      color: Colors.green,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
 
-                      const SizedBox(width: 12),
-
-                      Expanded(
-                        child: Text(
-                          item["name"].toString(),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          sale["customer"]?.toString() ??
+                              sale["customer_name"]?.toString() ??
+                              "Walk-in Customer",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 15,
-                            color: Color(0xFF374151),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
                           ),
                         ),
-                      ),
+                        const SizedBox(height: 4),
+                        Text(
+                          (sale["payment_method"] ??
+                                  sale["payment_mode"] ??
+                                  "CASH")
+                              .toString()
+                              .toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
                       Text(
-                        "₹ ${amount.toInt()}",
+                        "₹${sale["amount"] ?? sale["total_amount"] ?? 0}",
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "${sale["items_qty"] ?? sale["total_eggs_sold"] ?? 0} Eggs",
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
                         ),
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: 6),
-
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      "${percentage.toStringAsFixed(2)}%",
-                      style: const TextStyle(color: Colors.grey, fontSize: 13),
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  Divider(color: Colors.grey.shade200, height: 1),
                 ],
-              ),
-            );
-          }),
+              );
+            },
+          ),
         ],
       ),
     );
