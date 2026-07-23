@@ -8,48 +8,35 @@ class SupplierShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.builder(
       shrinkWrap: true,
-      physics:
-          const NeverScrollableScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: 5,
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
           baseColor: Colors.grey.shade300,
-          highlightColor:
-              Colors.grey.shade100,
+          highlightColor: Colors.grey.shade100,
           child: Container(
-            margin:
-                const EdgeInsets.symmetric(
-              vertical: 8,
-            ),
+            margin: const EdgeInsets.symmetric(vertical: 8),
 
-            padding:
-                const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(14),
 
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius:
-                  BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(14),
             ),
 
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 /// STATUS
                 Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Container(
                       height: 24,
                       width: 80,
-                      decoration:
-                          BoxDecoration(
+                      decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius:
-                            BorderRadius.circular(
-                                20),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
                   ],
@@ -58,48 +45,31 @@ class SupplierShimmer extends StatelessWidget {
                 const SizedBox(height: 12),
 
                 /// COMPANY NAME
-                Container(
-                  height: 20,
-                  width: 180,
-                  color: Colors.white,
-                ),
+                Container(height: 20, width: 180, color: Colors.white),
 
                 const SizedBox(height: 10),
 
                 /// ID
-                Container(
-                  height: 14,
-                  width: 100,
-                  color: Colors.white,
-                ),
+                Container(height: 14, width: 100, color: Colors.white),
 
                 const SizedBox(height: 10),
 
                 /// LOCATION
-                Container(
-                  height: 14,
-                  width: 220,
-                  color: Colors.white,
-                ),
+                Container(height: 14, width: 220, color: Colors.white),
 
                 const SizedBox(height: 20),
 
-                Container(
-                  height: 1,
-                  color: Colors.white,
-                ),
+                Container(height: 1, color: Colors.white),
 
                 const SizedBox(height: 20),
 
                 /// CONTACT
                 Row(
                   children: [
-
                     Container(
                       height: 40,
                       width: 40,
-                      decoration:
-                          const BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
                       ),
@@ -107,91 +77,58 @@ class SupplierShimmer extends StatelessWidget {
 
                     const SizedBox(width: 10),
 
-                    Container(
-                      height: 16,
-                      width: 140,
-                      color: Colors.white,
-                    ),
+                    Container(height: 16, width: 140, color: Colors.white),
                   ],
                 ),
 
                 const SizedBox(height: 16),
 
                 /// PHONE
-                Container(
-                  height: 20,
-                  width: 160,
-                  color: Colors.white,
-                ),
+                Container(height: 20, width: 160, color: Colors.white),
 
                 const SizedBox(height: 10),
 
                 /// EMAIL
-                Container(
-                  height: 14,
-                  width: 220,
-                  color: Colors.white,
-                ),
+                Container(height: 14, width: 220, color: Colors.white),
 
                 const SizedBox(height: 20),
 
                 /// BOTTOM BOX
                 Container(
-                  padding:
-                      const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(10),
 
-                  decoration:
-                      BoxDecoration(
+                  decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius:
-                        BorderRadius.circular(
-                            10),
+                    borderRadius: BorderRadius.circular(10),
                   ),
 
                   child: Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment
-                            .spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                     children: [
-
                       Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment
-                                .start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
 
                         children: [
-
                           Container(
                             height: 16,
                             width: 120,
-                            color:
-                                Colors.white,
+                            color: Colors.white,
                           ),
 
-                          const SizedBox(
-                              height: 8),
+                          const SizedBox(height: 8),
 
-                          Container(
-                            height: 14,
-                            width: 80,
-                            color:
-                                Colors.white,
-                          ),
+                          Container(height: 14, width: 80, color: Colors.white),
                         ],
                       ),
 
                       Container(
                         height: 36,
                         width: 70,
-                        decoration:
-                            BoxDecoration(
-                          color:
-                              Colors.white,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
 
-                          borderRadius:
-                              BorderRadius.circular(
-                                  8),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ],

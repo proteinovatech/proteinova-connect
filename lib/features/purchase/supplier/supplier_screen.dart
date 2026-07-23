@@ -12,7 +12,6 @@ import 'package:proteinova_connect/features/purchase/supplier/add_supplier_scree
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/widget/statusbadge.dart';
 import 'package:proteinova_connect/features/purchase/supplier/widget/supplier_shimmer.dart';
 
-
 class SuppliersScreen extends StatefulWidget {
   const SuppliersScreen({super.key});
 
@@ -21,23 +20,19 @@ class SuppliersScreen extends StatefulWidget {
 }
 
 class _SuppliersScreenState extends State<SuppliersScreen> {
- final TextEditingController searchController =
-    TextEditingController(); 
-@override
-void didChangeDependencies() {
-  super.didChangeDependencies();
+  final TextEditingController searchController = TextEditingController();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-  context.read<SupplierBloc>().add(
-        FetchSuppliers(),
-      );
-}
+    context.read<SupplierBloc>().add(FetchSuppliers());
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       appBar: AppBar(
-        backgroundColor:AppColors.background,
+        backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
         elevation: 0,
         toolbarHeight: 90,
@@ -78,20 +73,17 @@ void didChangeDependencies() {
                 //   );
                 // },
                 onPressed: () async {
-  final result = await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) =>
-          const AddSupplierScreen(),
-    ),
-  );
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddSupplierScreen(),
+                    ),
+                  );
 
-  if (result == true) {
-    context.read<SupplierBloc>().add(
-      FetchSuppliers(),
-    );
-  }
-},
+                  if (result == true) {
+                    context.read<SupplierBloc>().add(FetchSuppliers());
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xfffacc15),
                   foregroundColor: Colors.black,
@@ -111,13 +103,11 @@ void didChangeDependencies() {
           ),
         ],
       ),
-      backgroundColor:AppColors.background,
+      backgroundColor: AppColors.background,
       body: RefreshIndicator(
-         onRefresh: () async {
-  context.read<SupplierBloc>().add(
-  FetchSuppliers(),
-);
-  },
+        onRefresh: () async {
+          context.read<SupplierBloc>().add(FetchSuppliers());
+        },
         child: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
@@ -126,7 +116,7 @@ void didChangeDependencies() {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 10),
-        
+
                   /// SEARCH
                   Row(
                     children: [
@@ -139,23 +129,23 @@ void didChangeDependencies() {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
-                          children:  [
+                          children: [
                             Icon(Icons.search, color: Colors.grey),
                             SizedBox(width: 10),
-                           Expanded(
-  child: TextField(
-  onChanged: (value) {
-  context.read<SupplierBloc>().add(
-        SearchSupplierEvent(value),
-      );
-},
+                            Expanded(
+                              child: TextField(
+                                onChanged: (value) {
+                                  context.read<SupplierBloc>().add(
+                                    SearchSupplierEvent(value),
+                                  );
+                                },
 
-  decoration: InputDecoration(
-    hintText: "Filter Supplier...",
-    border: InputBorder.none,
-  ),
-),
-),
+                                decoration: InputDecoration(
+                                  hintText: "Filter Supplier...",
+                                  border: InputBorder.none,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -192,87 +182,73 @@ void didChangeDependencies() {
                     ],
                   ),
                   SizedBox(height: getHeight(context, 16)),
-                BlocBuilder<SupplierBloc, SupplierState>(
-  builder: (context, state) {
+                  BlocBuilder<SupplierBloc, SupplierState>(
+                    builder: (context, state) {
+                      if (state is SupplierLoading) {
+                        return const SupplierShimmer();
+                      }
 
-    if (state is SupplierLoading) {
-      return const SupplierShimmer();
-    }
+                      if (state is SupplierError) {
+                        return Center(child: Text(state.message));
+                      }
 
-    if (state is SupplierError) {
-      return Center(
-        child: Text(state.message),
-      );
-    }
+                      if (state is SupplierLoaded) {
+                        final suppliers = state.suppliers;
 
-    if (state is SupplierLoaded) {
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: suppliers.length,
+                          itemBuilder: (context, index) {
+                            final supplier = suppliers[index];
 
-      final suppliers = state.suppliers;
+                            return PurchaseCards(
+                              status: supplier.status,
 
-      return ListView.builder(
-        shrinkWrap: true,
-        physics:
-            const NeverScrollableScrollPhysics(),
-        itemCount: suppliers.length,
-        itemBuilder: (context, index) {
+                              statusColor: AppColors.green,
 
-          final supplier = suppliers[index];
+                              textColor: Colors.white,
 
-          return PurchaseCards(
-            status: supplier.status,
+                              supplier: supplier.companyName,
 
-            statusColor:
-                 AppColors.green,
-                    
+                              orderId: "SUP-${supplier.id}",
 
-            textColor: Colors.white,
+                              location: supplier.location,
 
-            supplier:
-                supplier.companyName,
+                              email: supplier.email,
 
-            orderId: "SUP-${supplier.id}",
+                              items: "Supplier Details",
 
-            location:
-                supplier.location,
+                              itemboxes: supplier.status,
 
-           email:
-                supplier.email,
+                              contactperson: supplier.supplierName,
 
-            items:
-                "Supplier Details",
+                              contactnumber: supplier.phoneNumber,
 
-            itemboxes:
-                supplier.status,
+                              onEdit: () async {
+                                print("GST: ${supplier.gstNumber}");
+                                final updated = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        AddSuppliers(supplier: supplier),
+                                  ),
+                                );
 
-            contactperson:
-                supplier.supplierName,
+                                if (updated == true) {
+                                  context.read<SupplierBloc>().add(
+                                    FetchSuppliers(),
+                                  );
+                                }
+                              },
+                            );
+                          },
+                        );
+                      }
 
-            contactnumber:
-                supplier.phoneNumber,
-            
-            onEdit: () async {
-          print("GST: ${supplier.gstNumber}");
-  final updated = await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => AddSuppliers(supplier:supplier,
-    ),
-  ));
-
-  if (updated == true) {
-    context.read<SupplierBloc>().add(
-      FetchSuppliers(),
-    );
-  }
-},
-          );
-        },
-      );
-    }
-
-    return const SizedBox();
-  },
-),
+                      return const SizedBox();
+                    },
+                  ),
                 ],
               ),
             ),
@@ -350,19 +326,17 @@ void didChangeDependencies() {
 
           /// STATUS
           Expanded(
-  child: Flexible(
-  child: Container(
-    padding: const EdgeInsets.symmetric(
-      horizontal: 6,
-      vertical: 6,
-    ),
-    child: const Text(
-      "Active",
-      overflow: TextOverflow.ellipsis,
-      maxLines: 1,
-    ),
-  ),
-),),
+            child: Flexible(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                child: const Text(
+                  "Active",
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+            ),
+          ),
 
           /// ACTIONS
           SizedBox(
@@ -385,7 +359,6 @@ void didChangeDependencies() {
     );
   }
 }
-
 
 class PurchaseCards extends StatelessWidget {
   final String status;
@@ -414,171 +387,139 @@ class PurchaseCards extends StatelessWidget {
     required this.itemboxes,
     required this.contactperson,
     required this.contactnumber,
-    this.onEdit
+    this.onEdit,
   });
 
   @override
   Widget build(BuildContext context) {
-  return Container(
-  margin: EdgeInsets.only(bottom: getHeight(context, 16)),
-  padding: EdgeInsets.all(getWidth(context, 16)),
-  decoration: BoxDecoration(
-    color: Colors.white,
-    border: Border.all(color: Colors.grey.shade300),
-    borderRadius: BorderRadius.circular(
-      getWidth(context, 18),
-    ),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(.05),
-        blurRadius: getWidth(context, 12),
-        offset: Offset(
-          0,
-          getHeight(context, 4),
-        ),
+    return Container(
+      margin: EdgeInsets.only(bottom: getHeight(context, 16)),
+      padding: EdgeInsets.all(getWidth(context, 16)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(getWidth(context, 18)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.05),
+            blurRadius: getWidth(context, 12),
+            offset: Offset(0, getHeight(context, 4)),
+          ),
+        ],
       ),
-    ],
-  ),
 
-  child: Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-
-      /// Left Circle
-      Container(
-        width: getWidth(context, 52),
-        height: getWidth(context, 52),
-        decoration: const BoxDecoration(
-          color: Color(0xFFE8F0FF),
-          shape: BoxShape.circle,
-        ),
-        child: Center(
-          child: Text(
-            orderId,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: getWidth(context, 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// Left Circle
+          Container(
+            width: getWidth(context, 52),
+            height: getWidth(context, 52),
+            decoration: const BoxDecoration(
+              color: Color(0xFFE8F0FF),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                orderId,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: getWidth(context, 12),
+                ),
+              ),
             ),
           ),
-        ),
-      ),
 
-      SizedBox(width: getWidth(context, 16)),
+          SizedBox(width: getWidth(context, 16)),
 
-      /// Content
-      Expanded(
-        child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
-          children: [
-
-            Text(
-              supplier,
-              style: AppTextStyles.headingText16,
-            ),
-
-            SizedBox(
-              height: getHeight(context, 4),
-            ),
-
-            Text(
-              contactperson,
-              style: AppTextStyles.bodyText14,
-            ),
-
-            SizedBox(
-              height: getHeight(context, 4),
-            ),
-
-            Text(
-              (contactnumber == null ||
-          contactnumber.toString().trim().isEmpty)
-      ? "--"
-      : contactnumber.toString(),
-              style: AppTextStyles
-                  .bodyText14,
-            ),
-
-            SizedBox(
-              height: getHeight(context, 4),
-            ),
-
-             Text(
-              email,
-              maxLines: 1,
-              overflow:TextOverflow.ellipsis ,
-              style: AppTextStyles
-                  .bodyText14,
-            ),
-
-            SizedBox(
-              height: getHeight(context, 4),
-            ),
-
-            Row(
+          /// Content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.location_on_outlined,
-                  size: getWidth(context, 16),
-                  color: Colors.black,
-                ),
+                Text(supplier, style: AppTextStyles.headingText16),
 
-                SizedBox(
-                  width: getWidth(context, 6),
-                ),
+                SizedBox(height: getHeight(context, 4)),
+
+                Text(contactperson, style: AppTextStyles.bodyText14),
+
+                SizedBox(height: getHeight(context, 4)),
 
                 Text(
-                  location,
-                  style: AppTextStyles.bodyText14
+                  (contactnumber == null ||
+                          contactnumber.toString().trim().isEmpty)
+                      ? "--"
+                      : contactnumber.toString(),
+                  style: AppTextStyles.bodyText14,
                 ),
 
-                const Spacer(),
+                SizedBox(height: getHeight(context, 4)),
 
-                StatusBadge(
-                  text: status,
-                  bgColor: Colors.green.shade100,
-                  textColor: Colors.green,
+                Text(
+                  email,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodyText14,
                 ),
 
-                SizedBox(width: getWidth(context, 8)),
+                SizedBox(height: getHeight(context, 4)),
 
-InkWell(
-  onTap: onEdit,
-  borderRadius: BorderRadius.circular(getWidth(context, 8)),
-  child:  Icon(
-      Icons.edit_outlined,
-      size: getWidth(context, 18),
-      color: Colors.blue,
-    ),
- 
-),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.location_on_outlined,
+                      size: getWidth(context, 16),
+                      color: Colors.black,
+                    ),
+
+                    SizedBox(width: getWidth(context, 3)),
+
+                    Text(location, style: AppTextStyles.bodyText14),
+
+                    const Spacer(),
+
+                    StatusBadge(
+                      text: status,
+                      bgColor: Colors.green.shade100,
+                      textColor: Colors.green,
+                    ),
+
+                    SizedBox(width: getWidth(context, 3)),
+
+                    InkWell(
+                      onTap: onEdit,
+                      borderRadius: BorderRadius.circular(getWidth(context, 8)),
+                      child: Icon(
+                        Icons.edit_outlined,
+                        size: getWidth(context, 18),
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
-          ],
-        ),
-      ),
-
-      SizedBox(width: getWidth(context, 12)),
-
-      /// Right Icon
-      Container(
-        width: getWidth(context, 35),
-        height: getWidth(context, 35),
-        decoration: BoxDecoration(
-          color: Colors.amber.shade100,
-          borderRadius:
-              BorderRadius.circular(
-            getWidth(context, 14),
           ),
-        ),
-        child: Icon(
-          Icons.store_outlined,
-          color: AppColors.amber600,
-          size: getWidth(context, 22),
-        ),
+
+          SizedBox(width: getWidth(context, 12)),
+
+          /// Right Icon
+          Container(
+            width: getWidth(context, 35),
+            height: getWidth(context, 35),
+            decoration: BoxDecoration(
+              color: Colors.amber.shade100,
+              borderRadius: BorderRadius.circular(getWidth(context, 14)),
+            ),
+            child: Icon(
+              Icons.store_outlined,
+              color: AppColors.amber600,
+              size: getWidth(context, 22),
+            ),
+          ),
+        ],
       ),
-    ],
-  ),
-);}
+    );
+  }
 }

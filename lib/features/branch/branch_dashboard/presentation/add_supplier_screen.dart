@@ -62,9 +62,9 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: ${e.toString()}")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
     } finally {
       if (mounted) {
         setState(() {
@@ -167,6 +167,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                           DropdownButtonFormField<String>(
                             // ignore: deprecated_member_use
                             value: _selectedRegion,
+                            isExpanded: true,
                             decoration: InputDecoration(
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 14,

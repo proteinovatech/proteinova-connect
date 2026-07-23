@@ -15,23 +15,17 @@ class AddSupplierScreen extends StatefulWidget {
 }
 
 class _AddSupplierScreenState extends State<AddSupplierScreen> {
-   final TextEditingController supplierController =
-      TextEditingController();
+  final TextEditingController supplierController = TextEditingController();
 
-  final TextEditingController contactController =
-      TextEditingController();
+  final TextEditingController contactController = TextEditingController();
 
-  final TextEditingController emailController =
-      TextEditingController();
+  final TextEditingController emailController = TextEditingController();
 
-  final TextEditingController phoneController =
-      TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
 
-  final TextEditingController locationController =
-    TextEditingController();
+  final TextEditingController locationController = TextEditingController();
 
-   final TextEditingController gstController =
-      TextEditingController();  
+  final TextEditingController gstController = TextEditingController();
 
   String region = "Select region";
 
@@ -41,36 +35,29 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
   Widget build(BuildContext context) {
     return BlocListener<SupplierBloc, SupplierState>(
       listener: (context, state) {
+        if (state is SupplierSubmitSuccess) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text("Supplier Added")));
 
-    if (state is SupplierSubmitSuccess) {
+          Navigator.pop(context);
+        }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Supplier Added"),
-        ),
-      );
-
-      Navigator.pop(context);
-    }
-
-    if (state is SupplierSubmitFailure) {
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(state.message),
-        ),
-      );
-    }
-  },
+        if (state is SupplierSubmitFailure) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
+        }
+      },
 
       child: Scaffold(
         backgroundColor: const Color(0xfff5f6fa),
-      
+
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
           automaticallyImplyLeading: false,
-      
+
           title: const Text(
             "Add New Supplier",
             style: TextStyle(
@@ -79,7 +66,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
               fontWeight: FontWeight.w600,
             ),
           ),
-      
+
           actions: [
             IconButton(
               onPressed: () {
@@ -89,7 +76,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
             ),
           ],
         ),
-      
+
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Container(
@@ -106,158 +93,146 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                   /// SUPPLIER NAME
                   Text(
                     "Supplier Company Name",
-                    style: AppTextStyles.buttonText16
+                    style: AppTextStyles.buttonText16,
                   ),
-      
+
                   const SizedBox(height: 8),
-      
+
                   TextField(
-                  controller: supplierController,
-                  decoration: InputDecoration(
-                    hintText: "e.g. Apex Farms",
-                    border: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(16),
-                    ),
-                    contentPadding:
-                        const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 18,
+                    controller: supplierController,
+                    decoration: InputDecoration(
+                      hintText: "e.g. Apex Farms",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 18,
+                      ),
                     ),
                   ),
-                ),
-      
-      
+
                   const SizedBox(height: 18),
-       Row(
+                  Row(
                     children: [
                       /// LOCATION
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                             Text(
+                            Text(
                               "Location / Region",
-                              style: AppTextStyles.buttonText16
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.buttonText16,
                             ),
-      
                             const SizedBox(height: 8),
-      
-                            TextField(
-  controller: locationController,
-  style: const TextStyle(
-    fontSize: 14,
-    color: Colors.black,
-  ),
-  decoration: InputDecoration(
-    hintText: "e.g. Hyderabad, India",
-    hintMaxLines: 1,
-    isDense: true,
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: 12,
-      vertical: 14,
-    ),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(16),
-    ),
-  ),
-),   ],
+                            Flexible(
+                              child: TextField(
+                                controller: locationController,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: "e.g. Hyderabad, India",
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 14,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-      
                       const SizedBox(width: 12),
-      
+
                       /// STATUS
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                             Text(
-                              "Status",
-                              style: AppTextStyles.buttonText16
-                            ),
-      
+                            Text("Status", style: AppTextStyles.buttonText16),
+
                             const SizedBox(height: 8),
-      
+
                             DropdownButtonFormField<String>(
-              isExpanded: true,
-              // ignore: deprecated_member_use
-              value: status,
-      
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black,
-              ),
-      
-              items: ["Active", "Inactive"]
-                  .map(
-                    (e) => DropdownMenuItem(
-                      value: e,
-                      child: Text(
-                        e,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  )
-                  .toList(),
-                    onChanged: (value) {
-                setState(() {
-                  status = value!;
-                });
-              },
-      
-              decoration: InputDecoration(
-                isDense: true,
-      
-                contentPadding:
-                    const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 14,
-                ),
-      
-                border: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(16),
-                ),
-              ),
-            ),
+                              isExpanded: true,
+                              // ignore: deprecated_member_use
+                              value: status,
+
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black,
+                              ),
+
+                              items: ["Active", "Inactive"]
+                                  .map(
+                                    (e) => DropdownMenuItem(
+                                      value: e,
+                                      child: Text(
+                                        e,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  status = value!;
+                                });
+                              },
+
+                              decoration: InputDecoration(
+                                isDense: true,
+
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 14,
+                                ),
+
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     ],
                   ),
-      
-                  const SizedBox(height: 18),
-      
-                  /// PRIMARY CONTACT
-                   Text(
-                    "Primary Contact Name",
-                    style: AppTextStyles.buttonText16
-                  ),
-      
-                  const SizedBox(height: 8),
-      
-                  TextField(
-                  controller: contactController,
-                  decoration: InputDecoration(
-                    hintText: "e.g. Jane Doe",
-                    border: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(16),
-                    ),
-                    contentPadding:
-                        const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 18,
-                    ),
-                  ),
-                ),
-      
-      
+
                   const SizedBox(height: 18),
 
-                  
-      
+                  /// PRIMARY CONTACT
+                  Text(
+                    "Primary Contact Name",
+                    style: AppTextStyles.buttonText16,
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  TextField(
+                    controller: contactController,
+                    decoration: InputDecoration(
+                      hintText: "e.g. Jane Doe",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 18,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
                   /// EMAIL + PHONE
                   Row(
                     children: [
@@ -266,102 +241,92 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                             Text(
+                            Text(
                               "Email Address",
-                              style: AppTextStyles.buttonText16
+                              style: AppTextStyles.buttonText16,
                             ),
-      
+
                             const SizedBox(height: 8),
-      
+
                             TextField(
-                            controller: emailController,
-                            decoration: InputDecoration(
-                              hintText:
-                                  "name@company.com",
-                              border:
-                                  OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.circular(
-                                        16),
-                              ),
-                              contentPadding:
-                                  const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 18,
+                              controller: emailController,
+                              decoration: InputDecoration(
+                                hintText: "name@company.com",
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 18,
+                                ),
                               ),
                             ),
-                          ),
                           ],
                         ),
                       ),
-      
+
                       const SizedBox(width: 12),
-      
+
                       /// PHONE
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                             Text(
+                            Text(
                               "Phone Number",
-                              style: AppTextStyles.buttonText16
+                              style: AppTextStyles.buttonText16,
                             ),
-      
-                            const SizedBox(height: 8),
-      
-                             TextField(
-        controller: phoneController,
-        keyboardType: TextInputType.number,
-        inputFormatters: [
-      FilteringTextInputFormatter.digitsOnly,
-      LengthLimitingTextInputFormatter(10),
-        ],
-        decoration: InputDecoration(
-      hintText: "+91 9876543210",
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 18,
-      ),
-        ),
-      ),
-      
-                          ],
 
+                            const SizedBox(height: 8),
+
+                            TextField(
+                              controller: phoneController,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(10),
+                              ],
+                              decoration: InputDecoration(
+                                hintText: "+91 9876543210",
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 18,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-      
-                  const SizedBox(height: 28),
-                   Text(
-                    "GST Number (Optional)",
-                    style: AppTextStyles.buttonText16
-                  ),
-      
-                  const SizedBox(height: 8),
-      
-                  TextField(
-                  controller: gstController,
-                  decoration: InputDecoration(
-                    hintText: "e.g.22AAAA0000A1Z5",
-                    border: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(16),
-                    ),
-                    contentPadding:
-                        const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 18,
-                    ),
-                  ),
-                ),
 
-                const SizedBox(height: 28),
-      
-      
+                  const SizedBox(height: 28),
+                  Text(
+                    "GST Number (Optional)",
+                    style: AppTextStyles.buttonText16,
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  TextField(
+                    controller: gstController,
+                    decoration: InputDecoration(
+                      hintText: "e.g.22AAAA0000A1Z5",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 18,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 28),
+
                   /// BUTTONS
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -384,9 +349,9 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                         ),
                         child: const Text("Cancel"),
                       ),
-      
+
                       const SizedBox(width: 12),
-      
+
                       /// SAVE
                       // ElevatedButton(
                       //   onPressed: () {},
@@ -409,38 +374,27 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                       // ),
                       ElevatedButton(
                         onPressed: () {
-      
-        final supplier = SupplierRequestModel(
-      
-      supplierCompanyName:
-          supplierController.text,
-      
-      supplierName:
-          contactController.text,
-      
-      email:
-          emailController.text,
-      
-      phoneNumber:
-          phoneController.text,
-      
-      supplierLocation:
-          locationController.text,
+                          final supplier = SupplierRequestModel(
+                            supplierCompanyName: supplierController.text,
 
-      gstNumber:
-          gstController.text,
+                            supplierName: contactController.text,
 
-      
-      
-      status:
-          status.toUpperCase(),
-        );
-      
-        context.read<SupplierBloc>().add(
-      AddSupplierEvent(supplier),
-        );
-      },
-                                   style: ElevatedButton.styleFrom(
+                            email: emailController.text,
+
+                            phoneNumber: phoneController.text,
+
+                            supplierLocation: locationController.text,
+
+                            gstNumber: gstController.text,
+
+                            status: status.toUpperCase(),
+                          );
+
+                          context.read<SupplierBloc>().add(
+                            AddSupplierEvent(supplier),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xfffacc15),
                           foregroundColor: Colors.black,
                           elevation: 0,
@@ -452,26 +406,24 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        child: context.watch<SupplierBloc>().state
-        is SupplierSubmitting
-    ? const SizedBox(
-        height: 20,
-        width: 20,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: Colors.black,
-        ),
-      )
-    : const Text(
-        "Save Supplier",
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+                        child:
+                            context.watch<SupplierBloc>().state
+                                is SupplierSubmitting
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.black,
+                                ),
+                              )
+                            : const Text(
+                                "Save Supplier",
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
                       ),
                     ],
                   ),
-                  
                 ],
               ),
             ),
