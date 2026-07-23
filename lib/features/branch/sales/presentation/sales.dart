@@ -274,7 +274,6 @@ class _SalesState extends State<Sales> {
   // ─── Dashboard Grid ──────────────────────────────────────────────────────────
 
   Widget _buildDashboardGrid(Map<String, dynamic> cards) {
-    final width = MediaQuery.of(context).size.width;
 
     // Adaptive column count
     final crossAxisCount = _adaptive<int>(

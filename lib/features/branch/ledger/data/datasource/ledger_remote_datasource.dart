@@ -21,9 +21,6 @@ class LedgerRemoteDatasource {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        final List<dynamic> list = data['data'] is List
-            ? data['data']
-            : (data is List ? data : []);
 
        return LedgerModel.fromJson(data);
       } else {

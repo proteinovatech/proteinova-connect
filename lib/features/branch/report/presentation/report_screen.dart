@@ -2,10 +2,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/features/branch/report/data/service/branch_report_service.dart';
-import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
-import 'package:proteinova_connect/features/admin/report/screens/expense_report_screen.dart';
-import 'package:proteinova_connect/features/admin/report/screens/purchase_report_screen.dart';
-import 'package:proteinova_connect/features/admin/report/screens/warehouse_report_screen.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_report_dashboard_shimmer.dart';
 import 'package:proteinova_connect/features/branch/report/widget/salescategory.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -667,10 +663,9 @@ class _ReportScreenState extends State<ReportScreen> {
       );
 
       print(response);
-      final customerResponse = await reportService.getBranchDetailedSales(
+      await reportService.getBranchDetailedSales(
         branchId: branchId.toString(),
       );
-      final List sales = customerResponse["sales"] ?? customerResponse;
       final trend = List<Map<String, dynamic>>.from(response["trend"] ?? []);
       print("Trend Data = $trend");
 

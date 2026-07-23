@@ -233,7 +233,6 @@ Widget build(BuildContext context) {
  Widget _buildContent(BuildContext context, LedgerModel ledger) {
    final screenWidth = MediaQuery.of(context).size.width;
     final cardWidth = (screenWidth - 56) / 2;
-     final summary = ledger.summary;
 
  String userBranch = "";
 

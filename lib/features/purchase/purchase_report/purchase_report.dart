@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/admin/report/data/report_service.dart';
-import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
-import 'package:proteinova_connect/features/admin/report/screens/expense_report_screen.dart';
-import 'package:proteinova_connect/features/admin/report/screens/sales_report_screen.dart';
-import 'package:proteinova_connect/features/admin/report/screens/warehouse_report_screen.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_report_dashboard_shimmer.dart';
 
 class PurchaseReport extends StatefulWidget {

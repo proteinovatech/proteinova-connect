@@ -7,10 +7,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
-import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
-import 'package:proteinova_connect/features/admin/report/screens/purchase_report_screen.dart';
-import 'package:proteinova_connect/features/admin/report/screens/sales_report_screen.dart';
-import 'package:proteinova_connect/features/admin/report/screens/warehouse_report_screen.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/admin_report_dashboard_shimmer.dart';
 import 'package:proteinova_connect/features/branch/report/data/service/branch_report_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -66,7 +62,7 @@ class _ExpenseReportScreenState extends State<ExpenseReport> {
 
   Future<void> fetchExpenseReport() async {
     final prefs = await SharedPreferences.getInstance();
-    String? branchId = prefs.getInt("branch_id")?.toString();
+    prefs.getInt("branch_id")?.toString();
     try {
       setState(() {
         isLoading = true;

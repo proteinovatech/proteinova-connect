@@ -3140,7 +3140,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/services/sales_receipt_service.dart';
-import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
 import 'package:proteinova_connect/features/branch/sales/data/datasource/branch_sales_remote_datasource.dart';
 import 'package:proteinova_connect/features/branch/sales/data/model/branch_inventory_model.dart';

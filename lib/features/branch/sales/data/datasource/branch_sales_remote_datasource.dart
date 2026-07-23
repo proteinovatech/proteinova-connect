@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import 'package:http/http.dart' as dio;
 import 'package:proteinova_connect/core/config/api_config.dart';
 import 'package:proteinova_connect/features/branch/sales/data/model/mobile_inventory_model.dart';
 
