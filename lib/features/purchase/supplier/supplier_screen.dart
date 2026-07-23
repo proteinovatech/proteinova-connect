@@ -40,11 +40,11 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children: [
             Text(
               "Suppliers",
               style: TextStyle(
-                fontSize: 28,
+                fontSize: getFontSize(context, 22, tablet: 28),
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
@@ -54,7 +54,10 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
 
             Text(
               "Manage your vendor relationships and track supply statuses",
-              style: TextStyle(color: Colors.grey, fontSize: 13),
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: getFontSize(context, 12, tablet: 14),
+              ),
             ),
           ],
         ),
@@ -97,7 +100,12 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                   ),
                 ),
                 icon: const Icon(Icons.add, size: 18),
-                label: const Text("Add Supplier"),
+                label: Text(
+                  "Add Supplier",
+                  style: TextStyle(
+                    fontSize: getFontSize(context, 13, tablet: 15),
+                  ),
+                ),
               ),
             ),
           ),
@@ -142,7 +150,21 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
 
                                 decoration: InputDecoration(
                                   hintText: "Filter Supplier...",
+                                  hintStyle: TextStyle(
+                                    fontSize: getFontSize(
+                                      context,
+                                      13,
+                                      tablet: 15,
+                                    ),
+                                  ),
                                   border: InputBorder.none,
+                                ),
+                                style: TextStyle(
+                                  fontSize: getFontSize(
+                                    context,
+                                    13,
+                                    tablet: 15,
+                                  ),
                                 ),
                               ),
                             ),
@@ -425,7 +447,7 @@ class PurchaseCards extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: getWidth(context, 12),
+                  fontSize: getFontSize(context, 11, tablet: 13),
                 ),
               ),
             ),
@@ -438,11 +460,21 @@ class PurchaseCards extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(supplier, style: AppTextStyles.headingText16),
+                Text(
+                  supplier,
+                  style: AppTextStyles.headingText16.copyWith(
+                    fontSize: getFontSize(context, 16, tablet: 20),
+                  ),
+                ),
 
                 SizedBox(height: getHeight(context, 4)),
 
-                Text(contactperson, style: AppTextStyles.bodyText14),
+                Text(
+                  contactperson,
+                  style: AppTextStyles.bodyText14.copyWith(
+                    fontSize: getFontSize(context, 13, tablet: 15),
+                  ),
+                ),
 
                 SizedBox(height: getHeight(context, 4)),
 
@@ -469,7 +501,7 @@ class PurchaseCards extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.location_on_outlined,
-                      size: getWidth(context, 16),
+                      size: getFontSize(context, 16, tablet: 18),
                       color: Colors.black,
                     ),
 
@@ -492,7 +524,7 @@ class PurchaseCards extends StatelessWidget {
                       borderRadius: BorderRadius.circular(getWidth(context, 8)),
                       child: Icon(
                         Icons.edit_outlined,
-                        size: getWidth(context, 18),
+                        size: getFontSize(context, 18, tablet: 20),
                         color: Colors.blue,
                       ),
                     ),
@@ -515,7 +547,7 @@ class PurchaseCards extends StatelessWidget {
             child: Icon(
               Icons.store_outlined,
               color: AppColors.amber600,
-              size: getWidth(context, 22),
+              size: getFontSize(context, 22, tablet: 26),
             ),
           ),
         ],

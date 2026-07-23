@@ -11,3 +11,15 @@ double getWidth(BuildContext context, double figmaWidth) {
   const figmaScreenWidth = 375; // Figma frame width
   return screenWidth * (figmaWidth / figmaScreenWidth);
 }
+
+
+
+double getFontSize(BuildContext context, double mobile, {double? tablet}) {
+  final width = MediaQuery.of(context).size.width;
+
+  if (width >= 600) {
+    return tablet ?? (mobile + 2);
+  }
+
+  return mobile;
+}

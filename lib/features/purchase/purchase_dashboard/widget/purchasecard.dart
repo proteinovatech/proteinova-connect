@@ -52,8 +52,13 @@ class PurchaseCard extends StatelessWidget {
       children: [
        
         Container(
-           width: getWidth(context, 52),
-           height: getWidth(context, 52),
+          width: MediaQuery.of(context).size.width >= 600
+    ? getWidth(context, 60)
+    : getWidth(context, 52),
+
+height: MediaQuery.of(context).size.width >= 600
+    ? getWidth(context, 60)
+    : getWidth(context, 52),
           decoration: const BoxDecoration(
             color: Color(0xFFE8F0FF),
             shape: BoxShape.circle,
@@ -66,7 +71,7 @@ class PurchaseCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style:TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: getWidth(context, 12),
+                fontSize: getFontSize(context, 11, tablet: 13),
               ),
             ),
           ),
@@ -85,35 +90,47 @@ class PurchaseCard extends StatelessWidget {
                 children: [
                   Text(
                     "Supplier",
-                    style: AppTextStyles.bodyText10dark,
+                    style: AppTextStyles.bodyText10dark.copyWith(
+  fontSize: getFontSize(context, 10, tablet: 12),
+),
                   ),
                   Text(
                     supplier,
                      maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.containerText,
+                    style: AppTextStyles.containerText.copyWith(
+  fontSize: getFontSize(context, 13, tablet: 15),
+),
                   ),
 
                   SizedBox(height: getHeight(context, 12)),
 
                   Text(
                 "Items",
-                style: AppTextStyles.bodyText10dark,
+                style: AppTextStyles.bodyText10dark.copyWith(
+  fontSize: getFontSize(context, 10, tablet: 12),
+),
               ),
               Text(
                "$items ($itemboxes )",
-                style: AppTextStyles.containerText,
+                style: AppTextStyles.containerText.copyWith(
+  fontSize: getFontSize(context, 13, tablet: 15),
+),
               ),
 
               SizedBox(height: getHeight(context, 12)),
 
               Text(
             "Amount",
-            style: AppTextStyles.bodyText10dark,
+            style: AppTextStyles.bodyText10dark.copyWith(
+  fontSize: getFontSize(context, 10, tablet: 12),
+),
           ),
           Text(
             amount,
-            style: AppTextStyles.containerText,
+            style: AppTextStyles.containerText.copyWith(
+  fontSize: getFontSize(context, 13, tablet: 15),
+),
           ),
                 ],
               ),
@@ -130,7 +147,7 @@ class PurchaseCard extends StatelessWidget {
              children: [
                  Icon(
                   Icons.access_time_rounded,
-                  size: getWidth(context, 16),
+                  size: getFontSize(context, 16, tablet: 18),
                   color: Colors.grey,
                 ),
 
@@ -139,7 +156,7 @@ class PurchaseCard extends StatelessWidget {
                   dateTime.split('T')[0],
                   style: TextStyle(
                    color: Colors.grey.shade700,
-                   fontSize: getWidth(context, 12),
+                   fontSize: getFontSize(context, 11, tablet: 13),
                   ),
                 ),
               ],
@@ -190,7 +207,7 @@ class PurchaseCard extends StatelessWidget {
           child: Icon(
             Icons.shopping_cart_outlined,
             color: Colors.white,
-            size: getWidth(context, 22),
+            size: getFontSize(context, 22, tablet: 26),
           ),
         ),
       ],

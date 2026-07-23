@@ -113,7 +113,9 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("Purchase Details", style: AppTextStyles.headingText22),
+                      Text("Purchase Details", style: AppTextStyles.headingText22.copyWith(
+  fontSize: getFontSize(context, 20, tablet: 24),
+),),
                       // Container(
                       //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       //   decoration: BoxDecoration(
@@ -142,7 +144,9 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
                   _buildDetailRow("Expected Arrival", purchase['expected_arrival'] ?? '--'),
                   
                   const SizedBox(height: 16),
-                  const Text("Products Listing", style: AppTextStyles.formInputs15dark),
+                   Text("Products Listing", style: AppTextStyles.formInputs15dark.copyWith(
+  fontSize: getFontSize(context, 15, tablet: 17),
+),),
                   const SizedBox(height: 8),
                   
                   // Products Table/List
@@ -205,7 +209,13 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
        );
      },
      icon: const Icon(Icons.download),
-     label: const Text("Download Bill"),
+label: Text(
+  "Download Bill",
+  style: TextStyle(
+    fontSize: getFontSize(context, 14, tablet: 16),
+    fontWeight: FontWeight.w600,
+  ),
+),
      style: ElevatedButton.styleFrom(
        backgroundColor: AppColors.amber600,
        foregroundColor: Colors.deepPurpleAccent,
@@ -226,8 +236,22 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: AppTextStyles.bodyText14.copyWith(color: Colors.black54)),
-          Text(value, style: AppTextStyles.bodyText14.copyWith(fontWeight: isBold ? FontWeight.bold : FontWeight.normal, color: Colors.black)),
+          Text(
+  title,
+  style: AppTextStyles.bodyText14.copyWith(
+    color: Colors.black54,
+    fontSize: getFontSize(context, 13, tablet: 15),
+  ),
+),
+          Text(
+  value,
+  style: AppTextStyles.bodyText14.copyWith(
+    color: Colors.black,
+    fontSize: getFontSize(context, 13, tablet: 15),
+    fontWeight:
+        isBold ? FontWeight.bold : FontWeight.normal,
+  ),
+),
         ],
       ),
     );
@@ -347,10 +371,14 @@ final totalReceived = state.purchases.where((p) {
                       child: ListView(
                         padding: EdgeInsets.symmetric(horizontal: size.width * 0.03),
                         children: [
-                          Text("Purchase", style: AppTextStyles.headingText25),
+                          Text("Purchase", style: AppTextStyles.headingText25.copyWith(
+  fontSize: getFontSize(context, 22, tablet: 28),
+),),
                           Text(
                             "Manage Purchase orders and Incoming stocks.",
-                            style: AppTextStyles.bodyText16,
+                            style: AppTextStyles.bodyText16.copyWith(
+  fontSize: getFontSize(context, 13, tablet: 15),
+),
                           ),
                           const SizedBox(height: 15),
 
@@ -373,11 +401,20 @@ final totalReceived = state.purchases.where((p) {
                                   searchQuery = val;
                                 });
                               },
-                              decoration: const InputDecoration(
-                                prefixIcon: Icon(Icons.search, color: Colors.grey),
-                                hintText: "Search PO, supplier, driver...",
-                                border: InputBorder.none,
-                              ),
+                             decoration: InputDecoration(
+  prefixIcon: const Icon(
+    Icons.search,
+    color: Colors.grey,
+  ),
+  hintText: "Search PO, supplier, driver...",
+  hintStyle: TextStyle(
+    fontSize: getFontSize(context, 13, tablet: 15),
+  ),
+  border: InputBorder.none,
+),
+style: TextStyle(
+  fontSize: getFontSize(context, 13, tablet: 15),
+),
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -444,7 +481,12 @@ final totalReceived = state.purchases.where((p) {
                                 children: [
                                   Icon(Icons.add, color: AppColors.dark),
                                   const SizedBox(width: 8),
-                                  Text("New Purchase Entry", style: AppTextStyles.headingText20),
+                                  Text(
+  "New Purchase Entry",
+  style: AppTextStyles.headingText20.copyWith(
+    fontSize: getFontSize(context, 18, tablet: 22),
+  ),
+),
                                 ],
                               ),
                             ),
@@ -453,10 +495,12 @@ final totalReceived = state.purchases.where((p) {
 
                           /// PURCHASE LIST
                           if (filteredPurchases.isEmpty)
-                            const Center(
+                             Center(
                               child: Padding(
                                 padding: EdgeInsets.symmetric(vertical: 30),
-                                child: Text("No purchases found match your criteria.", style: AppTextStyles.bodyText14),
+                                child: Text("No purchases found match your criteria.",style: AppTextStyles.bodyText14.copyWith(
+  fontSize: getFontSize(context, 13, tablet: 15),
+),),
                               ),
                             )
                           else
@@ -612,7 +656,7 @@ Widget _overviewCard(Map card) {
           child: Icon(
             card["icon"],
             color: card["color"],
-            size: 28,
+            size: getFontSize(context, 28, tablet: 32),
           ),
         ),
 
@@ -624,12 +668,16 @@ Widget _overviewCard(Map card) {
             children: [
               Text(
                 card["title"],
-                style: AppTextStyles.bodyText12
+                style: AppTextStyles.bodyText12.copyWith(
+  fontSize: getFontSize(context, 11, tablet: 13),
+),
               ),
               const SizedBox(height: 6),
               Text(
                 "${card["count"]}",
-                style: AppTextStyles.headingText20
+                style: AppTextStyles.headingText20.copyWith(
+  fontSize: getFontSize(context, 20, tablet: 24),
+),
               ),
             ],
           ),
