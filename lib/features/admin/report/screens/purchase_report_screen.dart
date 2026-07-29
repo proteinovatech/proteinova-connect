@@ -1157,6 +1157,7 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
       final data = await reportService.getPurchaseReport(
         startDate: start,
         endDate: end,
+        useCompanyName: true
       );
 
 print("PURCHASE REPORT DATA = $data");
