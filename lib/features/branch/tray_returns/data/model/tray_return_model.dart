@@ -137,11 +137,11 @@ class Cards {
       returnedPlastic: json["returned_plastic"] ?? 0,
       returnedPaper: json["returned_paper"] ?? 0,
 
-      emptyPlastic: json["empty_plastic"] ?? 0,
-      emptyPaper: json["empty_paper"] ?? 0,
+      emptyPlastic: json["closing_empty_plastic"] ?? json["empty_plastic"] ?? 0,
+      emptyPaper: json["closing_empty_paper"] ?? json["empty_paper"] ?? 0,
 
-      filledPlastic: json["filled_plastic"] ?? 0,
-      filledPaper: json["filled_paper"] ?? 0,
+      filledPlastic: json["closing_filled_plastic"] ?? json["filled_plastic"] ?? 0,
+      filledPaper: json["closing_filled_paper"] ?? json["filled_paper"] ?? 0,
     );
   }
 }

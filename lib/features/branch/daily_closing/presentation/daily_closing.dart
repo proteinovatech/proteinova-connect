@@ -236,7 +236,6 @@ class _DailyClosingState extends State<DailyClosing> {
                         // const SizedBox(height: 16),
 
                         // _buildNotesChecklist(data, isClosed),
-
                         const SizedBox(height: 16),
 
                         _buildTodaysSummary(data),
@@ -725,6 +724,12 @@ class _DailyClosingState extends State<DailyClosing> {
   }
 
   Widget _buildTodaysSummary(DailyClosingModel data) {
+    final summary = data.todaysSummary;
+    final finalValue =
+        summary.openingStockValue +
+        summary.receivedStockValue +
+        summary.totalSales -
+        summary.totalExpenses;
     return _buildCard(
       title: "Today's Summary",
       child: SingleChildScrollView(
@@ -748,11 +753,7 @@ class _DailyClosingState extends State<DailyClosing> {
               data.todaysSummary.totalExpenses,
             ),
             _buildOperator("="),
-            _buildFormulaItem(
-              "Final Value",
-              data.todaysSummary.finalValue,
-              isResult: true,
-            ),
+            _buildFormulaItem("Final Value", finalValue, isResult: true),
           ],
         ),
       ),

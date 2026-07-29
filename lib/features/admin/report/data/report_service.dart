@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
 
+import 'package:proteinova_connect/core/config/api_config.dart';
+
 class ReportService {
   final Dio dio = Dio(
     BaseOptions(
-      baseUrl: dotenv.env['VITE_BACKEND_URL'] ?? '',
-
+      baseUrl: ApiConfig.baseUrl,
       headers: {'Content-Type': 'application/json'},
     ),
   );
@@ -70,17 +71,27 @@ class ReportService {
     final purchasesList =
         (purchaseResponse.data['data'] as List<dynamic>?) ?? [];
 
+    double calculatedTotalRevenue = 0;
+    for (var item in branchSales) {
+      calculatedTotalRevenue +=
+          double.tryParse(item["total_sales"]?.toString() ?? "0") ?? 0;
+    }
+
+    double calculatedTotalExpenses = 0;
     Map<String, double> branchExpenses = {};
     for (var exp in expensesList) {
       String bName = exp['branch_name']?.toString() ?? "Unknown";
       double amt = double.tryParse(exp['amount']?.toString() ?? '0') ?? 0;
+      calculatedTotalExpenses += amt;
       branchExpenses[bName] = (branchExpenses[bName] ?? 0) + amt;
     }
 
+    double calculatedTotalPurchases = 0;
     Map<String, double> branchPurchases = {};
     for (var pur in purchasesList) {
       String bName = pur['branch_name']?.toString() ?? "Unknown";
       double amt = double.tryParse(pur['total_amount']?.toString() ?? '0') ?? 0;
+      calculatedTotalPurchases += amt;
       branchPurchases[bName] = (branchPurchases[bName] ?? 0) + amt;
     }
 
@@ -96,13 +107,9 @@ class ReportService {
       String margin = rev > 0
           ? "${((profit / rev) * 100).toStringAsFixed(1)}%"
           : "0%";
-      double totalRevenue = 0;
-
-      for (var item in branchSales) {
-        totalRevenue +=
-            double.tryParse(item["total_sales"]?.toString() ?? "0") ?? 0;
-      }
-      double progress = totalRevenue > 0 ? rev / totalRevenue : 0;
+      double progress = calculatedTotalRevenue > 0
+          ? rev / calculatedTotalRevenue
+          : 0;
 
       print("Branch: $bName");
       print("Revenue: $rev");
@@ -180,11 +187,22 @@ class ReportService {
       };
     }).toList();
 
+    double finalRevenue =
+        (summaryData['revenue'] as num?)?.toDouble() ?? calculatedTotalRevenue;
+    double finalExpenses =
+        (summaryData['totalExpenses'] as num?)?.toDouble() ??
+        calculatedTotalExpenses;
+    double finalProfit =
+        (summaryData['profit'] as num?)?.toDouble() ??
+        (calculatedTotalRevenue -
+            calculatedTotalExpenses -
+            calculatedTotalPurchases);
+
     return {
       "summary": {
-        "totalRevenue": summaryData['revenue'] ?? 0,
-        "totalExpenses": summaryData['totalExpenses'] ?? 0,
-        "netProfit": summaryData['profit'] ?? 0,
+        "totalRevenue": finalRevenue,
+        "totalExpenses": finalExpenses,
+        "netProfit": finalProfit,
         "totalOrders": totalOrders,
         "chartData": chartData,
         "branches": branches,
@@ -200,7 +218,7 @@ class ReportService {
     String? branchId,
   }) async {
     final response = await dio.get(
-      '/api/reports/branch-sales',
+      '/api/reports/branch-detailed-sales',
       queryParameters: {
         'startDate': startDate,
         'endDate': endDate,
@@ -208,18 +226,20 @@ class ReportService {
       },
     );
 
-    print("BRANCH SALES RESPONSE = ${response.data}");
+    print("BRANCH DETAILED SALES RESPONSE = ${response.data}");
 
-    final branches = (response.data['branches'] as List<dynamic>?) ?? [];
-
-    final trend = (response.data['trend'] as List<dynamic>?) ?? [];
+    final sales = (response.data['sales'] as List<dynamic>?) ?? [];
+    final products = (response.data['products'] as List<dynamic>?) ?? [];
+    final totalDamages =
+        int.tryParse(response.data['totalDamages']?.toString() ?? '0') ?? 0;
+    final damageBreakdown =
+        (response.data['damageBreakdown'] as List<dynamic>?) ?? [];
 
     return {
-      "branches": branches,
-      "trend": trend,
-      "transactions": [],
-
-      // keep original response if needed
+      "sales": sales,
+      "products": products,
+      "totalDamages": totalDamages,
+      "damageBreakdown": damageBreakdown,
       "raw": response.data,
     };
   }
@@ -239,6 +259,16 @@ class ReportService {
       },
     );
 
+    int pendingApprovals = 0;
+    List<dynamic> approvalsList = [];
+    try {
+      final appResponse = await dio.get('/api/admin/approvals');
+      approvalsList = appResponse.data['approvals'] as List<dynamic>? ?? [];
+      pendingApprovals = approvalsList.length;
+    } catch (e) {
+      debugPrint("Error fetching approvals: $e");
+    }
+
     final list = response.data as List<dynamic>? ?? [];
 
     double totalExpense = 0;
@@ -252,7 +282,8 @@ class ReportService {
 
       String category = item['category']?.toString() ?? 'Other';
       categoryMap[category] = (categoryMap[category] ?? 0) + amount;
-      if (category == 'TRANSPORT') {
+      if (category.toLowerCase().contains('transport') ||
+          category.toLowerCase().contains('logistics')) {
         logisticsExpense += amount;
       }
 
@@ -314,7 +345,7 @@ class ReportService {
         },
         {
           "title": "Pending Approvals",
-          "amount": "14",
+          "amount": "$pendingApprovals",
           "growth": "-",
           "icon": "check",
           "color": "grey",
@@ -334,6 +365,8 @@ class ReportService {
             },
           )
           .toList(),
+      "approvals": approvalsList,
+      "raw": list,
     };
   }
 
@@ -354,26 +387,26 @@ class ReportService {
 
     double totalSpend = 0;
     int totalTrays = 0;
-   Map<String, double> supplierMap = {};
+    Map<String, double> supplierMap = {};
 
-for (var item in list) {
-  double amount =
-      double.tryParse(item['total_amount']?.toString() ?? '0') ?? 0;
+    for (var item in list) {
+      double amount =
+          double.tryParse(item['total_amount']?.toString() ?? '0') ?? 0;
 
-  int trays =
-      int.tryParse(item['total_trays']?.toString() ?? '0') ?? 0;
+      int trays = int.tryParse(item['total_trays']?.toString() ?? '0') ?? 0;
 
-  totalSpend += amount;
-  totalTrays += trays;
+      totalSpend += amount;
+      totalTrays += trays;
 
-  // Use company name instead of supplier_name
- final supplier = useCompanyName
-    ? (item["supplier_company_name"] ?? "").toString().trim()
-    : (item["supplier_name"] ?? "").toString().trim();
+      // Use company name instead of supplier_name
+      final supplier = useCompanyName
+          ? (item["supplier_company_name"] ?? "").toString().trim()
+          : (item["supplier_name"] ?? "").toString().trim();
 
-if (supplier.isEmpty) continue;
+      if (supplier.isEmpty) continue;
 
-supplierMap[supplier] = (supplierMap[supplier] ?? 0) + amount;}
+      supplierMap[supplier] = (supplierMap[supplier] ?? 0) + amount;
+    }
 
     List<Map<String, dynamic>> suppliers = supplierMap.entries
         .map(
@@ -387,16 +420,16 @@ supplierMap[supplier] = (supplierMap[supplier] ?? 0) + amount;}
 
     double avgCost = totalTrays > 0 ? totalSpend / totalTrays : 0;
     final activeSuppliers = list
-    .map((e) {
-      if (useCompanyName) {
-        return (e["supplier_company_name"] ?? "").toString().trim();
-      } else {
-        return (e["supplier_name"] ?? "").toString().trim();
-      }
-    })
-    .where((name) => name.isNotEmpty)
-    .toSet()
-    .length;
+        .map((e) {
+          if (useCompanyName) {
+            return (e["supplier_company_name"] ?? "").toString().trim();
+          } else {
+            return (e["supplier_name"] ?? "").toString().trim();
+          }
+        })
+        .where((name) => name.isNotEmpty)
+        .toSet()
+        .length;
 
     Map<String, double> spendByMonth = {};
     Map<String, int> volumeByMonth = {};
@@ -441,65 +474,57 @@ supplierMap[supplier] = (supplierMap[supplier] ?? 0) + amount;}
     }).toList();
 
     final spendBySupplier = suppliers.map((e) {
-  return {
-    "name": e["name"],
-    "value": "₹ ${NumberFormat('#,##,##0', 'en_IN').format(e["amount"])}",
-  };
-}).toList();
+      return {
+        "name": e["name"],
+        "value": "₹ ${NumberFormat('#,##,##0', 'en_IN').format(e["amount"])}",
+      };
+    }).toList();
 
-final volumeBySupplier = supplierMap.entries.map((e) {
-  final supplierRows = list.where((x) {
-  final supplier = useCompanyName
-      ? (x["supplier_company_name"] ?? "").toString().trim()
-      : (x["supplier_name"] ?? "").toString().trim();
+    final volumeBySupplier = supplierMap.entries.map((e) {
+      final supplierRows = list.where((x) {
+        final supplier = useCompanyName
+            ? (x["supplier_company_name"] ?? "").toString().trim()
+            : (x["supplier_name"] ?? "").toString().trim();
 
-  return supplier == e.key;
-});
+        return supplier == e.key;
+      });
 
-  int trays = 0;
+      int trays = 0;
 
-  for (var row in supplierRows) {
-    trays += int.tryParse(row["total_trays"].toString()) ?? 0;
-  }
+      for (var row in supplierRows) {
+        trays += int.tryParse(row["total_trays"].toString()) ?? 0;
+      }
 
-  return {
-    "name": e.key,
-    "value": trays,
-  };
-}).toList();
+      return {"name": e.key, "value": trays};
+    }).toList();
 
+    Map<String, int> supplierCountMap = {};
 
+    for (final item in list) {
+      final supplier = useCompanyName
+          ? (item["supplier_company_name"] ?? "").toString().trim()
+          : (item["supplier_name"] ?? "").toString().trim();
 
-Map<String, int> supplierCountMap = {};
+      if (supplier.isEmpty) continue;
 
-for (final item in list) {
-  final supplier = useCompanyName
-      ? (item["supplier_company_name"] ?? "").toString().trim()
-      : (item["supplier_name"] ?? "").toString().trim();
+      supplierCountMap[supplier] = (supplierCountMap[supplier] ?? 0) + 1;
+    }
 
-  if (supplier.isEmpty) continue;
+    final supplierList = supplierCountMap.entries.map((e) {
+      return {"name": e.key, "orders": e.value};
+    }).toList();
 
-  supplierCountMap[supplier] =
-      (supplierCountMap[supplier] ?? 0) + 1;
-}
-
-final supplierList = supplierCountMap.entries.map((e) {
-  return {
-    "name": e.key,
-    "orders": e.value,
-  };
-}).toList();
-
-final totalOrdersList = list.map((e) {
-  return {
-    "name": e["supplier_name"] ?? "-",
-    "value": "Order #${e["id"]}",
-    "details": e["date"] != null
-        ? DateFormat("dd/MM/yyyy")
-            .format(DateTime.parse(e["date"].toString()))
-        : "-",
-  };
-}).toList();
+    final totalOrdersList = list.map((e) {
+      return {
+        "name": e["supplier_name"] ?? "-",
+        "value": "Order #${e["id"]}",
+        "details": e["date"] != null
+            ? DateFormat(
+                "dd/MM/yyyy",
+              ).format(DateTime.parse(e["date"].toString()))
+            : "-",
+      };
+    }).toList();
     return {
       "stats": [
         {
@@ -535,9 +560,9 @@ final totalOrdersList = list.map((e) {
       "monthlySummary": list,
       "monthlyTrend": monthlyTrend,
       "spendBySupplier": spendBySupplier,
-  "volumeBySupplier": volumeBySupplier,
-  "supplierList": supplierList,
-  
+      "volumeBySupplier": volumeBySupplier,
+      "supplierList": supplierList,
+
       "raw": list,
       "totalOrders": totalOrdersList,
     };
