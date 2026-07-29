@@ -10,14 +10,13 @@ part 'damage_entry_state.dart';
 class DamageEntryBloc extends Bloc<DamageEntryEvent, DamageEntryState> {
   DamageEntryBloc() : super(DamageEntryInitial()) {
     on<FetchLocationsEvent>((event, emit) async {
-      emit(DamageLocationsLoading());
-      try {
-        final locations = await DamageEntryService.getLocations();
-        emit(DamageLocationsLoaded(locations: locations));
-      } catch (e) {
-        emit(DamageEntryError(message: 'Failed to fetch locations: $e'));
-      }
-    });
+  try {
+    final locations = await DamageEntryService.getLocations();
+    emit(DamageLocationsLoaded(locations: locations));
+  } catch (e) {
+    emit(DamageEntryError(message: 'Failed to fetch locations: $e'));
+  }
+});
 
     on<LocationSelectedEvent>((event, emit) async {
       final loc = event.location;

@@ -1,5 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:proteinova_connect/features/admin/report/data/report_service.dart';
 import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
 import 'package:proteinova_connect/features/admin/report/screens/expense_report_screen.dart';
@@ -259,30 +265,30 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
       },
     );
   }
-  
 
   @override
   void initState() {
     super.initState();
 
     fetchPurchaseReport();
-     fetchBranches();
+    fetchBranches();
   }
+
   Future<void> fetchBranches() async {
-  try {
-    final data = await reportService.getBranches();
+    try {
+      final data = await reportService.getBranches();
 
-    setState(() {
-      branches = data;
+      setState(() {
+        branches = data;
 
-      if (branches.isNotEmpty) {
-        selectedBranch = branches.first["name"];
-      }
-    });
-  } catch (e) {
-    debugPrint("Error loading branches: $e");
+        if (branches.isNotEmpty) {
+          selectedBranch = branches.first["name"];
+        }
+      });
+    } catch (e) {
+      debugPrint("Error loading branches: $e");
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -372,190 +378,376 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
 
                       child: Column(
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: buildDateField(
-                                  title: "From Date",
-                                  value: fromDate,
-                                  onTap: () async {
-                                    DateTime? picked = await showDatePicker(
-                                      context: context,
-                                      initialDate: DateTime.now(),
-                                      firstDate: DateTime(2020),
-                                      lastDate: DateTime.now(),
-                                    );
-                                    if (picked != null) {
-                                      setState(() {
-                                        fromDate =
-                                            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-                                      });
-                                      fetchPurchaseReport();
-                                    }
-                                  },
-                                ),
-                              ),
-
-                              const SizedBox(width: 14),
-
-                              Expanded(
-                                child: buildDateField(
-                                  title: "To Date",
-                                  value: toDate,
-                                  onTap: () async {
-                                    DateTime? picked = await showDatePicker(
-                                      context: context,
-                                      initialDate: DateTime.now(),
-                                      firstDate: DateTime(2020),
-                                      lastDate: DateTime.now(),
-                                    );
-                                    if (picked != null) {
-                                      setState(() {
-                                        toDate =
-                                            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-                                      });
-                                      fetchPurchaseReport();
-                                    }
-                                  },
-                                ),
-                              ),
-
-                              const SizedBox(width: 14),
-
-                              Expanded(
-                                child: buildDropdownField(
-                                  title: "View Mode",
-
-                                  value: viewMode,
-
-                                  items: const ["Monthly", "Weekly", "Yearly"],
-
-                                  onChanged: (v) {
-                                    setState(() {
-                                      viewMode = v!;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 18),
-
-                          Row(
-                            children: [
-   Expanded(
-  child: buildDropdownField(
-    title: "Branch",
-    value: selectedBranch??"All Branches",
-     items: [
-      "All Branches",
-      ...branches
-          .map<String>((e) => e["branch_name"].toString())
-          .toSet()
-          .toList(),
-    ],
-    onChanged: (v) {
-      setState(() {
-        selectedBranch = v;
-      });
-    },
-  ),
-),                            const SizedBox(width: 14),
-
-                              Expanded(
-                                child: buildDropdownField(
-                                  title: "Egg Type",
-
-                                  value: eggType,
-
-                                  items: const [
-                                    "All Types",
-
-                                    "White Egg",
-
-                                    "Brown Egg",
-                                  ],
-
-                                  onChanged: (v) {
-                                    setState(() {
-                                      eggType = v!;
-                                    });
-                                  },
-                                ),
-                              ),
-
-                              const SizedBox(width: 14),
-
-                              Expanded(
-                                child: buildDropdownField(
-                                  title: "Report Category",
-
-                                  value: selectedReport,
-
-                                  items: reportItems,
-
-                                  onChanged: (value) {
-                                    if (value == selectedReport) return;
-                                    setState(() {
-                                      selectedReport = value!;
-                                    });
-
-                                    Widget? nextScreen;
-                                    if (value == "Financial Summary") {
-                                      nextScreen =
-                                          const AdminReportDashboardScreen();
-                                    } else if (value == "Purchase Report") {
-                                      nextScreen = const PurchaseReportScreen();
-                                    } else if (value == "Expense Report") {
-                                      nextScreen = const ExpenseReportScreen();
-                                    } else if (value == "Branch Sales Report") {
-                                      nextScreen = const SalesReportScreen();
-                                    } else if (value == "Warehouse Report") {
-                                      nextScreen =
-                                          const WarehouseReportScreen();
-                                    }
-
-                                    if (nextScreen != null) {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        PageRouteBuilder(
-                                          pageBuilder: (_, __, ___) =>
-                                              nextScreen!,
-                                          transitionDuration: Duration.zero,
-                                          reverseTransitionDuration:
-                                              Duration.zero,
-                                        ),
+                          if (MediaQuery.of(context).size.width < 700) ...[
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: buildDateField(
+                                    title: "From Date",
+                                    value: fromDate,
+                                    onTap: () async {
+                                      DateTime? picked = await showDatePicker(
+                                        context: context,
+                                        initialDate: DateTime.now(),
+                                        firstDate: DateTime(2020),
+                                        lastDate: DateTime.now(),
                                       );
-                                    }
-                                  },
+                                      if (picked != null) {
+                                        setState(() {
+                                          fromDate =
+                                              "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                                        });
+                                        fetchPurchaseReport();
+                                      }
+                                    },
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: buildDateField(
+                                    title: "To Date",
+                                    value: toDate,
+                                    onTap: () async {
+                                      DateTime? picked = await showDatePicker(
+                                        context: context,
+                                        initialDate: DateTime.now(),
+                                        firstDate: DateTime(2020),
+                                        lastDate: DateTime.now(),
+                                      );
+                                      if (picked != null) {
+                                        setState(() {
+                                          toDate =
+                                              "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                                        });
+                                        fetchPurchaseReport();
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: buildDropdownField(
+                                    title: "View Mode",
+                                    value: viewMode,
+                                    items: const [
+                                      "Monthly",
+                                      "Weekly",
+                                      "Yearly",
+                                    ],
+                                    onChanged: (v) {
+                                      setState(() {
+                                        viewMode = v!;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: buildDropdownField(
+                                    title: "Branch",
+                                    value: selectedBranch ?? "All Branches",
+                                    items: [
+                                      "All Branches",
+                                      ...branches
+                                          .map<String>(
+                                            (e) => e["branch_name"].toString(),
+                                          )
+                                          .toSet()
+                                          .toList(),
+                                    ],
+                                    onChanged: (v) {
+                                      setState(() {
+                                        selectedBranch = v;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: buildDropdownField(
+                                    title: "Egg Type",
+                                    value: eggType,
+                                    items: const [
+                                      "All Types",
+                                      "White Egg",
+                                      "Brown Egg",
+                                    ],
+                                    onChanged: (v) {
+                                      setState(() {
+                                        eggType = v!;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: buildDropdownField(
+                                    title: "Report Category",
+                                    value: selectedReport,
+                                    items: reportItems,
+                                    onChanged: (value) {
+                                      if (value == selectedReport) return;
+                                      setState(() {
+                                        selectedReport = value!;
+                                      });
 
-                          const SizedBox(height: 24),
+                                      Widget? nextScreen;
+                                      if (value == "Financial Summary") {
+                                        nextScreen =
+                                            const AdminReportDashboardScreen();
+                                      } else if (value == "Purchase Report") {
+                                        nextScreen =
+                                            const PurchaseReportScreen();
+                                      } else if (value == "Expense Report") {
+                                        nextScreen =
+                                            const ExpenseReportScreen();
+                                      } else if (value ==
+                                          "Branch Sales Report") {
+                                        nextScreen = const SalesReportScreen();
+                                      } else if (value == "Warehouse Report") {
+                                        nextScreen =
+                                            const WarehouseReportScreen();
+                                      }
+
+                                      if (nextScreen != null) {
+                                        Navigator.pushReplacement(
+                                          context,
+                                          PageRouteBuilder(
+                                            pageBuilder: (_, __, ___) =>
+                                                nextScreen!,
+                                            transitionDuration: Duration.zero,
+                                            reverseTransitionDuration:
+                                                Duration.zero,
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ] else ...[
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: buildDateField(
+                                    title: "From Date",
+                                    value: fromDate,
+                                    onTap: () async {
+                                      DateTime? picked = await showDatePicker(
+                                        context: context,
+                                        initialDate: DateTime.now(),
+                                        firstDate: DateTime(2020),
+                                        lastDate: DateTime.now(),
+                                      );
+                                      if (picked != null) {
+                                        setState(() {
+                                          fromDate =
+                                              "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                                        });
+                                        fetchPurchaseReport();
+                                      }
+                                    },
+                                  ),
+                                ),
+
+                                const SizedBox(width: 14),
+
+                                Expanded(
+                                  child: buildDateField(
+                                    title: "To Date",
+                                    value: toDate,
+                                    onTap: () async {
+                                      DateTime? picked = await showDatePicker(
+                                        context: context,
+                                        initialDate: DateTime.now(),
+                                        firstDate: DateTime(2020),
+                                        lastDate: DateTime.now(),
+                                      );
+                                      if (picked != null) {
+                                        setState(() {
+                                          toDate =
+                                              "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                                        });
+                                        fetchPurchaseReport();
+                                      }
+                                    },
+                                  ),
+                                ),
+
+                                const SizedBox(width: 14),
+
+                                Expanded(
+                                  child: buildDropdownField(
+                                    title: "View Mode",
+
+                                    value: viewMode,
+
+                                    items: const [
+                                      "Monthly",
+                                      "Weekly",
+                                      "Yearly",
+                                    ],
+
+                                    onChanged: (v) {
+                                      setState(() {
+                                        viewMode = v!;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 18),
+
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: buildDropdownField(
+                                    title: "Branch",
+                                    value: selectedBranch ?? "All Branches",
+                                    items: [
+                                      "All Branches",
+                                      ...branches
+                                          .map<String>(
+                                            (e) => e["branch_name"].toString(),
+                                          )
+                                          .toSet()
+                                          .toList(),
+                                    ],
+                                    onChanged: (v) {
+                                      setState(() {
+                                        selectedBranch = v;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+
+                                Expanded(
+                                  child: buildDropdownField(
+                                    title: "Egg Type",
+
+                                    value: eggType,
+
+                                    items: const [
+                                      "All Types",
+
+                                      "White Egg",
+
+                                      "Brown Egg",
+                                    ],
+
+                                    onChanged: (v) {
+                                      setState(() {
+                                        eggType = v!;
+                                      });
+                                    },
+                                  ),
+                                ),
+
+                                const SizedBox(width: 14),
+
+                                Expanded(
+                                  child: buildDropdownField(
+                                    title: "Report Category",
+
+                                    value: selectedReport,
+
+                                    items: reportItems,
+
+                                    onChanged: (value) {
+                                      if (value == selectedReport) return;
+                                      setState(() {
+                                        selectedReport = value!;
+                                      });
+
+                                      Widget? nextScreen;
+                                      if (value == "Financial Summary") {
+                                        nextScreen =
+                                            const AdminReportDashboardScreen();
+                                      } else if (value == "Purchase Report") {
+                                        nextScreen =
+                                            const PurchaseReportScreen();
+                                      } else if (value == "Expense Report") {
+                                        nextScreen =
+                                            const ExpenseReportScreen();
+                                      } else if (value ==
+                                          "Branch Sales Report") {
+                                        nextScreen = const SalesReportScreen();
+                                      } else if (value == "Warehouse Report") {
+                                        nextScreen =
+                                            const WarehouseReportScreen();
+                                      }
+
+                                      if (nextScreen != null) {
+                                        Navigator.pushReplacement(
+                                          context,
+                                          PageRouteBuilder(
+                                            pageBuilder: (_, __, ___) =>
+                                                nextScreen!,
+                                            transitionDuration: Duration.zero,
+                                            reverseTransitionDuration:
+                                                Duration.zero,
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+
+                          const SizedBox(height: 20),
 
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-
+                            mainAxisAlignment:
+                                MediaQuery.of(context).size.width < 700
+                                ? MainAxisAlignment.start
+                                : MainAxisAlignment.end,
                             children: [
-                              buildActionButton(
-                                title: "Export PDF",
-
-                                icon: Icons.picture_as_pdf,
-
-                                bgColor: Colors.white,
+                              Expanded(
+                                flex: MediaQuery.of(context).size.width < 700
+                                    ? 1
+                                    : 0,
+                                child: SizedBox(
+                                  width: MediaQuery.of(context).size.width < 700
+                                      ? null
+                                      : 140,
+                                  child: buildActionButton(
+                                    title: "Export PDF",
+                                    icon: Icons.picture_as_pdf,
+                                    bgColor: Colors.white,
+                                    onTap: exportPdf,
+                                  ),
+                                ),
                               ),
-
                               const SizedBox(width: 12),
-
-                              buildActionButton(
-                                title: "Print",
-
-                                icon: Icons.print,
-
-                                bgColor: const Color(0xffFACC15),
+                              Expanded(
+                                flex: MediaQuery.of(context).size.width < 700
+                                    ? 1
+                                    : 0,
+                                child: SizedBox(
+                                  width: MediaQuery.of(context).size.width < 700
+                                      ? null
+                                      : 140,
+                                  child: buildActionButton(
+                                    title: "Print",
+                                    icon: Icons.print,
+                                    bgColor: const Color(0xffFACC15),
+                                    onTap: printPdf,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -617,11 +809,9 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
                         return PurchaseStatCard(
                           title: e["title"].toString(),
 
-                         amount: e["title"].toString().contains("Spend")
-    ? "₹ ${indianCurrency.format(
-        double.tryParse(e["amount"]?.toString() ?? "0") ?? 0,
-      )}"
-    : e["amount"].toString(),
+                          amount: e["title"].toString().contains("Spend")
+                              ? "₹ ${indianCurrency.format(double.tryParse(e["amount"]?.toString() ?? "0") ?? 0)}"
+                              : e["amount"].toString(),
 
                           growth: e["growth"].toString(),
 
@@ -795,19 +985,26 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
                                   scrollDirection: Axis.horizontal,
                                   child: Row(
                                     crossAxisAlignment: CrossAxisAlignment.end,
-                                  
-                                  
+
                                     children: [
                                       ...monthlyTrend.map((e) {
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                                      child: buildBar(
-                                          double.tryParse(e["spend"].toString()) ?? 0,
-                                          double.tryParse(e["volume"].toString()) ?? 0,
-                                        e["month"].toString(),
-                                      ),
-                                    );
-                                  }),
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                          ),
+                                          child: buildBar(
+                                            double.tryParse(
+                                                  e["spend"].toString(),
+                                                ) ??
+                                                0,
+                                            double.tryParse(
+                                                  e["volume"].toString(),
+                                                ) ??
+                                                0,
+                                            e["month"].toString(),
+                                          ),
+                                        );
+                                      }),
                                     ],
                                   ),
                                 ),
@@ -880,16 +1077,12 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
                               ...suppliers.map((e) {
                                 return buildSupplierRow(
                                   e["name"].toString(),
-                                  "₹ ${indianCurrency.format(
-                               double.tryParse(e["amount"]?.toString() ?? "0") ?? 0,
-                                )}",
+                                  "₹ ${indianCurrency.format(double.tryParse(e["amount"]?.toString() ?? "0") ?? 0)}",
                                   double.tryParse(e["progress"].toString()) ??
                                       0.0,
                                 );
                               }),
-                             
-                              
-                             
+
                               const SizedBox(height: 28),
 
                               // Container(
@@ -1059,12 +1252,14 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
                                   cells: [
                                     DataCell(
                                       Text(
-  e["date"] != null
-      ? DateFormat('dd/MM/yyyy').format(
-          DateTime.parse(e["date"].toString()),
-        )
-      : (e["period"]?.toString() ?? ""),
-),
+                                        e["date"] != null
+                                            ? DateFormat('dd/MM/yyyy').format(
+                                                DateTime.parse(
+                                                  e["date"].toString(),
+                                                ),
+                                              )
+                                            : (e["period"]?.toString() ?? ""),
+                                      ),
                                     ),
 
                                     DataCell(
@@ -1086,22 +1281,14 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
 
                                     DataCell(
                                       Text(
-                                        "${e["total_trays"] ??e["quantity"] ?? e["qty"] ?? e["trays"] ?? 0}",
+                                        "${e["total_trays"] ?? e["quantity"] ?? e["qty"] ?? e["trays"] ?? 0}",
                                       ),
                                     ),
 
                                     DataCell(
                                       Text(
-  "₹ ${NumberFormat('#,##,##0', 'en_IN').format(
-    double.tryParse(
-      (e["totalAmount"] ??
-       e["total_amount"] ??
-       e["totalSpend"] ??
-       e["total_spend"] ??
-       0).toString(),
-    ) ?? 0,
-  )}",
-),
+                                        "₹ ${NumberFormat('#,##,##0', 'en_IN').format(double.tryParse((e["totalAmount"] ?? e["total_amount"] ?? e["totalSpend"] ?? e["total_spend"] ?? 0).toString()) ?? 0)}",
+                                      ),
                                     ),
 
                                     DataCell(
@@ -1160,7 +1347,7 @@ class _PurchaseReportScreenState extends State<PurchaseReportScreen> {
         useCompanyName: true
       );
 
-print("PURCHASE REPORT DATA = $data");
+      print("PURCHASE REPORT DATA = $data");
       setState(() {
         purchaseData = data;
 
@@ -1184,10 +1371,9 @@ print("PURCHASE REPORT DATA = $data");
               return {"name": e["name"], "value": e["count"] ?? 1};
             }).toList();
         avgUnitCost = data["avgUnitCost"] ?? [];
-         monthlyTrend =
-      List<Map<String, dynamic>>.from(
-        data["monthlyTrend"] ?? [],
-      );
+        monthlyTrend = List<Map<String, dynamic>>.from(
+          data["monthlyTrend"] ?? [],
+        );
 
         isLoading = false;
       });
@@ -1196,6 +1382,403 @@ print("PURCHASE REPORT DATA = $data");
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  // ─── PDF EXPORT & PRINT ──────────────────────────────────────────
+
+  final NumberFormat indianFormat = NumberFormat.decimalPattern('en_IN');
+
+  Future<pw.Document> _buildPdfDocument() async {
+    final pdf = pw.Document();
+
+    final dateRangeStr = (fromDate != "dd-mm-yyyy" || toDate != "dd-mm-yyyy")
+        ? "$fromDate to $toDate"
+        : "All Time";
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(32),
+        header: (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      "PROTEINOVA",
+                      style: pw.TextStyle(
+                        fontSize: 20,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.blue900,
+                      ),
+                    ),
+                    pw.Text(
+                      "Purchase Report",
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.grey800,
+                      ),
+                    ),
+                  ],
+                ),
+                pw.Container(
+                  padding: const pw.EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: pw.BoxDecoration(
+                    color: PdfColors.amber100,
+                    borderRadius: pw.BorderRadius.circular(6),
+                  ),
+                  child: pw.Text(
+                    "ADMIN REPORT",
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.amber900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 8),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(
+                  "Branch: ${selectedBranch ?? 'All Branches'}  |  Type: $eggType  |  Mode: $viewMode  |  Period: $dateRangeStr",
+                  style: const pw.TextStyle(
+                    fontSize: 9,
+                    color: PdfColors.grey700,
+                  ),
+                ),
+                pw.Text(
+                  "Generated: ${DateFormat('dd/MM/yyyy, hh:mm a').format(DateTime.now())}",
+                  style: const pw.TextStyle(
+                    fontSize: 9,
+                    color: PdfColors.grey700,
+                  ),
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 6),
+            pw.Divider(color: PdfColors.blue800, thickness: 1.5),
+            pw.SizedBox(height: 12),
+          ],
+        ),
+        footer: (context) => pw.Column(
+          children: [
+            pw.Divider(color: PdfColors.grey300, thickness: 0.5),
+            pw.SizedBox(height: 4),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(
+                  "ProteiNova System  -  Confidential",
+                  style: const pw.TextStyle(
+                    fontSize: 8,
+                    color: PdfColors.grey600,
+                  ),
+                ),
+                pw.Text(
+                  "Page ${context.pageNumber} of ${context.pagesCount}",
+                  style: const pw.TextStyle(
+                    fontSize: 8,
+                    color: PdfColors.grey600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        build: (context) => [
+          // ── Purchase Summary Stats ──
+          pw.Text(
+            "Purchase Summary",
+            style: pw.TextStyle(
+              fontSize: 14,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.grey900,
+            ),
+          ),
+          pw.SizedBox(height: 8),
+          pw.Table(
+            border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+            children: [
+              for (int i = 0; i < purchaseStats.length; i += 3)
+                pw.TableRow(
+                  decoration: pw.BoxDecoration(
+                    color: i == 0 ? PdfColors.blue50 : PdfColors.grey50,
+                  ),
+                  children: [
+                    for (int j = i; j < i + 3; j++)
+                      j < purchaseStats.length
+                          ? _pdfStatCell(
+                              purchaseStats[j]['title']
+                                      ?.toString()
+                                      .toUpperCase() ??
+                                  '',
+                              purchaseStats[j]['title'].toString().contains(
+                                    "Spend",
+                                  )
+                                  ? "Rs. ${indianFormat.format(double.tryParse(purchaseStats[j]['amount']?.toString() ?? '0') ?? 0)}"
+                                  : purchaseStats[j]['amount']?.toString() ??
+                                        '0',
+                            )
+                          : _pdfStatCell('', ''),
+                  ],
+                ),
+            ],
+          ),
+          pw.SizedBox(height: 18),
+
+          // ── Top Suppliers Table ──
+          if (suppliers.isNotEmpty) ...[
+            pw.Text(
+              "Top Suppliers by Spend",
+              style: pw.TextStyle(
+                fontSize: 13,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.grey900,
+              ),
+            ),
+            pw.SizedBox(height: 6),
+            pw.TableHelper.fromTextArray(
+              border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+              headerStyle: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.white,
+                fontSize: 9,
+              ),
+              headerDecoration: const pw.BoxDecoration(
+                color: PdfColors.blue800,
+              ),
+              cellStyle: const pw.TextStyle(fontSize: 9),
+              cellPadding: const pw.EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 5,
+              ),
+              columnWidths: {
+                0: const pw.FlexColumnWidth(1),
+                1: const pw.FlexColumnWidth(4),
+                2: const pw.FlexColumnWidth(3),
+                3: const pw.FlexColumnWidth(2),
+              },
+              headers: ["#", "Supplier Name", "Spend (Rs.)", "Share (%)"],
+              data: suppliers.asMap().entries.map((entry) {
+                final idx = entry.key + 1;
+                final s = entry.value;
+                final amount =
+                    double.tryParse(s['amount']?.toString() ?? '0') ?? 0;
+                final progress =
+                    double.tryParse(s['progress']?.toString() ?? '0') ?? 0;
+                return [
+                  "$idx",
+                  s['name']?.toString() ?? '',
+                  "Rs. ${indianFormat.format(amount)}",
+                  "${(progress * 100).toStringAsFixed(1)}%",
+                ];
+              }).toList(),
+            ),
+            pw.SizedBox(height: 18),
+          ],
+
+          // ── Monthly Purchase Trend ──
+          if (monthlyTrend.isNotEmpty) ...[
+            pw.Text(
+              "Monthly Purchase Trend",
+              style: pw.TextStyle(
+                fontSize: 13,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.grey900,
+              ),
+            ),
+            pw.SizedBox(height: 6),
+            pw.TableHelper.fromTextArray(
+              border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+              headerStyle: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.white,
+                fontSize: 9,
+              ),
+              headerDecoration: const pw.BoxDecoration(
+                color: PdfColors.indigo800,
+              ),
+              cellStyle: const pw.TextStyle(fontSize: 9),
+              cellPadding: const pw.EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 5,
+              ),
+              headers: ["Month", "Spend (Rs.)", "Volume (Units)"],
+              data: monthlyTrend.map((item) {
+                final spend =
+                    double.tryParse(item['spend']?.toString() ?? '0') ?? 0;
+                final volume =
+                    double.tryParse(item['volume']?.toString() ?? '0') ?? 0;
+                return [
+                  item['month']?.toString() ?? '',
+                  "Rs. ${indianFormat.format(spend)}",
+                  indianFormat.format(volume),
+                ];
+              }).toList(),
+            ),
+            pw.SizedBox(height: 18),
+          ],
+
+          // ── Purchase Summary Log ──
+          if (monthlySummary.isNotEmpty) ...[
+            pw.Text(
+              "Purchase Summary Log",
+              style: pw.TextStyle(
+                fontSize: 13,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.grey900,
+              ),
+            ),
+            pw.SizedBox(height: 6),
+            pw.TableHelper.fromTextArray(
+              border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+              headerStyle: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.white,
+                fontSize: 8,
+              ),
+              headerDecoration: const pw.BoxDecoration(
+                color: PdfColors.grey700,
+              ),
+              cellStyle: const pw.TextStyle(fontSize: 8),
+              cellPadding: const pw.EdgeInsets.symmetric(
+                horizontal: 5,
+                vertical: 4,
+              ),
+              columnWidths: {
+                0: const pw.FlexColumnWidth(2),
+                1: const pw.FlexColumnWidth(2),
+                2: const pw.FlexColumnWidth(3),
+                3: const pw.FlexColumnWidth(2),
+                4: const pw.FlexColumnWidth(2),
+                5: const pw.FlexColumnWidth(2),
+              },
+              headers: [
+                "Date",
+                "Purchase ID",
+                "Supplier",
+                "Total Trays",
+                "Total Amount (Rs.)",
+                "Status",
+              ],
+              data: monthlySummary.map((e) {
+                String dateStr = "";
+                if (e["date"] != null) {
+                  try {
+                    dateStr = DateFormat(
+                      'dd/MM/yyyy',
+                    ).format(DateTime.parse(e["date"].toString()));
+                  } catch (_) {
+                    dateStr = e["date"].toString();
+                  }
+                } else {
+                  dateStr = e["period"]?.toString() ?? "-";
+                }
+
+                final amount =
+                    double.tryParse(
+                      (e["totalAmount"] ??
+                              e["total_amount"] ??
+                              e["totalSpend"] ??
+                              e["total_spend"] ??
+                              0)
+                          .toString(),
+                    ) ??
+                    0;
+
+                return [
+                  dateStr,
+                  e["purchaseId"]?.toString() ??
+                      e["purchase_id"]?.toString() ??
+                      e["id"]?.toString() ??
+                      "-",
+                  e["supplier"]?.toString() ??
+                      e["supplier_name"]?.toString() ??
+                      "-",
+                  "${e["total_trays"] ?? e["quantity"] ?? e["qty"] ?? e["trays"] ?? 0}",
+                  "Rs. ${indianFormat.format(amount)}",
+                  e["status"]?.toString() ?? "RECEIVED",
+                ];
+              }).toList(),
+            ),
+          ],
+        ],
+      ),
+    );
+
+    return pdf;
+  }
+
+  pw.Widget _pdfStatCell(String title, String value) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(10),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            title,
+            style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
+          ),
+          pw.SizedBox(height: 4),
+          pw.Text(
+            value,
+            style: pw.TextStyle(
+              fontSize: 13,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.black,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> exportPdf() async {
+    try {
+      final pdf = await _buildPdfDocument();
+      final bytes = await pdf.save();
+      final fileName =
+          "purchase_report_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.pdf";
+
+      // Cache locally
+      try {
+        final dir = await getApplicationDocumentsDirectory();
+        final file = File("${dir.path}/$fileName");
+        await file.writeAsBytes(bytes);
+      } catch (_) {}
+
+      // Native share/save dialog
+      await Printing.sharePdf(bytes: bytes, filename: fileName);
+    } catch (e) {
+      debugPrint("PDF Export Error: $e");
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("PDF Export Error: $e"),
+          backgroundColor: const Color(0xffDC2626),
+        ),
+      );
+    }
+  }
+
+  Future<void> printPdf() async {
+    try {
+      final pdf = await _buildPdfDocument();
+      await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+    } catch (e) {
+      debugPrint("Print Error: $e");
     }
   }
 
@@ -1210,11 +1793,16 @@ print("PURCHASE REPORT DATA = $data");
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           const SizedBox(height: 8),
           Container(
-            height: 56,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+            height: 52,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(14),
@@ -1222,8 +1810,19 @@ print("PURCHASE REPORT DATA = $data");
             ),
             child: Row(
               children: [
-                Expanded(child: Text(value)),
-                const Icon(Icons.calendar_month),
+                Expanded(
+                  child: Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                ),
+                const Icon(
+                  Icons.calendar_month,
+                  size: 18,
+                  color: Color(0xff64748B),
+                ),
               ],
             ),
           ),
@@ -1238,37 +1837,53 @@ print("PURCHASE REPORT DATA = $data");
     required List<String> items,
     required Function(String?) onChanged,
   }) {
+    final currentValue = items.contains(value)
+        ? value
+        : (items.isNotEmpty ? items.first : null);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-
       children: [
-        Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-
+        Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         const SizedBox(height: 8),
-
         Container(
-          height: 56,
-
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-
+          height: 52,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             color: Colors.white,
-
             borderRadius: BorderRadius.circular(14),
-
             border: Border.all(color: const Color(0xffE5E7EB)),
           ),
-
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
-              value: value,
-
+              value: currentValue,
               isExpanded: true,
-
+              icon: const Icon(
+                Icons.keyboard_arrow_down,
+                color: Color(0xff64748B),
+                size: 20,
+              ),
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
               items: items.map((e) {
-                return DropdownMenuItem(value: e, child: Text(e));
+                return DropdownMenuItem<String>(
+                  value: e,
+                  child: Text(
+                    e,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                );
               }).toList(),
-
               onChanged: onChanged,
             ),
           ),
@@ -1277,63 +1892,60 @@ print("PURCHASE REPORT DATA = $data");
     );
   }
 
- Widget buildActionButton({
-  required String title,
-  required IconData icon,
-  required Color bgColor,
-}) {
-  return Container(
-    height: 52, // reduced height
-    width: 135,
-
-    decoration: BoxDecoration(
-      color: bgColor,
-      borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: const Color(0xffE5E7EB)),
-    ),
-
-    child: Center(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 18, // reduced icon size
-          ),
-
-          const SizedBox(width: 6),
-
-          Flexible(
-            child: Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 13, // reduced text size
-                height: 1.1,
+  Widget buildActionButton({
+    required String title,
+    required IconData icon,
+    required Color bgColor,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 50,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xffE5E7EB)),
+        ),
+        child: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 18),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    height: 1.1,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
-    ),
-  );
-}
-  Widget buildBar(double spend, double volume, String month) {
-     double maxValue = 1;
-
-  for (var e in monthlyTrend) {
-    double value =
-        double.tryParse(e["spend"].toString()) ?? 0;
-
-    if (value > maxValue) {
-      maxValue = value;
-    }
+    );
   }
 
-  double spendHeight = (spend / maxValue) * 140;
-  double volumeHeight = (volume / maxValue) * 140;
+  Widget buildBar(double spend, double volume, String month) {
+    double maxValue = 1;
+
+    for (var e in monthlyTrend) {
+      double value = double.tryParse(e["spend"].toString()) ?? 0;
+
+      if (value > maxValue) {
+        maxValue = value;
+      }
+    }
+
+    double spendHeight = (spend / maxValue) * 140;
+    double volumeHeight = (volume / maxValue) * 140;
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
 
@@ -1432,114 +2044,115 @@ class PurchaseStatCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
 
-    child: Container(
-  padding: const EdgeInsets.all(14), // reduced padding
-  decoration: BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(12),
-    border: Border.all(color: const Color(0xffE5E7EB)),
-    boxShadow: [
-      BoxShadow(
-        // ignore: deprecated_member_use
-        color: Colors.black.withOpacity(0.02),
-        blurRadius: 10,
-        offset: const Offset(0, 4),
-      ),
-    ],
-  ),
+      child: Container(
+        padding: const EdgeInsets.all(14), // reduced padding
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xffE5E7EB)),
+          boxShadow: [
+            BoxShadow(
+              // ignore: deprecated_member_use
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
 
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    mainAxisSize: MainAxisSize.min,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
 
-    children: [
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 12, // reduced
-                height: 1.2,
-                color: Color(0xff4B5563),
-                fontWeight: FontWeight.w600,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12, // reduced
+                      height: 1.2,
+                      color: Color(0xff4B5563),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: iconBg,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: iconColor,
+                    size: 16, // reduced
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
+            Flexible(
+              child: Text(
+                amount,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 20, // reduced
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                ),
               ),
             ),
-          ),
 
-          const SizedBox(width: 8),
+            const SizedBox(height: 6),
 
-          Container(
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (growth != "-")
+                  Icon(
+                    growth.contains("-")
+                        ? Icons.trending_down
+                        : Icons.trending_up,
+                    size: 14, // reduced
+                    color: growthColor,
+                  ),
+
+                if (growth != "-") const SizedBox(width: 3),
+
+                Expanded(
+                  child: Text(
+                    growth == "-"
+                        ? "- 0.0% vs last period"
+                        : "$growth vs last period",
+
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+
+                    style: TextStyle(
+                      color: growth == "-"
+                          ? const Color(0xff9CA3AF)
+                          : growthColor,
+                      fontSize: 11, // reduced
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            child: Icon(
-              icon,
-              color: iconColor,
-              size: 16, // reduced
-            ),
-          ),
-        ],
-      ),
-
-      const SizedBox(height: 10),
-
-      Flexible(
-        child: Text(
-          amount,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 20, // reduced
-            fontWeight: FontWeight.w800,
-            color: Colors.black87,
-          ),
+          ],
         ),
       ),
-
-      const SizedBox(height: 6),
-
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          if (growth != "-")
-            Icon(
-              growth.contains("-")
-                  ? Icons.trending_down
-                  : Icons.trending_up,
-              size: 14, // reduced
-              color: growthColor,
-            ),
-
-          if (growth != "-") const SizedBox(width: 3),
-
-          Expanded(
-            child: Text(
-              growth == "-"
-                  ? "- 0.0% vs last period"
-                  : "$growth vs last period",
-
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-
-              style: TextStyle(
-                color: growth == "-"
-                    ? const Color(0xff9CA3AF)
-                    : growthColor,
-                fontSize: 11, // reduced
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    ],
-  ),
-), );
+    );
   }
 }

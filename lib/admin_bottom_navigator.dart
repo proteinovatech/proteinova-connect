@@ -9,6 +9,7 @@ import 'package:proteinova_connect/features/admin/credit_ledger/presentation/cre
 import 'package:proteinova_connect/features/admin/dailyclosing/screen/dailyclosing.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bloc.dart';
 import 'package:proteinova_connect/features/admin/expense/data/repository/expense_repository.dart';
+import 'package:proteinova_connect/features/admin/expense/screens/admin_addexpence_screen.dart';
 import 'package:proteinova_connect/features/admin/inventory/presentation/admin_inventory.dart';
 import 'package:proteinova_connect/features/admin/item/presentation/item.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_receive_bloc.dart';
@@ -148,7 +149,7 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
   final List<Widget> pages = [
     AdminDashboard(),
     AddPriceScreen(),
-    AdminInventory(role: 'admin',),
+    AdminInventory(role: 'admin'),
     ApprovalsQueueScreen(),
   ];
   @override
@@ -290,17 +291,14 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                       //   "Inventory",
                       //   AdminInventory(role: "admin"),
                       // ),
-                    
-                  _menuTile(
-  Icons.inventory_2_outlined,
-  "Items",
-  Items(), 
-  ),
-   _menuTile(
-  Icons.account_balance_wallet_outlined,
-  "Credit Ledger",
-  CreditLedgerScreen(), 
-  ) ] ),
+                      _menuTile(Icons.inventory_2_outlined, "Items", Items()),
+                      _menuTile(
+                        Icons.account_balance_wallet_outlined,
+                        "Credit Ledger",
+                        CreditLedgerScreen(),
+                      ),
+                    ],
+                  ),
 
                   _expansionSection(
                     icon: Icons.warehouse_outlined,
@@ -326,12 +324,12 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                           child: const PurchaseExpenseScreen(),
                         ),
                       ),
-                       _menuTile(
+                      _menuTile(
                         Icons.local_shipping_outlined,
                         "Sales",
-                      DistributionPage(),
+                        DistributionPage(),
                       ),
-                       _menuTile(
+                      _menuTile(
                         Icons.add_circle_outline,
                         "Create New Sales",
                         DispatchPlanningPage(),
@@ -350,6 +348,11 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                                 ..add(FetchTrayReceiveNotes()),
                           child: const ReceiveTraysScreen(),
                         ),
+                      ),
+                      _menuTile(
+                        Icons.add,
+                        "Add Expense",
+                        AdminAddExpenseScreen(),
                       ),
                       // _menuTile(
                       //   Icons.account_balance_wallet_outlined,
@@ -374,12 +377,12 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                         "Offers & Prices",
                         OfferPrice(),
                       ),
-                     _menuTile(
+                      _menuTile(
                         Icons.inventory_2_outlined,
                         "Customer Trays",
                         const AdminCustomerTrays(),
                       ),
-                       _menuTile(
+                      _menuTile(
                         Icons.error_outline_rounded,
                         "Damage Entry",
                         const AdminDamageEntryPage(),
@@ -407,14 +410,12 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                           child: const Purchase(),
                         ),
                       ),
-                    
                     ],
                   ),
-                _expansionSection(
+                  _expansionSection(
                     icon: Icons.groups_outlined,
                     title: "SUPPLIERS",
                     children: [
-                     
                       _menuTile(
                         Icons.groups_outlined,
                         "Supplier",
@@ -425,16 +426,14 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                           child: const AdminSuppliersScreen(),
                         ),
                       ),
-                       _menuTile(
+                      _menuTile(
                         Icons.add_circle_outline,
                         "Add Supplier",
-                         const  AddSuppliers()
+                        const AddSuppliers(),
                       ),
-
                     ],
                   ),
 
-      
                   // ─── BRANCH SECTION ──────────────────────────────────
                   _expansionSection(
                     icon: Icons.storefront_outlined,
@@ -489,61 +488,59 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
                         "Purchase Report",
                         PurchaseReportScreen(),
                       ),
-                       _menuTile(
+                      _menuTile(
                         Icons.account_balance_wallet_outlined,
                         "Expense Report",
                         ExpenseReportScreen(),
                       ),
-                       _menuTile(
+                      _menuTile(
                         Icons.storefront_outlined,
                         "Branch Sales Report",
                         SalesReportScreen(),
                       ),
-                        _menuTile(
+                      _menuTile(
                         Icons.inventory_2_outlined,
                         "Warehouse Report",
                         WarehouseReportScreen(),
                       ),
                     ],
                   ),
-                    _expansionSection(
+                  _expansionSection(
                     icon: Icons.settings_outlined,
                     title: "SETTINGS",
                     children: [
                       _menuTile(
                         Icons.warehouse_outlined,
                         "Company Details",
-                        CompanyDetailsScreen (),
+                        CompanyDetailsScreen(),
                       ),
                       _menuTile(
                         Icons.person_outline,
                         "User Details",
-                         BlocProvider(
-      create: (_) => ProfileBloc(
-        SettingsService(),
-      )..add(LoadProfileEvent()),
-      child: const ProfileScreen(),
-    ),
+                        BlocProvider(
+                          create: (_) =>
+                              ProfileBloc(SettingsService())
+                                ..add(LoadProfileEvent()),
+                          child: const ProfileScreen(),
+                        ),
                       ),
-                       _menuTile(
+                      _menuTile(
                         Icons.settings_outlined,
                         "Branch Settings",
-                       BranchSettingsScreen(),
+                        BranchSettingsScreen(),
                       ),
-                       _menuTile(
+                      _menuTile(
                         Icons.group_outlined,
                         "Staff Management",
-                       BlocProvider(
-         create: (_) => UserBloc(
-          SettingsService())..add(FetchUsersEvent()),
-             child: const StaffManagementScreen(),
-         )
+                        BlocProvider(
+                          create: (_) =>
+                              UserBloc(SettingsService())
+                                ..add(FetchUsersEvent()),
+                          child: const StaffManagementScreen(),
+                        ),
                       ),
-                       
                     ],
                   ),
-
-       
 
                   const SizedBox(height: 20),
                   const Divider(),

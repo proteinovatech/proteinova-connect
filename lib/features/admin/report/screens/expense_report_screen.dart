@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
@@ -32,6 +33,10 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
   List<dynamic> expenseCategories = [];
 
   List<dynamic> expenseLogs = [];
+
+  List<dynamic> rawExpenses = [];
+
+  List<dynamic> approvalsList = [];
 
   String expenseCategory = "All Categories";
   String branch = "All Locations";
@@ -99,6 +104,8 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
         expenseStats = data["stats"] ?? [];
         expenseCategories = data["categories"] ?? [];
         expenseLogs = data["recentExpenses"] ?? [];
+        rawExpenses = data["raw"] ?? [];
+        approvalsList = data["approvals"] ?? [];
         isLoading = false;
         dailyTrend = List<Map<String, dynamic>>.from(data["dailyTrend"] ?? []);
         print("expenseCategories: $expenseCategories");
@@ -113,6 +120,91 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
     }
   }
 
+  void openDetailsModal(String title, List<Map<String, dynamic>> data) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              const Text(
+                "Detailed expense data for your selection",
+                style: TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: data.isEmpty
+                ? const Text("No details available")
+                : ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: data.length,
+                    itemBuilder: (context, index) {
+                      final item = data[index];
+                      return Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: const BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: Color(0xffe2e8f0)),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item['label'].toString(),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    item['sub'].toString(),
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: Text(
+                                item['value'].toString(),
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> loadCategories() async {
     final data = await reportService.getCategories();
 
@@ -121,70 +213,372 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
     });
   }
 
-  Future<void> exportPdf() async {
+  final NumberFormat indianFormat = NumberFormat.decimalPattern('en_IN');
+
+  Future<pw.Document> _buildPdfDocument() async {
     final pdf = pw.Document();
+
+    final dateRangeStr = (fromDate != "dd-mm-yyyy" || toDate != "dd-mm-yyyy")
+        ? "$fromDate to $toDate"
+        : "All Time";
 
     pdf.addPage(
       pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(32),
+        header: (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      "PROTEINOVA",
+                      style: pw.TextStyle(
+                        fontSize: 20,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.blue900,
+                      ),
+                    ),
+                    pw.Text(
+                      "Expense Report",
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.grey800,
+                      ),
+                    ),
+                  ],
+                ),
+                pw.Container(
+                  padding: const pw.EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: pw.BoxDecoration(
+                    color: PdfColors.amber100,
+                    borderRadius: pw.BorderRadius.circular(6),
+                  ),
+                  child: pw.Text(
+                    "ADMIN REPORT",
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.amber900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 8),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(
+                  "Location: $branch  |  Category: $expenseCategory  |  Period: $dateRangeStr",
+                  style: const pw.TextStyle(
+                    fontSize: 9,
+                    color: PdfColors.grey700,
+                  ),
+                ),
+                pw.Text(
+                  "Generated: ${DateFormat('dd/MM/yyyy, hh:mm a').format(DateTime.now())}",
+                  style: const pw.TextStyle(
+                    fontSize: 9,
+                    color: PdfColors.grey700,
+                  ),
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 6),
+            pw.Divider(color: PdfColors.blue800, thickness: 1.5),
+            pw.SizedBox(height: 12),
+          ],
+        ),
+        footer: (context) => pw.Column(
+          children: [
+            pw.Divider(color: PdfColors.grey300, thickness: 0.5),
+            pw.SizedBox(height: 4),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(
+                  "ProteiNova System  -  Confidential",
+                  style: const pw.TextStyle(
+                    fontSize: 8,
+                    color: PdfColors.grey600,
+                  ),
+                ),
+                pw.Text(
+                  "Page ${context.pageNumber} of ${context.pagesCount}",
+                  style: const pw.TextStyle(
+                    fontSize: 8,
+                    color: PdfColors.grey600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         build: (context) => [
-          pw.Text("Expense Report", style: pw.TextStyle(fontSize: 24)),
-
-          pw.SizedBox(height: 20),
-
-          pw.TableHelper.fromTextArray(
-            headers: ["Date", "Reference", "Amount", "Status"],
-
-            data: expenseLogs.map((e) {
-              return [
-                e["date"].toString(),
-
-                e["reference"].toString(),
-
-                e["amount"].toString(),
-
-                e["status"].toString(),
-              ];
-            }).toList(),
+          // ── Expense Summary Stats ──
+          pw.Text(
+            "Expense Summary",
+            style: pw.TextStyle(
+              fontSize: 14,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.grey900,
+            ),
           ),
+          pw.SizedBox(height: 8),
+          pw.Table(
+            border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+            children: [
+              for (int i = 0; i < expenseStats.length; i += 3)
+                pw.TableRow(
+                  decoration: pw.BoxDecoration(
+                    color: i == 0 ? PdfColors.blue50 : PdfColors.grey50,
+                  ),
+                  children: [
+                    for (int j = i; j < i + 3; j++)
+                      j < expenseStats.length
+                          ? _pdfStatCell(
+                              expenseStats[j]['title']
+                                      ?.toString()
+                                      .toUpperCase() ??
+                                  '',
+                              expenseStats[j]['title'] == 'Pending Approvals'
+                                  ? expenseStats[j]['amount']?.toString() ?? '0'
+                                  : 'Rs. ${indianFormat.format(double.tryParse(expenseStats[j]['amount']?.toString() ?? '0') ?? 0)}',
+                            )
+                          : _pdfStatCell('', ''),
+                  ],
+                ),
+            ],
+          ),
+          pw.SizedBox(height: 18),
+
+          // ── Expenses by Category ──
+          if (expenseCategories.isNotEmpty) ...[
+            pw.Text(
+              "Expenses by Category",
+              style: pw.TextStyle(
+                fontSize: 13,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.grey900,
+              ),
+            ),
+            pw.SizedBox(height: 6),
+            pw.TableHelper.fromTextArray(
+              border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+              headerStyle: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.white,
+                fontSize: 9,
+              ),
+              headerDecoration: const pw.BoxDecoration(
+                color: PdfColors.blue800,
+              ),
+              cellStyle: const pw.TextStyle(fontSize: 9),
+              cellPadding: const pw.EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 5,
+              ),
+              columnWidths: {
+                0: const pw.FlexColumnWidth(1),
+                1: const pw.FlexColumnWidth(4),
+                2: const pw.FlexColumnWidth(3),
+                3: const pw.FlexColumnWidth(2),
+              },
+              headers: ["#", "Category", "Amount (Rs.)", "Share (%)"],
+              data: expenseCategories.asMap().entries.map((entry) {
+                final idx = entry.key + 1;
+                final c = entry.value;
+                final amount =
+                    double.tryParse(c['amount']?.toString() ?? '0') ?? 0;
+                final progress =
+                    double.tryParse(c['progress']?.toString() ?? '0') ?? 0;
+                return [
+                  "$idx",
+                  c['name']?.toString() ?? '',
+                  "Rs. ${indianFormat.format(amount)}",
+                  "${(progress * 100).toStringAsFixed(1)}%",
+                ];
+              }).toList(),
+            ),
+            pw.SizedBox(height: 18),
+          ],
+
+          // ── Daily Expense Trend ──
+          if (dailyTrend.isNotEmpty) ...[
+            pw.Text(
+              "Daily Expense Trend",
+              style: pw.TextStyle(
+                fontSize: 13,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.grey900,
+              ),
+            ),
+            pw.SizedBox(height: 6),
+            pw.TableHelper.fromTextArray(
+              border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+              headerStyle: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.white,
+                fontSize: 9,
+              ),
+              headerDecoration: const pw.BoxDecoration(
+                color: PdfColors.indigo800,
+              ),
+              cellStyle: const pw.TextStyle(fontSize: 9),
+              cellPadding: const pw.EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 5,
+              ),
+              headers: ["Day", "Amount (Rs.)"],
+              data: dailyTrend.map((item) {
+                final amount =
+                    double.tryParse(item['amount']?.toString() ?? '0') ?? 0;
+                return [
+                  item['day']?.toString() ?? '',
+                  "Rs. ${indianFormat.format(amount)}",
+                ];
+              }).toList(),
+            ),
+            pw.SizedBox(height: 18),
+          ],
+
+          // ── Recent Expenses Log ──
+          if (expenseLogs.isNotEmpty) ...[
+            pw.Text(
+              "Recent Expenses Log",
+              style: pw.TextStyle(
+                fontSize: 13,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.grey900,
+              ),
+            ),
+            pw.SizedBox(height: 6),
+            pw.TableHelper.fromTextArray(
+              border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+              headerStyle: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.white,
+                fontSize: 8,
+              ),
+              headerDecoration: const pw.BoxDecoration(
+                color: PdfColors.grey700,
+              ),
+              cellStyle: const pw.TextStyle(fontSize: 8),
+              cellPadding: const pw.EdgeInsets.symmetric(
+                horizontal: 5,
+                vertical: 4,
+              ),
+              columnWidths: {
+                0: const pw.FlexColumnWidth(2),
+                1: const pw.FlexColumnWidth(2),
+                2: const pw.FlexColumnWidth(2),
+                3: const pw.FlexColumnWidth(3),
+                4: const pw.FlexColumnWidth(2),
+                5: const pw.FlexColumnWidth(2),
+              },
+              headers: [
+                "Date",
+                "Source",
+                "Category",
+                "Location / Branch",
+                "Amount (Rs.)",
+                "Status",
+              ],
+              data: expenseLogs.map((e) {
+                String dateStr = e['date']?.toString() ?? '';
+                try {
+                  dateStr = DateFormat(
+                    'd/M/yyyy',
+                  ).format(DateTime.parse(dateStr));
+                } catch (_) {}
+                return [
+                  dateStr,
+                  e['source']?.toString() ??
+                      e['reference']?.toString() ??
+                      'Branch',
+                  e['category']?.toString() ?? '',
+                  e['location']?.toString() ?? e['branch']?.toString() ?? '',
+                  "Rs. ${e['amount'] ?? 0}",
+                  e['status']?.toString() ?? 'Paid',
+                ];
+              }).toList(),
+            ),
+          ],
         ],
       ),
     );
 
-    final dir = await getApplicationDocumentsDirectory();
+    return pdf;
+  }
 
-    final file = File("${dir.path}/expense_report.pdf");
+  pw.Widget _pdfStatCell(String title, String value) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(10),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            title,
+            style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
+          ),
+          pw.SizedBox(height: 4),
+          pw.Text(
+            value,
+            style: pw.TextStyle(
+              fontSize: 13,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.black,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-    await file.writeAsBytes(await pdf.save());
+  Future<void> exportPdf() async {
+    try {
+      final pdf = await _buildPdfDocument();
+      final bytes = await pdf.save();
+      final fileName =
+          "expense_report_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.pdf";
 
-    if (!mounted) return;
+      // Cache locally
+      try {
+        final dir = await getApplicationDocumentsDirectory();
+        final file = File("${dir.path}/$fileName");
+        await file.writeAsBytes(bytes);
+      } catch (_) {}
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("PDF Saved : ${file.path}")));
+      // Native share/save dialog
+      await Printing.sharePdf(bytes: bytes, filename: fileName);
+    } catch (e) {
+      debugPrint("PDF Export Error: $e");
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("PDF Export Error: $e"),
+          backgroundColor: const Color(0xffDC2626),
+        ),
+      );
+    }
   }
 
   Future<void> printPdf() async {
-    final pdf = pw.Document();
-
-    pdf.addPage(
-      pw.Page(
-        build: (context) {
-          return pw.Column(
-            children: [
-              pw.Text("Expense Report", style: pw.TextStyle(fontSize: 24)),
-
-              pw.SizedBox(height: 20),
-
-              pw.Text(
-                "Total Expenses : ₹ ${expenseData?['totalExpenses'] ?? 0}",
-              ),
-            ],
-          );
-        },
-      ),
-    );
-
-    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+    try {
+      final pdf = await _buildPdfDocument();
+      await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+    } catch (e) {
+      debugPrint("Print Error: $e");
+    }
   }
 
   @override
@@ -456,32 +850,22 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
                           const SizedBox(height: 24),
 
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-
                             children: [
-                              InkWell(
-                                onTap: exportPdf,
-
+                              Expanded(
                                 child: buildActionButton(
                                   title: "Export PDF",
-
-                                  icon: Icons.picture_as_pdf,
-
+                                  icon: Icons.picture_as_pdf_outlined,
                                   bgColor: Colors.white,
+                                  onTap: exportPdf,
                                 ),
                               ),
-
                               const SizedBox(width: 14),
-
-                              InkWell(
-                                onTap: printPdf,
-
+                              Expanded(
                                 child: buildActionButton(
                                   title: "Print",
-
                                   icon: Icons.print,
-
                                   bgColor: const Color(0xffFACC15),
+                                  onTap: printPdf,
                                 ),
                               ),
                             ],
@@ -561,6 +945,109 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
                                       e["growth"].toString() != "-"
                                   ? Colors.red
                                   : Colors.green,
+                              onTap: () {
+                                String title = e["title"].toString();
+                                List<Map<String, dynamic>> modalData = [];
+
+                                if (title == "Total Expenses") {
+                                  // aggregate by category
+                                  Set<String> categories = rawExpenses
+                                      .map((ex) => ex['category'].toString())
+                                      .toSet();
+                                  for (String cat in categories) {
+                                    double total = rawExpenses
+                                        .where((ex) => ex['category'] == cat)
+                                        .fold(
+                                          0.0,
+                                          (sum, ex) =>
+                                              sum +
+                                              (double.tryParse(
+                                                    ex['amount'].toString(),
+                                                  ) ??
+                                                  0.0),
+                                        );
+                                    modalData.add({
+                                      "label": cat,
+                                      "value": indianCurrency.format(total),
+                                      "sub": "Total Amount",
+                                    });
+                                  }
+                                } else if (title == "Logistics & Transport") {
+                                  var logExp = rawExpenses.where(
+                                    (ex) =>
+                                        (ex['category']
+                                                ?.toString()
+                                                .toLowerCase()
+                                                .contains('transport') ??
+                                            false) ||
+                                        (ex['category']
+                                                ?.toString()
+                                                .toLowerCase()
+                                                .contains('logistics') ??
+                                            false),
+                                  );
+                                  modalData = logExp
+                                      .map(
+                                        (ex) => {
+                                          "label":
+                                              ex['location']?.toString() ??
+                                              'Unknown',
+                                          "value": indianCurrency.format(
+                                            double.tryParse(
+                                                  ex['amount'].toString(),
+                                                ) ??
+                                                0.0,
+                                          ),
+                                          "sub": ex['date']?.toString() ?? '',
+                                        },
+                                      )
+                                      .toList();
+                                } else if (title == "Warehouse Ops") {
+                                  var wareExp = rawExpenses.where(
+                                    (ex) => ex['source'] == 'Purchase',
+                                  );
+                                  modalData = wareExp
+                                      .map(
+                                        (ex) => {
+                                          "label":
+                                              ex['category']?.toString() ?? '',
+                                          "value": indianCurrency.format(
+                                            double.tryParse(
+                                                  ex['amount'].toString(),
+                                                ) ??
+                                                0.0,
+                                          ),
+                                          "sub":
+                                              ex['location']?.toString() ?? '',
+                                        },
+                                      )
+                                      .toList();
+                                } else if (title == "Pending Approvals") {
+                                  modalData = approvalsList
+                                      .map(
+                                        (app) => {
+                                          "label":
+                                              "${app['request_type'] ?? 'Bulk Sale'} (${app['payload']?['customer_name'] ?? app['payload']?['branch_name'] ?? 'N/A'})",
+                                          "value":
+                                              app['status']?.toString() ?? '',
+                                          "sub":
+                                              "Requested: ${app['payload']?['total_eggs'] ?? app['payload']?['total_eggs_sold'] ?? 0} Eggs",
+                                        },
+                                      )
+                                      .toList();
+                                }
+
+                                openDetailsModal(
+                                  title == "Total Expenses"
+                                      ? "Expenses by Category"
+                                      : title == "Logistics & Transport"
+                                      ? "Logistics Breakdown"
+                                      : title == "Warehouse Ops"
+                                      ? "Warehouse Operations"
+                                      : "Pending Approvals Queue",
+                                  modalData,
+                                );
+                              },
                             );
                           }).toList(),
                         );
@@ -1111,29 +1598,29 @@ class _ExpenseReportScreenState extends State<ExpenseReportScreen> {
     required String title,
     required IconData icon,
     required Color bgColor,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      height: 56,
-      width: 135,
-
-      decoration: BoxDecoration(
-        color: bgColor,
-
-        borderRadius: BorderRadius.circular(14),
-
-        border: Border.all(color: const Color(0xffE5E7EB)),
-      ),
-
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-
-        children: [
-          Icon(icon),
-
-          const SizedBox(width: 8),
-
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-        ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 52,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xffE5E7EB)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1274,6 +1761,7 @@ class ExpenseStatCard extends StatelessWidget {
   final Color iconColor;
   final Color iconBg;
   final Color growthColor;
+  final VoidCallback? onTap;
 
   const ExpenseStatCard({
     super.key,
@@ -1284,122 +1772,127 @@ class ExpenseStatCard extends StatelessWidget {
     required this.iconColor,
     required this.iconBg,
     required this.growthColor,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14), // reduced padding
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xffE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            // ignore: deprecated_member_use
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-
-        children: [
-          /// TOP SECTION
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12, // reduced
-                    height: 1.2,
-                    color: Color(0xff4B5563),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 6),
-
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: iconBg,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: 16, // reduced
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 10),
-
-          /// AMOUNT
-          Flexible(
-            child: Text(
-              amount,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 20, // reduced
-                fontWeight: FontWeight.w800,
-                color: Colors.black87,
-              ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(14), // reduced padding
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xffE5E7EB)),
+          boxShadow: [
+            BoxShadow(
+              // ignore: deprecated_member_use
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-          ),
+          ],
+        ),
 
-          const SizedBox(height: 6),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
 
-          /// GROWTH
-          Flexible(
-            child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 3,
-              runSpacing: 2,
+          children: [
+            /// TOP SECTION
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (growth != "-")
-                  Icon(
-                    growth.contains("-")
-                        ? Icons.trending_down
-                        : Icons.trending_up,
-                    size: 14, // reduced
-                    color: growthColor,
-                  ),
-
-                Text(
-                  growth == "-" ? "No change" : growth,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: growth == "-"
-                        ? const Color(0xff9CA3AF)
-                        : growthColor,
-                    fontSize: 11, // reduced
-                    fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12, // reduced
+                      height: 1.2,
+                      color: Color(0xff4B5563),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
 
-                if (growth != "-")
-                  const Text(
-                    "vs last period",
-                    style: TextStyle(color: Color(0xff9CA3AF), fontSize: 11),
+                const SizedBox(width: 6),
+
+                Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: iconBg,
+                    borderRadius: BorderRadius.circular(8),
                   ),
+                  child: Icon(
+                    icon,
+                    color: iconColor,
+                    size: 16, // reduced
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
+
+            const SizedBox(height: 10),
+
+            /// AMOUNT
+            Flexible(
+              child: Text(
+                amount,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 20, // reduced
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            /// GROWTH
+            Flexible(
+              child: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 3,
+                runSpacing: 2,
+                children: [
+                  if (growth != "-")
+                    Icon(
+                      growth.contains("-")
+                          ? Icons.trending_down
+                          : Icons.trending_up,
+                      size: 14, // reduced
+                      color: growthColor,
+                    ),
+
+                  Text(
+                    growth == "-" ? "No change" : growth,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: growth == "-"
+                          ? const Color(0xff9CA3AF)
+                          : growthColor,
+                      fontSize: 11, // reduced
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+
+                  if (growth != "-")
+                    const Text(
+                      "vs last period",
+                      style: TextStyle(color: Color(0xff9CA3AF), fontSize: 11),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
