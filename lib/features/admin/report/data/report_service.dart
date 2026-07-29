@@ -681,6 +681,8 @@ class ReportService {
         "dispatchVolume": volumeChart,
 
         "destinations": destinations,
+        "availableStock": availableStock,
+        "dispatches": list,
 
         "recentDispatches": list.map((e) {
           return {

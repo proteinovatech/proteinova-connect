@@ -416,11 +416,16 @@ class _WarehouseReportScreenState extends State<WarehouseReportScreen> {
                               iconColor: iconColor,
                               // ignore: deprecated_member_use
                               iconBg: iconColor.withOpacity(0.1),
-                              growthColor:
-                                  e["growth"].toString().contains("-") &&
-                                      !e["growth"].toString().contains("- ")
-                                  ? Colors.red
-                                  : Colors.green,
+                              growthColor: e["growthColor"] != null
+                                  ? (e["growthColor"] == "red"
+                                        ? Colors.red
+                                        : Colors.green)
+                                  : (e["growth"].toString().contains("-") &&
+                                            !e["growth"].toString().contains(
+                                              "- ",
+                                            )
+                                        ? Colors.red
+                                        : Colors.green),
                             );
                           }).toList(),
                         );
@@ -932,7 +937,8 @@ class _WarehouseReportScreenState extends State<WarehouseReportScreen> {
       debugPrint("dispatches = ${data["dispatches"]}");
       debugPrint("recentDispatches = ${data["recentDispatches"]}");
 
-      final List dispatches = data["recentDispatches"] ?? [];
+      final List dispatches =
+          data["dispatches"] ?? data["recentDispatches"] ?? [];
       int parseInt(dynamic value) {
         if (value == null) return 0;
         return int.tryParse(value.toString().replaceAll(',', '')) ?? 0;
@@ -957,8 +963,71 @@ class _WarehouseReportScreenState extends State<WarehouseReportScreen> {
 
       print("Dispatch By Branch: $dispatchByBranch");
 
+      final availableStock = parseInt(data["availableStock"] ?? 0);
+
+      int totalDispatched = 0;
+      int deliveredCount = 0;
+      Set<String> activeDriversSet = {};
+
+      for (var d in dispatches) {
+        totalDispatched += parseInt(d["total_eggs"] ?? d["quantity"]);
+        String status = d["status"]?.toString().toUpperCase() ?? "";
+        if (status == "DELIVERED") {
+          deliveredCount++;
+        }
+        if (status == "IN_TRANSIT" || status == "LOADING") {
+          if (d["driver_name"] != null &&
+              d["driver_name"].toString().isNotEmpty) {
+            activeDriversSet.add(d["driver_name"].toString());
+          }
+        }
+      }
+
+      String onTimeRate = dispatches.isNotEmpty
+          ? ((deliveredCount / dispatches.length) * 100).toStringAsFixed(1)
+          : "100.0";
+
+      int activeDrivers = activeDriversSet.length;
+
       setState(() {
-        warehouseStats = List<Map<String, dynamic>>.from(data["stats"]);
+        warehouseStats = [
+          {
+            "title": "Available Stock",
+            "amount": NumberFormat.decimalPattern(
+              'en_IN',
+            ).format(availableStock),
+            "growth": "Active Inventory",
+            "icon": "warehouse",
+            "color": "blue",
+            "growthColor": "green",
+          },
+          {
+            "title": "Total Dispatched (Units)",
+            "amount": NumberFormat.decimalPattern(
+              'en_IN',
+            ).format(totalDispatched),
+            "growth": "Dispatched in selection",
+            "icon": "truck",
+            "color": "green",
+            "growthColor": "green",
+          },
+          {
+            "title": "On-Time Delivery",
+            "amount": "$onTimeRate%",
+            "growth": "Based on delivered status",
+            "icon": "check",
+            "color": "orange",
+            "growthColor": "green",
+          },
+          {
+            "title": "Active Drivers",
+            "amount": activeDrivers.toString(),
+            "growth": "Currently active drivers",
+            "icon": "clock",
+            "color": "grey",
+            "growthColor": "red",
+          },
+        ];
 
         dispatchVolume = List<Map<String, dynamic>>.from(
           data["dispatchVolume"] ?? [],
@@ -1514,7 +1583,7 @@ class WarehouseStatCard extends StatelessWidget {
               children: [
                 if (growth != "-")
                   Icon(
-                    growth.contains("-") && !growth.contains("- ")
+                    growthColor == Colors.red
                         ? Icons.trending_down
                         : Icons.trending_up,
                     size: 14,
@@ -1530,11 +1599,6 @@ class WarehouseStatCard extends StatelessWidget {
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
-                ),
-
-                const Text(
-                  "vs last period",
-                  style: TextStyle(color: Color(0xff9CA3AF), fontSize: 11),
                 ),
               ],
             ),
