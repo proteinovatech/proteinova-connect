@@ -341,6 +341,7 @@ class ReportService {
   Future<Map<String, dynamic>> getPurchaseReport({
     String? startDate,
     String? endDate,
+    bool useCompanyName = false,
   }) async {
     final response = await dio.get(
       '/api/reports/purchase',
@@ -353,17 +354,26 @@ class ReportService {
 
     double totalSpend = 0;
     int totalTrays = 0;
-    Map<String, double> supplierMap = {};
+   Map<String, double> supplierMap = {};
 
-    for (var item in list) {
-      double amount =
-          double.tryParse(item['total_amount']?.toString() ?? '0') ?? 0;
-      int trays = int.tryParse(item['total_trays']?.toString() ?? '0') ?? 0;
-      totalSpend += amount;
-      totalTrays += trays;
-      String sup = item['supplier_name']?.toString() ?? 'Unknown';
-      supplierMap[sup] = (supplierMap[sup] ?? 0) + amount;
-    }
+for (var item in list) {
+  double amount =
+      double.tryParse(item['total_amount']?.toString() ?? '0') ?? 0;
+
+  int trays =
+      int.tryParse(item['total_trays']?.toString() ?? '0') ?? 0;
+
+  totalSpend += amount;
+  totalTrays += trays;
+
+  // Use company name instead of supplier_name
+ final supplier = useCompanyName
+    ? (item["supplier_company_name"] ?? "").toString().trim()
+    : (item["supplier_name"] ?? "").toString().trim();
+
+if (supplier.isEmpty) continue;
+
+supplierMap[supplier] = (supplierMap[supplier] ?? 0) + amount;}
 
     List<Map<String, dynamic>> suppliers = supplierMap.entries
         .map(
@@ -376,7 +386,17 @@ class ReportService {
         .toList();
 
     double avgCost = totalTrays > 0 ? totalSpend / totalTrays : 0;
-    int activeSuppliers = supplierMap.length;
+    final activeSuppliers = list
+    .map((e) {
+      if (useCompanyName) {
+        return (e["supplier_company_name"] ?? "").toString().trim();
+      } else {
+        return (e["supplier_name"] ?? "").toString().trim();
+      }
+    })
+    .where((name) => name.isNotEmpty)
+    .toSet()
+    .length;
 
     Map<String, double> spendByMonth = {};
     Map<String, int> volumeByMonth = {};
@@ -428,7 +448,13 @@ class ReportService {
 }).toList();
 
 final volumeBySupplier = supplierMap.entries.map((e) {
-  final supplierRows = list.where((x) => x["supplier_name"] == e.key);
+  final supplierRows = list.where((x) {
+  final supplier = useCompanyName
+      ? (x["supplier_company_name"] ?? "").toString().trim()
+      : (x["supplier_name"] ?? "").toString().trim();
+
+  return supplier == e.key;
+});
 
   int trays = 0;
 
@@ -442,10 +468,25 @@ final volumeBySupplier = supplierMap.entries.map((e) {
   };
 }).toList();
 
-final supplierList = supplierMap.entries.map((e) {
+
+
+Map<String, int> supplierCountMap = {};
+
+for (final item in list) {
+  final supplier = useCompanyName
+      ? (item["supplier_company_name"] ?? "").toString().trim()
+      : (item["supplier_name"] ?? "").toString().trim();
+
+  if (supplier.isEmpty) continue;
+
+  supplierCountMap[supplier] =
+      (supplierCountMap[supplier] ?? 0) + 1;
+}
+
+final supplierList = supplierCountMap.entries.map((e) {
   return {
     "name": e.key,
-    "value": list.where((x) => x["supplier_name"] == e.key).length,
+    "orders": e.value,
   };
 }).toList();
 

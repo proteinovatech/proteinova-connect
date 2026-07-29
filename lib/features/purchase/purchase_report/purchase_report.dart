@@ -237,7 +237,7 @@ class _PurchaseReportState extends State<PurchaseReport> {
 
                                 Expanded(
                                   child: Text(
-                                    e["supplier_company_name"].toString(),
+                                    e["supplier_name"].toString(),
 
                                     style:AppTextStyles.bodyText12dark
                                   ),
@@ -708,22 +708,40 @@ class _PurchaseReportState extends State<PurchaseReport> {
   };
 }).toList(),
                               );
-                            } else if (e["title"] == "Supplier Count" ||
-                                e["title"] == "Active Suppliers") {
-                              showPurchaseBottomSheet(
-                                title: "Supplier List",
+                           } else if (e["title"] == "Supplier Count" ||
+    e["title"] == "Active Suppliers") {
 
-                                subtitle:
-                                    "Detailed purchase data for your selection",
+  debugPrint("========== SUPPLIER LIST ==========");
+  debugPrint("supplierList:");
+  debugPrint(supplierList.toString());
+
+  debugPrint("monthlySummary:");
+  debugPrint(monthlySummary.toString());
+
+  for (final supplier in supplierList) {
+    final supplierName = supplier["name"].toString();
+
+    final supplierData = monthlySummary.firstWhere(
+      (order) => order["supplier_name"]?.toString() == supplierName,
+      orElse: () => <String, dynamic>{},
+    );
+
+    final totalOrders = monthlySummary.where((order) {
+      return order["supplier_name"]?.toString() == supplierName;
+    }).length;
+
+    debugPrint("------------------------------");
+    debugPrint("Supplier Name: $supplierName");
+    debugPrint("Matched Data: $supplierData");
+    debugPrint("Total Orders: $totalOrders");
+  }
+
+showPurchaseBottomSheet(
+  title: "Supplier List",
+  subtitle: "Detailed purchase data for your selection",
 
 rows: supplierList.map<Map<String, dynamic>>((supplier) {
   final supplierName = supplier["name"].toString();
-
-  // Find the first purchase of this supplier
-  final supplierData = monthlySummary.firstWhere(
-    (order) => order["supplier_name"]?.toString() == supplierName,
-    orElse: () => <String, dynamic>{},
-  );
 
   final totalOrders = monthlySummary.where((order) {
     return order["supplier_name"]?.toString() == supplierName;
@@ -731,13 +749,11 @@ rows: supplierList.map<Map<String, dynamic>>((supplier) {
 
   return {
     "date": "-",
-    "supplier_company_name":
-        supplierData["supplier_company_name"]?.toString() ?? "-",
+    "supplier_name": supplierName, // <-- use this
     "category": "-",
     "value": totalOrders.toString(),
   };
-}).toList(), );
-                            } else if (e["title"] == "Total Orders") {
+}).toList(),);                            } else if (e["title"] == "Total Orders") {
                               showPurchaseBottomSheet(
                                 title: "Total Orders",
 
@@ -1235,11 +1251,14 @@ print("PURCHASE REPORT DATA = $data");
               return {"name": e["name"], "value": e["volume"] ?? 0};
             }).toList();
 
-        supplierList =
-            data["supplierList"] ??
-            suppliers.map((e) {
-              return {"name": e["name"], "value": e["count"] ?? 1};
-            }).toList();
+       supplierList = data["supplierList"] ?? [];
+            debugPrint("========== API SUPPLIER LIST ==========");
+debugPrint(supplierList.toString());
+
+debugPrint("========== MONTHLY SUMMARY ==========");
+for (final item in monthlySummary) {
+  debugPrint(item.toString());
+}
            
         totalOrdersList = data["totalOrders"] ?? [];
          monthlyTrend =

@@ -10,7 +10,9 @@ class PurchaseRepository {
   PurchaseRepository(this.dio, this.cache);
   final PurchaseService purchaseService = PurchaseService();
   Future<List> getPurchases() async {
+    
     try {
+      
       final res = await dio.get('/api/purchase');
       final data = res.data['data'];
 
@@ -25,10 +27,13 @@ Future<Map<String, dynamic>> updateArrival(
   int purchaseId,
   Map<String, dynamic> data,
 ) async {
+  final stopwatch = Stopwatch()..start();
   final response = await dio.put(
     "/api/admin/arrival/$purchaseId",
     data: data,
   );
+  stopwatch.stop();
+print("Update Arrival API: ${stopwatch.elapsedMilliseconds} ms");
 
   return response.data;
 }

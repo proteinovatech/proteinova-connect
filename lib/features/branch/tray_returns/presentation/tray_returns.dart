@@ -222,7 +222,11 @@ class _TrayReturnState extends State<TrayReturn> {
                           icon: Icons.check_circle_outline,
                           iconColor: Colors.indigo,
                           iconBg: const Color(0xffeef2ff),
-                          total: cards.closingTrays + cards.emptyTrays,
+                          total:
+                              cards.emptyPlastic +
+                              cards.emptyPaper +
+                              cards.filledPlastic +
+                              cards.filledPaper,
                           emptyPlastic: cards.emptyPlastic,
                           emptyPaper: cards.emptyPaper,
                           filledPlastic: cards.filledPlastic,
@@ -529,6 +533,13 @@ class _TrayReturnState extends State<TrayReturn> {
     required int filledPlastic,
     required int filledPaper,
   }) {
+    print("========== $title ==========");
+    print("Total: $total");
+    print("Empty Plastic: $emptyPlastic");
+    print("Empty Paper: $emptyPaper");
+    print("Filled Plastic: $filledPlastic");
+    print("Filled Paper: $filledPaper");
+
     return Card(
       color: Colors.white,
       child: Padding(
