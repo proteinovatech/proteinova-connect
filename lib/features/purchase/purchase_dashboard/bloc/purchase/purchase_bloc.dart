@@ -70,24 +70,33 @@ import 'purchase_state.dart';
 on<UpdateArrivalEvent>((event, emit) async {
   try {
     final response = await purchaseRepository.updateArrival(
-  int.parse(event.purchaseId),
-  event.data,
-);
+      int.parse(event.purchaseId),
+      event.data,
+    );
 
-    final message = response['message']; 
+    final message = response["message"];
 
-    final updatedList = await purchaseRepository.getPurchases();
+    // Update the existing list immediately
+    _allPurchases = _allPurchases.map((purchase) {
+      if (purchase["id"].toString() == event.purchaseId) {
+        return {
+          ...purchase,
+          "movement_status": "RECEIVED",
+        };
+      }
+      return purchase;
+    }).toList();
 
     emit(PurchaseLoaded(
       allPurchases: _allPurchases,
-      purchases: updatedList,
-      message: message, 
+      purchases: _allPurchases,
+      message: message,
     ));
-
   } catch (e) {
     emit(PurchaseError("Failed to update arrival"));
   }
 });
+
 on<SearchPurchaseEvent>((event, emit) {
   final query = event.query.toLowerCase().trim();
 

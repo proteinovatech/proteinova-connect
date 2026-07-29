@@ -190,7 +190,8 @@ class ReportService {
     double finalRevenue =
         (summaryData['revenue'] as num?)?.toDouble() ?? calculatedTotalRevenue;
     double finalExpenses =
-        (summaryData['totalExpenses'] as num?)?.toDouble() ?? calculatedTotalExpenses;
+        (summaryData['totalExpenses'] as num?)?.toDouble() ??
+        calculatedTotalExpenses;
     double finalProfit =
         (summaryData['profit'] as num?)?.toDouble() ??
         (calculatedTotalRevenue -
@@ -229,8 +230,10 @@ class ReportService {
 
     final sales = (response.data['sales'] as List<dynamic>?) ?? [];
     final products = (response.data['products'] as List<dynamic>?) ?? [];
-    final totalDamages = int.tryParse(response.data['totalDamages']?.toString() ?? '0') ?? 0;
-    final damageBreakdown = (response.data['damageBreakdown'] as List<dynamic>?) ?? [];
+    final totalDamages =
+        int.tryParse(response.data['totalDamages']?.toString() ?? '0') ?? 0;
+    final damageBreakdown =
+        (response.data['damageBreakdown'] as List<dynamic>?) ?? [];
 
     return {
       "sales": sales,
@@ -371,6 +374,7 @@ class ReportService {
   Future<Map<String, dynamic>> getPurchaseReport({
     String? startDate,
     String? endDate,
+    bool useCompanyName = false,
   }) async {
     final response = await dio.get(
       '/api/reports/purchase',
@@ -388,11 +392,20 @@ class ReportService {
     for (var item in list) {
       double amount =
           double.tryParse(item['total_amount']?.toString() ?? '0') ?? 0;
+
       int trays = int.tryParse(item['total_trays']?.toString() ?? '0') ?? 0;
+
       totalSpend += amount;
       totalTrays += trays;
-      String sup = item['supplier_name']?.toString() ?? 'Unknown';
-      supplierMap[sup] = (supplierMap[sup] ?? 0) + amount;
+
+      // Use company name instead of supplier_name
+      final supplier = useCompanyName
+          ? (item["supplier_company_name"] ?? "").toString().trim()
+          : (item["supplier_name"] ?? "").toString().trim();
+
+      if (supplier.isEmpty) continue;
+
+      supplierMap[supplier] = (supplierMap[supplier] ?? 0) + amount;
     }
 
     List<Map<String, dynamic>> suppliers = supplierMap.entries
@@ -406,7 +419,17 @@ class ReportService {
         .toList();
 
     double avgCost = totalTrays > 0 ? totalSpend / totalTrays : 0;
-    int activeSuppliers = supplierMap.length;
+    final activeSuppliers = list
+        .map((e) {
+          if (useCompanyName) {
+            return (e["supplier_company_name"] ?? "").toString().trim();
+          } else {
+            return (e["supplier_name"] ?? "").toString().trim();
+          }
+        })
+        .where((name) => name.isNotEmpty)
+        .toSet()
+        .length;
 
     Map<String, double> spendByMonth = {};
     Map<String, int> volumeByMonth = {};
@@ -458,7 +481,13 @@ class ReportService {
     }).toList();
 
     final volumeBySupplier = supplierMap.entries.map((e) {
-      final supplierRows = list.where((x) => x["supplier_name"] == e.key);
+      final supplierRows = list.where((x) {
+        final supplier = useCompanyName
+            ? (x["supplier_company_name"] ?? "").toString().trim()
+            : (x["supplier_name"] ?? "").toString().trim();
+
+        return supplier == e.key;
+      });
 
       int trays = 0;
 
@@ -469,11 +498,20 @@ class ReportService {
       return {"name": e.key, "value": trays};
     }).toList();
 
-    final supplierList = supplierMap.entries.map((e) {
-      return {
-        "name": e.key,
-        "value": list.where((x) => x["supplier_name"] == e.key).length,
-      };
+    Map<String, int> supplierCountMap = {};
+
+    for (final item in list) {
+      final supplier = useCompanyName
+          ? (item["supplier_company_name"] ?? "").toString().trim()
+          : (item["supplier_name"] ?? "").toString().trim();
+
+      if (supplier.isEmpty) continue;
+
+      supplierCountMap[supplier] = (supplierCountMap[supplier] ?? 0) + 1;
+    }
+
+    final supplierList = supplierCountMap.entries.map((e) {
+      return {"name": e.key, "orders": e.value};
     }).toList();
 
     final totalOrdersList = list.map((e) {

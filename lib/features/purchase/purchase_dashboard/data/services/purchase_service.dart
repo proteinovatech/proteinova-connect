@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:proteinova_connect/core/network/dio_client.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/data/models/purchase_model.dart';
@@ -7,6 +9,10 @@ class PurchaseService {
 
   Future<void> postPurchase(PurchaseRequest purchase) async {
     try {
+       print("========== PURCHASE REQUEST ==========");
+    print(
+      const JsonEncoder.withIndent("  ").convert(purchase.toJson()),
+    );
       final response = await dio.post(
         "/api/purchase",
         data: purchase.toJson(),
