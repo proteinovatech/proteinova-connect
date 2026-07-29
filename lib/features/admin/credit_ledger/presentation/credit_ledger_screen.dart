@@ -248,9 +248,19 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SizedBox(height: getHeight(context, 13)),
-                            Text(
-                              "Credit Ledger",
-                              style: AppTextStyles.headingText25,
+                            Row(
+                              children: [
+                                 IconButton(
+                                  icon: const Icon(Icons.arrow_back),
+                                  onPressed: () {
+                                  Navigator.pop(context);
+                                  },
+                                  ),
+                                Text(
+                                  "Credit Ledger",
+                                  style: AppTextStyles.headingText25,
+                                ),
+                              ],
                             ),
                             SizedBox(height: getHeight(context, 6)),
                             const Text(
@@ -288,12 +298,22 @@ class _CreditLedgerScreenState extends State<CreditLedgerScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Credit Ledger",
-                            style: TextStyle(
-                              fontSize: getWidth(context, 28),
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Row(
+                            children: [
+                              IconButton(
+                                  icon: const Icon(Icons.arrow_back),
+                                  onPressed: () {
+                                  Navigator.pop(context);
+                                  },
+                                  ),
+                              Text(
+                                "Credit Ledger",
+                                style: TextStyle(
+                                  fontSize: getWidth(context, 28),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                           SizedBox(height: getHeight(context, 6)),
                           const Text(

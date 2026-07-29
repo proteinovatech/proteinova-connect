@@ -6,7 +6,7 @@ import '../model/tray_return_model.dart';
 class TrayReturnRepository {
   Future<TrayReturnModel> fetchTrayReturnData(int branchId, String? date) async {
     final queryParams = {
-      "branch_id": branchId.toString(),
+      if (branchId != 0) "branch_id": branchId.toString(),
       "limit": "50",
       if (date != null && date.isNotEmpty) "date": date,
     };
