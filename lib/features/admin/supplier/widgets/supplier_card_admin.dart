@@ -156,7 +156,11 @@ class SupplierCardAdmin extends StatelessWidget {
             SizedBox(height: getHeight(context, 8)),
             Row(
               children: [
-                const Icon(Icons.assignment_outlined, size: 18, color: Color(0xff9CA3AF)),
+                const Icon(
+                  Icons.assignment_outlined,
+                  size: 18,
+                  color: Color(0xff9CA3AF),
+                ),
                 SizedBox(width: getWidth(context, 8)),
                 Text(
                   "GST: ${supplier.gstNumber}",

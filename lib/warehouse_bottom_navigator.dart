@@ -24,6 +24,11 @@ import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/features/admin/Distribution/presentation/distribution_page.dart';
 import 'package:proteinova_connect/features/admin/expense/screens/admin_expense_screen.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/presentation/receive_trays_screen.dart';
+import 'package:proteinova_connect/features/admin/supplier/screens/admin_suppliers_screen.dart';
+import 'package:proteinova_connect/features/admin/supplier/screens/add_suppliers.dart';
+import 'package:proteinova_connect/features/admin/supplier/bloc/supplier_bloc.dart';
+import 'package:proteinova_connect/features/admin/supplier/data/services/supplier_service.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proteinova_connect/features/admin/presentation/offer_price.dart';
 import 'package:proteinova_connect/features/admin/presentation/Incoming_stock.dart';
 import 'package:proteinova_connect/features/admin/menu/item/presentation/item.dart';
@@ -456,6 +461,49 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
 
                   ///ADMINISTRATION
                   _sectionTitle("ADMINISTRATION"),
+                  Theme(
+                    data: Theme.of(
+                      context,
+                    ).copyWith(dividerColor: Colors.transparent),
+                    child: ExpansionTile(
+                      leading: const Icon(
+                        Icons.people_outline,
+                        size: 18,
+                        color: Colors.black87,
+                      ),
+                      title: const Text(
+                        "SUPPLIERS",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          height: 1,
+                        ),
+                      ),
+                      tilePadding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 0,
+                      ),
+                      childrenPadding: const EdgeInsets.only(left: 12),
+                      minTileHeight: 48,
+                      children: [
+                        _menuTile(
+                          Icons.people_alt_outlined,
+                          "Suppliers",
+                          BlocProvider(
+                            create: (_) => SupplierBloc(SupplierService())
+                              ..add(FetchSuppliersEvent()),
+                            child: const AdminSuppliersScreen(),
+                          ),
+                        ),
+                        _menuTile(
+                          Icons.add_circle_outline,
+                          "Add Supplier",
+                          const AddSuppliers(),
+                        ),
+                      ],
+                    ),
+                  ),
+
                   Theme(
                     data: Theme.of(
                       context,

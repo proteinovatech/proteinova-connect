@@ -9,7 +9,7 @@ class SupplierService {
   Future<List<Supplier>> getSuppliers() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/api/getSupplier'));
-      
+
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseBody = jsonDecode(response.body);
         final List<dynamic> data = responseBody['data'] ?? [];
