@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:proteinova_connect/core/services/notification_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proteinova_connect/features/admin/admin%20Damage%20Entry/presentation/admin_damage_entry.dart';
 import 'package:proteinova_connect/features/admin/admin%20customertrays/presentation/admin_customer_trays.dart';
 import 'package:proteinova_connect/features/admin/expense/bloc/branch_expense_bloc.dart';
 import 'package:proteinova_connect/features/admin/expense/data/repository/expense_repository.dart';
@@ -338,11 +339,11 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
                     "Customer trays",
                     AdminCustomerTrays(),
                   ),
-                  // _menuTile(
-                  //   Icons.broken_image_outlined,
-                  //   "Damage entry",
-                  //   AdminDamageEntryPage(),
-                  // ),
+                  _menuTile(
+                    Icons.broken_image_outlined,
+                    "Damage entry",
+                    AdminDamageEntryPage(),
+                  ),
 
                   // //Purchase
                   // _menuTile(
