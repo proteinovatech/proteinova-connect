@@ -215,8 +215,6 @@ String role = ""; // or "WAREHOUSE"
         ),
       );
 
-      Navigator.pop(context);
-
       context
           .read<PurchaseExpenseBloc>()
           .add(
@@ -690,7 +688,8 @@ String role = ""; // or "WAREHOUSE"
 
   // --- POPUP: VIEW DETAILS ---
   void _showViewPurchasePopup(int purchaseId) async {
-     context.read<PurchaseExpenseBloc>().add(
+     final bloc = context.read<PurchaseExpenseBloc>();
+     bloc.add(
     LoadPurchaseDetail(purchaseId),
   );
     showDialog(
@@ -927,6 +926,7 @@ String role = ""; // or "WAREHOUSE"
 
   // --- FORM MODAL: ADD EXPENSE ---
   void _openAddExpenseModal(PurchaseListItem row, int totalEggs) {
+    final bloc = context.read<PurchaseExpenseBloc>();
     double loadingExp = 0;
     double unloadingExp = 0;
     double transportExp = 0;
@@ -941,9 +941,9 @@ String role = ""; // or "WAREHOUSE"
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) {
+      builder: (modalContext) {
         return StatefulBuilder(
-          builder: (context, setModalState) {
+          builder: (modalContext, setModalState) {
             // Recalculate totals dynamically
             final totalExp = loadingExp + unloadingExp + transportExp;
             final expensePerEgg = totalEggs > 0 ? (totalExp / totalEggs) : 0.0;
@@ -1088,7 +1088,7 @@ String role = ""; // or "WAREHOUSE"
                                     _isSubmitting = true;
                                   });
                                   try {
-                                  context.read<PurchaseExpenseBloc>().add(
+                                  bloc.add(
                                   SaveExpenseEvent(
                                        purchaseId: row.id,
 
@@ -1108,6 +1108,9 @@ String role = ""; // or "WAREHOUSE"
                                     0,
                                    ),
                                   );
+
+                                  // Close the modal bottom sheet
+                                  Navigator.pop(modalContext);
 
                                   } catch (e) {
                                     if (mounted) {

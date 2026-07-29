@@ -169,17 +169,15 @@ class _DamageEntryBodyState extends State<DamageEntryBody> {
               List<DamageLocation> locations = [];
               List<DamageCategory> categories = [];
               List<DamageHistory> history = [];
-              bool isLoadingLocations = false;
+              
               bool isLoadingData = false;
               bool isSubmitting = false;
 
-              if (state is DamageLocationsLoading) {
-                isLoadingLocations = true;
-              } else if (state is DamageLocationsLoaded) {
+               if (state is DamageLocationsLoaded) {
                 locations = state.locations;
               } else if (state is DamageDataLoading) {
                 locations = state.locations;
-                isLoadingData = true;
+                isLoadingData = false;
               } else if (state is DamageDataLoaded) {
                 locations = state.locations;
                 categories = state.categories;
@@ -333,20 +331,7 @@ class _DamageEntryBodyState extends State<DamageEntryBody> {
 
           SizedBox(height: getHeight(context, 12)),
 
-          if (isLoadingLocations)
-            SizedBox(
-              height: getHeight(context, 45),
-              child: Center(
-                child: SizedBox(
-                  height: getWidth(context, 20),
-                  width: getWidth(context, 20),
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                  ),
-                ),
-              ),
-            )
-          else
+          
             Container(
               padding: EdgeInsets.symmetric(
                 horizontal: getWidth(context, 12),
@@ -416,20 +401,7 @@ class _DamageEntryBodyState extends State<DamageEntryBody> {
 
     // Active report form & history
     if (_selectedLocation != null) ...[
-      if (isLoadingData)
-        Padding(
-          padding: EdgeInsets.symmetric(
-            vertical: getHeight(context, 40),
-          ),
-          child: const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                AppColors.amber600,
-              ),
-            ),
-          ),
-        )
-      else ...[
+     
         // Report form Card
         _buildFormCard(
           context,
@@ -444,7 +416,7 @@ class _DamageEntryBodyState extends State<DamageEntryBody> {
         _buildHistoryCard(history),
       ],
     ],
-  ],
+  
 ),
               );
             },

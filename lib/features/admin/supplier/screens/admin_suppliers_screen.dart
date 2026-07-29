@@ -24,18 +24,14 @@ class _SuppliersScreenState extends State<AdminSuppliersScreen> {
   final SupplierService _supplierService = SupplierService();
   List<Supplier> suppliers = [];
 
-List<Supplier> filteredSuppliers = [];
- 
+  List<Supplier> filteredSuppliers = [];
 
   @override
   void initState() {
     super.initState();
-    context.read<SupplierBloc>().add(
-    FetchSuppliersEvent(),
-  );
+    context.read<SupplierBloc>().add(FetchSuppliersEvent());
   }
 
- 
   void searchSupplier(String value) {
     setState(() {
       filteredSuppliers = suppliers.where((supplier) {
@@ -55,9 +51,9 @@ List<Supplier> filteredSuppliers = [];
         return const AddSupplierBottomSheet();
       },
     ).then((_) {
-       context.read<SupplierBloc>().add(
-    FetchSuppliersEvent(),
-  );// Refresh after adding
+      context.read<SupplierBloc>().add(
+        FetchSuppliersEvent(),
+      ); // Refresh after adding
     });
   }
 
@@ -70,9 +66,9 @@ List<Supplier> filteredSuppliers = [];
         return AddSupplierBottomSheet(supplierToEdit: supplier);
       },
     ).then((_) {
-       context.read<SupplierBloc>().add(
-    FetchSuppliersEvent(),
-  ); // Refresh after editing
+      context.read<SupplierBloc>().add(
+        FetchSuppliersEvent(),
+      ); // Refresh after editing
     });
   }
 
@@ -146,229 +142,222 @@ List<Supplier> filteredSuppliers = [];
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<SupplierBloc, SupplierState>(
+      listener: (context, state) {
+        if (state is SupplierError) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
+        }
+      },
 
-    listener: (context, state) {
+      builder: (context, state) {
+        List<dynamic> filteredSuppliers = [];
 
-      if (state is SupplierError) {
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(state.message),
-          ),
-        );
-      }
-    },
-
-    builder: (context, state) {
-
-      List<dynamic> filteredSuppliers = [];
-
-      if (state is SupplierLoaded) {
-        filteredSuppliers = state.filteredSuppliers;
-      }
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: state is SupplierLoading
-            ? const AdminExpenseManagementSkeletonLoader()
-          : RefreshIndicator(
-               onRefresh: () async {
-
-                  context.read<SupplierBloc>().add(
-                    FetchSuppliersEvent(),
-                  );
-                },
-              child: SafeArea(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: getWidth(context, 16),
-                  ),
-                  child: Column(
-                    children: [
-                      SizedBox(height: getHeight(context, 10)),
-
-                      Row(
+        if (state is SupplierLoaded) {
+          filteredSuppliers = state.filteredSuppliers;
+        }
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: state is SupplierLoading
+              ? const AdminExpenseManagementSkeletonLoader()
+              : RefreshIndicator(
+                  onRefresh: () async {
+                    context.read<SupplierBloc>().add(FetchSuppliersEvent());
+                  },
+                  child: SafeArea(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: getWidth(context, 16),
+                      ),
+                      child: Column(
                         children: [
-                          IconButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            icon: const Icon(
-                              Icons.arrow_back,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const Expanded(
-                            child: Text(
-                              "Suppliers",
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xffF4C400),
-                              foregroundColor: Colors.black,
-                            ),
-                            onPressed: addSupplier,
-                            icon: const Icon(Icons.add),
-                            label: const Text("Add Supplier"),
-                          ),
-                        ],
-                      ),
+                          SizedBox(height: getHeight(context, 10)),
 
-                      SizedBox(height: getHeight(context, 14)),
-
-                      const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Manage your vendor relationships and\ntrack supply statuses.",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.black54,
-                            height: 1.5,
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(height: getHeight(context, 20)),
-
-                      // Container(
-                      //   padding: EdgeInsets.symmetric(
-                      //     horizontal: getWidth(context, 12),
-                      //     vertical: getHeight(context, 12),
-                      //   ),
-                      //   decoration: BoxDecoration(
-                      //     color: Colors.white,
-                      //     borderRadius: BorderRadius.circular(20),
-                      //   ),
-                      //   child: Row(
-                      //     children: [
-                      //       Expanded(
-                      //         child: TextField(
-                      //           controller: searchController,
-                      //           onChanged: searchSupplier,
-                      //           decoration: InputDecoration(
-                      //             hintText: "Filter suppliers...",
-                      //             prefixIcon: const Icon(Icons.search),
-                      //             border: OutlineInputBorder(
-                      //               borderRadius: BorderRadius.circular(14),
-                      //             ),
-                      //           ),
-                      //         ),
-                      //       ),
-
-                      //       SizedBox(width: getWidth(context, 10)),
-
-                      //       InkWell(
-                      //         onTap: filterAction,
-                      //         child: Container(
-                      //           padding: EdgeInsets.symmetric(
-                      //             horizontal: getWidth(context, 16),
-                      //             vertical: getHeight(context, 16),
-                      //           ),
-                      //           decoration: BoxDecoration(
-                      //             border: Border.all(
-                      //               color: Colors.grey.shade300,
-                      //             ),
-                      //             borderRadius: BorderRadius.circular(14),
-                      //           ),
-                      //           child: const Icon(Icons.filter_alt_outlined),
-                      //         ),
-                      //       ),
-
-                      //       SizedBox(width: getWidth(context, 10)),
-
-                      //       InkWell(
-                      //         onTap: downloadAction,
-                      //         child: Container(
-                      //           padding: EdgeInsets.symmetric(
-                      //             horizontal: getWidth(context, 16),
-                      //             vertical: getHeight(context, 16),
-                      //           ),
-                      //           decoration: BoxDecoration(
-                      //             border: Border.all(
-                      //               color: Colors.grey.shade300,
-                      //             ),
-                      //             borderRadius: BorderRadius.circular(14),
-                      //           ),
-                      //           child: const Icon(Icons.download),
-                      //         ),
-                      //       ),
-                      //     ],
-                      //   ),
-                      // ),
-                      SizedBox(height: getHeight(context, 20)),
-
-                      Expanded(
-                        child: ListView.builder(
-                                itemCount: filteredSuppliers.length,
-                                itemBuilder: (context, index) {
-                                  final supplier = filteredSuppliers[index];
-
-                                  return SupplierCardAdmin(
-                                    supplier: supplier,
-                                    onEdit: () => editSupplier(supplier),
-                                    onMore: () => showMoreOptions(supplier),
-                                  );
+                          Row(
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
                                 },
-                              ),
-                      ),
-
-                      Row(
-                        children: [
-                          Text(
-                            "Showing ${filteredSuppliers.length} records",
-                            style: const TextStyle(color: Colors.black54),
-                          ),
-                        ],
-                      ),
-
-                      SizedBox(height: getHeight(context, 12)),
-
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              height: getHeight(context, 50),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade200,
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: const Center(child: Text("Previous")),
-                            ),
-                          ),
-                          SizedBox(width: getWidth(context, 12)),
-                          Expanded(
-                            child: Container(
-                              height: getHeight(context, 50),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: Colors.grey.shade300),
-                              ),
-                              child: const Center(
-                                child: Text(
-                                  "Next",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                icon: const Icon(
+                                  Icons.arrow_back,
+                                  color: Colors.black,
                                 ),
                               ),
+                              const Expanded(
+                                child: Text(
+                                  "Suppliers",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xffF4C400),
+                                  foregroundColor: Colors.black,
+                                ),
+                                onPressed: addSupplier,
+                                icon: const Icon(Icons.add),
+                                label: const Text("Add Supplier"),
+                              ),
+                            ],
+                          ),
+
+                          SizedBox(height: getHeight(context, 14)),
+
+                          const Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Manage your vendor relationships and\ntrack supply statuses.",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black54,
+                                height: 1.5,
+                              ),
                             ),
                           ),
+
+                          SizedBox(height: getHeight(context, 20)),
+
+                          // Container(
+                          //   padding: EdgeInsets.symmetric(
+                          //     horizontal: getWidth(context, 12),
+                          //     vertical: getHeight(context, 12),
+                          //   ),
+                          //   decoration: BoxDecoration(
+                          //     color: Colors.white,
+                          //     borderRadius: BorderRadius.circular(20),
+                          //   ),
+                          //   child: Row(
+                          //     children: [
+                          //       Expanded(
+                          //         child: TextField(
+                          //           controller: searchController,
+                          //           onChanged: searchSupplier,
+                          //           decoration: InputDecoration(
+                          //             hintText: "Filter suppliers...",
+                          //             prefixIcon: const Icon(Icons.search),
+                          //             border: OutlineInputBorder(
+                          //               borderRadius: BorderRadius.circular(14),
+                          //             ),
+                          //           ),
+                          //         ),
+                          //       ),
+
+                          //       SizedBox(width: getWidth(context, 10)),
+
+                          //       InkWell(
+                          //         onTap: filterAction,
+                          //         child: Container(
+                          //           padding: EdgeInsets.symmetric(
+                          //             horizontal: getWidth(context, 16),
+                          //             vertical: getHeight(context, 16),
+                          //           ),
+                          //           decoration: BoxDecoration(
+                          //             border: Border.all(
+                          //               color: Colors.grey.shade300,
+                          //             ),
+                          //             borderRadius: BorderRadius.circular(14),
+                          //           ),
+                          //           child: const Icon(Icons.filter_alt_outlined),
+                          //         ),
+                          //       ),
+
+                          //       SizedBox(width: getWidth(context, 10)),
+
+                          //       InkWell(
+                          //         onTap: downloadAction,
+                          //         child: Container(
+                          //           padding: EdgeInsets.symmetric(
+                          //             horizontal: getWidth(context, 16),
+                          //             vertical: getHeight(context, 16),
+                          //           ),
+                          //           decoration: BoxDecoration(
+                          //             border: Border.all(
+                          //               color: Colors.grey.shade300,
+                          //             ),
+                          //             borderRadius: BorderRadius.circular(14),
+                          //           ),
+                          //           child: const Icon(Icons.download),
+                          //         ),
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
+                          SizedBox(height: getHeight(context, 20)),
+
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: filteredSuppliers.length,
+                              itemBuilder: (context, index) {
+                                final supplier = filteredSuppliers[index];
+
+                                return SupplierCardAdmin(
+                                  supplier: supplier,
+                                  onEdit: () => editSupplier(supplier),
+                                  onMore: () => showMoreOptions(supplier),
+                                );
+                              },
+                            ),
+                          ),
+
+                          Row(
+                            children: [
+                              Text(
+                                "Showing ${filteredSuppliers.length} records",
+                                style: const TextStyle(color: Colors.black54),
+                              ),
+                            ],
+                          ),
+
+                          SizedBox(height: getHeight(context, 12)),
+
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  height: getHeight(context, 50),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade200,
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: const Center(child: Text("Previous")),
+                                ),
+                              ),
+                              SizedBox(width: getWidth(context, 12)),
+                              Expanded(
+                                child: Container(
+                                  height: getHeight(context, 50),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: Colors.grey.shade300,
+                                    ),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      "Next",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          SizedBox(height: getHeight(context, 10)),
                         ],
                       ),
-
-                      SizedBox(height: getHeight(context, 10)),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-            );
-            }
+        );
+      },
     );
   }
-
-
 }

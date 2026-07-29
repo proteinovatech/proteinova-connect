@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class CreditLedgerService {
-  final String baseUrl = dotenv.env['VITE_BACKEND_URL']!;
+  final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? dotenv.env['BASE_URL'] ?? '';
 
   Future<Map<String, dynamic>> getCreditLedger() async {
     final response = await http.get(

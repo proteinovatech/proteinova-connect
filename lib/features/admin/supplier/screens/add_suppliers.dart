@@ -110,21 +110,17 @@ status =
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
-          automaticallyImplyLeading: false,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
       
           title: Text(
             isEdit ? "Edit Supplier" : "Add New Supplier",
             style: AppTextStyles.headingText22
           ),
-      
-          actions: [
-            IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: const Icon(Icons.close, color: Colors.grey),
-            ),
-          ],
         ),
       
         body: SingleChildScrollView(

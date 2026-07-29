@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/features/admin/skeletonloader/tray_management_shimmer.dart';
 import '../bloc/tray_management_bloc.dart';
 import '../bloc/tray_management_event.dart';
@@ -31,463 +30,12 @@ class TrayManagementView extends StatefulWidget {
 }
 
 class _TrayManagementViewState extends State<TrayManagementView> {
-  final _plasticTraysController = TextEditingController();
-  final _paperTraysController = TextEditingController();
-
-  @override
-  void dispose() {
-    _plasticTraysController.dispose();
-    _paperTraysController.dispose();
-    super.dispose();
-  }
-
-  void _showAddTraysDialog(BuildContext context) {
-    _plasticTraysController.clear();
-    _paperTraysController.clear();
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return BlocProvider.value(
-          value: context.read<TrayManagementBloc>(),
-          child: BlocConsumer<TrayManagementBloc, TrayManagementState>(
-            listener: (context, state) {
-              if (state.addSuccess) {
-                Navigator.of(dialogContext).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Trays added successfully!')),
-                );
-              }
-              if (state.error != null &&
-                  state.error!.isNotEmpty &&
-                  state.isAdding == false) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(state.error!)));
-              }
-            },
-            builder: (context, state) {
-              return Dialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                backgroundColor: Colors.white,
-                surfaceTintColor: Colors.transparent,
-                child: Container(
-                  width: 400,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Title
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 20),
-                        child: Text(
-                          'Add Trays to Namakkal',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF1E293B),
-                          ),
-                        ),
-                      ),
-                      const Divider(height: 1, color: Color(0xFFE2E8F0)),
-
-                      // Content
-                      Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Plastic Trays',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF475569),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            TextField(
-                              controller: _plasticTraysController,
-                              decoration: InputDecoration(
-                                hintText: 'Enter count',
-                                hintStyle: const TextStyle(
-                                  color: Color(0xFF94A3B8),
-                                  fontSize: 14,
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFCBD5E1),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFCBD5E1),
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF94A3B8),
-                                  ),
-                                ),
-                              ),
-                              keyboardType: TextInputType.number,
-                            ),
-                            const SizedBox(height: 20),
-                            const Text(
-                              'Paper Trays',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF475569),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            TextField(
-                              controller: _paperTraysController,
-                              decoration: InputDecoration(
-                                hintText: 'Enter count',
-                                hintStyle: const TextStyle(
-                                  color: Color(0xFF94A3B8),
-                                  fontSize: 14,
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFCBD5E1),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFCBD5E1),
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF94A3B8),
-                                  ),
-                                ),
-                              ),
-                              keyboardType: TextInputType.number,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Actions
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 20,
-                        ),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(12),
-                            bottomRight: Radius.circular(12),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () =>
-                                    Navigator.of(dialogContext).pop(),
-                                style: OutlinedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  side: const BorderSide(
-                                    color: Color(0xFFE2E8F0),
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Cancel',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: state.isAdding
-                                    ? null
-                                    : () {
-                                        final plastic =
-                                            int.tryParse(
-                                              _plasticTraysController.text,
-                                            ) ??
-                                            0;
-                                        final paper =
-                                            int.tryParse(
-                                              _paperTraysController.text,
-                                            ) ??
-                                            0;
-                                        context.read<TrayManagementBloc>().add(
-                                          AddTraysEvent(
-                                            plasticTrays: plastic,
-                                            paperTrays: paper,
-                                          ),
-                                        );
-                                      },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFFACC15),
-                                  foregroundColor: Colors.black,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
-                                  ),
-                                ),
-                                child: state.isAdding
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.black,
-                                        ),
-                                      )
-                                    : const Text(
-                                        'Submit',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  void _showReturnTrayDialog(BuildContext context) {
-    String? selectedWarehouse;
-
-    _plasticTraysController.clear();
-    _paperTraysController.clear();
-
-    showDialog(
-      context: context,
-
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setLocal) {
-            return Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-
-              child: Container(
-                width: 400,
-
-                padding: const EdgeInsets.all(24),
-                color: AppColors.white,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-
-                  crossAxisAlignment: CrossAxisAlignment.start,
-
-                  children: [
-                    Center(
-                      child: Text(
-                        "Return Trays to Namakkal",
-
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    Divider(),
-
-                    const SizedBox(height: 20),
-
-                    /// Warehouse
-                    const Text(
-                      "Warehouse",
-
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    DropdownButtonFormField<String>(
-                      value: selectedWarehouse,
-
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-
-                      hint: const Text("Select Warehouse"),
-
-                      items: ["Bangalore", "Chennai", "Salem"]
-                          .map(
-                            (e) => DropdownMenuItem(value: e, child: Text(e)),
-                          )
-                          .toList(),
-
-                      onChanged: (v) {
-                        setLocal(() {
-                          selectedWarehouse = v;
-                        });
-                      },
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    /// Plastic
-                    const Text("Plastic Trays"),
-
-                    const SizedBox(height: 8),
-
-                    TextField(
-                      controller: _plasticTraysController,
-
-                      keyboardType: TextInputType.number,
-
-                      decoration: InputDecoration(
-                        hintText: "Enter count",
-
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    /// Paper
-                    const Text("Paper Trays"),
-
-                    const SizedBox(height: 8),
-
-                    TextField(
-                      controller: _paperTraysController,
-
-                      keyboardType: TextInputType.number,
-
-                      decoration: InputDecoration(
-                        hintText: "Enter count",
-
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    Container(
-                      color: AppColors.background,
-
-                      padding: const EdgeInsets.all(12),
-
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () {
-                                Navigator.pop(dialogContext);
-                              },
-
-                              child: const Text("Cancel"),
-                            ),
-                          ),
-
-                          const SizedBox(width: 12),
-
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.yellow,
-                              ),
-
-                              onPressed: () {
-                                final plastic =
-                                    int.tryParse(
-                                      _plasticTraysController.text,
-                                    ) ??
-                                    0;
-
-                                final paper =
-                                    int.tryParse(_paperTraysController.text) ??
-                                    0;
-
-                                context.read<TrayManagementBloc>().add(
-                                  AddTraysEvent(
-                                    plasticTrays: plastic,
-                                    paperTrays: paper,
-                                  ),
-                                );
-
-                                Navigator.pop(dialogContext);
-                              },
-
-                              child: const Text(
-                                "Submit",
-
-                                style: TextStyle(color: Colors.black),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
+  bool showWarehouseDetails = false;
+  bool showBranchDetails = false;
+  bool showTransitDetails = false;
 
   @override
   Widget build(BuildContext context) {
-    // In Flutter Web / Desktop we could use Row but on Mobile Row will overflow.
-    // We should make it responsive or use Wrap/ListView. Let's use Wrap.
-    final isDesktop = MediaQuery.of(context).size.width > 800;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -499,36 +47,18 @@ class _TrayManagementViewState extends State<TrayManagementView> {
           ),
         ),
         backgroundColor: Colors.white,
-        elevation: 1,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
-      body: BlocConsumer<TrayManagementBloc, TrayManagementState>(
-        listener: (context, state) {
-          if (state.error != null &&
-              state.error!.isNotEmpty &&
-              !state.isAdding) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.error!)));
-          }
-        },
+      body: BlocBuilder<TrayManagementBloc, TrayManagementState>(
         builder: (context, state) {
           if (state.isLoading && state.inventory.isEmpty) {
             return const TrayManagementShimmer();
           }
 
           final inventory = state.inventory;
-          final namakkal = inventory.firstWhere(
-            (item) => item.locationName == 'Namakkal',
-            orElse: () => TrayInventoryModel(
-              id: 0,
-              locationName: 'Namakkal',
-              locationType: '',
-              plasticTrayCount: 0,
-              paperTrayCount: 0,
-              updatedAt: DateTime.now(),
-            ),
-          );
+          final pendingReturns = state.pendingReturns;
 
           final warehouses = inventory
               .where((item) => item.locationType == 'WAREHOUSE')
@@ -536,308 +66,169 @@ class _TrayManagementViewState extends State<TrayManagementView> {
           final branches = inventory
               .where((item) => item.locationType == 'BRANCH')
               .toList();
+          final transit = inventory
+              .where((item) => item.locationType == 'TRANSIT')
+              .toList();
 
+          // Calculate totals
           final totalWarehousePlastic = warehouses.fold<int>(
             0,
             (sum, item) => sum + item.plasticTrayCount,
           );
+          final totalWarehouseFilledPlastic = warehouses.fold<int>(
+            0,
+            (sum, item) => sum + item.filledPlasticCount,
+          );
+          final totalWarehousePaper = warehouses.fold<int>(
+            0,
+            (sum, item) => sum + item.paperTrayCount,
+          );
+          final totalWarehouseFilledPaper = warehouses.fold<int>(
+            0,
+            (sum, item) => sum + item.filledPaperCount,
+          );
+          final totalWarehouseCovers = warehouses.fold<int>(
+            0,
+            (sum, item) => sum + item.coverCount,
+          );
+
           final totalBranchPlastic = branches.fold<int>(
             0,
             (sum, item) => sum + item.plasticTrayCount,
           );
+          final totalBranchFilledPlastic = branches.fold<int>(
+            0,
+            (sum, item) => sum + item.filledPlasticCount,
+          );
+          final totalBranchPaper = branches.fold<int>(
+            0,
+            (sum, item) => sum + item.paperTrayCount,
+          );
+          final totalBranchFilledPaper = branches.fold<int>(
+            0,
+            (sum, item) => sum + item.filledPaperCount,
+          );
+          final totalBranchCovers = branches.fold<int>(
+            0,
+            (sum, item) => sum + item.coverCount,
+          );
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    /// Return Tray
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
+          final totalTransitPlastic = transit.fold<int>(
+            0,
+            (sum, item) => sum + item.plasticTrayCount,
+          );
+          final totalTransitFilledPlastic = transit.fold<int>(
+            0,
+            (sum, item) => sum + item.filledPlasticCount,
+          );
+          final totalTransitPaper = transit.fold<int>(
+            0,
+            (sum, item) => sum + item.paperTrayCount,
+          );
+          final totalTransitFilledPaper = transit.fold<int>(
+            0,
+            (sum, item) => sum + item.filledPaperCount,
+          );
+          final totalTransitCovers = transit.fold<int>(
+            0,
+            (sum, item) => sum + item.coverCount,
+          );
 
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
+          // Low stock locations (Warehouse and Branch where plastic or paper empty count < 5)
+          const int lowStockThreshold = 5;
+          final lowStockLocations = [...warehouses, ...branches]
+              .where(
+                (item) =>
+                    item.plasticTrayCount < lowStockThreshold ||
+                    item.paperTrayCount < lowStockThreshold,
+              )
+              .toList();
 
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-
-                        onPressed: () => _showReturnTrayDialog(context),
-
-                        icon: const Icon(Icons.undo, size: 18),
-
-                        label: const Text(
-                          "Return Trays to\nNamakkal",
-
-                          textAlign: TextAlign.center,
-
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                      ),
+          return RefreshIndicator(
+            onRefresh: () async {
+              context.read<TrayManagementBloc>().add(FetchInventoryEvent());
+            },
+            color: const Color(0xFFFFD600),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Dashboard Cards (Warehouse, Branch, Transit)
+                  _buildDashboardCard(
+                    title: '🏢 Warehouse Stock',
+                    isExpanded: showWarehouseDetails,
+                    onToggle: () => setState(
+                      () => showWarehouseDetails = !showWarehouseDetails,
                     ),
-
-                    const SizedBox(width: 12),
-
-                    /// Add Tray
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFFD600),
-
-                          foregroundColor: Colors.black,
-
-                          elevation: 0,
-
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-
-                        onPressed: () => _showAddTraysDialog(context),
-
-                        icon: const Icon(Icons.add, size: 18),
-
-                        label: const Text(
-                          "Add Trays to\nNamakkal",
-
-                          textAlign: TextAlign.center,
-
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-                // Cards
-                Wrap(
-                  spacing: 20,
-                  runSpacing: 20,
-                  children: [
-                    SizedBox(
-                      width: isDesktop ? 300 : double.infinity,
-                      child: _buildCard(
-                        title: 'NAMAKKAL STOCK',
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildStockText(
-                              'Plastic:',
-                              namakkal.plasticTrayCount.toString(),
-                            ),
-                            const SizedBox(height: 4),
-                            _buildStockText(
-                              'Paper:',
-                              namakkal.paperTrayCount.toString(),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: isDesktop ? 300 : double.infinity,
-                      child: _buildCard(
-                        title: 'WAREHOUSE STOCK',
-                        child: _buildStockText(
-                          'Plastic:',
-                          totalWarehousePlastic.toString(),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: isDesktop ? 300 : double.infinity,
-                      child: _buildCard(
-                        title: 'BRANCH STOCK',
-                        child: _buildStockText(
-                          'Plastic:',
-                          totalBranchPlastic.toString(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 30),
-
-                // Table
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x0F000000),
-                        blurRadius: 6,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
+                    filledPlastic: totalWarehouseFilledPlastic,
+                    emptyPlastic: totalWarehousePlastic,
+                    filledPaper: totalWarehouseFilledPaper,
+                    emptyPaper: totalWarehousePaper,
+                    covers: totalWarehouseCovers,
+                    locations: warehouses,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Text(
-                          'Inventory Details',
-                          style: TextStyle(
-                            color: Color(0xFF111827),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      const Divider(height: 1, color: Color(0xFFF3F4F6)),
-                      if (state.isLoading)
-                        const Padding(
-                          padding: EdgeInsets.all(20),
-                          child: Text('Loading inventory...'),
-                        )
-                      else if (inventory.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.all(20),
-                          child: Text('No inventory data found.'),
-                        )
-                      else
-                        ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: inventory.length,
-                          separatorBuilder: (context, index) => const Divider(
-                            height: 1,
-                            color: Color(0xFFF3F4F6),
-                          ),
-                          itemBuilder: (context, index) {
-                            final item = inventory[index];
-                            return Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        item.locationName,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                          color: Color(0xFF111827),
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFE9EDF3),
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          item.locationType,
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF475569),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text(
-                                            'Plastic Trays',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Color(0xFF6B7280),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            item.plasticTrayCount.toString(),
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              color: Color(0xFF374151),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text(
-                                            'Paper Trays',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Color(0xFF6B7280),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            item.paperTrayCount.toString(),
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              color: Color(0xFF374151),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          const Text(
-                                            'Last Updated',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Color(0xFF6B7280),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            DateFormat(
-                                              'M/d/yyyy, h:mm a',
-                                            ).format(item.updatedAt.toLocal()),
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500,
-                                              color: Color(0xFF374151),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                    ],
+                  const SizedBox(height: 16),
+                  _buildDashboardCard(
+                    title: '🏪 Branch Stock',
+                    isExpanded: showBranchDetails,
+                    onToggle: () =>
+                        setState(() => showBranchDetails = !showBranchDetails),
+                    filledPlastic: totalBranchFilledPlastic,
+                    emptyPlastic: totalBranchPlastic,
+                    filledPaper: totalBranchFilledPaper,
+                    emptyPaper: totalBranchPaper,
+                    covers: totalBranchCovers,
+                    locations: branches,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  _buildDashboardCard(
+                    title: '🚚 Transit Stock',
+                    isExpanded: showTransitDetails,
+                    onToggle: () => setState(
+                      () => showTransitDetails = !showTransitDetails,
+                    ),
+                    filledPlastic: totalTransitFilledPlastic,
+                    emptyPlastic: totalTransitPlastic,
+                    filledPaper: totalTransitFilledPaper,
+                    emptyPaper: totalTransitPaper,
+                    covers: totalTransitCovers,
+                    locations: transit,
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Alerts Section
+                  if (lowStockLocations.isNotEmpty ||
+                      pendingReturns.isNotEmpty) ...[
+                    const Text(
+                      'Alerts & Notifications',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Low Stock Alert
+                    if (lowStockLocations.isNotEmpty)
+                      _buildLowStockAlert(lowStockLocations, lowStockThreshold),
+                    if (lowStockLocations.isNotEmpty &&
+                        pendingReturns.isNotEmpty)
+                      const SizedBox(height: 16),
+                    // Pending Returns Alert
+                    if (pendingReturns.isNotEmpty)
+                      _buildPendingReturnsAlert(pendingReturns),
+                  ] else if (!state.isLoading) ...[
+                    // All good alert
+                    _buildAllGoodAlert(),
+                  ],
+                  const SizedBox(height: 24),
+
+                  // Inventory Details Table
+                  _buildInventoryDetailsTable(inventory),
+                ],
+              ),
             ),
           );
         },
@@ -845,57 +236,879 @@ class _TrayManagementViewState extends State<TrayManagementView> {
     );
   }
 
-  Widget _buildCard({required String title, required Widget child}) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0F000000),
-            blurRadius: 6,
-            offset: Offset(0, 2),
+  Widget _buildDashboardCard({
+    required String title,
+    required bool isExpanded,
+    required VoidCallback onToggle,
+    required int filledPlastic,
+    required int emptyPlastic,
+    required int filledPaper,
+    required int emptyPaper,
+    required int covers,
+    required List<TrayInventoryModel> locations,
+  }) {
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      color: Colors.white,
+      child: InkWell(
+        onTap: onToggle,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      isExpanded ? 'Hide Details ▲' : 'View Details ▼',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF475569),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Grid items
+              GridView(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 5,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 0.85,
+                ),
+                children: [
+                  _buildGridTile(
+                    'PLASTIC WITH EGG',
+                    filledPlastic,
+                    const Color(0xFFF0FDF4),
+                    const Color(0xFFBBF7D0),
+                    const Color(0xFF166534),
+                  ),
+                  _buildGridTile(
+                    'EMPTY PLASTIC',
+                    emptyPlastic,
+                    const Color(0xFFF0FDF4),
+                    const Color(0xFFBBF7D0),
+                    const Color(0xFF166534),
+                  ),
+                  _buildGridTile(
+                    'PAPER WITH EGG',
+                    filledPaper,
+                    const Color(0xFFFFFBEB),
+                    const Color(0xFFFDE68A),
+                    const Color(0xFF92400E),
+                  ),
+                  _buildGridTile(
+                    'EMPTY PAPER',
+                    emptyPaper,
+                    const Color(0xFFFFFBEB),
+                    const Color(0xFFFDE68A),
+                    const Color(0xFF92400E),
+                  ),
+                  _buildGridTile(
+                    'COVERS',
+                    covers,
+                    const Color(0xFFEFF6FF),
+                    const Color(0xFFBFDBFE),
+                    const Color(0xFF1E40AF),
+                  ),
+                ],
+              ),
+
+              // Details section
+              if (isExpanded) ...[
+                const SizedBox(height: 20),
+                const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                const SizedBox(height: 16),
+                if (locations.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8.0),
+                      child: Text(
+                        'No location inventory data available.',
+                        style: TextStyle(color: Colors.grey, fontSize: 13),
+                      ),
+                    ),
+                  )
+                else ...[
+                  // Detail list header
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    child: Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Location',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ),
+                        _buildDetailHeaderCol('P. Egg'),
+                        _buildDetailHeaderCol('P. Empty'),
+                        _buildDetailHeaderCol('Pa. Egg'),
+                        _buildDetailHeaderCol('Pa. Empty'),
+                        _buildDetailHeaderCol('Covers'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Detail items
+                  ...locations.map(
+                    (loc) => Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              loc.locationName,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF334155),
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          _buildDetailValCol(
+                            loc.filledPlasticCount,
+                            const Color(0xFFF0FDF4),
+                            const Color(0xFFBBF7D0),
+                            const Color(0xFF166534),
+                          ),
+                          _buildDetailValCol(
+                            loc.plasticTrayCount,
+                            const Color(0xFFF0FDF4),
+                            const Color(0xFFBBF7D0),
+                            const Color(0xFF166534),
+                          ),
+                          _buildDetailValCol(
+                            loc.filledPaperCount,
+                            const Color(0xFFFFFBEB),
+                            const Color(0xFFFDE68A),
+                            const Color(0xFF92400E),
+                          ),
+                          _buildDetailValCol(
+                            loc.paperTrayCount,
+                            const Color(0xFFFFFBEB),
+                            const Color(0xFFFDE68A),
+                            const Color(0xFF92400E),
+                          ),
+                          _buildDetailValCol(
+                            loc.coverCount,
+                            const Color(0xFFEFF6FF),
+                            const Color(0xFFBFDBFE),
+                            const Color(0xFF1E40AF),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ],
           ),
-        ],
-        border: const Border(
-          left: BorderSide(color: Color(0xFFFFD600), width: 4),
         ),
       ),
+    );
+  }
+
+  Widget _buildGridTile(
+    String label,
+    int count,
+    Color bg,
+    Color border,
+    Color text,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: border),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            title,
-            style: const TextStyle(
-              color: Color(0xFF6B7280),
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: text,
+              fontSize: 8,
+              fontWeight: FontWeight.bold,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '$count',
+            style: TextStyle(
+              color: text,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 10),
-          child,
         ],
       ),
     );
   }
 
-  Widget _buildStockText(String label, String value) {
-    return RichText(
-      text: TextSpan(
+  Widget _buildDetailHeaderCol(String text) {
+    return SizedBox(
+      width: 50,
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
         style: const TextStyle(
-          fontSize: 16,
-          color: Color(0xFF111827),
-          fontWeight: FontWeight.w500,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF64748B),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDetailValCol(int val, Color bg, Color border, Color text) {
+    return Container(
+      width: 50,
+      margin: const EdgeInsets.only(left: 4),
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: border),
+      ),
+      child: Text(
+        '$val',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          color: text,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLowStockAlert(
+    List<TrayInventoryModel> locations,
+    int threshold,
+  ) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextSpan(text: '$label '),
-          TextSpan(
-            text: value,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          Row(
+            children: [
+              const Text('⚠️', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 8),
+              const Text(
+                'Low Stock Alert',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF92400E),
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFDE68A),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${locations.length}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF92400E),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: locations.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (context, idx) {
+              final loc = locations[idx];
+              final plasticLow = loc.plasticTrayCount < threshold;
+              final paperLow = loc.paperTrayCount < threshold;
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFFEF3C7)),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            loc.locationName,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            loc.locationType,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey.shade500,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          'Plastic: ${loc.plasticTrayCount}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: plasticLow
+                                ? const Color(0xFFEF4444)
+                                : const Color(0xFF10B981),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Paper: ${loc.paperTrayCount}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: paperLow
+                                ? const Color(0xFFEF4444)
+                                : const Color(0xFF10B981),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPendingReturnsAlert(List<dynamic> returns) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('🔄', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 8),
+              const Text(
+                'Pending Tray Returns',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E40AF),
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFBFDBFE),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${returns.length}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E40AF),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: returns.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (context, idx) {
+              final ret = returns[idx];
+              String dateFormatted = "-";
+              if (ret['return_date'] != null) {
+                try {
+                  dateFormatted = DateFormat(
+                    'dd MMM yy',
+                  ).format(DateTime.parse(ret['return_date']));
+                } catch (_) {}
+              }
+
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFDBEAFE)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          ret['return_from_name']?.toString() ?? '-',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'PENDING',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E40AF),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        _buildReturnMetaItem(
+                          'Type',
+                          ret['tray_type']?.toString() ?? '-',
+                        ),
+                        const SizedBox(width: 16),
+                        _buildReturnMetaItem(
+                          'Qty',
+                          ret['quantity']?.toString() ?? '-',
+                        ),
+                        const SizedBox(width: 16),
+                        _buildReturnMetaItem(
+                          'To',
+                          ret['return_to']?.toString() ?? '-',
+                        ),
+                        if (dateFormatted != "-") ...[
+                          const SizedBox(width: 16),
+                          _buildReturnMetaItem('Date', dateFormatted),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReturnMetaItem(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 9,
+            color: Colors.grey.shade400,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF475569),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAllGoodAlert() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0FDF4),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFBBF7D0)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: const Row(
+        children: [
+          Text('✅', style: TextStyle(fontSize: 18)),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'All Good! No low stock or pending tray issues.',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF15803D),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInventoryDetailsTable(List<TrayInventoryModel> inventory) {
+    final filtered = inventory
+        .where((item) => item.locationType != 'TRAY_HUB')
+        .toList();
+    final isDesktop = MediaQuery.of(context).size.width > 768;
+
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Inventory Details',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF111827),
+              ),
+            ),
+            const SizedBox(height: 16),
+            if (filtered.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Text(
+                    'No inventory records found.',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+              )
+            else if (isDesktop)
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columnSpacing: 24,
+                  columns: const [
+                    DataColumn(
+                      label: Text(
+                        'Location',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Type',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Plastic (With Egg)',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Plastic (Empty)',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Paper (With Egg)',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Paper (Empty)',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Covers',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Last Updated',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                  rows: filtered.map((item) {
+                    final isWarehouse = item.locationType == 'WAREHOUSE';
+                    return DataRow(
+                      cells: [
+                        DataCell(
+                          Text(
+                            item.locationName,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        DataCell(
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isWarehouse
+                                  ? const Color(0xFFE0E7FF)
+                                  : const Color(0xFFFEF3C7),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              item.locationType,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: isWarehouse
+                                    ? const Color(0xFF3730A3)
+                                    : const Color(0xFF92400E),
+                              ),
+                            ),
+                          ),
+                        ),
+                        DataCell(Text('${item.filledPlasticCount}')),
+                        DataCell(Text('${item.plasticTrayCount}')),
+                        DataCell(Text('${item.filledPaperCount}')),
+                        DataCell(Text('${item.paperTrayCount}')),
+                        DataCell(Text('${item.coverCount}')),
+                        DataCell(
+                          Text(
+                            DateFormat(
+                              'M/d/yyyy, h:mm a',
+                            ).format(item.updatedAt.toLocal()),
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              )
+            else
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: filtered.length,
+                separatorBuilder: (_, __) =>
+                    const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                itemBuilder: (context, idx) {
+                  final item = filtered[idx];
+                  final isWarehouse = item.locationType == 'WAREHOUSE';
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              item.locationName,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1E293B),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isWarehouse
+                                    ? const Color(0xFFE0E7FF)
+                                    : const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                item.locationType,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: isWarehouse
+                                      ? const Color(0xFF3730A3)
+                                      : const Color(0xFF92400E),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildCompactTableCol(
+                              'P. Egg / Empty',
+                              '${item.filledPlasticCount} / ${item.plasticTrayCount}',
+                            ),
+                            _buildCompactTableCol(
+                              'Pa. Egg / Empty',
+                              '${item.filledPaperCount} / ${item.paperTrayCount}',
+                            ),
+                            _buildCompactTableCol(
+                              'Covers',
+                              '${item.coverCount}',
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Last Updated: ${DateFormat('M/d/yyyy, h:mm a').format(item.updatedAt.toLocal())}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactTableCol(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 9,
+            color: Colors.grey.shade400,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF475569),
+          ),
+        ),
+      ],
     );
   }
 }
