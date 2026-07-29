@@ -662,15 +662,15 @@ class _ReportScreenState extends State<ReportScreen> {
       final salesDashboard = await reportService.getSalesDashboard(
         branchId.toString(),
       );
-      
+
       final response = await reportService.getBranchSalesReport(
         startDate: fromDate == "dd-mm-yyyy" ? null : fromDate,
         endDate: toDate == "dd-mm-yyyy" ? null : toDate,
         branchId: role == "branch" ? branchId.toString() : null,
       );
-print(response.keys);
-print(response);
-      
+      print(response.keys);
+      print(response);
+
       // final uniqueCustomers = recentSales
       //     .map((e) => e["customer_number"]?.toString())
       //     .where((e) => e != null && e.isNotEmpty)
@@ -744,12 +744,12 @@ print(response);
         branchSales = branches;
         salesTrend = trend;
         print(response);
-print(response["products"]);
-       topProducts = List<Map<String, dynamic>>.from(
-  salesResponse["products"] ?? [],
-);
-print("Top Products = $topProducts");
-print("Top Products Length = ${topProducts.length}");
+        print(response["products"]);
+        topProducts = List<Map<String, dynamic>>.from(
+          salesResponse["products"] ?? [],
+        );
+        print("Top Products = $topProducts");
+        print("Top Products Length = ${topProducts.length}");
         print("Sales Trend = $salesTrend");
         // Total Revenue
         totalRevenue = branches.fold<double>(
@@ -1446,17 +1446,17 @@ print("Top Products Length = ${topProducts.length}");
   Widget buildTopProductsCard() {
     final products = topProducts;
     print("Widget Products Length = ${products.length}");
-print(products);
+    print(products);
     return SizedBox(
-       width: double.infinity,
-       
+      width: double.infinity,
+
       child: dashboardContainer(
         title: "Top 5 Products by Sales",
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: SingleChildScrollView(
             scrollDirection: Axis.vertical,
-            
+
             child: DataTable(
               columns: const [
                 DataColumn(label: Text("#")),
@@ -1465,59 +1465,58 @@ print(products);
                 DataColumn(label: Text("%")),
               ],
               rows: [
-  ...products.asMap().entries.map((entry) {
-    final index = entry.key;
-    final item = entry.value;
+                ...products.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final item = entry.value;
 
-    final sales =
-        double.tryParse(item["sales"].toString()) ?? 0;
+                  final sales = double.tryParse(item["sales"].toString()) ?? 0;
 
-    final totalSales = products.fold<double>(
-      0,
-      (sum, e) => sum + (double.tryParse(e["sales"].toString()) ?? 0),
-    );
+                  final totalSales = products.fold<double>(
+                    0,
+                    (sum, e) =>
+                        sum + (double.tryParse(e["sales"].toString()) ?? 0),
+                  );
 
-    final percentage =
-        totalSales == 0 ? 0 : (sales / totalSales) * 100;
+                  final percentage = totalSales == 0
+                      ? 0
+                      : (sales / totalSales) * 100;
 
-    return DataRow(
-      cells: [
-        DataCell(Text("${index + 1}")),
-        DataCell(Text(item["name"]?.toString() ?? "")),
-        DataCell(Text("₹ ${sales.toStringAsFixed(2)}")),
-        DataCell(Text("${percentage.toStringAsFixed(2)}%")),
-      ],
-    );
-  }),
+                  return DataRow(
+                    cells: [
+                      DataCell(Text("${index + 1}")),
+                      DataCell(Text(item["name"]?.toString() ?? "")),
+                      DataCell(Text("₹ ${sales.toStringAsFixed(2)}")),
+                      DataCell(Text("${percentage.toStringAsFixed(2)}%")),
+                    ],
+                  );
+                }),
 
-  // Total Row
-  DataRow(
-    cells: [
-      const DataCell(Text("")),
-      const DataCell(
-        Text(
-          "Total",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
-      DataCell(
-        Text(
-          "₹ ${products.fold<double>(
-            0,
-            (sum, e) => sum + (double.tryParse(e["sales"].toString()) ?? 0),
-          ).toStringAsFixed(2)}",
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
-      const DataCell(
-        Text(
-          "100%",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
-    ],
-  ),
-], ),
+                // Total Row
+                DataRow(
+                  cells: [
+                    const DataCell(Text("")),
+                    const DataCell(
+                      Text(
+                        "Total",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    DataCell(
+                      Text(
+                        "₹ ${products.fold<double>(0, (sum, e) => sum + (double.tryParse(e["sales"].toString()) ?? 0)).toStringAsFixed(2)}",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const DataCell(
+                      Text(
+                        "100%",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1539,52 +1538,45 @@ print(products);
               DataColumn(label: Text("Sales (₹)")),
             ],
             rows: [
-  ...recentSales.asMap().entries.map((entry) {
-    final index = entry.key;
-    final customer = entry.value;
+              ...recentSales.asMap().entries.map((entry) {
+                final index = entry.key;
+                final customer = entry.value;
 
-    return DataRow(
-      cells: [
-        DataCell(Text("${index + 1}")),
-        DataCell(Text(customer["customer_name"] ?? "")),
-        const DataCell(Text("1")),
-        DataCell(
-          Text(
-            "₹ ${customer["total_amount"]}",
+                return DataRow(
+                  cells: [
+                    DataCell(Text("${index + 1}")),
+                    DataCell(Text(customer["customer_name"] ?? "")),
+                    const DataCell(Text("1")),
+                    DataCell(Text("₹ ${customer["total_amount"]}")),
+                  ],
+                );
+              }),
+
+              DataRow(
+                cells: [
+                  const DataCell(Text("")),
+                  const DataCell(
+                    Text(
+                      "Total",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DataCell(
+                    Text(
+                      recentSales.length.toString(),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DataCell(
+                    Text(
+                      "₹ ${recentSales.fold<double>(0, (sum, item) => sum + (double.tryParse(item["total_amount"].toString()) ?? 0)).toStringAsFixed(2)}",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ),
-      ],
-    );
-  }),
-
-  DataRow(
-    cells: [
-      const DataCell(Text("")),
-      const DataCell(
-        Text(
-          "Total",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
-      DataCell(
-        Text(
-          recentSales.length.toString(),
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
-      DataCell(
-        Text(
-          "₹ ${recentSales.fold<double>(
-            0,
-            (sum, item) =>
-                sum + (double.tryParse(item["total_amount"].toString()) ?? 0),
-          ).toStringAsFixed(2)}",
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
-    ],
-  ),
-],),
         ),
       ),
     );
@@ -1696,56 +1688,52 @@ print(products);
     );
   }
 
- Widget buildDamagedEggsCard() {
-  return dashboardContainer(
-    title: "Damaged Eggs Breakdown",
-    child: Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.red.shade50,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Icon(
-            Icons.inventory_2_outlined,
-            color: Colors.red,
-          ),
-        ),
-
-        const SizedBox(width: 12),
-
-        const Expanded(
-          child: Text(
-            "White correct size",
-            style: TextStyle(fontSize: 16),
-          ),
-        ),
-
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              totalDamage.toString(),
-              style: const TextStyle(
-                color: Colors.red,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+  Widget buildDamagedEggsCard() {
+    return dashboardContainer(
+      title: "Damaged Eggs Breakdown",
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
+              borderRadius: BorderRadius.circular(10),
             ),
-            const Text(
-              "Eggs",
-              style: TextStyle(
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
+            child: const Icon(Icons.inventory_2_outlined, color: Colors.red),
+          ),
+
+          const SizedBox(width: 12),
+
+          const Expanded(
+            child: Text("White correct size", style: TextStyle(fontSize: 16)),
+          ),
+
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                totalDamage.toString(),
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-} Widget dashboardContainer({required String title, required Widget child}) {
+              const Text(
+                "Eggs",
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget dashboardContainer({required String title, required Widget child}) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

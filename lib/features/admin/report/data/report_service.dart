@@ -419,17 +419,32 @@ class ReportService {
         .toList();
 
     double avgCost = totalTrays > 0 ? totalSpend / totalTrays : 0;
-    final activeSuppliers = list
-        .map((e) {
-          if (useCompanyName) {
-            return (e["supplier_company_name"] ?? "").toString().trim();
-          } else {
-            return (e["supplier_name"] ?? "").toString().trim();
-          }
-        })
-        .where((name) => name.isNotEmpty)
-        .toSet()
-        .length;
+    int activeSuppliers = 0;
+    List<Map<String, dynamic>> supplierList = [];
+    try {
+      final supplierRes = await dio.get('/api/getSupplier');
+      var allSuppliers = [];
+      if (supplierRes.data != null) {
+        if (supplierRes.data is List) {
+          allSuppliers = supplierRes.data;
+        } else if (supplierRes.data['data'] is List) {
+          allSuppliers = supplierRes.data['data'];
+        }
+      }
+      final activeList = allSuppliers.where((s) => s['status']?.toString().toLowerCase() == 'active').toList();
+      activeSuppliers = activeList.length;
+
+      supplierList = activeList.map((s) {
+        final supplierName = (s['supplier_company_name'] ?? s['supplier_name'] ?? '').toString();
+        final totalOrders = list.where((order) {
+          final orderSupplierName = (order['supplier_company_name'] ?? order['supplier_name'] ?? '').toString();
+          return orderSupplierName == supplierName;
+        }).length;
+        return {"name": supplierName, "orders": totalOrders};
+      }).toList();
+    } catch (e) {
+      print("Error fetching suppliers: $e");
+    }
 
     Map<String, double> spendByMonth = {};
     Map<String, int> volumeByMonth = {};
@@ -498,21 +513,7 @@ class ReportService {
       return {"name": e.key, "value": trays};
     }).toList();
 
-    Map<String, int> supplierCountMap = {};
-
-    for (final item in list) {
-      final supplier = useCompanyName
-          ? (item["supplier_company_name"] ?? "").toString().trim()
-          : (item["supplier_name"] ?? "").toString().trim();
-
-      if (supplier.isEmpty) continue;
-
-      supplierCountMap[supplier] = (supplierCountMap[supplier] ?? 0) + 1;
-    }
-
-    final supplierList = supplierCountMap.entries.map((e) {
-      return {"name": e.key, "orders": e.value};
-    }).toList();
+    // supplierList is now generated from the /api/getSupplier API.
 
     final totalOrdersList = list.map((e) {
       return {

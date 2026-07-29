@@ -37,7 +37,7 @@ class _PurchaseReportState extends State<PurchaseReport> {
   List<dynamic> supplierList = [];
   List<dynamic> branches = [];
   String? selectedBranch;
-   List<dynamic> totalOrdersList = [];
+  List<dynamic> totalOrdersList = [];
   List<dynamic> avgUnitCost = [];
   List<dynamic> monthlySummary = [];
   List<Map<String, dynamic>> monthlyTrend = [];
@@ -158,7 +158,6 @@ class _PurchaseReportState extends State<PurchaseReport> {
 
                           child: const Row(
                             children: [
-
                               Expanded(
                                 child: Text(
                                   "DATE",
@@ -205,8 +204,6 @@ class _PurchaseReportState extends State<PurchaseReport> {
                                   ),
                                 ),
                               ),
-
-                             
                             ],
                           ),
                         ),
@@ -226,12 +223,11 @@ class _PurchaseReportState extends State<PurchaseReport> {
 
                             child: Row(
                               children: [
-
                                 Expanded(
                                   child: Text(
                                     e["date"].toString(),
 
-                                    style: AppTextStyles.bodyText12
+                                    style: AppTextStyles.bodyText12,
                                   ),
                                 ),
 
@@ -239,7 +235,7 @@ class _PurchaseReportState extends State<PurchaseReport> {
                                   child: Text(
                                     e["supplier_name"].toString(),
 
-                                    style:AppTextStyles.bodyText12dark
+                                    style: AppTextStyles.bodyText12dark,
                                   ),
                                 ),
 
@@ -247,7 +243,7 @@ class _PurchaseReportState extends State<PurchaseReport> {
                                   child: Text(
                                     e["category"].toString(),
 
-                                    style: AppTextStyles.bodyText12
+                                    style: AppTextStyles.bodyText12,
                                   ),
                                 ),
 
@@ -255,11 +251,9 @@ class _PurchaseReportState extends State<PurchaseReport> {
                                   child: Text(
                                     e["value"].toString(),
 
-                                    style: AppTextStyles.bodyText12dark
+                                    style: AppTextStyles.bodyText12dark,
                                   ),
                                 ),
-
-                               
                               ],
                             ),
                           );
@@ -275,30 +269,30 @@ class _PurchaseReportState extends State<PurchaseReport> {
       },
     );
   }
-  
 
   @override
   void initState() {
     super.initState();
 
     fetchPurchaseReport();
-     fetchBranches();
+    fetchBranches();
   }
+
   Future<void> fetchBranches() async {
-  try {
-    final data = await reportService.getBranches();
+    try {
+      final data = await reportService.getBranches();
 
-    setState(() {
-      branches = data;
+      setState(() {
+        branches = data;
 
-      if (branches.isNotEmpty) {
-        selectedBranch = branches.first["name"];
-      }
-    });
-  } catch (e) {
-    debugPrint("Error loading branches: $e");
+        if (branches.isNotEmpty) {
+          selectedBranch = branches.first["name"];
+        }
+      });
+    } catch (e) {
+      debugPrint("Error loading branches: $e");
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -386,77 +380,76 @@ class _PurchaseReportState extends State<PurchaseReport> {
                         border: Border.all(color: const Color(0xffE5E7EB)),
                       ),
 
-                      child:
-                       Column(
+                      child: Column(
                         children: [
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
-  children: [
-    Expanded(
-      child: buildDateField(
-        title: "From Date",
-        value: fromDate,
-        onTap: () async {
-          DateTime? picked = await showDatePicker(
-            context: context,
-            initialDate: DateTime.now(),
-            firstDate: DateTime(2020),
-            lastDate: DateTime.now(),
-          );
-          if (picked != null) {
-            setState(() {
-            fromDate =
-    "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year.toString().substring(2)}";});
-          }
-        },
-      ),
-    ),
+                            children: [
+                              Expanded(
+                                child: buildDateField(
+                                  title: "From Date",
+                                  value: fromDate,
+                                  onTap: () async {
+                                    DateTime? picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime(2020),
+                                      lastDate: DateTime.now(),
+                                    );
+                                    if (picked != null) {
+                                      setState(() {
+                                        fromDate =
+                                            "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year.toString().substring(2)}";
+                                      });
+                                    }
+                                  },
+                                ),
+                              ),
 
-    const SizedBox(width: 14),
+                              const SizedBox(width: 14),
 
-    Expanded(
-      child: buildDateField(
-        title: "To Date",
-        value: toDate,
-        onTap: () async {
-          DateTime? picked = await showDatePicker(
-            context: context,
-            initialDate: DateTime.now(),
-            firstDate: DateTime(2020),
-            lastDate: DateTime.now(),
-          );
-          if (picked != null) {
-            setState(() {
-             toDate =
-    "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year.toString().substring(2)}"; });
-          }
-        },
-      ),
-    ),
+                              Expanded(
+                                child: buildDateField(
+                                  title: "To Date",
+                                  value: toDate,
+                                  onTap: () async {
+                                    DateTime? picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime(2020),
+                                      lastDate: DateTime.now(),
+                                    );
+                                    if (picked != null) {
+                                      setState(() {
+                                        toDate =
+                                            "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year.toString().substring(2)}";
+                                      });
+                                    }
+                                  },
+                                ),
+                              ),
 
-    const SizedBox(width: 10),
-   SizedBox(
-  width: 56,
-  height: 56,
-  child: ElevatedButton(
-    onPressed: fetchPurchaseReport,
-    style: ElevatedButton.styleFrom(
-      backgroundColor: const Color(0xffFACC15),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-    ),
-    child: const Icon(
-      Icons.search,
-      color: Colors.black,
-    ),
-  ),
-),
-  ],
-),
-                 
-                          
-                      
+                              const SizedBox(width: 10),
+                              SizedBox(
+                                width: 56,
+                                height: 56,
+                                child: ElevatedButton(
+                                  onPressed: fetchPurchaseReport,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xffFACC15),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.search,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
                           buildDropdownField(
                             title: "View Mode",
                             value: viewMode,
@@ -470,100 +463,99 @@ class _PurchaseReportState extends State<PurchaseReport> {
 
                           const SizedBox(height: 18),
 
-//                           Row(
-//                             children: [
-//    Expanded(
-//   child: buildDropdownField(
-//     title: "Branch",
-//     value: selectedBranch??"All Branches",
-//      items: [
-//       "All Branches",
-//       ...branches
-//           .map<String>((e) => e["branch_name"].toString())
-//           .toSet()
-//           .toList(),
-//     ],
-//     onChanged: (v) {
-//       setState(() {
-//         selectedBranch = v;
-//       });
-//     },
-//   ),
-// ),                            const SizedBox(width: 14),
+                          //                           Row(
+                          //                             children: [
+                          //    Expanded(
+                          //   child: buildDropdownField(
+                          //     title: "Branch",
+                          //     value: selectedBranch??"All Branches",
+                          //      items: [
+                          //       "All Branches",
+                          //       ...branches
+                          //           .map<String>((e) => e["branch_name"].toString())
+                          //           .toSet()
+                          //           .toList(),
+                          //     ],
+                          //     onChanged: (v) {
+                          //       setState(() {
+                          //         selectedBranch = v;
+                          //       });
+                          //     },
+                          //   ),
+                          // ),                            const SizedBox(width: 14),
 
-//                               Expanded(
-//                                 child: buildDropdownField(
-//                                   title: "Egg Type",
+                          //                               Expanded(
+                          //                                 child: buildDropdownField(
+                          //                                   title: "Egg Type",
 
-//                                   value: eggType,
+                          //                                   value: eggType,
 
-//                                   items: const [
-//                                     "All Types",
+                          //                                   items: const [
+                          //                                     "All Types",
 
-//                                     "White Egg",
+                          //                                     "White Egg",
 
-//                                     "Brown Egg",
-//                                   ],
+                          //                                     "Brown Egg",
+                          //                                   ],
 
-//                                   onChanged: (v) {
-//                                     setState(() {
-//                                       eggType = v!;
-//                                     });
-//                                   },
-//                                 ),
-//                               ),
+                          //                                   onChanged: (v) {
+                          //                                     setState(() {
+                          //                                       eggType = v!;
+                          //                                     });
+                          //                                   },
+                          //                                 ),
+                          //                               ),
 
-//                               const SizedBox(width: 14),
+                          //                               const SizedBox(width: 14),
 
-//                               Expanded(
-//                                 child: buildDropdownField(
-//                                   title: "Report Category",
+                          //                               Expanded(
+                          //                                 child: buildDropdownField(
+                          //                                   title: "Report Category",
 
-//                                   value: selectedReport,
+                          //                                   value: selectedReport,
 
-//                                   items: reportItems,
+                          //                                   items: reportItems,
 
-//                                   onChanged: (value) {
-//                                     if (value == selectedReport) return;
-//                                     setState(() {
-//                                       selectedReport = value!;
-//                                     });
+                          //                                   onChanged: (value) {
+                          //                                     if (value == selectedReport) return;
+                          //                                     setState(() {
+                          //                                       selectedReport = value!;
+                          //                                     });
 
-//                                     Widget? nextScreen;
-//                                     if (value == "Financial Summary") {
-//                                       nextScreen =
-//                                           const AdminReportDashboardScreen();
-//                                     } else if (value == "Purchase Report") {
-//                                       nextScreen = const PurchaseReport();
-//                                     } else if (value == "Expense Report") {
-//                                       nextScreen = const ExpenseReportScreen();
-//                                     } else if (value == "Branch Sales Report") {
-//                                       nextScreen = const SalesReportScreen();
-//                                     } else if (value == "Warehouse Report") {
-//                                       nextScreen =
-//                                           const WarehouseReportScreen();
-//                                     }
+                          //                                     Widget? nextScreen;
+                          //                                     if (value == "Financial Summary") {
+                          //                                       nextScreen =
+                          //                                           const AdminReportDashboardScreen();
+                          //                                     } else if (value == "Purchase Report") {
+                          //                                       nextScreen = const PurchaseReport();
+                          //                                     } else if (value == "Expense Report") {
+                          //                                       nextScreen = const ExpenseReportScreen();
+                          //                                     } else if (value == "Branch Sales Report") {
+                          //                                       nextScreen = const SalesReportScreen();
+                          //                                     } else if (value == "Warehouse Report") {
+                          //                                       nextScreen =
+                          //                                           const WarehouseReportScreen();
+                          //                                     }
 
-//                                     if (nextScreen != null) {
-//                                       Navigator.pushReplacement(
-//                                         context,
-//                                         PageRouteBuilder(
-//                                           pageBuilder: (_, __, ___) =>
-//                                               nextScreen!,
-//                                           transitionDuration: Duration.zero,
-//                                           reverseTransitionDuration:
-//                                               Duration.zero,
-//                                         ),
-//                                       );
-//                                     }
-//                                   },
-//                                 ),
-//                               ),
-//                             ],
-//                           ),
+                          //                                     if (nextScreen != null) {
+                          //                                       Navigator.pushReplacement(
+                          //                                         context,
+                          //                                         PageRouteBuilder(
+                          //                                           pageBuilder: (_, __, ___) =>
+                          //                                               nextScreen!,
+                          //                                           transitionDuration: Duration.zero,
+                          //                                           reverseTransitionDuration:
+                          //                                               Duration.zero,
+                          //                                         ),
+                          //                                       );
+                          //                                     }
+                          //                                   },
+                          //                                 ),
+                          //                               ),
+                          //                             ],
+                          //                           ),
 
                           // const SizedBox(height: 24),
-
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
 
@@ -592,7 +584,7 @@ class _PurchaseReportState extends State<PurchaseReport> {
                     ),
 
                     const SizedBox(height: 24),
-                     
+
                     /// STATS
                     GridView.count(
                       crossAxisCount: MediaQuery.of(context).size.width > 1000
@@ -645,11 +637,9 @@ class _PurchaseReportState extends State<PurchaseReport> {
                         return PurchaseStatCard(
                           title: e["title"].toString(),
 
-                         amount: e["title"].toString().contains("Spend")
-    ? "₹ ${indianCurrency.format(
-        double.tryParse(e["amount"]?.toString() ?? "0") ?? 0,
-      )}"
-    : e["amount"].toString(),
+                          amount: e["title"].toString().contains("Spend")
+                              ? "₹ ${indianCurrency.format(double.tryParse(e["amount"]?.toString() ?? "0") ?? 0)}"
+                              : e["amount"].toString(),
 
                           growth: e["growth"].toString(),
 
@@ -674,19 +664,20 @@ class _PurchaseReportState extends State<PurchaseReport> {
                                 subtitle:
                                     "Detailed purchase data for your selection",
 
-                                 rows: monthlySummary.map<Map<String, dynamic>>((e) {
-    return {
-      "date": DateFormat("dd/MM/yyyy").format(
-        DateTime.parse(e["date"]),
-      ),
-      "supplier_company_name": e["supplier_company_name"] ?? "",
-      "category": e["category"] ?? "",
-      "value":
-          "₹ ${NumberFormat('#,##,##0', 'en_IN').format(
-        double.tryParse(e["total_amount"].toString()) ?? 0,
-      )}",
-    };
-  }).toList(),
+                                rows: monthlySummary.map<Map<String, dynamic>>((
+                                  e,
+                                ) {
+                                  return {
+                                    "date": DateFormat(
+                                      "dd/MM/yyyy",
+                                    ).format(DateTime.parse(e["date"])),
+                                    "supplier_company_name":
+                                        e["supplier_company_name"] ?? "",
+                                    "category": e["category"] ?? "",
+                                    "value":
+                                        "₹ ${NumberFormat('#,##,##0', 'en_IN').format(double.tryParse(e["total_amount"].toString()) ?? 0)}",
+                                  };
+                                }).toList(),
                               );
                             } else if (e["title"] == "Purchase Volume" ||
                                 e["title"] == "Total Volume (Units)") {
@@ -696,84 +687,62 @@ class _PurchaseReportState extends State<PurchaseReport> {
                                 subtitle:
                                     "Detailed purchase data for your selection",
 
-                            rows: monthlySummary.map<Map<String, dynamic>>((e) {
-  return {
-    "date": DateFormat("dd/MM/yyyy").format(
-      DateTime.parse(e["date"].toString()),
-    ),
-    "supplier_company_name":
-        e["supplier_company_name"]?.toString() ?? "",
-    "category": e["category"]?.toString() ?? "",
-    "value": e["total_trays"]?.toString() ?? "",
-  };
-}).toList(),
+                                rows: monthlySummary.map<Map<String, dynamic>>((
+                                  e,
+                                ) {
+                                  return {
+                                    "date": DateFormat("dd/MM/yyyy").format(
+                                      DateTime.parse(e["date"].toString()),
+                                    ),
+                                    "supplier_company_name":
+                                        e["supplier_company_name"]
+                                            ?.toString() ??
+                                        "",
+                                    "category": e["category"]?.toString() ?? "",
+                                    "value": e["total_trays"]?.toString() ?? "",
+                                  };
+                                }).toList(),
                               );
-                           } else if (e["title"] == "Supplier Count" ||
-    e["title"] == "Active Suppliers") {
-
-  debugPrint("========== SUPPLIER LIST ==========");
-  debugPrint("supplierList:");
-  debugPrint(supplierList.toString());
-
-  debugPrint("monthlySummary:");
-  debugPrint(monthlySummary.toString());
-
-  for (final supplier in supplierList) {
-    final supplierName = supplier["name"].toString();
-
-    final supplierData = monthlySummary.firstWhere(
-      (order) => order["supplier_name"]?.toString() == supplierName,
-      orElse: () => <String, dynamic>{},
-    );
-
-    final totalOrders = monthlySummary.where((order) {
-      return order["supplier_name"]?.toString() == supplierName;
-    }).length;
-
-    debugPrint("------------------------------");
-    debugPrint("Supplier Name: $supplierName");
-    debugPrint("Matched Data: $supplierData");
-    debugPrint("Total Orders: $totalOrders");
-  }
-
-showPurchaseBottomSheet(
-  title: "Supplier List",
-  subtitle: "Detailed purchase data for your selection",
-
-rows: supplierList.map<Map<String, dynamic>>((supplier) {
-  final supplierName = supplier["name"].toString();
-
-  final totalOrders = monthlySummary.where((order) {
-    return order["supplier_name"]?.toString() == supplierName;
-  }).length;
-
-  return {
-    "date": "-",
-    "supplier_name": supplierName, // <-- use this
-    "category": "-",
-    "value": totalOrders.toString(),
-  };
-}).toList(),);                            } else if (e["title"] == "Total Orders") {
+                            } else if (e["title"] == "Supplier Count" ||
+                                e["title"] == "Active Suppliers") {
+                              showPurchaseBottomSheet(
+                                title: "Supplier List",
+                                subtitle:
+                                    "Detailed purchase data for your selection",
+                                rows: supplierList.map<Map<String, dynamic>>((
+                                  supplier,
+                                ) {
+                                  return {
+                                    "date": "-",
+                                    "supplier_name": supplier["name"].toString(),
+                                    "category": "-",
+                                    "value": supplier["orders"].toString(),
+                                  };
+                                }).toList(),
+                              );
+                            } else if (e["title"] == "Total Orders") {
                               showPurchaseBottomSheet(
                                 title: "Total Orders",
 
-                                subtitle:
-                                    "Detailed purchase orders",
+                                subtitle: "Detailed purchase orders",
 
- rows: monthlySummary.map<Map<String, dynamic>>((e) {
-  return {
-    "date": DateFormat("dd/MM/yyyy").format(
-      DateTime.parse(e["date"].toString()),
-    ),
-    "supplier_company_name":
-        e["supplier_company_name"]?.toString() ?? "",
-    "category": e["category"]?.toString() ?? "",
-     "value":
-          "₹ ${NumberFormat('#,##,##0', 'en_IN').format(
-        double.tryParse(e["total_amount"].toString()) ?? 0,
-      )}",
-  };
-}).toList(),                      );
+                                rows: monthlySummary.map<Map<String, dynamic>>((
+                                  e,
+                                ) {
+                                  return {
+                                    "date": DateFormat("dd/MM/yyyy").format(
+                                      DateTime.parse(e["date"].toString()),
+                                    ),
+                                    "supplier_company_name":
+                                        e["supplier_company_name"]
+                                            ?.toString() ??
+                                        "",
+                                    "category": e["category"]?.toString() ?? "",
+                                    "value":
+                                        "₹ ${NumberFormat('#,##,##0', 'en_IN').format(double.tryParse(e["total_amount"].toString()) ?? 0)}",
+                                  };
+                                }).toList(),
+                              );
                             }
                           },
                         );
@@ -860,19 +829,26 @@ rows: supplierList.map<Map<String, dynamic>>((supplier) {
                                   scrollDirection: Axis.horizontal,
                                   child: Row(
                                     crossAxisAlignment: CrossAxisAlignment.end,
-                                  
-                                  
+
                                     children: [
                                       ...monthlyTrend.map((e) {
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                                      child: buildBar(
-                                          double.tryParse(e["spend"].toString()) ?? 0,
-                                          double.tryParse(e["volume"].toString()) ?? 0,
-                                        e["month"].toString(),
-                                      ),
-                                    );
-                                  }),
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                          ),
+                                          child: buildBar(
+                                            double.tryParse(
+                                                  e["spend"].toString(),
+                                                ) ??
+                                                0,
+                                            double.tryParse(
+                                                  e["volume"].toString(),
+                                                ) ??
+                                                0,
+                                            e["month"].toString(),
+                                          ),
+                                        );
+                                      }),
                                     ],
                                   ),
                                 ),
@@ -945,16 +921,12 @@ rows: supplierList.map<Map<String, dynamic>>((supplier) {
                               ...suppliers.map((e) {
                                 return buildSupplierRow(
                                   e["name"].toString(),
-                                  "₹ ${indianCurrency.format(
-                               double.tryParse(e["amount"]?.toString() ?? "0") ?? 0,
-                                )}",
+                                  "₹ ${indianCurrency.format(double.tryParse(e["amount"]?.toString() ?? "0") ?? 0)}",
                                   double.tryParse(e["progress"].toString()) ??
                                       0.0,
                                 );
                               }),
-                             
-                              
-                             
+
                               const SizedBox(height: 28),
 
                               // Container(
@@ -1124,12 +1096,14 @@ rows: supplierList.map<Map<String, dynamic>>((supplier) {
                                   cells: [
                                     DataCell(
                                       Text(
-  e["date"] != null
-      ? DateFormat('dd/MM/yyyy').format(
-          DateTime.parse(e["date"].toString()),
-        )
-      : (e["period"]?.toString() ?? ""),
-),
+                                        e["date"] != null
+                                            ? DateFormat('dd/MM/yyyy').format(
+                                                DateTime.parse(
+                                                  e["date"].toString(),
+                                                ),
+                                              )
+                                            : (e["period"]?.toString() ?? ""),
+                                      ),
                                     ),
 
                                     DataCell(
@@ -1151,22 +1125,14 @@ rows: supplierList.map<Map<String, dynamic>>((supplier) {
 
                                     DataCell(
                                       Text(
-                                        "${e["total_trays"] ??e["quantity"] ?? e["qty"] ?? e["trays"] ?? 0}",
+                                        "${e["total_trays"] ?? e["quantity"] ?? e["qty"] ?? e["trays"] ?? 0}",
                                       ),
                                     ),
 
                                     DataCell(
                                       Text(
-  "₹ ${NumberFormat('#,##,##0', 'en_IN').format(
-    double.tryParse(
-      (e["totalAmount"] ??
-       e["total_amount"] ??
-       e["totalSpend"] ??
-       e["total_spend"] ??
-       0).toString(),
-    ) ?? 0,
-  )}",
-),
+                                        "₹ ${NumberFormat('#,##,##0', 'en_IN').format(double.tryParse((e["totalAmount"] ?? e["total_amount"] ?? e["totalSpend"] ?? e["total_spend"] ?? 0).toString()) ?? 0)}",
+                                      ),
                                     ),
 
                                     DataCell(
@@ -1224,20 +1190,19 @@ rows: supplierList.map<Map<String, dynamic>>((supplier) {
         endDate: end,
       );
 
-print("PURCHASE REPORT DATA = $data");
+      print("PURCHASE REPORT DATA = $data");
       setState(() {
         purchaseData = data;
-    
+
         purchaseStats = data["stats"] ?? [];
-        final int totalOrders =
-    (data["monthlySummary"] as List?)?.length ?? 0;
+        final int totalOrders = (data["monthlySummary"] as List?)?.length ?? 0;
         for (var stat in purchaseStats) {
-  if (stat["title"] == "Avg Unit Cost") {
-    stat["title"] = "Total Orders";
-    stat["amount"] = totalOrders.toString();
-    break;
-  }
-}
+          if (stat["title"] == "Avg Unit Cost") {
+            stat["title"] = "Total Orders";
+            stat["amount"] = totalOrders.toString();
+            break;
+          }
+        }
 
         suppliers = data["suppliers"] ?? [];
 
@@ -1251,20 +1216,19 @@ print("PURCHASE REPORT DATA = $data");
               return {"name": e["name"], "value": e["volume"] ?? 0};
             }).toList();
 
-       supplierList = data["supplierList"] ?? [];
-            debugPrint("========== API SUPPLIER LIST ==========");
-debugPrint(supplierList.toString());
+        supplierList = data["supplierList"] ?? [];
+        debugPrint("========== API SUPPLIER LIST ==========");
+        debugPrint(supplierList.toString());
 
-debugPrint("========== MONTHLY SUMMARY ==========");
-for (final item in monthlySummary) {
-  debugPrint(item.toString());
-}
-           
+        debugPrint("========== MONTHLY SUMMARY ==========");
+        for (final item in monthlySummary) {
+          debugPrint(item.toString());
+        }
+
         totalOrdersList = data["totalOrders"] ?? [];
-         monthlyTrend =
-      List<Map<String, dynamic>>.from(
-        data["monthlyTrend"] ?? [],
-      );
+        monthlyTrend = List<Map<String, dynamic>>.from(
+          data["monthlyTrend"] ?? [],
+        );
 
         isLoading = false;
       });
@@ -1343,20 +1307,20 @@ for (final item in monthlySummary) {
               isExpanded: true,
 
               items: items.map((e) {
-               return DropdownMenuItem<String>(
-    value: e,
-    child: Row(
-      children: [
-        Expanded(
-          child: Text(
-            e,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    ),
-  );
+                return DropdownMenuItem<String>(
+                  value: e,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          e,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
               }).toList(),
 
               onChanged: onChanged,
@@ -1367,63 +1331,63 @@ for (final item in monthlySummary) {
     );
   }
 
- Widget buildActionButton({
-  required String title,
-  required IconData icon,
-  required Color bgColor,
-}) {
-  return Container(
-    height: 52, // reduced height
-    width: 135,
+  Widget buildActionButton({
+    required String title,
+    required IconData icon,
+    required Color bgColor,
+  }) {
+    return Container(
+      height: 52, // reduced height
+      width: 135,
 
-    decoration: BoxDecoration(
-      color: bgColor,
-      borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: const Color(0xffE5E7EB)),
-    ),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xffE5E7EB)),
+      ),
 
-    child: Center(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 18, // reduced icon size
-          ),
+      child: Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 18, // reduced icon size
+            ),
 
-          const SizedBox(width: 6),
+            const SizedBox(width: 6),
 
-          Flexible(
-            child: Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 13, // reduced text size
-                height: 1.1,
+            Flexible(
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13, // reduced text size
+                  height: 1.1,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
-  Widget buildBar(double spend, double volume, String month) {
-     double maxValue = 1;
-
-  for (var e in monthlyTrend) {
-    double value =
-        double.tryParse(e["spend"].toString()) ?? 0;
-
-    if (value > maxValue) {
-      maxValue = value;
-    }
+    );
   }
 
-  double spendHeight = (spend / maxValue) * 140;
-  double volumeHeight = (volume / maxValue) * 140;
+  Widget buildBar(double spend, double volume, String month) {
+    double maxValue = 1;
+
+    for (var e in monthlyTrend) {
+      double value = double.tryParse(e["spend"].toString()) ?? 0;
+
+      if (value > maxValue) {
+        maxValue = value;
+      }
+    }
+
+    double spendHeight = (spend / maxValue) * 140;
+    double volumeHeight = (volume / maxValue) * 140;
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
 
@@ -1522,114 +1486,115 @@ class PurchaseStatCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
 
-    child: Container(
-  padding: const EdgeInsets.all(14), // reduced padding
-  decoration: BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(12),
-    border: Border.all(color: const Color(0xffE5E7EB)),
-    boxShadow: [
-      BoxShadow(
-        // ignore: deprecated_member_use
-        color: Colors.black.withOpacity(0.02),
-        blurRadius: 10,
-        offset: const Offset(0, 4),
-      ),
-    ],
-  ),
+      child: Container(
+        padding: const EdgeInsets.all(14), // reduced padding
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xffE5E7EB)),
+          boxShadow: [
+            BoxShadow(
+              // ignore: deprecated_member_use
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
 
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    mainAxisSize: MainAxisSize.min,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
 
-    children: [
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 12, // reduced
-                height: 1.2,
-                color: Color(0xff4B5563),
-                fontWeight: FontWeight.w600,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12, // reduced
+                      height: 1.2,
+                      color: Color(0xff4B5563),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: iconBg,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: iconColor,
+                    size: 16, // reduced
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
+            Flexible(
+              child: Text(
+                amount,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 20, // reduced
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                ),
               ),
             ),
-          ),
 
-          const SizedBox(width: 8),
+            const SizedBox(height: 6),
 
-          Container(
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (growth != "-")
+                  Icon(
+                    growth.contains("-")
+                        ? Icons.trending_down
+                        : Icons.trending_up,
+                    size: 14, // reduced
+                    color: growthColor,
+                  ),
+
+                if (growth != "-") const SizedBox(width: 3),
+
+                Expanded(
+                  child: Text(
+                    growth == "-"
+                        ? "- 0.0% vs last period"
+                        : "$growth vs last period",
+
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+
+                    style: TextStyle(
+                      color: growth == "-"
+                          ? const Color(0xff9CA3AF)
+                          : growthColor,
+                      fontSize: 11, // reduced
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            child: Icon(
-              icon,
-              color: iconColor,
-              size: 16, // reduced
-            ),
-          ),
-        ],
-      ),
-
-      const SizedBox(height: 10),
-
-      Flexible(
-        child: Text(
-          amount,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 20, // reduced
-            fontWeight: FontWeight.w800,
-            color: Colors.black87,
-          ),
+          ],
         ),
       ),
-
-      const SizedBox(height: 6),
-
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          if (growth != "-")
-            Icon(
-              growth.contains("-")
-                  ? Icons.trending_down
-                  : Icons.trending_up,
-              size: 14, // reduced
-              color: growthColor,
-            ),
-
-          if (growth != "-") const SizedBox(width: 3),
-
-          Expanded(
-            child: Text(
-              growth == "-"
-                  ? "- 0.0% vs last period"
-                  : "$growth vs last period",
-
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-
-              style: TextStyle(
-                color: growth == "-"
-                    ? const Color(0xff9CA3AF)
-                    : growthColor,
-                fontSize: 11, // reduced
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    ],
-  ),
-), );
+    );
   }
 }
