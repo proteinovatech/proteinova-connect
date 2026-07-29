@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
@@ -80,7 +81,8 @@ void initState() {
     }
 
 if (state is PurchaseLoaded) {
-
+   print("Purchase Response:");
+  print(state.purchases);
    final today = DateTime.now();
 
 bool isToday(String? date) {
@@ -177,11 +179,24 @@ final availableStock = state.purchases.where(
               final items =
                   purchase["items"] as List? ?? [];
 
-              final trays = items.fold<int>(
-                0,
-                (sum, item) =>
-                    sum + ((item["trays"] ?? 0) as int),
-              );
+             final trays = items.fold<int>(
+  0,
+  (sum, item) => sum + ((item["trays"] ?? 0) as int),
+);
+
+final totalAmount = items.fold<double>(
+  0.0,
+  (sum, item) {
+    final trays = item["trays"] ?? 0;
+    final capacity = item["capacity"] ?? 30;
+    final rate = double.tryParse(
+          item["per_egg_price"]?.toString() ?? "0",
+        ) ??
+        0.0;
+
+    return sum + (trays * capacity * rate);
+  },
+);
               
              
 
@@ -193,15 +208,14 @@ final availableStock = state.purchases.where(
                 category: items.isNotEmpty
                     ? items.first["egg_category_grade"] ?? "--"
                     : "--",
-                amount: double.tryParse(
-                      purchase["payment_amount"]
-                              ?.toString() ??
-                          "0",
-                    ) ??
-                    0,
+                amount: totalAmount,
                 from: purchase["purchased_location"] ?? "--",
                 to: purchase["warehouse_location"] ?? "--",
-                time: purchase["expected_arrival"] ?? "--",
+                time: purchase["created_at"]
+        ?.toString()
+        .split("T")
+        .first ??
+    "--",
                status: getDisplayStatus(
   purchase["movement_status"]?.toString(),
 ),
@@ -250,10 +264,23 @@ final availableStock = state.purchases.where(
                   purchase["items"] as List? ?? [];
 
               final trays = items.fold<int>(
-                0,
-                (sum, item) =>
-                    sum + ((item["trays"] ?? 0) as int),
-              );
+  0,
+  (sum, item) => sum + ((item["trays"] ?? 0) as int),
+);
+
+final totalAmount = items.fold<double>(
+  0.0,
+  (sum, item) {
+    final trays = item["trays"] ?? 0;
+    final capacity = item["capacity"] ?? 30;
+    final rate = double.tryParse(
+          item["per_egg_price"]?.toString() ?? "0",
+        ) ??
+        0.0;
+
+    return sum + (trays * capacity * rate);
+  },
+);
               
 
               return buildActivityCard(
@@ -264,15 +291,14 @@ final availableStock = state.purchases.where(
                 category: items.isNotEmpty
                     ? items.first["egg_category_grade"] ?? "--"
                     : "--",
-                amount: double.tryParse(
-                      purchase["payment_amount"]
-                              ?.toString() ??
-                          "0",
-                    ) ??
-                    0,
+                amount: totalAmount,
                 from: purchase["purchased_location"] ?? "--",
                 to: purchase["warehouse_location"] ?? "--",
-                time: purchase["expected_arrival"] ?? "--",
+               time: purchase["created_at"]
+        ?.toString()
+        .split("T")
+        .first ??
+    "--",
                status: getDisplayStatus(
   purchase["movement_status"]?.toString(),
 ),

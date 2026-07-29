@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -46,6 +48,10 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
   }
 
   void _showPurchaseDetailsBottomSheet(BuildContext context, Map<String, dynamic> purchase) {
+    debugPrint("Raw Purchase:");
+debugPrint(const JsonEncoder.withIndent('  ').convert(purchase));
+
+
     // ignore: unused_local_variable
     final Size size = MediaQuery.of(context).size;
     final items = purchase["items"] as List? ?? [];
@@ -75,8 +81,10 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
     final double misc = double.tryParse(purchase["misc_expense"]?.toString() ?? "0") ?? 0.0;
     final double additionalTotal = load + unload + trans + misc;
     final double grandTotal = itemsCost + additionalTotal;
-
+    debugPrint("Payment Amount from API: ${purchase["payment_amount"]}");
+debugPrint("Calculated Amount: $grandTotal");
     showModalBottomSheet(
+      
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -97,6 +105,7 @@ class _PurchaseDashboardState extends State<PurchaseDashboard> {
             maxChildSize: 0.95,
             builder: (context, scrollController) {
               return ListView(
+                
                 controller: scrollController,
                 children: [
                   Center(
@@ -288,16 +297,22 @@ label: Text(
             Expanded(
               child: BlocListener<PurchaseBloc, PurchaseState>(
                 listener: (context, state) {
-                  if (state is PurchaseLoaded && state.message != null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(state.message!),
-                        backgroundColor: AppColors.green,
-                      ),
-                    );
-                  }
+                  print("Listener called: ${state.runtimeType}");
+                   if (state is PurchaseLoaded) {
+    setState(() {
+      loadingPurchaseId = null;
+    });
+  }
                 },
-                child: BlocBuilder<PurchaseBloc, PurchaseState>(
+                child: BlocConsumer<PurchaseBloc, PurchaseState>(
+                  listener: (context, state) {
+    if (state is PurchaseLoaded || state is PurchaseError) {
+      setState(() {
+        loadingPurchaseId = null;
+      });
+    }
+  },
+
                   builder: (context, state) {
                     if (state is PurchaseLoading) {
                       return const PurchaseDashboardShimmer();
@@ -523,20 +538,24 @@ style: TextStyle(
                                 padding: const EdgeInsets.only(bottom: 12),
                                 child: GestureDetector(
                                   onTap: () => _showPurchaseDetailsBottomSheet(context, p),
+                                  
                                   child: PurchaseCard(
                                     isLoading: loadingPurchaseId == p['id'].toString(),
                                     movementStatus: p['movement_status'] ?? 'PENDING',
-                                    onArrivalTap: () async {
-                                      setState(() {
-                                        loadingPurchaseId = p['id'].toString();
-                                      });
-                                      context.read<PurchaseBloc>().add(
-                                        UpdateArrivalEvent(
-                                          purchaseId: p['id'].toString(),
-                                          data: {"movement_status": "RECEIVED"},
-                                        ),
-                                      ); 
-                                    },
+                                   onArrivalTap: loadingPurchaseId == p['id'].toString()
+    ? null
+    : () {
+        setState(() {
+          loadingPurchaseId = p['id'].toString();
+        });
+
+        context.read<PurchaseBloc>().add(
+          UpdateArrivalEvent(
+            purchaseId: p['id'].toString(),
+            data: {"movement_status": "RECEIVED"},
+          ),
+        );
+      },
                                     supplier: p['supplier_company_name'] ?? '',
                                     orderId: "PO-${p["id"]}",
                                     dateTime: p['created_at'] ?? '',
