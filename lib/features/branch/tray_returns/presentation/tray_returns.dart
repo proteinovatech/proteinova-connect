@@ -222,7 +222,7 @@ class _TrayReturnState extends State<TrayReturn> {
                           icon: Icons.check_circle_outline,
                           iconColor: Colors.indigo,
                           iconBg: const Color(0xffeef2ff),
-                          total: cards.closingTrays,
+                          total: cards.closingTrays + cards.emptyTrays,
                           emptyPlastic: cards.emptyPlastic,
                           emptyPaper: cards.emptyPaper,
                           filledPlastic: cards.filledPlastic,
