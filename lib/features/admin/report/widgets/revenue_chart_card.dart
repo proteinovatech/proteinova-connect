@@ -3,15 +3,16 @@ import 'package:flutter/material.dart';
 class RevenueChartCard extends StatelessWidget {
   final List<dynamic> chartData;
 
-  const RevenueChartCard({
-    super.key,
-    required this.chartData,
-  });
+  const RevenueChartCard({super.key, required this.chartData});
 
   Widget bar(double revenue, double purchase, String month, double maxVal) {
     const double maxBarHeight = 130.0;
-    final double scaledRevenue = maxVal > 0 ? (revenue / maxVal) * maxBarHeight : 0.0;
-    final double scaledPurchase = maxVal > 0 ? (purchase / maxVal) * maxBarHeight : 0.0;
+    final double scaledRevenue = maxVal > 0
+        ? (revenue / maxVal) * maxBarHeight
+        : 0.0;
+    final double scaledPurchase = maxVal > 0
+        ? (purchase / maxVal) * maxBarHeight
+        : 0.0;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -67,9 +68,7 @@ class RevenueChartCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xffE5E7EB),
-        ),
+        border: Border.all(color: const Color(0xffE5E7EB)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,9 +143,30 @@ class RevenueChartCard extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: const [
-                      Text("10k", style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.w500)),
-                      Text("5k", style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.w500)),
-                      Text("0", style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.w500)),
+                      Text(
+                        "10k",
+                        style: TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        "5k",
+                        style: TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        "0",
+                        style: TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -159,29 +179,46 @@ class RevenueChartCard extends StatelessWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(height: 1, color: const Color(0xFFF1F5F9)),
-                            Container(height: 1, color: const Color(0xFFF1F5F9)),
-                            Container(height: 1, color: const Color(0xFFF1F5F9)),
+                            Container(
+                              height: 1,
+                              color: const Color(0xFFF1F5F9),
+                            ),
+                            Container(
+                              height: 1,
+                              color: const Color(0xFFF1F5F9),
+                            ),
+                            Container(
+                              height: 1,
+                              color: const Color(0xFFF1F5F9),
+                            ),
                           ],
                         ),
                       ),
-                     SingleChildScrollView(
-  scrollDirection: Axis.horizontal,
-  child: Row(
-    crossAxisAlignment: CrossAxisAlignment.end,
-    children: chartData.map((e) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: bar(
-          double.tryParse(e["revenue"]?.toString() ?? '0') ?? 0.0,
-          double.tryParse(e["purchase"]?.toString() ?? '0') ?? 0.0,
-          e["month"]?.toString() ?? '',
-          maxVal,
-        ),
-      );
-    }).toList(),
-  ),
-)
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: chartData.map((e) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                              ),
+                              child: bar(
+                                double.tryParse(
+                                      e["revenue"]?.toString() ?? '0',
+                                    ) ??
+                                    0.0,
+                                double.tryParse(
+                                      e["purchase"]?.toString() ?? '0',
+                                    ) ??
+                                    0.0,
+                                e["month"]?.toString() ?? '',
+                                maxVal,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
                     ],
                   ),
                 ),
