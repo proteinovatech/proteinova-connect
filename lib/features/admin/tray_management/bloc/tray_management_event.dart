@@ -2,24 +2,26 @@ abstract class TrayManagementEvent {}
 
 class FetchInventoryEvent extends TrayManagementEvent {}
 
-class AddTraysEvent extends TrayManagementEvent {
+class AddTraysToLocationEvent extends TrayManagementEvent {
+  final String locationName;
   final int plasticTrays;
   final int paperTrays;
 
-  AddTraysEvent({
+  AddTraysToLocationEvent({
+    required this.locationName,
     required this.plasticTrays,
     required this.paperTrays,
   });
 }
 
-class ReturnTraysEvent extends TrayManagementEvent {
-  final String warehouse;
-  final int plastic;
-  final int paper;
+class ReturnTraysToWarehouseEvent extends TrayManagementEvent {
+  final String branchName;
+  final int plasticTrays;
+  final int paperTrays;
 
-  ReturnTraysEvent({
-    required this.warehouse,
-    required this.plastic,
-    required this.paper,
+  ReturnTraysToWarehouseEvent({
+    required this.branchName,
+    required this.plasticTrays,
+    required this.paperTrays,
   });
 }

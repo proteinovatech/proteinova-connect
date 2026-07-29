@@ -1524,6 +1524,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                   onChanged: (val) => _handlePaymentChange(p.id, 'amount', val),
                                   decoration: InputDecoration(
                                     hintText: "0.00",
+                                    hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                   ),
@@ -1552,6 +1553,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                     onChanged: (val) => _handlePaymentChange(p.id, 'cash_person_name', val),
                                     decoration: InputDecoration(
                                       hintText: "Person Name",
+                                      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                     ),
@@ -1578,6 +1580,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                     onChanged: (val) => _handlePaymentChange(p.id, 'cash_contact_number', val),
                                     decoration: InputDecoration(
                                       hintText: "9876543210",
+                                      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                     ),
@@ -1613,6 +1616,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                                     onChanged: (val) => _handlePaymentChange(p.id, 'reference', val),
                                     decoration: InputDecoration(
                                       hintText: "UPI Transaction ID",
+                                      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                     ),
@@ -1636,6 +1640,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                               onChanged: (val) => _handlePaymentChange(p.id, 'reference', val),
                               decoration: InputDecoration(
                                 hintText: "Reference Number",
+                                hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                               ),
@@ -1727,6 +1732,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
         maxLines: 4,
         decoration: InputDecoration(
           hintText: "Enter any additional notes...",
+          hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -1806,7 +1812,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
             child: DropdownButton<String>(
               isExpanded: true,
               value: value == null || value.isEmpty ? null : value,
-              hint: const Text("Select option", style: TextStyle(fontSize: 12, color: Colors.grey)),
+              hint: const Text("Select option", style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
               items: items
                   .map((e) => DropdownMenuItem(
                         value: e['value'],
@@ -1902,6 +1908,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
             },
             decoration: InputDecoration(
               hintText: hint,
+              hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(color: Color(0xFFE2E8F0)),

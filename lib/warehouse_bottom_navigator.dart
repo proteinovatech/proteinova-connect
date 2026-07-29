@@ -11,6 +11,10 @@ import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_re
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/bloc/tray_receive_event.dart';
 import 'package:proteinova_connect/features/admin/menu/ReceiveTrays/data/services/tray_receive_service.dart';
 import 'package:proteinova_connect/features/admin/report/screens/admin_report_dashboard_screen.dart';
+import 'package:proteinova_connect/features/admin/report/screens/expense_report_screen.dart';
+import 'package:proteinova_connect/features/admin/report/screens/purchase_report_screen.dart';
+import 'package:proteinova_connect/features/admin/report/screens/sales_report_screen.dart';
+import 'package:proteinova_connect/features/admin/report/screens/warehouse_report_screen.dart';
 
 import 'package:proteinova_connect/features/admin/tray_management/screen/tray_management.dart';
 import 'package:proteinova_connect/features/auth/bloc/auth_bloc.dart';
@@ -113,7 +117,10 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
   final List<Widget> pages = [
     AdminInventory(role: "warehouse"),
 
-    IncomingStock(role: "warehouse"),
+    BlocProvider(
+      create: (_) => PurchaseExpenseBloc(PurchaseExpenseRepository()),
+      child: const PurchaseExpenseScreen(),
+    ),
 
     // BlocProvider(
     //   create: (_) => BranchExpenseBloc(ExpenseRepository()),
@@ -121,10 +128,7 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
     // ),
     DistributionPage(),
 
-    BlocProvider(
-      create: (_) => PurchaseExpenseBloc(PurchaseExpenseRepository()),
-      child: const PurchaseExpenseScreen(),
-    ),
+    IncomingStock(role: "warehouse"),
   ];
   @override
   Widget build(BuildContext context) {
@@ -141,9 +145,9 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildNavItem(Icons.inventory_2, 0),
-            _buildNavItem(Icons.move_to_inbox_rounded, 1),
+            _buildNavItem(Icons.account_balance_wallet_outlined, 1),
             _buildNavItem(Icons.local_shipping_rounded, 2),
-            _buildNavItem(Icons.account_balance_wallet_outlined, 3),
+            _buildNavItem(Icons.move_to_inbox_rounded, 3),
             _buildNavItem(Icons.menu_outlined, 4),
           ],
         ),
@@ -193,11 +197,11 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
       case 0:
         return "Inventory";
       case 1:
-        return "Incoming";
+        return "Expenses";
       case 2:
         return "Sales";
       case 3:
-        return "Expenses";
+        return "Incoming";
       case 4:
         return "Menu";
       default:
@@ -452,10 +456,53 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
 
                   ///ADMINISTRATION
                   _sectionTitle("ADMINISTRATION"),
-                  _menuTile(
-                    Icons.pie_chart_outline_outlined,
-                    "Reports",
-                    AdminReportDashboardScreen(),
+                  Theme(
+                    data: Theme.of(
+                      context,
+                    ).copyWith(dividerColor: Colors.transparent),
+                    child: ExpansionTile(
+                      leading: const Icon(
+                        Icons.pie_chart_outline_outlined,
+                        size: 18,
+                        color: Colors.black87,
+                      ),
+                      title: const Text(
+                        "Reports",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          height: 1,
+                        ),
+                      ),
+                      tilePadding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 0,
+                      ),
+                      childrenPadding: const EdgeInsets.only(left: 12),
+                      minTileHeight: 48,
+                      children: [
+                        _menuTile(
+                          Icons.shopping_bag_outlined,
+                          "Purchase Report",
+                          const PurchaseReportScreen(),
+                        ),
+                        _menuTile(
+                          Icons.account_balance_wallet_outlined,
+                          "Expense Report",
+                          const ExpenseReportScreen(),
+                        ),
+                        _menuTile(
+                          Icons.store_outlined,
+                          "Branch Sales Report",
+                          const SalesReportScreen(),
+                        ),
+                        _menuTile(
+                          Icons.warehouse_outlined,
+                          "Warehouse Report",
+                          const WarehouseReportScreen(),
+                        ),
+                      ],
+                    ),
                   ),
 
                   //Report

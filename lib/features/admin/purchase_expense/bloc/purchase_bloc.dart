@@ -27,6 +27,7 @@ class PurchaseExpenseBloc
   ) async {
     emit(state.copyWith(
       isLoading: true,
+      isSuccess: false,
       error: null,
     ));
 
