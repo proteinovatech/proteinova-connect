@@ -354,26 +354,26 @@ class ReportService {
 
     double totalSpend = 0;
     int totalTrays = 0;
-   Map<String, double> supplierMap = {};
+    Map<String, double> supplierMap = {};
 
-for (var item in list) {
-  double amount =
-      double.tryParse(item['total_amount']?.toString() ?? '0') ?? 0;
+    for (var item in list) {
+      double amount =
+          double.tryParse(item['total_amount']?.toString() ?? '0') ?? 0;
 
-  int trays =
-      int.tryParse(item['total_trays']?.toString() ?? '0') ?? 0;
+      int trays = int.tryParse(item['total_trays']?.toString() ?? '0') ?? 0;
 
-  totalSpend += amount;
-  totalTrays += trays;
+      totalSpend += amount;
+      totalTrays += trays;
 
-  // Use company name instead of supplier_name
- final supplier = useCompanyName
-    ? (item["supplier_company_name"] ?? "").toString().trim()
-    : (item["supplier_name"] ?? "").toString().trim();
+      // Use company name instead of supplier_name
+      final supplier = useCompanyName
+          ? (item["supplier_company_name"] ?? "").toString().trim()
+          : (item["supplier_name"] ?? "").toString().trim();
 
-if (supplier.isEmpty) continue;
+      if (supplier.isEmpty) continue;
 
-supplierMap[supplier] = (supplierMap[supplier] ?? 0) + amount;}
+      supplierMap[supplier] = (supplierMap[supplier] ?? 0) + amount;
+    }
 
     List<Map<String, dynamic>> suppliers = supplierMap.entries
         .map(
@@ -387,16 +387,16 @@ supplierMap[supplier] = (supplierMap[supplier] ?? 0) + amount;}
 
     double avgCost = totalTrays > 0 ? totalSpend / totalTrays : 0;
     final activeSuppliers = list
-    .map((e) {
-      if (useCompanyName) {
-        return (e["supplier_company_name"] ?? "").toString().trim();
-      } else {
-        return (e["supplier_name"] ?? "").toString().trim();
-      }
-    })
-    .where((name) => name.isNotEmpty)
-    .toSet()
-    .length;
+        .map((e) {
+          if (useCompanyName) {
+            return (e["supplier_company_name"] ?? "").toString().trim();
+          } else {
+            return (e["supplier_name"] ?? "").toString().trim();
+          }
+        })
+        .where((name) => name.isNotEmpty)
+        .toSet()
+        .length;
 
     Map<String, double> spendByMonth = {};
     Map<String, int> volumeByMonth = {};
@@ -441,65 +441,57 @@ supplierMap[supplier] = (supplierMap[supplier] ?? 0) + amount;}
     }).toList();
 
     final spendBySupplier = suppliers.map((e) {
-  return {
-    "name": e["name"],
-    "value": "₹ ${NumberFormat('#,##,##0', 'en_IN').format(e["amount"])}",
-  };
-}).toList();
+      return {
+        "name": e["name"],
+        "value": "₹ ${NumberFormat('#,##,##0', 'en_IN').format(e["amount"])}",
+      };
+    }).toList();
 
-final volumeBySupplier = supplierMap.entries.map((e) {
-  final supplierRows = list.where((x) {
-  final supplier = useCompanyName
-      ? (x["supplier_company_name"] ?? "").toString().trim()
-      : (x["supplier_name"] ?? "").toString().trim();
+    final volumeBySupplier = supplierMap.entries.map((e) {
+      final supplierRows = list.where((x) {
+        final supplier = useCompanyName
+            ? (x["supplier_company_name"] ?? "").toString().trim()
+            : (x["supplier_name"] ?? "").toString().trim();
 
-  return supplier == e.key;
-});
+        return supplier == e.key;
+      });
 
-  int trays = 0;
+      int trays = 0;
 
-  for (var row in supplierRows) {
-    trays += int.tryParse(row["total_trays"].toString()) ?? 0;
-  }
+      for (var row in supplierRows) {
+        trays += int.tryParse(row["total_trays"].toString()) ?? 0;
+      }
 
-  return {
-    "name": e.key,
-    "value": trays,
-  };
-}).toList();
+      return {"name": e.key, "value": trays};
+    }).toList();
 
+    Map<String, int> supplierCountMap = {};
 
+    for (final item in list) {
+      final supplier = useCompanyName
+          ? (item["supplier_company_name"] ?? "").toString().trim()
+          : (item["supplier_name"] ?? "").toString().trim();
 
-Map<String, int> supplierCountMap = {};
+      if (supplier.isEmpty) continue;
 
-for (final item in list) {
-  final supplier = useCompanyName
-      ? (item["supplier_company_name"] ?? "").toString().trim()
-      : (item["supplier_name"] ?? "").toString().trim();
+      supplierCountMap[supplier] = (supplierCountMap[supplier] ?? 0) + 1;
+    }
 
-  if (supplier.isEmpty) continue;
+    final supplierList = supplierCountMap.entries.map((e) {
+      return {"name": e.key, "orders": e.value};
+    }).toList();
 
-  supplierCountMap[supplier] =
-      (supplierCountMap[supplier] ?? 0) + 1;
-}
-
-final supplierList = supplierCountMap.entries.map((e) {
-  return {
-    "name": e.key,
-    "orders": e.value,
-  };
-}).toList();
-
-final totalOrdersList = list.map((e) {
-  return {
-    "name": e["supplier_name"] ?? "-",
-    "value": "Order #${e["id"]}",
-    "details": e["date"] != null
-        ? DateFormat("dd/MM/yyyy")
-            .format(DateTime.parse(e["date"].toString()))
-        : "-",
-  };
-}).toList();
+    final totalOrdersList = list.map((e) {
+      return {
+        "name": e["supplier_name"] ?? "-",
+        "value": "Order #${e["id"]}",
+        "details": e["date"] != null
+            ? DateFormat(
+                "dd/MM/yyyy",
+              ).format(DateTime.parse(e["date"].toString()))
+            : "-",
+      };
+    }).toList();
     return {
       "stats": [
         {
@@ -535,9 +527,9 @@ final totalOrdersList = list.map((e) {
       "monthlySummary": list,
       "monthlyTrend": monthlyTrend,
       "spendBySupplier": spendBySupplier,
-  "volumeBySupplier": volumeBySupplier,
-  "supplierList": supplierList,
-  
+      "volumeBySupplier": volumeBySupplier,
+      "supplierList": supplierList,
+
       "raw": list,
       "totalOrders": totalOrdersList,
     };
