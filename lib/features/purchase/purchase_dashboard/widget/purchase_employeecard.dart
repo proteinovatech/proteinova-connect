@@ -99,10 +99,31 @@ class _PurchaseEmployeecardState extends State<PurchaseEmployeecard> {
           Text("Reaching Warehouse",style: AppTextStyles.buttonText16,),
              
            SizedBox(height:size.height*0.01),
-           _buildField(
-            controller:widget.branchController , 
-            hint: "Enter branch",
-            icon: Icons.store_outlined),
+          DropdownButtonFormField<String>(
+  value: widget.branchController.text.isNotEmpty
+      ? widget.branchController.text
+      : null,
+  hint: const Text("Select Warehouse"),
+  decoration: InputDecoration(
+    prefixIcon: const Icon(Icons.warehouse_outlined),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+  ),
+  items: const [
+    DropdownMenuItem(
+      value: "Main Warehouse",
+      child: Text("Main Warehouse"),
+    ),
+  ],
+  onChanged: (value) {
+    if (value != null) {
+      setState(() {
+        widget.branchController.text = value;
+      });
+    }
+  },
+),
          
            SizedBox(height: size.height*0.02),
 
