@@ -13,7 +13,7 @@ import 'package:proteinova_connect/features/admin/supplier/data/services/supplie
 import 'package:proteinova_connect/features/admin/supplier/data/models/supplier_model.dart';
 import 'package:proteinova_connect/features/admin/presentation/receive_stockscreen.dart';
 import 'package:proteinova_connect/features/admin/menu/SalesDashboard/presentation/sales_entry_page.dart';
-
+import 'package:proteinova_connect/features/admin/Distribution/presentation/dispatch_planning_page.dart';
 class AdminInventory extends StatefulWidget {
   final String role;
   const AdminInventory({super.key, required this.role});
@@ -1053,7 +1053,7 @@ final damagedStock = categoryLevels.fold<int>(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
-                                            const SalesEntryPage(),
+                                            const DispatchPlanningPage(),
                                       ),
                                     ).then((_) => _loadData());
                                   },

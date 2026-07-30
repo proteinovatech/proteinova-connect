@@ -20,7 +20,7 @@ class _BranchSettingsScreenState extends State<BranchSettingsScreen> {
   Future<void> fetchBranches() async {
     try {
       final response = await http.get(
-        Uri.parse('${dotenv.env['VITE_BACKEND_URL']}/api/branches'),
+        Uri.parse('${dotenv.env['VITE_BACKEND_URL'] ?? dotenv.env['BASE_URL'] ?? ''}/api/branches'),
       );
 
       if (response.statusCode == 200) {

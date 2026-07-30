@@ -6,7 +6,7 @@ import 'package:proteinova_connect/core/config/api_config.dart';
 import 'package:proteinova_connect/features/branch/sales/data/model/mobile_inventory_model.dart';
 
 class BranchSalesRemoteDatasource {
-  static String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? "";
+  static String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? dotenv.env['BASE_URL'] ?? "";
 
   // ──────────────────────────────────────────────
   // POST /api/branch/sales  →  createSale

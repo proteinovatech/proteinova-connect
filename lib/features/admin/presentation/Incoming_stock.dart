@@ -30,50 +30,51 @@ class _IncomingStockState extends State<IncomingStock> {
     _fetchData();
   }
 
-Future<void> _fetchData() async {
-  setState(() => isLoading = true);
+  Future<void> _fetchData() async {
+    setState(() => isLoading = true);
 
-  try {
-    print("Step 1");
+    try {
+      print("Step 1");
 
-    final data = await _repository.fetchInventoryData();
-    print("Step 2");
+      final data = await _repository.fetchInventoryData();
+      print("Step 2");
 
-    final purchasesList = await _repository.fetchPurchases();
-    print("Step 3");
+      final purchasesList = await _repository.fetchPurchases();
+      print("Step 3");
 
-    print("Purchases count: ${purchasesList.length}");
+      print("Purchases count: ${purchasesList.length}");
 
-   print("Purchases: ${purchases.length}");
+      print("Purchases: ${purchases.length}");
 
-for (int i = 0; i < purchases.length; i++) {
-  try {
-    final p = purchases[i];
-    print("Index: $i");
-    print(p);
-  } catch (e) {
-    print("Error at index $i: $e");
+      for (int i = 0; i < purchases.length; i++) {
+        try {
+          final p = purchases[i];
+          print("Index: $i");
+          print(p);
+        } catch (e) {
+          print("Error at index $i: $e");
+        }
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        inventoryModel = data;
+        purchases = purchasesList;
+        isLoading = false;
+      });
+
+      print("Step 4");
+    } catch (e, stackTrace) {
+      print("ERROR: $e");
+      print(stackTrace);
+
+      if (!mounted) return;
+
+      setState(() => isLoading = false);
+    }
   }
-}
 
-    if (!mounted) return;
-
-    setState(() {
-      inventoryModel = data;
-      purchases = purchasesList;
-      isLoading = false;
-    });
-
-    print("Step 4");
-  } catch (e, stackTrace) {
-    print("ERROR: $e");
-    print(stackTrace);
-
-    if (!mounted) return;
-
-    setState(() => isLoading = false);
-  }
-}
   Future<void> _receiveStock(int dispatchId) async {
     Navigator.push(
       context,
@@ -101,13 +102,18 @@ for (int i = 0; i < purchases.length; i++) {
     }
   }
 
-List<PurchaseModel> get _activePurchases {
-  return purchases;
-}
+  List<PurchaseModel> get _activePurchases {
+    return purchases
+        .where(
+          (p) =>
+              p.purchaseStatus.toUpperCase() != "RECEIVED" &&
+              p.purchaseStatus.toUpperCase() != "CANCELLED",
+        )
+        .toList();
+  }
 
-
-List<PurchaseModel> get _filteredPurchases {
-    List<PurchaseModel> list = _activePurchases;
+  List<PurchaseModel> get _filteredPurchases {
+    List<PurchaseModel> list = purchases;
 
     if (searchQuery.isNotEmpty) {
       final query = searchQuery.toLowerCase();
@@ -192,7 +198,7 @@ List<PurchaseModel> get _filteredPurchases {
         .where(
           (p) =>
               p.purchaseStatus.toUpperCase() == "PURCHASED" &&
-              p.movementStatus.toUpperCase() == "RECEIVED",
+              p.movementStatus.toUpperCase() == "ARRIVAL",
         )
         .length;
   }
@@ -1013,7 +1019,6 @@ List<PurchaseModel> get _filteredPurchases {
 
   @override
   Widget build(BuildContext context) {
-  
     if (isLoading) {
       return const Scaffold(
         body: Center(child: AdminIncomingStockQueueSkeletonLoader()),
@@ -1034,16 +1039,13 @@ List<PurchaseModel> get _filteredPurchases {
                 /// TOP BAR
                 Row(
                   children: [
-                   if (widget.role.trim().toLowerCase() == "admin") ...[
-  InkWell(
-    onTap: () => Navigator.pop(context),
-    child: const Icon(
-      Icons.arrow_back,
-      size: 24,
-    ),
-  ),
-  SizedBox(width: getWidth(context, 12)),
-],
+                    if (widget.role.trim().toLowerCase() == "admin") ...[
+                      InkWell(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(Icons.arrow_back, size: 24),
+                      ),
+                      SizedBox(width: getWidth(context, 12)),
+                    ],
                     const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
@@ -1101,61 +1103,50 @@ List<PurchaseModel> get _filteredPurchases {
                 const SizedBox(height: 16),
 
                 /// CARDS
-                buildOverviewCard(
+                ShipmentCardWidget(
                   title: "Expected Today",
-                  value: "$_expectedTodayShipments Shipments",
-                  subtitle: "Totaling $_expectedTodayEggs eggs",
+                  totalTitle: "Totaling",
+                  totalValue: "$_expectedTodayEggs eggs",
                   icon: Icons.calendar_today_outlined,
                   iconBg: const Color(0xFFF1F6FF),
                   iconColor: Colors.black,
-                  onTap: () {
-                    _showShipmentModal("Expected Today", _expectedTodayList);
-                  },
+                  shipments: _expectedTodayList,
                 ),
 
                 const SizedBox(height: 14),
 
-                buildOverviewCard(
+                ShipmentCardWidget(
                   title: "Ready for Unloading",
-                  value: "$_readyForUnloadingShipments Shipments",
-                  subtitle: "Requires immediate actions",
+                  totalTitle: "Requires",
+                  totalValue: "immediate actions",
                   icon: Icons.local_shipping_outlined,
                   iconBg: const Color(0xff16A34A),
                   iconColor: Colors.white,
-                  onTap: () {
-                    _showShipmentModal(
-                      "Ready for Unloading",
-                      _readyForUnloadingList,
-                    );
-                  },
+                  shipments: _readyForUnloadingList,
                 ),
 
                 const SizedBox(height: 14),
 
-                buildOverviewCard(
+                ShipmentCardWidget(
                   title: "Upcoming Shipments",
-                  value: "$_upcomingShipments Shipments",
-                  subtitle: "Next scheduled deliveries",
+                  totalTitle: "Next scheduled",
+                  totalValue: "deliveries",
                   icon: Icons.send_outlined,
                   iconBg: const Color(0xff0B74FF),
                   iconColor: Colors.white,
-                  onTap: () {
-                    _showShipmentModal("Upcoming Shipments", _upcomingList);
-                  },
+                  shipments: _upcomingList,
                 ),
 
                 const SizedBox(height: 14),
 
-                buildOverviewCard(
+                VehicleCardWidget(
                   title: "Vehicle Transactions",
-                  value: "${_vehicleTransactionsList.length} Transactions",
-                  subtitle: "All incoming vehicle movements",
+                  totalTitle: "All incoming",
+                  totalValue: "vehicle movements",
                   icon: Icons.local_shipping,
                   iconBg: const Color(0xffF59E0B),
                   iconColor: Colors.white,
-                  onTap: () {
-                    _showVehicleModal();
-                  },
+                  transactions: _vehicleTransactionsList,
                 ),
 
                 const SizedBox(height: 16),
@@ -1236,60 +1227,64 @@ List<PurchaseModel> get _filteredPurchases {
                 const SizedBox(height: 16),
 
                 /// TABLE
-   Container(
-  decoration: BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(12),
-    border: Border.all(color: Colors.grey.shade200),
-  ),
-  child: SingleChildScrollView(
-    scrollDirection: Axis.horizontal,
-    child: SizedBox(
-      width: 800, // Set according to your table width
-      child: Column(
-        children: [
-          buildTableHeader(),
-
-          if (isLoading)
-            const Padding(
-              padding: EdgeInsets.all(40.0),
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else if (_filteredPurchases.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(40.0),
-              child: Center(child: Text("No records found")),
-            )
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _filteredPurchases.length,
-              itemBuilder: (context, index) {
-                final p = _filteredPurchases[index];
-
-                return InkWell(
-                  onTap: () => _receiveStock(p.id),
-                  child: buildTableRow(
-                    po: p.poNumber,
-                    date: _formatDate(p.createdAt),
-                    supplier: p.supplierName,
-                    location: p.location.isEmpty ? "N/A" : p.location,
-                    quantity: "${p.totalQuantity} Eggs",
-                    type: p.productName,
-                    purchaseStatus: p.purchaseStatus,
-                    movementStatus: p.movementStatus,
-                    onReceive: () => _receiveStock(p.id),
-                    onMarkArrival: () => _markArrival(p.id),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
                   ),
-                );
-              },
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: 800, // Set according to your table width
+                      child: Column(
+                        children: [
+                          buildTableHeader(),
+
+                          if (isLoading)
+                            const Padding(
+                              padding: EdgeInsets.all(40.0),
+                              child: Center(child: CircularProgressIndicator()),
+                            )
+                          else if (_filteredPurchases.isEmpty)
+                            const Padding(
+                              padding: EdgeInsets.all(40.0),
+                              child: Center(child: Text("No records found")),
+                            )
+                          else
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: _filteredPurchases.length,
+                              itemBuilder: (context, index) {
+                                final p = _filteredPurchases[index];
+
+                                return InkWell(
+                                  onTap: () => _receiveStock(p.id),
+                                  child: buildTableRow(
+                                    po: p.poNumber,
+                                    date: _formatDate(p.createdAt),
+                                    supplier: p.supplierName,
+                                    location: p.location.isEmpty
+                                        ? "N/A"
+                                        : p.location,
+                                    quantity: "${p.totalQuantity} Eggs",
+                                    type: p.productName,
+                                    purchaseStatus: p.purchaseStatus,
+                                    movementStatus: p.movementStatus,
+                                    onReceive: () => _receiveStock(p.id),
+                                    onMarkArrival: () => _markArrival(p.id),
+                                  ),
+                                );
+                              },
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-        ],
-      ),
-    ),
-  ),
-)      ]),
           ),
         ),
       ),
@@ -1310,7 +1305,7 @@ List<PurchaseModel> get _filteredPurchases {
         .where(
           (p) =>
               p.purchaseStatus.toUpperCase() == "PURCHASED" &&
-              p.movementStatus.toUpperCase() == "RECEIVED",
+              p.movementStatus.toUpperCase() == "ARRIVAL",
         )
         .toList();
   }
@@ -1429,7 +1424,8 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
     setState(() {
       trayDetails[index]['received'] = intValue;
       final damaged = trayDetails[index]['damaged'] as int;
-      trayDetails[index]['good'] = intValue - damaged;
+      final good = intValue - damaged;
+      trayDetails[index]['good'] = good > 0 ? good : 0;
     });
   }
 
@@ -1438,7 +1434,8 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
     setState(() {
       trayDetails[index]['damaged'] = intValue;
       final received = trayDetails[index]['received'] as int;
-      trayDetails[index]['good'] = received - intValue;
+      final good = received - intValue;
+      trayDetails[index]['good'] = good > 0 ? good : 0;
     });
   }
 
@@ -1505,17 +1502,6 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
     });
 
     final List expenses = purchase?['expenses'] ?? [];
-
-    final double otherCharge = expenses
-        .where(
-          (e) => e['expense_type']?.toString().toUpperCase() != "TRANSPORT",
-        )
-        .fold<double>(
-          0,
-          (sum, e) => sum + (double.tryParse(e['amount'].toString()) ?? 0.0),
-        );
-
-    final double totalAmount = itemsTotal + otherCharge;
 
     return Scaffold(
       backgroundColor: const Color(0xffF8F8F8),
@@ -1602,8 +1588,7 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
                                 child: _buildBillSummaryCard(
                                   items.length,
                                   itemsTotal,
-                                  otherCharge,
-                                  totalAmount,
+                                  expenses,
                                 ),
                               ),
                           ],
@@ -1613,12 +1598,7 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
 
                     if (MediaQuery.of(context).size.width <= 900) ...[
                       const SizedBox(height: 20),
-                      _buildBillSummaryCard(
-                        items.length,
-                        itemsTotal,
-                        otherCharge,
-                        totalAmount,
-                      ),
+                      _buildBillSummaryCard(items.length, itemsTotal, expenses),
                     ],
 
                     const SizedBox(height: 30),
@@ -2311,9 +2291,52 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
   Widget _buildBillSummaryCard(
     int itemCount,
     double itemsTotal,
-    double otherCharge,
-    double totalAmount,
+    List expenses,
   ) {
+    final double transportCharge = expenses
+        .where(
+          (e) => e['expense_type']?.toString().toUpperCase() == "TRANSPORT",
+        )
+        .fold<double>(
+          0,
+          (sum, e) => sum + (double.tryParse(e['amount'].toString()) ?? 0.0),
+        );
+
+    final double loadingCharge = expenses
+        .where((e) => e['expense_type']?.toString().toUpperCase() == "LOADING")
+        .fold<double>(
+          0,
+          (sum, e) => sum + (double.tryParse(e['amount'].toString()) ?? 0.0),
+        );
+
+    final double unloadingCharge = expenses
+        .where(
+          (e) => e['expense_type']?.toString().toUpperCase() == "UNLOADING",
+        )
+        .fold<double>(
+          0,
+          (sum, e) => sum + (double.tryParse(e['amount'].toString()) ?? 0.0),
+        );
+
+    final double otherMiscCharge = expenses
+        .where((e) {
+          final type = e['expense_type']?.toString().toUpperCase();
+          return type != "TRANSPORT" &&
+              type != "LOADING" &&
+              type != "UNLOADING";
+        })
+        .fold<double>(
+          0,
+          (sum, e) => sum + (double.tryParse(e['amount'].toString()) ?? 0.0),
+        );
+
+    final double totalAmount =
+        itemsTotal +
+        transportCharge +
+        loadingCharge +
+        unloadingCharge +
+        otherMiscCharge;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -2333,7 +2356,23 @@ class _ReceiveStockScreenState extends State<ReceiveStockScreen> {
             "Items ($itemCount)",
             "₹${itemsTotal.toStringAsFixed(0)}",
           ),
-          _summaryRow("Other Charge", "₹${otherCharge.toStringAsFixed(0)}"),
+          _summaryRow(
+            "Transport Expense",
+            "₹${transportCharge.toStringAsFixed(0)}",
+          ),
+          _summaryRow(
+            "Loading Expense",
+            "₹${loadingCharge.toStringAsFixed(0)}",
+          ),
+          _summaryRow(
+            "Unloading Expense",
+            "₹${unloadingCharge.toStringAsFixed(0)}",
+          ),
+          if (otherMiscCharge > 0)
+            _summaryRow(
+              "Misc Expenses",
+              "₹${otherMiscCharge.toStringAsFixed(0)}",
+            ),
           const Divider(height: 40, color: Colors.black),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

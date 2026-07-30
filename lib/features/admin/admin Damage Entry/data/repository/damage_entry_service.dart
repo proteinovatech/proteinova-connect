@@ -6,7 +6,7 @@ import 'package:proteinova_connect/features/admin/admin Damage Entry/data/models
 import 'package:proteinova_connect/features/admin/admin Damage Entry/data/models/damage_history_model.dart';
 
 class DamageEntryService {
-  static final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? '';
+  static final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? dotenv.env['BASE_URL'] ?? '';
 
   static Future<List<DamageLocation>> getLocations() async {
     final response = await http.get(

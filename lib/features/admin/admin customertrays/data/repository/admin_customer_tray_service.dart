@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:proteinova_connect/features/admin/admin customertrays/data/models/admin_customer_tray_model.dart';
 
 class AdminCustomerTrayService {
-  static final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? '';
+  static final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? dotenv.env['BASE_URL'] ?? '';
 
   static Future<List<AdminCustomerTray>> getCustomerTrays({
     String search = '',

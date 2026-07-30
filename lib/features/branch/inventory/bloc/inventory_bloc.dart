@@ -21,7 +21,7 @@ class InventoryBloc extends Bloc<InventoryEvent, InventoryState> {
     emit(InventoryLoading());
 
     try {
-      final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? "";
+      final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? dotenv.env['BASE_URL'] ?? "";
       print("BASE URL : $baseUrl");
 
       int branchId = 1;

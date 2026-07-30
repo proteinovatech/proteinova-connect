@@ -77,7 +77,7 @@ class _InventoryState extends State<Inventory> {
     }
 
     try {
-      final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? "";
+      final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? dotenv.env['BASE_URL'] ?? "";
       final response = await http.put(
         Uri.parse("$baseUrl/api/dispatch/$rawId/status"),
         headers: {

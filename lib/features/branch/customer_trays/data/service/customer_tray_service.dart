@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:proteinova_connect/features/branch/customer_trays/data/model/customer_tray_model.dart';
 
 class CustomerTrayService {
-  static final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? '';
+  static final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? dotenv.env['BASE_URL'] ?? '';
 
   static Future<List<CustomerTray>> getCustomerTrays({
     required int branchId,

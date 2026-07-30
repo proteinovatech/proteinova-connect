@@ -387,7 +387,13 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
     for (var item in _items) {
       final costEntry = _getCostForGrade(item.category, item.trays);
       if (costEntry != null) {
-        total += double.tryParse(costEntry['total_cost'].toString()) ?? 0;
+        final loads = (costEntry['loads'] as List?) ?? [];
+        final firstLoad = loads.isNotEmpty ? loads.first : null;
+        if (firstLoad != null) {
+          double purRate = double.parse((firstLoad['per_egg_purchase_price'] ?? 0).toString());
+          double expRate = double.parse((firstLoad['expense_per_egg'] ?? 0).toString());
+          total += (purRate + expRate) * item.eggs;
+        }
       }
     }
     return total;
@@ -526,7 +532,14 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
 
         final createdItems = validItems.map((item) {
           final costEntry = _getCostForGrade(item.category, item.trays);
-          final totalCost = costEntry != null ? double.tryParse(costEntry['total_cost'].toString()) ?? 0 : 0.0;
+          final loads = (costEntry?['loads'] as List?) ?? [];
+          final firstLoad = loads.isNotEmpty ? loads.first : null;
+          double totalCost = 0.0;
+          if (firstLoad != null) {
+            double purRate = double.parse((firstLoad['per_egg_purchase_price'] ?? 0).toString());
+            double expRate = double.parse((firstLoad['expense_per_egg'] ?? 0).toString());
+            totalCost = (purRate + expRate) * item.eggs;
+          }
           final eggs = item.eggs;
           return {
             'egg_category_grade': item.category,
@@ -1165,7 +1178,7 @@ class _DispatchPlanningPageState extends State<DispatchPlanningPage> {
                           children: [
                             const Text("Total Item Cost", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
                             Text(
-                              "₹${double.parse((costEntry['total_cost'] ?? 0).toString()).toStringAsFixed(2)}",
+                              "₹${((double.parse((firstLoad?['per_egg_purchase_price'] ?? 0).toString()) + double.parse((firstLoad?['expense_per_egg'] ?? 0).toString())) * item.eggs).toStringAsFixed(2)}",
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.red),
                             ),
                           ],

@@ -6,7 +6,7 @@ import 'package:proteinova_connect/features/admin/Receiving branch/data/models/r
 import 'package:proteinova_connect/features/admin/Receiving branch/data/models/dispatch_details_model.dart';
 
 class ReceivingBranchService {
-  static final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? '';
+  static final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? dotenv.env['BASE_URL'] ?? '';
 
   static Future<List<BranchModel>> fetchBranches() async {
     final response = await http.get(Uri.parse('$baseUrl/api/branches'));

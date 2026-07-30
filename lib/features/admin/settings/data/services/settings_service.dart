@@ -3,7 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class SettingsService {
-  final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? "";
+  final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? dotenv.env['BASE_URL'] ?? "";
 
   Future<List<dynamic>> fetchUsersList() async {
     try {

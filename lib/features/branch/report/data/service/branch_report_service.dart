@@ -5,7 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class ReportService {
-  final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? '';
+  final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? dotenv.env['BASE_URL'] ?? '';
 
   Future<Map<String, dynamic>> getBranchSalesReport({
     String? startDate,
