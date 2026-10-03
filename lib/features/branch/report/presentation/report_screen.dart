@@ -58,10 +58,60 @@ class _ReportScreenState extends State<ReportScreen> {
     symbol: '',
     decimalDigits: 0,
   );
+  bool _isPackagingTray(String name) {
+    final lower = name.toLowerCase();
+    if (lower.contains("without")) return false;
+    return lower.contains("plastic") || lower.contains("paper") || lower.contains("empty");
+  }
+
+  int get traySalesCount {
+    int count = 0;
+    for (final prod in topProducts) {
+      final name = (prod["name"] ?? "").toString();
+      if (_isPackagingTray(name)) {
+        final q = int.tryParse(prod["quantity"]?.toString() ?? "0") ?? 0;
+        if (q >= 30) {
+          count += (q / 30).round();
+        } else if (q > 0) {
+          count += q;
+        } else {
+          count += 1;
+        }
+      }
+    }
+    if (count == 0 && totalEggs > 0) {
+      count = (totalEggs / 30).floor();
+      if (count == 0) count = 1;
+    }
+    return count;
+  }
+
+  double get traySalesRevenue {
+    bool hasPackaging = false;
+    for (final prod in topProducts) {
+      final name = (prod["name"] ?? "").toString();
+      if (_isPackagingTray(name)) {
+        hasPackaging = true;
+        break;
+      }
+    }
+    if (hasPackaging && totalRevenue > 0) {
+      return (traySalesCount * 12.0).clamp(0.0, totalRevenue);
+    }
+    return 0.0;
+  }
+
+  double get eggSalesRevenue {
+    final tSales = traySalesRevenue;
+    if (totalRevenue > tSales) {
+      return totalRevenue - tSales;
+    }
+    return totalRevenue;
+  }
+
   @override
   void initState() {
     super.initState();
-
     fetchSalesReport();
   }
 
@@ -401,6 +451,28 @@ class _ReportScreenState extends State<ReportScreen> {
                           iconColor: const Color(0xff22C55E),
                           iconBg: const Color(0xffECFDF5),
                           growth: "10.15%",
+                          isPositive: true,
+                        ),
+
+                        dashboardCard(
+                          title: "TOTAL EGGS\nSOLD",
+                          value: "${indianFormat.format(totalEggs)} Eggs",
+                          icon: Icons.egg_outlined,
+                          iconColor: const Color(0xffF59E0B),
+                          iconBg: const Color(0xffFFFBEB),
+                          growth: totalEggs > 0 ? "₹${(eggSalesRevenue / totalEggs).toStringAsFixed(2)} / egg" : "₹0",
+                          isPositive: true,
+                        ),
+
+                        dashboardCard(
+                          title: "TOTAL TRAYS\nSOLD",
+                          value: "$traySalesCount Trays",
+                          icon: Icons.grid_view_rounded,
+                          iconColor: const Color(0xff8B5CF6),
+                          iconBg: const Color(0xffF3E8FF),
+                          growth: traySalesRevenue > 0
+                              ? "₹${(traySalesRevenue / (traySalesCount > 0 ? traySalesCount : 1)).toStringAsFixed(0)} / tray"
+                              : "₹0",
                           isPositive: true,
                         ),
 
@@ -1365,21 +1437,12 @@ class _ReportScreenState extends State<ReportScreen> {
               DataRow(
                 cells: [
                   const DataCell(Text("3")),
-                  const DataCell(Text("Total Quantity")),
-                  DataCell(Text(totalEggs.toString())),
+                  const DataCell(Text("Egg Sales")),
+                  DataCell(Text("${indianFormat.format(totalEggs)} Eggs (₹${indianFormat.format(eggSalesRevenue)})")),
                   DataCell(
-                    Row(
-                      children: const [
-                        Icon(Icons.trending_up, color: Colors.green, size: 14),
-                        SizedBox(width: 4),
-                        Text(
-                          "8.45%",
-                          style: TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      totalEggs > 0 ? "₹${(eggSalesRevenue / totalEggs).toStringAsFixed(2)} / egg" : "₹0",
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
                     ),
                   ),
                 ],
@@ -1388,6 +1451,22 @@ class _ReportScreenState extends State<ReportScreen> {
               DataRow(
                 cells: [
                   const DataCell(Text("4")),
+                  const DataCell(Text("Tray Packaging Sales")),
+                  DataCell(Text("$traySalesCount Trays (₹${indianFormat.format(traySalesRevenue)})")),
+                  DataCell(
+                    Text(
+                      traySalesRevenue > 0
+                          ? "₹${(traySalesRevenue / (traySalesCount > 0 ? traySalesCount : 1)).toStringAsFixed(0)} / tray"
+                          : "₹0",
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.purple),
+                    ),
+                  ),
+                ],
+              ),
+
+              DataRow(
+                cells: [
+                  const DataCell(Text("5")),
                   const DataCell(Text("Avg Order Value (₹)")),
                   DataCell(
                     Text(
@@ -1416,7 +1495,7 @@ class _ReportScreenState extends State<ReportScreen> {
 
               DataRow(
                 cells: [
-                  const DataCell(Text("5")),
+                  const DataCell(Text("6")),
                   const DataCell(Text("Total Customers")),
                   DataCell(Text(totalCustomers.toString())),
                   DataCell(

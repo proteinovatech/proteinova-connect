@@ -578,6 +578,8 @@ class _DailyClosingState extends State<DailyClosing> {
   // }
 
   Widget _buildSalesExpenseSummary(DailyClosingModel data) {
+    final num onlineSales = data.sales.online > 0 ? data.sales.online : data.sales.upi;
+    final num creditSales = data.sales.credit;
     return Column(
       children: [
         _buildCard(
@@ -588,7 +590,11 @@ class _DailyClosingState extends State<DailyClosing> {
               const SizedBox(width: 8),
               Expanded(child: _buildStatBox("Cash", data.sales.cash)),
               const SizedBox(width: 8),
-              Expanded(child: _buildStatBox("UPI", data.sales.upi)),
+              Expanded(child: _buildStatBox("UPI / Online", onlineSales)),
+              if (creditSales > 0) ...[
+                const SizedBox(width: 8),
+                Expanded(child: _buildStatBox("Credit", creditSales, color: Colors.orange.shade800)),
+              ],
             ],
           ),
         ),
@@ -615,7 +621,7 @@ class _DailyClosingState extends State<DailyClosing> {
               const SizedBox(width: 8),
               Expanded(
                 child: _buildStatBox(
-                  "UPI",
+                  "UPI / Online",
                   data.expenses.upi,
                   color: Colors.red.shade700,
                 ),

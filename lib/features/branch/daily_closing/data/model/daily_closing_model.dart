@@ -51,6 +51,7 @@ class SalesExpenseDetail {
   final num upi;
   final num card;
   final num online;
+  final num credit;
 
   SalesExpenseDetail({
     required this.total,
@@ -58,15 +59,22 @@ class SalesExpenseDetail {
     required this.upi,
     required this.card,
     required this.online,
+    required this.credit,
   });
 
   factory SalesExpenseDetail.fromJson(Map<String, dynamic> json) {
+    final cash = (json['cash'] ?? 0) as num;
+    final upi = (json['upi'] ?? 0) as num;
+    final card = (json['card'] ?? 0) as num;
+    final online = (json['online'] ?? (upi + card)) as num;
+    final credit = (json['credit'] ?? 0) as num;
     return SalesExpenseDetail(
-      total: json['total'] ?? 0,
-      cash: json['cash'] ?? 0,
-      upi: json['upi'] ?? 0,
-      card: json['card'] ?? 0,
-      online: json['online'] ?? 0,
+      total: (json['total'] ?? 0) as num,
+      cash: cash,
+      upi: upi,
+      card: card,
+      online: online,
+      credit: credit,
     );
   }
 }

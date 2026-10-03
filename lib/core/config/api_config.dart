@@ -1,8 +1,10 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiConfig {
-
-  static final String baseUrl = dotenv.env['VITE_BACKEND_URL'] ?? dotenv.env['BASE_URL'] ?? '';
+  static String get baseUrl {
+    final raw = dotenv.env['VITE_BACKEND_URL'] ?? dotenv.env['BASE_URL'] ?? '';
+    return raw.endsWith('/') ? raw.substring(0, raw.length - 1) : raw;
+  }
 
 
   // static final String baseUrl = dotenv.env['VITE_BACKEND_URL']!;
