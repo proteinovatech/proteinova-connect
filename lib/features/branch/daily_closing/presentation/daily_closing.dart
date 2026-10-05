@@ -153,7 +153,7 @@ class _DailyClosingState extends State<DailyClosing> {
                       runSpacing: 16,
 
                       children: [
-                        SizedBox(width: width, child: _buildActionBar(data!)),
+                        SizedBox(width: width, child: _buildActionBar(data)),
 
                         SizedBox(
                           width: (width - 48) / 2,
@@ -731,35 +731,27 @@ class _DailyClosingState extends State<DailyClosing> {
 
   Widget _buildTodaysSummary(DailyClosingModel data) {
     final summary = data.todaysSummary;
-    final finalValue =
-        summary.openingStockValue +
-        summary.receivedStockValue +
-        summary.totalSales -
-        summary.totalExpenses;
+    final opening = summary.openingStockValue;
+    final received = summary.receivedStockValue;
+    final sold = summary.soldStockValue;
+    final damaged = summary.damagedStockValue;
+    final closing = summary.closingStockValue;
+
     return _buildCard(
       title: "Today's Summary",
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            _buildFormulaItem(
-              "Opening Stock",
-              data.todaysSummary.openingStockValue,
-            ),
+            _buildFormulaItem("Opening Stock Value", opening),
             _buildOperator("+"),
-            _buildFormulaItem(
-              "Stock Received",
-              data.todaysSummary.receivedStockValue,
-            ),
-            _buildOperator("+"),
-            _buildFormulaItem("Total Sales", data.todaysSummary.totalSales),
+            _buildFormulaItem("Stock Received Value", received),
             _buildOperator("-"),
-            _buildFormulaItem(
-              "Total Expenses",
-              data.todaysSummary.totalExpenses,
-            ),
+            _buildFormulaItem("Stock Sold Value", sold),
+            _buildOperator("-"),
+            _buildFormulaItem("Stock Damaged Value", damaged),
             _buildOperator("="),
-            _buildFormulaItem("Final Value", finalValue, isResult: true),
+            _buildFormulaItem("Closing Stock Value", closing, isResult: true),
           ],
         ),
       ),
