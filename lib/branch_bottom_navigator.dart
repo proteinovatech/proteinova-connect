@@ -25,6 +25,8 @@ import 'package:proteinova_connect/features/branch/report/presentation/report_sc
 import 'package:proteinova_connect/features/branch/sales/presentation/sales.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
 import 'features/branch/branch_dashboard/presentation/branch_dashboard.dart';
+import 'package:proteinova_connect/features/branch/branch_transfer/presentation/branch_transfer_screen.dart';
+import 'package:proteinova_connect/features/branch/branch_transfer/presentation/transfer_hub_screen.dart';
 
 class BranchBottomNavigator extends StatefulWidget {
   const BranchBottomNavigator({super.key});
@@ -244,6 +246,11 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                             ..add(FetchDamageCategoriesEvent(branchId: 11)),
                       child: const DamageEntryScreen(),
                     ),
+                  ),
+                  _menuTile(
+                    Icons.swap_horiz,
+                    "Stock Transfer",
+                    const TransferHubScreen(),
                   ),
                   ExpansionTile(
                     leading: const Icon(Icons.analytics_outlined),

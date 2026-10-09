@@ -12,6 +12,8 @@ import 'package:proteinova_connect/features/branch/branch_dashboard/presentation
 import 'package:proteinova_connect/features/branch/branch_dashboard/data/model/dashboard_model.dart';
 import 'package:proteinova_connect/features/branch/branch_dashboard/data/repository/dashboard_repository.dart';
 import 'package:proteinova_connect/features/branch/sales/presentation/sales_entry.dart';
+import 'package:proteinova_connect/features/branch/branch_transfer/presentation/branch_transfer_screen.dart';
+import 'package:proteinova_connect/features/branch/branch_transfer/presentation/transfer_hub_screen.dart';
 import 'package:shimmer/shimmer.dart';
 
 class BranchDashboard extends StatefulWidget {
@@ -1038,6 +1040,28 @@ class _BranchDashboardState extends State<BranchDashboard> {
                     ),
                   ),
                 ],
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const TransferHubScreen()),
+                ).then((_) {
+                  dashboardBloc.add(FetchDashboardEvent());
+                });
+              },
+              icon: const Icon(Icons.swap_horiz, size: 16),
+              label: const Text("Transfer Stock"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0B74FF),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                minimumSize: Size.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
             ),
           ],
