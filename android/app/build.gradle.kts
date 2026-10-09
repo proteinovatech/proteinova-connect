@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.proteinova_connect"
+    namespace = "in.proteinovafoods.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.proteinova_connect"
+        applicationId = "in.proteinovafoods.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
