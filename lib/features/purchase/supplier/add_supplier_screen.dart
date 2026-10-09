@@ -77,7 +77,8 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
           ],
         ),
 
-        body: SingleChildScrollView(
+        body: SafeArea(
+          child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Container(
             decoration: BoxDecoration(
@@ -429,6 +430,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

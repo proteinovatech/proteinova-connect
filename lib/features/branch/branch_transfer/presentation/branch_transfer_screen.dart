@@ -153,7 +153,8 @@ class _BranchTransferScreenState extends State<BranchTransferScreen> {
           elevation: 0.5,
           iconTheme: const IconThemeData(color: Colors.black),
         ),
-        body: BlocConsumer<BranchTransferBloc, BranchTransferState>(
+        body: SafeArea(
+          child: BlocConsumer<BranchTransferBloc, BranchTransferState>(
           listener: (context, state) {
             if (state is BranchTransferError) {
               _showError(state.message);
@@ -188,6 +189,7 @@ class _BranchTransferScreenState extends State<BranchTransferScreen> {
             return _buildForm(data, isSubmitting);
           },
         ),
+      ),
       ),
     );
   }

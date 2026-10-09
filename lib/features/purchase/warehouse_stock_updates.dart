@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:proteinova_connect/core/theme/app_colors.dart';
 import 'package:proteinova_connect/core/theme/app_text_styles.dart';
 import 'package:proteinova_connect/core/utlis/responsive_height_width.dart';
@@ -65,14 +64,15 @@ void initState() {
         ),
 
     ),
-      backgroundColor:AppColors.background,
- body: BlocBuilder<PurchaseBloc, PurchaseState>(
-  builder: (context, state) {
-    if (state is PurchaseLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: BlocBuilder<PurchaseBloc, PurchaseState>(
+          builder: (context, state) {
+            if (state is PurchaseLoading) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
 
     if (state is PurchaseError) {
       return Center(
@@ -309,11 +309,13 @@ final totalAmount = items.fold<double>(
       ),
     ),
   );
-} return const SizedBox();
 }
-
-    
-  ));}
+return const SizedBox();
+},
+),
+),
+);
+}
     Widget _buildOverviewCards( int todayTransit,
   int todayReached,
   int totalReceived,) {

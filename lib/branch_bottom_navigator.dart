@@ -230,7 +230,11 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                   ),
                   _menuTile(Icons.alt_route, "Tray Return", TrayReturn()),
 
-                  _menuTile(Icons.money, "Expenses Overview", ExpenseManagement()),
+                  _menuTile(
+                    Icons.money,
+                    "Expenses Overview",
+                    ExpenseManagement(),
+                  ),
                   _menuTile(
                     Icons.inventory_2_outlined,
                     "Customer trays",

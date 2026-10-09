@@ -208,25 +208,27 @@ class _LedgerScreenState extends State<LedgerScreen> {
  @override
 Widget build(BuildContext context) {
   return Scaffold(
-    backgroundColor:Colors.white,
-    body: BlocBuilder<LedgerBloc, LedgerState>(
-      builder: (context, state) {
-        if (state is LedgerLoading) {
-          return const LedgerShimmer();
-        }
+    backgroundColor: Colors.white,
+    body: SafeArea(
+      child: BlocBuilder<LedgerBloc, LedgerState>(
+        builder: (context, state) {
+          if (state is LedgerLoading) {
+            return const LedgerShimmer();
+          }
 
-        if (state is LedgerError) {
-          return Center(
-            child: Text(state.message),
-          );
-        }
+          if (state is LedgerError) {
+            return Center(
+              child: Text(state.message),
+            );
+          }
 
-        if (state is LedgerLoaded) {
-          return _buildContent(context, state.ledger);
-        }
+          if (state is LedgerLoaded) {
+            return _buildContent(context, state.ledger);
+          }
 
-        return const SizedBox();
-      },
+          return const SizedBox();
+        },
+      ),
     ),
   );
 }

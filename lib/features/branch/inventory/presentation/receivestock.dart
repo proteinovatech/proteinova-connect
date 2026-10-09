@@ -1,9 +1,14 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:proteinova_connect/core/network/api_constants.dart';
@@ -182,19 +187,12 @@ class _ReceivestockState extends State<Receivestock> {
       }
 
       final items = receivedItems.map((item) {
-        final int eggs = item["eggs"] ?? 0;
-        final int trays = item["trays"] ?? 1;
-        final double eggsPerTray = trays > 0 ? eggs / trays : 0.0;
-        final int damagedEggs = damagedTrays[item["product"]] ?? 0;
-
-        // Convert damaged eggs back to trays for the backend (mark the whole tray if any eggs are damaged)
-        final int traysToMarkDamaged = eggsPerTray > 0
-            ? (damagedEggs / eggsPerTray).ceil()
-            : 0;
+        final String product = item["product"] ?? "";
+        final int damagedEggs = damagedTrays[product] ?? 0;
 
         return {
-          "egg_category_grade": item["product"],
-          "damaged_trays": traysToMarkDamaged,
+          "egg_category_grade": product,
+          "damaged_eggs": damagedEggs,
         };
       }).toList();
 
@@ -262,18 +260,529 @@ class _ReceivestockState extends State<Receivestock> {
     return NumberFormat('#,##,###').format(number);
   }
 
+  String _numberToWordsINR(double number) {
+    if (number <= 0) return "INR Zero Only";
+    final int amount = number.floor();
+    final units = [
+      "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
+      "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"
+    ];
+    final tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+    String convertLessThanThousand(int n) {
+      if (n == 0) return "";
+      if (n < 20) return units[n];
+      if (n < 100) return "${tens[n ~/ 10]} ${units[n % 10]}".trim();
+      return "${units[n ~/ 100]} Hundred ${convertLessThanThousand(n % 100)}".trim();
+    }
+
+    String convert(int n) {
+      if (n == 0) return "Zero";
+      String res = "";
+      if (n >= 10000000) {
+        res += "${convert(n ~/ 10000000)} Crore ";
+        n %= 10000000;
+      }
+      if (n >= 100000) {
+        res += "${convert(n ~/ 100000)} Lakh ";
+        n %= 100000;
+      }
+      if (n >= 1000) {
+        res += "${convert(n ~/ 1000)} Thousand ";
+        n %= 1000;
+      }
+      if (n > 0) {
+        res += convertLessThanThousand(n);
+      }
+      return res.trim();
+    }
+
+    return "INR ${convert(amount)} Only";
+  }
+
+  pw.Widget _buildPdfGridRow(String label1, String val1, String label2, String val2) {
+    return pw.Container(
+      decoration: const pw.BoxDecoration(
+        border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.5)),
+      ),
+      child: pw.Row(
+        children: [
+          pw.Expanded(
+            child: pw.Container(
+              padding: const pw.EdgeInsets.all(3),
+              decoration: const pw.BoxDecoration(
+                border: pw.Border(right: pw.BorderSide(color: PdfColors.black, width: 0.5)),
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(label1, style: const pw.TextStyle(fontSize: 6, color: PdfColors.grey800)),
+                  if (val1.isNotEmpty)
+                    pw.Text(val1, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7)),
+                ],
+              ),
+            ),
+          ),
+          pw.Expanded(
+            child: pw.Container(
+              padding: const pw.EdgeInsets.all(3),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(label2, style: const pw.TextStyle(fontSize: 6, color: PdfColors.grey800)),
+                  if (val2.isNotEmpty)
+                    pw.Text(val2, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7)),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget _pdfTableCell(String text, {bool isHeader = false, bool isBold = false, pw.TextAlign align = pw.TextAlign.left}) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 3),
+      child: pw.Text(
+        text,
+        textAlign: align,
+        style: pw.TextStyle(
+          fontSize: isHeader ? 7 : 6.5,
+          fontWeight: isHeader || isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleDownloadBill() async {
+    try {
+      final logoBytes = await rootBundle.load('assets/Logo@3x.png');
+      final logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
+
+      final fontData = await rootBundle.load("assets/fonts/NotoSans-Regular.ttf");
+      final ttfFont = pw.Font.ttf(fontData);
+      final boldFontData = await rootBundle.load("assets/fonts/NotoSans-Bold.ttf");
+      final ttfBoldFont = pw.Font.ttf(boldFontData);
+
+      final pdf = pw.Document(
+        theme: pw.ThemeData.withFont(
+          base: ttfFont,
+          bold: ttfBoldFont,
+        ),
+      );
+
+      final String invoiceNo = "RC/${receiveInfo["receive_no"] ?? widget.dispatchid}/${DateTime.now().year}";
+      final String datedStr = DateFormat('dd MMM yyyy').format(DateTime.now());
+      final String branchName = receiveInfo["branch_name"] ?? receiveInfo["from_supplier"] ?? "Branch Office";
+      final String driverName = receiveInfo["driver_name"] ?? "N/A";
+      final String vehicleNumber = receiveInfo["vehicle_number"] ?? "N/A";
+
+      double grandTotal = 0.0;
+      final List<List<String>> tableData = [];
+
+      for (int i = 0; i < receivedItems.length; i++) {
+        final item = receivedItems[i];
+        final String prodName = item["product"]?.toString() ?? "";
+        final num eggsCount = item["eggs"] ?? 0;
+        final num pricePerEgg = item["price_per_egg"] ?? 5.38;
+        final double lineTotal = (eggsCount * pricePerEgg).toDouble();
+        grandTotal += lineTotal;
+
+        tableData.add([
+          "${i + 1}",
+          prodName,
+          "0407",
+          "$eggsCount Nos",
+          pricePerEgg.toStringAsFixed(2),
+          "Nos",
+          lineTotal.toStringAsFixed(2),
+        ]);
+      }
+
+      final num plasticTrays = summary["plastic_trays"] ?? 0;
+      if (plasticTrays > 0) {
+        tableData.add([
+          "${tableData.length + 1}",
+          "Empty Plastic Trays",
+          "-",
+          "$plasticTrays Nos",
+          "0.00",
+          "Nos",
+          "0.00",
+        ]);
+      }
+
+      final num paperTrays = summary["paper_trays"] ?? 0;
+      if (paperTrays > 0) {
+        tableData.add([
+          "${tableData.length + 1}",
+          "Empty Paper Trays",
+          "-",
+          "$paperTrays Nos",
+          "0.00",
+          "Nos",
+          "0.00",
+        ]);
+      }
+
+      final String amountWords = _numberToWordsINR(grandTotal);
+
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(16),
+          build: (pw.Context context) {
+            return pw.Container(
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: PdfColors.black, width: 1),
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+                children: [
+                  // 1. TOP HEADER BAR
+                  pw.Container(
+                    color: PdfColor.fromHex("#6b95ca"),
+                    padding: const pw.EdgeInsets.symmetric(vertical: 4),
+                    alignment: pw.Alignment.center,
+                    child: pw.Text(
+                      "Invoice",
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 13,
+                        color: PdfColors.black,
+                      ),
+                    ),
+                  ),
+
+                  // 2. MASTER TOP GRID
+                  pw.Container(
+                    decoration: const pw.BoxDecoration(
+                      border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 1)),
+                    ),
+                    child: pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        // LEFT COLUMN (50%)
+                        pw.Expanded(
+                          flex: 5,
+                          child: pw.Container(
+                            decoration: const pw.BoxDecoration(
+                              border: pw.Border(right: pw.BorderSide(color: PdfColors.black, width: 1)),
+                            ),
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Container(
+                                  padding: const pw.EdgeInsets.all(5),
+                                  decoration: const pw.BoxDecoration(
+                                    border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 1)),
+                                  ),
+                                  child: pw.Row(
+                                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                                    children: [
+                                      pw.Container(
+                                        width: 45,
+                                        height: 45,
+                                        color: PdfColor.fromHex("#ffcc00"),
+                                        padding: const pw.EdgeInsets.all(3),
+                                        child: pw.Image(logoImage, fit: pw.BoxFit.contain),
+                                      ),
+                                      pw.SizedBox(width: 6),
+                                      pw.Expanded(
+                                        child: pw.Column(
+                                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                                          children: [
+                                            pw.Text("PROTEINOVA FOOD PRODUCTS", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8.5)),
+                                            pw.Text("PRIVATE LIMITED", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8.5)),
+                                            pw.SizedBox(height: 2),
+                                            pw.Text("141/40C, KURINJI TOWER, SALEM ROAD, NAMAKKAL", style: const pw.TextStyle(fontSize: 6.5)),
+                                            pw.Text("GSTIN/UIN 33AAQCP9601H1Z7", style: const pw.TextStyle(fontSize: 6.5)),
+                                            pw.Text("TAMILNADU 637001", style: const pw.TextStyle(fontSize: 6.5)),
+                                            pw.Text("Contact Details: 9787896996", style: const pw.TextStyle(fontSize: 6.5)),
+                                            pw.Text("e-Mail:proteinovafoods@gmail.com", style: const pw.TextStyle(fontSize: 6.5)),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                pw.Container(
+                                  padding: const pw.EdgeInsets.all(5),
+                                  decoration: const pw.BoxDecoration(
+                                    border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 1)),
+                                  ),
+                                  child: pw.Column(
+                                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                                    children: [
+                                      pw.Text("Consignee (Ship to)", style: pw.TextStyle(decoration: pw.TextDecoration.underline, fontWeight: pw.FontWeight.bold, fontSize: 7.5)),
+                                      pw.SizedBox(height: 2),
+                                      pw.Text(branchName, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7.5)),
+                                      pw.Text("Contact: $driverName", style: const pw.TextStyle(fontSize: 6.5)),
+                                      pw.Text("State Name : TAMILNADU, Code : 33", style: const pw.TextStyle(fontSize: 6.5)),
+                                    ],
+                                  ),
+                                ),
+                                pw.Container(
+                                  padding: const pw.EdgeInsets.all(5),
+                                  child: pw.Column(
+                                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                                    children: [
+                                      pw.Text("Buyer (Bill to)", style: pw.TextStyle(decoration: pw.TextDecoration.underline, fontWeight: pw.FontWeight.bold, fontSize: 7.5)),
+                                      pw.SizedBox(height: 2),
+                                      pw.Text(branchName, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7.5)),
+                                      pw.Text("Contact: $driverName", style: const pw.TextStyle(fontSize: 6.5)),
+                                      pw.Text("State Name : TAMILNADU, Code : 33", style: const pw.TextStyle(fontSize: 6.5)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // RIGHT COLUMN (50%)
+                        pw.Expanded(
+                          flex: 5,
+                          child: pw.Column(
+                            children: [
+                              _buildPdfGridRow("Invoice No.", invoiceNo, "Dated", datedStr),
+                              _buildPdfGridRow("Delivery Note", "", "Mode/Terms of Payment", "Internal Transfer"),
+                              _buildPdfGridRow("Reference No. & Date.", "", "Other References", ""),
+                              _buildPdfGridRow("Buyer's Order No.", "", "Dated", ""),
+                              _buildPdfGridRow("Dispatch Doc No.", "", "Delivery Note Date", ""),
+                              _buildPdfGridRow("Dispatched through", "", "Destination", branchName),
+                              _buildPdfGridRow("Bill of Lading/LR-RR No.", "", "Motor Vehicle No.", vehicleNumber),
+                              pw.Container(
+                                width: double.infinity,
+                                padding: const pw.EdgeInsets.all(3),
+                                child: pw.Text("Terms of Delivery", style: const pw.TextStyle(fontSize: 6.5)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // 3. GOODS TABLE
+                  pw.Table(
+                    border: pw.TableBorder.all(color: PdfColors.black, width: 1),
+                    columnWidths: const {
+                      0: pw.FixedColumnWidth(26),
+                      1: pw.FlexColumnWidth(3),
+                      2: pw.FixedColumnWidth(40),
+                      3: pw.FixedColumnWidth(50),
+                      4: pw.FixedColumnWidth(40),
+                      5: pw.FixedColumnWidth(26),
+                      6: pw.FixedColumnWidth(55),
+                    },
+                    children: [
+                      pw.TableRow(
+                        decoration: pw.BoxDecoration(color: PdfColor.fromHex("#fce8b3")),
+                        children: [
+                          _pdfTableCell("Sl. No.", isHeader: true, align: pw.TextAlign.center),
+                          _pdfTableCell("Description of Goods", isHeader: true, align: pw.TextAlign.center),
+                          _pdfTableCell("HSN/SAC", isHeader: true, align: pw.TextAlign.center),
+                          _pdfTableCell("Quantity", isHeader: true, align: pw.TextAlign.center),
+                          _pdfTableCell("Rate", isHeader: true, align: pw.TextAlign.center),
+                          _pdfTableCell("per", isHeader: true, align: pw.TextAlign.center),
+                          _pdfTableCell("Amount", isHeader: true, align: pw.TextAlign.center),
+                        ],
+                      ),
+                      ...tableData.map((row) => pw.TableRow(
+                        children: [
+                          _pdfTableCell(row[0], align: pw.TextAlign.center),
+                          _pdfTableCell(row[1], align: pw.TextAlign.left, isBold: true),
+                          _pdfTableCell(row[2], align: pw.TextAlign.center),
+                          _pdfTableCell(row[3], align: pw.TextAlign.right, isBold: true),
+                          _pdfTableCell(row[4], align: pw.TextAlign.right),
+                          _pdfTableCell(row[5], align: pw.TextAlign.center),
+                          _pdfTableCell(row[6], align: pw.TextAlign.right, isBold: true),
+                        ],
+                      )),
+                      pw.TableRow(
+                        children: [
+                          _pdfTableCell(""),
+                          _pdfTableCell("Total", align: pw.TextAlign.right, isBold: true),
+                          _pdfTableCell(""),
+                          _pdfTableCell("${summary["total_eggs"] ?? 0} Nos", align: pw.TextAlign.right, isBold: true),
+                          _pdfTableCell(""),
+                          _pdfTableCell(""),
+                          _pdfTableCell("₹ ${grandTotal.toStringAsFixed(2)}", align: pw.TextAlign.right, isBold: true),
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  // 4. AMOUNT IN WORDS
+                  pw.Container(
+                    padding: const pw.EdgeInsets.all(4),
+                    decoration: const pw.BoxDecoration(
+                      border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 1)),
+                    ),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.center,
+                      children: [
+                        pw.Text("Amount Chargeable (in words)", style: const pw.TextStyle(fontSize: 6.5)),
+                        pw.SizedBox(height: 2),
+                        pw.Text(amountWords, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7.5)),
+                      ],
+                    ),
+                  ),
+
+                  // 5. TAX TABLE
+                  pw.Table(
+                    border: pw.TableBorder.all(color: PdfColors.black, width: 1),
+                    columnWidths: const {
+                      0: pw.FlexColumnWidth(2),
+                      1: pw.FlexColumnWidth(2),
+                      2: pw.FlexColumnWidth(1),
+                      3: pw.FlexColumnWidth(1),
+                      4: pw.FlexColumnWidth(1),
+                      5: pw.FlexColumnWidth(1),
+                      6: pw.FlexColumnWidth(1.5),
+                    },
+                    children: [
+                      pw.TableRow(
+                        decoration: pw.BoxDecoration(color: PdfColor.fromHex("#fce8b3")),
+                        children: [
+                          _pdfTableCell("HSN/SAC", isHeader: true, align: pw.TextAlign.center),
+                          _pdfTableCell("Taxable", isHeader: true, align: pw.TextAlign.center),
+                          _pdfTableCell("CGST Rate", isHeader: true, align: pw.TextAlign.center),
+                          _pdfTableCell("CGST Amount", isHeader: true, align: pw.TextAlign.center),
+                          _pdfTableCell("SGST Rate", isHeader: true, align: pw.TextAlign.center),
+                          _pdfTableCell("SGST Amount", isHeader: true, align: pw.TextAlign.center),
+                          _pdfTableCell("Total Tax Amount", isHeader: true, align: pw.TextAlign.center),
+                        ],
+                      ),
+                      pw.TableRow(
+                        children: [
+                          _pdfTableCell("HSN 0407", align: pw.TextAlign.center),
+                          _pdfTableCell(grandTotal.toStringAsFixed(2), align: pw.TextAlign.right),
+                          _pdfTableCell("0", align: pw.TextAlign.center),
+                          _pdfTableCell("0.00", align: pw.TextAlign.right),
+                          _pdfTableCell("0", align: pw.TextAlign.center),
+                          _pdfTableCell("0.00", align: pw.TextAlign.right),
+                          _pdfTableCell("0.00", align: pw.TextAlign.right),
+                        ],
+                      ),
+                      pw.TableRow(
+                        children: [
+                          _pdfTableCell("Total", isBold: true, align: pw.TextAlign.center),
+                          _pdfTableCell(grandTotal.toStringAsFixed(2), isBold: true, align: pw.TextAlign.right),
+                          _pdfTableCell("0", isBold: true, align: pw.TextAlign.center),
+                          _pdfTableCell("0.00", isBold: true, align: pw.TextAlign.right),
+                          _pdfTableCell("0", isBold: true, align: pw.TextAlign.center),
+                          _pdfTableCell("0.00", isBold: true, align: pw.TextAlign.right),
+                          _pdfTableCell("0.00", isBold: true, align: pw.TextAlign.right),
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  pw.Container(
+                    padding: const pw.EdgeInsets.all(3),
+                    decoration: const pw.BoxDecoration(
+                      border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 1)),
+                    ),
+                    child: pw.Text("Tax Amount (in words) : INR Zero Only", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 6.5)),
+                  ),
+
+                  // 6. DECLARATION & SIGNATURE
+                  pw.Expanded(
+                    child: pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+                      children: [
+                        pw.Expanded(
+                          flex: 5,
+                          child: pw.Container(
+                            padding: const pw.EdgeInsets.all(4),
+                            decoration: const pw.BoxDecoration(
+                              border: pw.Border(right: pw.BorderSide(color: PdfColors.black, width: 1)),
+                            ),
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                              children: [
+                                pw.Column(
+                                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                                  children: [
+                                    pw.Text("Declaration", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7.5)),
+                                    pw.SizedBox(height: 2),
+                                    pw.Text("We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.", style: const pw.TextStyle(fontSize: 6)),
+                                  ],
+                                ),
+                                pw.Text("Customer's Seal and Signature", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 6.5)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        pw.Expanded(
+                          flex: 5,
+                          child: pw.Container(
+                            padding: const pw.EdgeInsets.all(4),
+                            child: pw.Column(
+                              mainAxisAlignment: pw.MainAxisAlignment.end,
+                              crossAxisAlignment: pw.CrossAxisAlignment.end,
+                              children: [
+                                pw.Text("Authorised Signatory", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 6.5)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+
+      final bytes = await pdf.save();
+      final dir = await getApplicationDocumentsDirectory();
+      final String rawRecNo = (receiveInfo["receive_no"] ?? widget.dispatchid ?? "01").toString().replaceAll(RegExp(r'[^a-zA-Z0-9_\-]'), '_');
+      final fileName = "ProteinOva_Receive_$rawRecNo.pdf";
+      final file = File("${dir.path}/$fileName");
+      await file.writeAsBytes(bytes);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("PDF Invoice saved to ${file.path}"),
+            backgroundColor: const Color(0xFF10B981),
+          ),
+        );
+      }
+
+      await OpenFilex.open(file.path);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error saving/opening PDF: $e")),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: const SafeArea(child: Center(child: CircularProgressIndicator())),
+      );
     }
 
     final String status = receiveInfo["status"] ?? "";
     final bool isArrived = status == "ARRIVAL" || status == "DELIVERED";
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: LayoutBuilder(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: LayoutBuilder(
         builder: (context, constraints) {
           final bool isDesktop = constraints.maxWidth >= 900;
 
@@ -326,23 +835,26 @@ class _ReceivestockState extends State<Receivestock> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Title Section
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 16,
+                        runSpacing: 12,
                         children: [
-                          Expanded(
-                            child: Row(
+                          Text.rich(
+                            TextSpan(
                               children: [
-                                Text(
-                                  "Receive Stock: ",
+                                TextSpan(
+                                  text: "Receive Stock: ",
                                   style: AppTextStyles.headingText22.copyWith(
-                                    fontSize: 24,
+                                    fontSize: isDesktop ? 24 : 20,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                Text(
-                                  receiveInfo["receive_no"] ?? "",
+                                TextSpan(
+                                  text: receiveInfo["receive_no"] ?? "",
                                   style: AppTextStyles.headingText22.copyWith(
-                                    fontSize: 24,
+                                    fontSize: isDesktop ? 24 : 20,
                                     fontWeight: FontWeight.normal,
                                     color: const Color(0xFF475569),
                                   ),
@@ -350,46 +862,68 @@ class _ReceivestockState extends State<Receivestock> {
                               ],
                             ),
                           ),
-                          const SizedBox(width: 16),
-                          if (!isArrived)
-                            ElevatedButton(
-                              onPressed: handleArrival,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF2563EB),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: const Text(
-                                "Mark Arrival",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            )
-                          else if (status == "ARRIVAL")
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF16A34A),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Text(
-                                "Arrived",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              ElevatedButton.icon(
+                                onPressed: _handleDownloadBill,
+                                icon: const Icon(Icons.picture_as_pdf, size: 16),
+                                label: const Text("Download Bill"),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF3B82F6),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 10,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  elevation: 0,
                                 ),
                               ),
-                            ),
+                              if (!isArrived)
+                                ElevatedButton(
+                                  onPressed: handleArrival,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF2563EB),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 12,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    elevation: 0,
+                                  ),
+                                  child: const Text(
+                                    "Mark Arrival",
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                )
+                              else if (status == "ARRIVAL")
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF16A34A),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text(
+                                    "Arrived",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -447,6 +981,7 @@ class _ReceivestockState extends State<Receivestock> {
           );
         },
       ),
+    ),
     );
   }
 

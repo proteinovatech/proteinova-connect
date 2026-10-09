@@ -92,13 +92,14 @@ CustomerTray? selectedTray;
   }
     return Scaffold(
         backgroundColor: AppColors.background1,
-            body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 25,),
-          Row(
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                Row(
   children: [
     IconButton(
       onPressed: () {
@@ -268,9 +269,13 @@ CustomerTray? selectedTray;
                 );
               },
             ),
-) ]),)
-    );
-  }
+          ),
+        ],
+      ),
+    ),
+  ),
+);
+}
 
 Widget _buildRow({
   required String customerName,

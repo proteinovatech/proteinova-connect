@@ -71,7 +71,7 @@ class _ReceiveStockBodyState extends State<ReceiveStockBody> {
     final itemsToPost = _verificationInputs.map((input) {
       return {
         'egg_category_grade': input.product,
-        'damaged_trays': input.damagedCount,
+        'damaged_eggs': input.damagedCount,
       };
     }).toList();
 
@@ -338,7 +338,8 @@ class _ReceiveStockBodyState extends State<ReceiveStockBody> {
             child: DataTable(
               columnSpacing: 24,
               headingRowHeight: 36,
-              dataRowHeight: 44,
+              dataRowMinHeight: 44,
+              dataRowMaxHeight: 44,
               horizontalMargin: 0,
               columns: const [
                 DataColumn(

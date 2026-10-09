@@ -413,16 +413,14 @@ class _BranchDashboardState extends State<BranchDashboard> {
                 onRefresh: () async {
                   dashboardBloc.add(FetchDashboardEvent());
                 },
-                child: MediaQuery.removePadding(
-                  context: context,
-                  removeTop: true,
+                child: SafeArea(
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 36),
+                        const SizedBox(height: 12),
 
                         // Header Row (title + status)
                         _buildHeader(dashboardModel),

@@ -45,7 +45,8 @@ class _TrayReturnState extends State<TrayReturn> {
     final width = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: AppColors.background1,
-      body: BlocConsumer<TrayReturnBloc, TrayReturnState>(
+      body: SafeArea(
+        child: BlocConsumer<TrayReturnBloc, TrayReturnState>(
         listener: (context, state) {
           if (state is TrayReturnError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -106,7 +107,7 @@ class _TrayReturnState extends State<TrayReturn> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: size.height * 0.05),
+                  const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -525,6 +526,7 @@ class _TrayReturnState extends State<TrayReturn> {
           );
         },
       ),
+    ),
     );
   }
 

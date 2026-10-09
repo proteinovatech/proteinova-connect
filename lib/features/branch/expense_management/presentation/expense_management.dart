@@ -46,7 +46,8 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
 
     return Scaffold(
       backgroundColor: AppColors.background1,
-      body: BlocConsumer<ExpenseBloc, ExpenseState>(
+      body: SafeArea(
+        child: BlocConsumer<ExpenseBloc, ExpenseState>(
         listener: (context, state) {
           if (state is ExpenseError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -87,7 +88,7 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: size.height * 0.07),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       IconButton(
@@ -308,6 +309,7 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
           );
         },
       ),
+    ),
     );
   }
 
