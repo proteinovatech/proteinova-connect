@@ -94,6 +94,12 @@ class _TrayReturnState extends State<TrayReturn> {
               );
           final dataList = model?.data ?? [];
 
+          final availableWidth = width - (width * 0.1);
+          int crossAxisCount = (availableWidth / 180).floor();
+          if (crossAxisCount < 1) crossAxisCount = 1;
+          if (crossAxisCount > 5) crossAxisCount = 5;
+          final double cardWidth = (availableWidth - ((crossAxisCount - 1) * 12)) / crossAxisCount;
+
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
             child: SingleChildScrollView(
@@ -171,7 +177,7 @@ class _TrayReturnState extends State<TrayReturn> {
                     runSpacing: 12,
                     children: [
                       SizedBox(
-                        width: 170,
+                        width: cardWidth,
                         child: _trayCard(
                           title: "Opening Tray",
                           icon: Icons.inventory_2_outlined,
@@ -186,7 +192,7 @@ class _TrayReturnState extends State<TrayReturn> {
                       ),
 
                       SizedBox(
-                        width: 170,
+                        width: cardWidth,
                         child: _trayCard(
                           title: "Incoming Tray",
                           icon: Icons.download,
@@ -201,7 +207,7 @@ class _TrayReturnState extends State<TrayReturn> {
                       ),
 
                       SizedBox(
-                        width: 170,
+                        width: cardWidth,
                         child: _trayCard(
                           title: "Tray Return",
                           icon: Icons.refresh,
@@ -216,7 +222,7 @@ class _TrayReturnState extends State<TrayReturn> {
                       ),
 
                       SizedBox(
-                        width: 170,
+                        width: cardWidth,
                         child: _trayCard(
                           title: "Closing Tray",
                           icon: Icons.check_circle_outline,
@@ -235,7 +241,7 @@ class _TrayReturnState extends State<TrayReturn> {
                       ),
 
                       SizedBox(
-                        width: 170,
+                        width: cardWidth,
                         child: _trayCard(
                           title: "Empty Tray",
                           icon: Icons.inventory,

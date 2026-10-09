@@ -16,6 +16,7 @@ class ExpenseManagement extends StatefulWidget {
 
 class _ExpenseManagementState extends State<ExpenseManagement> {
   int? branchId;
+  String? selectedCategory;
 
   @override
   void initState() {
@@ -74,7 +75,10 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
               state is ExpenseLoading ||
               state is ExpenseInitial ||
               state is ExpenseSubmitting;
-          final expenses = state is ExpenseLoaded ? state.expenses : [];
+          final allExpenses = state is ExpenseLoaded ? state.expenses : [];
+          final expenses = selectedCategory == null
+              ? allExpenses
+              : allExpenses.where((e) => e.category.toString().toLowerCase() == selectedCategory!.toLowerCase()).toList();
           final total = _getTotal(expenses);
 
           return Padding(
@@ -186,8 +190,8 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        "Recent Expenses",
+                      Text(
+                        selectedCategory == null ? "Recent Expenses" : "Recent Expenses - $selectedCategory",
                         style: AppTextStyles.headingText20,
                       ),
                     ],
@@ -366,38 +370,50 @@ class _ExpenseManagementState extends State<ExpenseManagement> {
       {"icon": Icons.miscellaneous_services, "title": "Others"},
     ];
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 1.2,
-      ),
-      itemCount: categories.length,
-      itemBuilder: (context, index) {
-        final cat = categories[index];
-        return Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(cat["icon"] as IconData, color: Colors.grey.shade700),
-              SizedBox(height: getHeight(context, 4)),
-              Text(
-                cat["title"] as String,
-                style: const TextStyle(fontSize: 12),
-                textAlign: TextAlign.center,
-              ),
-            ],
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: categories.map((cat) {
+        final title = cat["title"] as String;
+        final isSelected = selectedCategory == title;
+
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              if (selectedCategory == title) {
+                selectedCategory = null;
+              } else {
+                selectedCategory = title;
+              }
+            });
+          },
+          child: Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: isSelected ? Colors.amber.withOpacity(0.15) : const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: isSelected ? Colors.amber : Colors.grey.shade200),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(cat["icon"] as IconData, color: isSelected ? Colors.amber.shade700 : Colors.grey.shade700),
+                SizedBox(height: getHeight(context, 4)),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isSelected ? Colors.amber.shade700 : Colors.black,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         );
-      },
+      }).toList(),
     );
   }
 }

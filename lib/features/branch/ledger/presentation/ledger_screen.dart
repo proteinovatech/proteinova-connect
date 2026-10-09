@@ -292,7 +292,16 @@ final branchName = branch.branchName;
           children: [
             isMobile(context)
                 ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (Navigator.canPop(context))
+                        Padding(
+                          padding: EdgeInsets.only(top: getHeight(context, 13)),
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,7 +311,12 @@ final branchName = branch.branchName;
                                branchName.isEmpty
                                ? "Customer Ledger"
                                : "Customer Ledger - $branchName",
-                              style: AppTextStyles.headingText22,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             SizedBox(height: getHeight(context, 6)),
                             const Text(
@@ -313,48 +327,67 @@ final branchName = branch.branchName;
                           ],
                         ),
                       ),
-
                       SizedBox(width: getWidth(context, 12)),
-
-                      SizedBox(
-                        width: 120,
-                        height:38,
-                        child: ElevatedButton.icon(
-                          onPressed: (){context.read<LedgerBloc>().add(FetchLedgerEvent());},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xffF5C400),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                      Padding(
+                        padding: EdgeInsets.only(top: getHeight(context, 13)),
+                        child: SizedBox(
+                          width: 120,
+                          height:38,
+                          child: ElevatedButton.icon(
+                            onPressed: (){context.read<LedgerBloc>().add(FetchLedgerEvent());},
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xffF5C400),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
+                            icon: const Icon(Icons.refresh, size: 18),
+                            label: const Text("Refresh"),
                           ),
-                          icon: const Icon(Icons.refresh, size: 18),
-                          label: const Text("Refresh"),
                         ),
                       ),
                     ],
                   )
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            branchName.isEmpty
-                            ? "Customer Ledger"
-                            : "Customer Ledger - $branchName",
-                            style: TextStyle(
-                              fontSize: getWidth(context, 28),
-                              fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (Navigator.canPop(context))
+                              IconButton(
+                                icon: const Icon(Icons.arrow_back),
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    branchName.isEmpty
+                                    ? "Customer Ledger"
+                                    : "Customer Ledger - $branchName",
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  SizedBox(height: getHeight(context, 6)),
+                                  const Text(
+                                    "Track customer credit balances across branches and warehouse",
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          SizedBox(height: getHeight(context, 6)),
-                          const Text(
-                            "Track customer credit balances across branches and warehouse",
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 16),
                       SizedBox(
                         width: 120,
                         height: 48,

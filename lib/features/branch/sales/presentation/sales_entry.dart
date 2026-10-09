@@ -3254,7 +3254,7 @@ class _TrayRowState extends State<_TrayRow> {
                       child: Text(
                         t,
                         style: const TextStyle(
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -3310,8 +3310,8 @@ class _TrayRowState extends State<_TrayRow> {
           ),
           child: Text(
             "${widget.tray.qty}",
-            style: TextStyle(
-              fontSize: 18,
+            style: const TextStyle(
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.black,
             ),
@@ -3353,7 +3353,7 @@ class _TrayRowState extends State<_TrayRow> {
             "₹",
             style: TextStyle(
               color: Colors.grey.shade600,
-              fontSize: 28,
+              fontSize: 15,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -3367,8 +3367,8 @@ class _TrayRowState extends State<_TrayRow> {
                 decimal: true,
               ),
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 24,
+              style: const TextStyle(
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
@@ -3391,10 +3391,7 @@ class _TrayRowState extends State<_TrayRow> {
             child: Text(
               "/tray",
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Colors.grey.shade500,
-                fontSize: getWidth(context, 8),
-              ),
+              style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
             ),
           ),
         ],
@@ -3405,7 +3402,7 @@ class _TrayRowState extends State<_TrayRow> {
       style: const TextStyle(
         color: Color(0xFF16A34A),
         fontWeight: FontWeight.bold,
-        fontSize: 13,
+        fontSize: 14,
       ),
     );
 
@@ -3512,6 +3509,9 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   bool isSubmitting = false;
   String? customerStatus; // 'found', 'not_found', null
 
+  List<Map<String, dynamic>> payments = [
+    {"id": "1", "method": "Cash", "amount": "", "reference": ""},
+  ];
   String selectedPaymentMethod = "CASH";
   String selectedUpiApp = "";
   List<dynamic> branches = [];
@@ -3544,7 +3544,6 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   double _lastTotalAmount = 0.0;
 
   double? selectedDozen;
-  
 
   void selectDozen(double dozen) {
     if (selectedProductIndex == null) return;
@@ -3652,6 +3651,16 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
             soldLocation = "Warehouse";
           } else {
             soldLocation = model.header['branch_name'] ?? "Branch";
+            if (soldLocation == "Branch" || soldLocation.isEmpty) {
+              final branch = branches.firstWhere(
+                (b) => b['id'].toString() == branchId.toString(),
+                orElse: () => null,
+              );
+              if (branch != null) {
+                soldLocation =
+                    branch['branch_name'] ?? branch['name'] ?? "Branch";
+              }
+            }
           }
           isLoading = false;
         });
@@ -3663,14 +3672,14 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
   }
 
   Future<void> loadBranchInventory() async {
-  final inventory = await datasource.getMobileInventory();
+    final inventory = await datasource.getMobileInventory();
 
-  setState(() {
-    branchInventory = inventory.inventoryByBranch
-        .where((e) => e.branchId == branchId)
-        .toList();
-  });
-}
+    setState(() {
+      branchInventory = inventory.inventoryByBranch
+          .where((e) => e.branchId == branchId)
+          .toList();
+    });
+  }
 
   // --- Calculations ---
   double get subtotal => salesItems.fold(0.0, (sum, item) => sum + item.total);
@@ -3910,26 +3919,22 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
 
     setState(() => isSubmitting = true);
     try {
-      final upiApp = selectedPaymentMethod == "UPI"
-          ? (selectedUpiApp.isEmpty ? "Other" : selectedUpiApp)
-          : "";
-      final ref = selectedPaymentMethod == "UPI"
-          ? otherUpiDetailsController.text.trim()
-          : "";
-      final otherUpiList = [
-        {
-          "method": selectedPaymentMethod == "CASH"
-              ? "Cash"
-              : (selectedPaymentMethod == "UPI"
-                    ? "UPI"
-                    : (selectedPaymentMethod == "CARD" ? "Card" : "Credit")),
-          "amount": (double.tryParse(cashReceivedController.text) ?? 0)
-              .toStringAsFixed(0),
-          "app": upiApp,
-          "reference": ref,
-          "notes": notesController.text,
-        },
-      ];
+      final isSplit = payments.length > 1;
+      final finalMethod = isSplit
+          ? "SPLIT"
+          : payments[0]["method"].toString().toUpperCase();
+      final otherUpiList = payments
+          .map(
+            (p) => {
+              "method": p["method"],
+              "amount": (double.tryParse(p["amount"].toString()) ?? 0)
+                  .toStringAsFixed(0),
+              "app": p["method"] == "UPI" ? "Other" : "",
+              "reference": p["reference"] ?? "",
+              "notes": notesController.text,
+            },
+          )
+          .toList();
 
       final payload = {
         "login_user_id": loginUserId,
@@ -3937,11 +3942,11 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         "sold_location_id": selectedBranchId,
         "customer_name": cName.isEmpty ? null : cName,
         "customer_number": cNumber.isEmpty ? "N/A" : cNumber,
-        "customer_debit": double.tryParse(debtController.text) ?? 0,
+        "customer_debit": debtAmount,
         "dispatch_date": dateController.text,
         "sales_date": dateController.text,
-        "payment_method": selectedPaymentMethod.toUpperCase(),
-        "cash_received": double.tryParse(cashReceivedController.text) ?? 0,
+        "payment_method": finalMethod,
+        "cash_received": paidAmount,
         "cash_received_by": selectedPaymentMethod == "CASH"
             ? (cashReceivedByController.text.trim().isEmpty
                   ? null
@@ -4109,7 +4114,10 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
         discount: totalDiscount,
         subtotal: subtotal,
         trayCharges: totalTrayCharges,
-        paymentMethod: selectedPaymentMethod,
+        paymentMethod: payments.length > 1
+            ? "SPLIT"
+            : payments[0]["method"].toString().toUpperCase(),
+        branchName: soldLocation,
         onNextSale: () {
           Navigator.pop(context);
           setState(() {
@@ -4133,19 +4141,51 @@ class _SalesEntryPageState extends State<SalesEntryPage> {
       ),
     );
   }
+
   double get grandTotal {
-  return salesItems.fold(
-    0.0,
-    (sum, item) => sum + item.total,
-  );
-}
-double paidAmount=0.0;
+    return salesItems.fold(0.0, (sum, item) => sum + item.total);
+  }
 
- String paymentMethod = "Cash";
+  double get paidAmount {
+    return payments
+        .where((p) => p["method"] != "Credit")
+        .fold(
+          0.0,
+          (sum, p) => sum + (double.tryParse(p["amount"].toString()) ?? 0.0),
+        );
+  }
 
-  final TextEditingController amountController =
-      TextEditingController();
+  double get debtAmount {
+    return payments
+        .where((p) => p["method"] == "Credit")
+        .fold(
+          0.0,
+          (sum, p) => sum + (double.tryParse(p["amount"].toString()) ?? 0.0),
+        );
+  }
 
+  double get balance {
+    return grandTotal - paidAmount;
+  }
+
+  void _addPaymentRow() {
+    setState(() {
+      payments.add({
+        "id": DateTime.now().millisecondsSinceEpoch.toString(),
+        "method": "Cash",
+        "amount": "",
+        "reference": "",
+      });
+    });
+  }
+
+  void _removePaymentRow(String id) {
+    if (payments.length > 1) {
+      setState(() {
+        payments.removeWhere((p) => p["id"] == id);
+      });
+    }
+  }
 
   // --- UI Builders ---
   @override
@@ -4213,9 +4253,7 @@ double paidAmount=0.0;
                                         //   child: _buildPaymentAndSummaryGrid(),
                                         // ),
                                         const SizedBox(width: 16),
-                                        Expanded(
-                                          child: paymentDetailsWidget(),
-                                        ),
+                                        Expanded(child: paymentDetailsWidget()),
                                       ],
                                     ),
                                     // ROW END
@@ -4368,298 +4406,354 @@ double paidAmount=0.0;
   }
 
   Widget paymentDetailsWidget() {
-    
-      
-  return Card(
-    color: Colors.white,
-    elevation: 1,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          /// Header
-          Row(
-            children: const [
-              Icon(
-                Icons.currency_rupee,
-                color: Colors.grey,
-                size: 18,
-              ),
-              SizedBox(width: 8),
-              Text(
-                "Payment Details",
+    return Card(
+      color: Colors.white,
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: const [
+                    Icon(Icons.currency_rupee, color: Colors.blue, size: 18),
+                    SizedBox(width: 8),
+                    Text(
+                      "Payment Details",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                TextButton.icon(
+                  onPressed: _addPaymentRow,
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text("Add Payment"),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.blue,
+                    backgroundColor: Colors.blue.withOpacity(0.1),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 25),
+            const Center(
+              child: Text(
+                "BILL SUMMARY",
                 style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
                 ),
               ),
-            ],
-          ),
-
-          const SizedBox(height: 25),
-
-          const Center(
-            child: Text(
-              "BILL SUMMARY",
-              style: TextStyle(
-                color: Colors.grey,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1,
+            ),
+            const SizedBox(height: 20),
+            Column(
+              children: salesItems.map((item) {
+                if (item.eggs == 0) return const SizedBox();
+                final rate = item.eggs == 0 ? 0 : item.total / item.eggs;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "${item.eggCategoryGrade} (${item.eggs} eggs × ₹${rate.toStringAsFixed(2)})",
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                      Text(
+                        "₹${item.total.toStringAsFixed(2)}",
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+            _paymentSummaryRow("Subtotal", "₹${grandTotal.toStringAsFixed(2)}"),
+            const Divider(height: 30),
+            _paymentSummaryRow(
+              "Grand Total",
+              "₹${grandTotal.toStringAsFixed(2)}",
+              isBold: true,
+            ),
+            const SizedBox(height: 25),
+            Row(
+              children: [
+                Expanded(
+                  child: _amountCard(
+                    "GRAND TOTAL",
+                    "₹${grandTotal.toStringAsFixed(2)}",
+                  ),
+                ),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: _amountCard(
+                    "PAID AMOUNT",
+                    "₹${paidAmount.toStringAsFixed(2)}",
+                    color: Colors.green,
+                  ),
+                ),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: _amountCard(
+                    "BALANCE / DEBT",
+                    "₹${balance.toStringAsFixed(2)}",
+                    color: Colors.red,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 30),
+            ...payments.map((payment) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Method",
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 8),
+                          DropdownButtonFormField<String>(
+                            value: payment["method"],
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: "Cash",
+                                child: Text("Cash"),
+                              ),
+                              DropdownMenuItem(
+                                value: "UPI",
+                                child: Text("UPI"),
+                              ),
+                              DropdownMenuItem(
+                                value: "Card",
+                                child: Text("Card"),
+                              ),
+                              DropdownMenuItem(
+                                value: "RTGS/NEFT",
+                                child: Text("RTGS/NEFT"),
+                              ),
+                              DropdownMenuItem(
+                                value: "Credit",
+                                child: Text("Credit"),
+                              ),
+                            ],
+                            onChanged: (value) {
+                              setState(() => payment["method"] = value!);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 15),
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Amount (₹)",
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            initialValue: payment["amount"],
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: "0.00",
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
+                            onChanged: (value) {
+                              setState(() => payment["amount"] = value);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 15),
+                    Expanded(
+                      flex: 3,
+                      child:
+                          (payment["method"] == "Cash" ||
+                              payment["method"] == "Credit")
+                          ? const SizedBox()
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Reference No.",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                TextFormField(
+                                  initialValue: payment["reference"],
+                                  decoration: InputDecoration(
+                                    hintText: "Txn ID or Ref",
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                  ),
+                                  onChanged: (value) {
+                                    setState(
+                                      () => payment["reference"] = value,
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                    ),
+                    if (payments.length > 1)
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _removePaymentRow(payment["id"]),
+                      ),
+                  ],
+                ),
+              );
+            }).toList(),
+            const SizedBox(height: 30),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: isSubmitting ? null : handlePayment,
+                child: isSubmitting
+                    ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "Complete Transaction",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          Text(
+                            "₹${grandTotal.toStringAsFixed(0)}",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _paymentSummaryRow(String title, String value, {bool isBold = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
           ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
 
-          const SizedBox(height: 20),
-
-          Column(
-  children: salesItems.map((item) {
-    if (item.eggs == 0) return const SizedBox();
-
-    final rate = item.eggs == 0 ? 0 : item.total / item.eggs;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _amountCard(String title, String amount, {Color? color}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
         children: [
-          Expanded(
-            child: Text(
-              "${item.eggCategoryGrade} (${item.eggs} eggs × ₹${rate.toStringAsFixed(2)})",
-              style: const TextStyle(fontSize: 14),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
             ),
           ),
+          const SizedBox(height: 8),
           Text(
-            "₹${item.total.toStringAsFixed(2)}",
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
+            amount,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color ?? Colors.black,
             ),
           ),
         ],
       ),
     );
-  }).toList(),
-),
-
-          _paymentSummaryRow( "Subtotal",
-  "₹${grandTotal.toStringAsFixed(2)}",),
-
-          const Divider(height: 30),
-
-          _paymentSummaryRow(
-            "Grand Total",
-  "₹${grandTotal.toStringAsFixed(2)}",
-  isBold: true,
-            
-          ),
-
-          const SizedBox(height: 25),
-
-          Row(
-            children: [
-              Expanded(
-                child: _amountCard(
-                  "GRAND TOTAL",
-                  "₹${grandTotal.toStringAsFixed(2)}",
-                ),
-              ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: _amountCard(
-                  "PAID AMOUNT",
-                 "₹${paidAmount.toStringAsFixed(2)}",
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 30),
-
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
-                  children: [
-                    const Text("Method"),
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
-                      value: paymentMethod,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(6),
-                        ),
-                      ),
-                      items: const [
-                        DropdownMenuItem(
-                          value: "Cash",
-                          child: Text("Cash"),
-                        ),
-                        DropdownMenuItem(
-                          value: "UPI",
-                          child: Text("UPI"),
-                        ),
-                        DropdownMenuItem(
-                          value: "Card",
-                          child: Text("Card"),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          paymentMethod = value!;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(width: 15),
-
- Expanded(
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Text("Amount (₹)"),
-      const SizedBox(height: 8),
-      TextField(
-        controller: amountController,
-        keyboardType: const TextInputType.numberWithOptions(
-          decimal: true,
-        ),
-        decoration: InputDecoration(
-          hintText: "0.00",
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(6),
-          ),
-        ),
-        onChanged: (value) {
-          setState(() {
-            paidAmount = double.tryParse(value) ?? 0.0;
-          });
-        },
-      ),
-    ],
-  ),
-),            ],
-          ),
-
-          const SizedBox(height: 30),
-
-SizedBox(
-  width: double.infinity,
-  height: 48,
-  child: ElevatedButton(
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.blue,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-    ),
-    onPressed: isSubmitting ? null : handlePayment,
-    child: isSubmitting
-        ? const SizedBox(
-            height: 22,
-            width: 22,
-            child: CircularProgressIndicator(
-              color: Colors.white,
-              strokeWidth: 2,
-            ),
-          )
-        : Stack(
-            alignment: Alignment.center,
-            children: [
-              const Center(
-                child: Text(
-                  "Complete Transaction",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 0,
-                child: Text(
-                  "₹${grandTotal.toStringAsFixed(0)}",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-  ),
-),        ],
-      ),
-    ),
-  );
-}
-
-Widget _paymentSummaryRow(
-  String title,
-  String value, {
-  bool isBold = false,
-}) {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Text(
-        title,
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight:
-              isBold ? FontWeight.bold : FontWeight.w500,
-        ),
-      ),
-      Text(
-        value,
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight:
-              isBold ? FontWeight.bold : FontWeight.w500,
-        ),
-      ),
-    ],
-  );
-}
-
-Widget _amountCard(String title, String amount) {
-  return Container(
-    padding: const EdgeInsets.symmetric(vertical: 20),
-    decoration: BoxDecoration(
-      border: Border.all(color: Colors.grey.shade300),
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Column(
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.grey,
-            fontWeight: FontWeight.bold,
-            fontSize: 12,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          amount,
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    ),
-  );
-}
+  }
 
   Widget _buildTodayStatsRow() {
     final stats = headerData?['today_sales'] ?? {};
@@ -4733,10 +4827,10 @@ Widget _amountCard(String title, String amount) {
                     customerNumberController,
                     hint: "9876543210",
                     keyboardType: TextInputType.phone,
-                     inputFormatters: [
-    FilteringTextInputFormatter.digitsOnly,
-    LengthLimitingTextInputFormatter(10),
-  ],
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(10),
+                    ],
                     onChanged: lookupCustomer,
                     suffix: customerStatus == 'found'
                         ? const Icon(
@@ -4802,10 +4896,10 @@ Widget _amountCard(String title, String amount) {
                     customerNumberController,
                     hint: "9876543210",
                     keyboardType: TextInputType.phone,
-                     inputFormatters: [
-    FilteringTextInputFormatter.digitsOnly,
-    LengthLimitingTextInputFormatter(10),
-  ],
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(10),
+                    ],
                     onChanged: lookupCustomer,
                     suffix: customerStatus == 'found'
                         ? const Icon(
@@ -4973,21 +5067,21 @@ Widget _amountCard(String title, String amount) {
                         child: Text(
                           p.productName,
 
-                          maxLines: 1,
+                          maxLines: 2,
 
                           overflow: TextOverflow.ellipsis,
 
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
 
-                            fontSize: isTablet ? 11 : 14,
+                            fontSize: isTablet ? 16 : 18,
 
-                            height: 1.0,
+                            height: 1.2,
                           ),
                         ),
                       ),
 
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
 
                       Text(
                         "₹${(p.perTrayPrice / 30).toStringAsFixed(2)} / Egg",
@@ -5001,13 +5095,13 @@ Widget _amountCard(String title, String amount) {
 
                           fontWeight: FontWeight.w700,
 
-                          fontSize: isTablet ? 10 : 12,
+                          fontSize: isTablet ? 15 : 17,
 
-                          height: 1.0,
+                          height: 1.2,
                         ),
                       ),
 
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
 
                       Text(
                         "Stock: ${p.stockEggs}",
@@ -5019,9 +5113,9 @@ Widget _amountCard(String title, String amount) {
                         style: TextStyle(
                           color: isOutOfStock ? Colors.red : Colors.green,
 
-                          fontSize: isTablet ? 10 : 11,
+                          fontSize: isTablet ? 15 : 16,
 
-                          height: 1.0,
+                          height: 1.2,
                         ),
                       ),
                     ],
@@ -5458,12 +5552,16 @@ Widget _amountCard(String title, String amount) {
                                     style: TextStyle(fontSize: 13),
                                   ),
                                   items: branchInventory
-    .where((e) => e.totalEggs > 0)
-    .map((e) => DropdownMenuItem<String>(
-          value: e.category,
-          child: Text("${e.category} (${e.totalEggs} Eggs)"),
-        ))
-    .toList(),
+                                      .where((e) => e.totalEggs > 0)
+                                      .map(
+                                        (e) => DropdownMenuItem<String>(
+                                          value: e.category,
+                                          child: Text(
+                                            "${e.category} (${e.totalEggs} Eggs)",
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
                                   onChanged: (v) =>
                                       updateItem(index, 'product', v),
                                 ),
@@ -6233,7 +6331,7 @@ Widget _amountCard(String title, String amount) {
     Widget? prefix,
     bool readOnly = false,
     VoidCallback? onTap,
-     List<TextInputFormatter>? inputFormatters,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     final width = MediaQuery.of(context).size.width;
 
@@ -6256,7 +6354,7 @@ Widget _amountCard(String title, String amount) {
           keyboardType: keyboardType,
           readOnly: readOnly,
           onTap: onTap,
-           inputFormatters: inputFormatters,
+          inputFormatters: inputFormatters,
           style: TextStyle(
             fontWeight: FontWeight.w400,
             fontSize: compactTablet ? 11 : 13,
@@ -6338,6 +6436,7 @@ class _SuccessDialog extends StatelessWidget {
   final double subtotal;
   final double trayCharges;
   final String paymentMethod;
+  final String branchName;
   final VoidCallback onNextSale;
   final VoidCallback onDashboard;
 
@@ -6353,10 +6452,10 @@ class _SuccessDialog extends StatelessWidget {
     required this.subtotal,
     required this.trayCharges,
     required this.paymentMethod,
+    required this.branchName,
     required this.onNextSale,
     required this.onDashboard,
   });
-
 
   @override
   Widget build(BuildContext context) {
@@ -6454,6 +6553,7 @@ class _SuccessDialog extends StatelessWidget {
                             total: amount,
                             trayCharges: trayCharges,
                             paymentMethod: paymentMethod,
+                            branchName: branchName,
                             isThermal: false,
                           );
                         },
@@ -6528,6 +6628,7 @@ class _SuccessDialog extends StatelessWidget {
                             total: amount,
                             trayCharges: trayCharges,
                             paymentMethod: paymentMethod,
+                            branchName: branchName,
                             isThermal: true,
                           );
                         },

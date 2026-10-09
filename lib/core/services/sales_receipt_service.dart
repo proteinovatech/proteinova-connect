@@ -67,7 +67,7 @@ class SalesReceiptService {
     bool isThermal = true,
   }) async {
     final logo = pw.MemoryImage(
-      (await rootBundle.load('assets/Logo@3x.png')).buffer.asUint8List(),
+      (await rootBundle.load('assets/reclogo.png')).buffer.asUint8List(),
     );
     final ttfRegular = await PdfGoogleFonts.notoSansRegular();
     final ttfBold = await PdfGoogleFonts.notoSansBold();
@@ -98,53 +98,74 @@ class SalesReceiptService {
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.roll80,
+        margin: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         build: (pw.Context context) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Row(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  /// LOGO LEFT SIDE
-                  pw.Container(width: 35, height: 35, child: pw.Image(logo)),
-
-                  pw.SizedBox(width: 12),
-
-                  /// SHOP DETAILS
-                  pw.Expanded(
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+              pw.Center(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.center,
+                      crossAxisAlignment: pw.CrossAxisAlignment.center,
                       children: [
-                        pw.Text(
-                          "PROTEINOVA",
-                          style: pw.TextStyle(
-                            fontSize: 18,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
-                        ),
-
-                        pw.SizedBox(height: 2),
-
-                        pw.Text(
-                          "PURE PROTEIN, PURE POWER",
-                          style: pw.TextStyle(
-                            fontSize: 8,
-                            color: PdfColors.grey700,
-                          ),
+                        pw.Container(width: 25, height: 25, child: pw.Image(logo)),
+                        pw.SizedBox(width: 8),
+                        pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.center,
+                          children: [
+                            pw.Text(
+                              "PROTEINOVA",
+                              style: pw.TextStyle(
+                                fontSize: 14,
+                                fontWeight: pw.FontWeight.bold,
+                              ),
+                            ),
+                            pw.Text(
+                              "Pure protein, pure power",
+                              style: pw.TextStyle(fontSize: 7),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ),
-                ],
+                    if (branchName != null && branchName.isNotEmpty) ...[
+                      pw.SizedBox(height: 2),
+                      pw.Text(
+                        branchName,
+                        style: const pw.TextStyle(fontSize: 10),
+                        textAlign: pw.TextAlign.center,
+                      ),
+                    ],
+                    pw.SizedBox(height: 2),
+                    pw.Text(
+                      ".....CASH/BILL.....",
+                      style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
+                    ),
+                  ],
+                ),
               ),
 
-              pw.SizedBox(height: 10),
+              pw.SizedBox(height: 3),
               pw.Divider(),
-              pw.Text("Receipt : $saleId"),
-              pw.Text("Date: $date"),
-              pw.Text("Customer: $customerName"),
-              if (customerNumber.isNotEmpty) pw.Text("Phone: $customerNumber"),
-              pw.SizedBox(height: 10),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text("Receipt: $saleId", style: const pw.TextStyle(fontSize: 8)),
+                  pw.Text("Date: $date", style: const pw.TextStyle(fontSize: 8)),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text("Customer: $customerName", style: const pw.TextStyle(fontSize: 8)),
+                  if (customerNumber.isNotEmpty) 
+                    pw.Text("Ph: $customerNumber", style: const pw.TextStyle(fontSize: 8)),
+                ],
+              ),
+              pw.SizedBox(height: 5),
               pw.Divider(),
               pw.Row(
                 children: [
@@ -152,21 +173,21 @@ class SalesReceiptService {
                     flex: 3,
                     child: pw.Text(
                       "Item",
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
                     ),
                   ),
                   pw.Expanded(
                     flex: 1,
                     child: pw.Text(
                       "Qty",
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
                     ),
                   ),
                   pw.Expanded(
                     flex: 2,
                     child: pw.Text(
                       "Total",
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
                       textAlign: pw.TextAlign.right,
                     ),
                   ),
@@ -184,21 +205,21 @@ class SalesReceiptService {
                             flex: 3,
                             child: pw.Text(
                               item.eggCategoryGrade,
-                              style: const pw.TextStyle(fontSize: 10),
+                              style: const pw.TextStyle(fontSize: 8),
                             ),
                           ),
                           pw.Expanded(
                             flex: 1,
                             child: pw.Text(
                               "${item.eggs}",
-                              style: const pw.TextStyle(fontSize: 10),
+                              style: const pw.TextStyle(fontSize: 8),
                             ),
                           ),
                           pw.Expanded(
                             flex: 2,
                             child: pw.Text(
                               "₹ ${item.total.toStringAsFixed(2)}",
-                              style: const pw.TextStyle(fontSize: 10),
+                              style: const pw.TextStyle(fontSize: 8),
                               textAlign: pw.TextAlign.right,
                             ),
                           ),
@@ -210,23 +231,23 @@ class SalesReceiptService {
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text("Subtotal:"),
-                  pw.Text("₹ ${subtotal.toStringAsFixed(2)}"),
+                  pw.Text("Subtotal:", style: const pw.TextStyle(fontSize: 9)),
+                  pw.Text("₹ ${subtotal.toStringAsFixed(2)}", style: const pw.TextStyle(fontSize: 9)),
                 ],
               ),
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text("Discount:"),
-                  pw.Text("₹ ${discount.toStringAsFixed(2)}"),
+                  pw.Text("Discount:", style: const pw.TextStyle(fontSize: 9)),
+                  pw.Text("₹ ${discount.toStringAsFixed(2)}", style: const pw.TextStyle(fontSize: 9)),
                 ],
               ),
               if (trayCharges > 0)
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
-                    pw.Text("Tray Charges:"),
-                    pw.Text("₹ ${trayCharges.toStringAsFixed(2)}"),
+                    pw.Text("Tray Charges:", style: const pw.TextStyle(fontSize: 9)),
+                    pw.Text("₹ ${trayCharges.toStringAsFixed(2)}", style: const pw.TextStyle(fontSize: 9)),
                   ],
                 ),
               pw.Row(
@@ -243,30 +264,37 @@ class SalesReceiptService {
                   pw.Text("₹ 0.00", style: const pw.TextStyle(fontSize: 8)),
                 ],
               ),
-              pw.SizedBox(height: 5),
+              pw.SizedBox(height: 2),
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
                   pw.Text(
-                    "Grand Total:",
-                    style: pw.TextStyle(
-                      fontWeight: pw.FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                    "Mode: $paymentMethod",
+                    style: const pw.TextStyle(fontSize: 9),
                   ),
-                  pw.Text(
-                    "₹ ${(total.ceilToDouble()).toStringAsFixed(2)}",
-                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                  pw.Row(
+                    mainAxisSize: pw.MainAxisSize.min,
+                    children: [
+                      pw.Text(
+                        "Total: ",
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      pw.Text(
+                        "₹ ${(total.ceilToDouble()).toStringAsFixed(2)}",
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
+                      ),
+                    ],
                   ),
                 ],
               ),
               pw.Divider(),
-              pw.SizedBox(height: 10),
+              pw.SizedBox(height: 3),
               pw.Center(
                 child: pw.Column(
                   children: [
-                    pw.Text("Payment Mode: $paymentMethod"),
-                    pw.SizedBox(height: 5),
                     pw.Text(
                       "Thank you for choosing Proteinova!",
                       style: pw.TextStyle(

@@ -96,7 +96,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
     );
   }
 
-  int selectedIndex = 0;
+  int selectedIndex = 1;
 
   final List<Widget> pages = [
     BranchDashboard(),
