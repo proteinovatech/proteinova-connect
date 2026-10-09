@@ -19,8 +19,8 @@ import 'package:proteinova_connect/features/purchase/purchase_report/purchase_re
 import 'package:proteinova_connect/features/purchase/supplier/supplier_screen.dart';
 import 'package:proteinova_connect/features/purchase/purchase_dashboard/presentation/purchase_dashboard.dart';
 import 'package:proteinova_connect/features/purchase/warehouse_stock_updates.dart';
-
-
+import 'package:proteinova_connect/features/auth/presentation/terms_and_conditions.dart';
+import 'package:proteinova_connect/features/auth/presentation/privacy_policy.dart';
 
 class PurchaseBottomNavigator extends StatefulWidget {
   const PurchaseBottomNavigator({super.key});
@@ -280,6 +280,29 @@ class _PurchasebottomnavigatorState extends State<PurchaseBottomNavigator> {
                                       ),
                                     );
                                   },
+                                  ),
+                                  Divider(color: Colors.grey.shade200),
+
+                                  _buildSettingTile(
+                                    icon: Icons.description_outlined,
+                                    title: "Terms and Conditions",
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (_) => const TermsAndConditionsScreen()),
+                                      );
+                                    },
+                                  ),
+                                  Divider(color: Colors.grey.shade200),
+                                  _buildSettingTile(
+                                    icon: Icons.privacy_tip_outlined,
+                                    title: "Privacy Policy",
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
+                                      );
+                                    },
                                   ),
                                   Divider(color: Colors.grey.shade200),
 

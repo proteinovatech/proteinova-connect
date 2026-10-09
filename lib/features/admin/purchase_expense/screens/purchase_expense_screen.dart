@@ -8,6 +8,7 @@ import 'package:proteinova_connect/features/admin/skeletonloader/purchase_expens
 import '../data/repository/purchase_expense_repository.dart';
 import '../data/models/purchase_list_item.dart';
 import '../data/models/purchase_detail_response.dart';
+import 'package:proteinova_connect/features/purchase/purchase_dashboard/presentation/invoice_generator.dart';
 
 class PurchaseExpenseScreen extends StatefulWidget {
   const PurchaseExpenseScreen({super.key});
@@ -881,13 +882,57 @@ String role = ""; // or "WAREHOUSE"
                               ),
                               const SizedBox(width: 8),
                               ElevatedButton.icon(
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text("PO-${details.id} Invoice download started successfully!"),
-                                      backgroundColor: Colors.green,
-                                    ),
-                                  );
+                                onPressed: () async {
+                                  try {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text("PO-${details.id} Invoice download started..."),
+                                        backgroundColor: Colors.blueAccent,
+                                      ),
+                                    );
+
+                                    final purchaseMap = {
+                                      "id": details.id,
+                                      "supplier_company_name": details.supplierCompanyName,
+                                      "warehouse_location": details.warehouseLocation,
+                                      "created_at": details.createdAt,
+                                      "loading_charge": details.loadingCharge,
+                                      "unloading_charge": details.unloadingCharge,
+                                      "transport_charge": details.transportCharge,
+                                      "misc_expense": details.miscExpense,
+                                    };
+                                    
+                                    final itemsList = (details.items ?? []).map((i) => {
+                                      "egg_category_grade": i.eggCategoryGrade,
+                                      "trays": i.trays,
+                                      "capacity": i.capacity ?? 30,
+                                      "per_egg_price": i.perEggPrice,
+                                      "total_amount": (i.trays ?? 0) * (i.capacity ?? 30) * (i.perEggPrice ?? 0),
+                                    }).toList();
+
+                                    await InvoiceGenerator.generate(
+                                      purchase: purchaseMap,
+                                      items: itemsList,
+                                    );
+
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text("PO-${details.id} Invoice downloaded and opened!"),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text("Failed to download PDF: $e"),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  }
                                 },
                                 icon: const Icon(Icons.download, size: 16, color: Colors.black),
                                 label: const Text("Download Bill", style: TextStyle(color: Colors.black, fontSize: 13, fontWeight: FontWeight.bold)),

@@ -64,6 +64,8 @@ import 'package:proteinova_connect/features/admin/purchase_expense/data/reposito
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
 import 'package:proteinova_connect/features/admin/admin customertrays/presentation/admin_customer_trays.dart';
 import 'package:proteinova_connect/features/branch/tray_returns/presentation/tray_returns.dart';
+import 'package:proteinova_connect/features/auth/presentation/terms_and_conditions.dart';
+import 'package:proteinova_connect/features/auth/presentation/privacy_policy.dart';
 
 import 'features/admin/menu/SalesDashboard/bloc/sales_dashboard_bloc.dart';
 
@@ -544,6 +546,28 @@ class _BranchBottomNavigatorState extends State<AdminBottomNavigator> {
 
                   const SizedBox(height: 20),
                   const Divider(),
+                  ListTile(
+                    leading: const Icon(Icons.description_outlined, color: Colors.black87),
+                    title: const Text(
+                      "Terms and Conditions",
+                      style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsAndConditionsScreen()));
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.privacy_tip_outlined, color: Colors.black87),
+                    title: const Text(
+                      "Privacy Policy",
+                      style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()));
+                    },
+                  ),
                   ListTile(
                     leading: const Icon(Icons.logout, color: Colors.red),
                     title: const Text(

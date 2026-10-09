@@ -19,163 +19,148 @@ class Dispatchscreen extends StatefulWidget {
 
 class _DispatchscreenState extends State<Dispatchscreen> {
   Size get size => MediaQuery.of(context).size;
-  
+
   final SalesRepository _repository = SalesRepository();
 
-  
-
-  
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-  create: (_) => DispatchBloc(
-    _repository,
-  )..add(FetchDispatchEvent()),
+      create: (_) => DispatchBloc(_repository)..add(FetchDispatchEvent()),
 
-  child: BlocBuilder<
-      DispatchBloc,
-      DispatchState>(
-    builder: (context, state) {
+      child: BlocBuilder<DispatchBloc, DispatchState>(
+        builder: (context, state) {
+          // LOADING
+          if (state is DispatchLoading) {
+            return const Scaffold(
+              backgroundColor: AppColors.background1,
+              body: SafeArea(child: Center(child: CircularProgressIndicator())),
+            );
+          }
 
-      // LOADING
-      if (state is DispatchLoading) {
-        return const Scaffold(
-          body: Center(
-            child:
-                CircularProgressIndicator(),
-          ),
-        );
-      }
-
-      // ERROR
-      if (state is DispatchError) {
-        return Scaffold(
-          body: Center(
-            child: Column(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
-
-              children: [
-
-                Text(
-                  "Error: ${state.message}",
-                ),
-
-                ElevatedButton(
-                  onPressed: () {
-                    context
-                        .read<DispatchBloc>()
-                        .add(
-                          FetchDispatchEvent(),
-                        );
-                  },
-
-                  child: const Text(
-                    "Retry",
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }
-
-      // SUCCESS
-      if (state is DispatchLoaded) {
-
-        final dispatches =
-            state.dispatches;
-    return Scaffold(
-      backgroundColor: AppColors.background1,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        scrolledUnderElevation: 0,
-        title: Image.asset("assets/erplogo.png", height: 40),
-        actions: const [
-          Icon(Icons.search_outlined, color: Colors.black),
-          SizedBox(width: 10),
-          Icon(Icons.notifications_outlined, color: Colors.black),
-          SizedBox(width: 10),
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: Color(0xffe0e0e0),
-            child: Icon(Icons.person, size: 20, color: Color(0xffffffff)),
-          ),
-          SizedBox(width: 10),
-        ],
-      ),
-      body:  RefreshIndicator(
-              onRefresh:() async {
-
-              context
-                  .read<DispatchBloc>()
-                  .add(
-                    RefreshDispatchEvent(),
-                  );
-            },
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
+          // ERROR
+          if (state is DispatchError) {
+            return Scaffold(
+              backgroundColor: AppColors.background1,
+              body: SafeArea(
+                child: Center(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+
                     children: [
-                      SizedBox(height: size.height * 0.02),
-                      _buildStatsRows(dispatches),
-                      SizedBox(height: size.height * 0.05),
-                      _buildDispatchListHeader(),
-                      SizedBox(height: size.height * 0.02),
-                      dispatches.isEmpty
-                          ? const Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(40),
-                                child: Text("No Active Dispatches Found"),
-                              ),
-                            )
-                          : ListView.builder(
-                              itemCount: dispatches.length,
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemBuilder: (context, index) {
-                                final item = dispatches[index];
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 15),
-                                  child: DispatchCard3(
-                                    id: "DS-${item["dispatch_id"] ?? item["id"]}",
-                                    status:
-                                        item["status"]?.toString() ?? "Pending",
-                                    branch:
-                                        item["destination"]?.toString() ??
-                                        "N/A",
-                                    date:
-                                        item["dispatch_date"]?.toString() ??
-                                        "N/A",
-                                    totalQty:
-                                        "${item["total_trays"] ?? 0} Trays",
-                                    vehicleDriver:
-                                        item["vehicle_driver"]?.toString() ??
-                                        "N/A",
-                                    showFullActions: true,
-                                  ),
-                                );
-                              },
-                            ),
-                      const SizedBox(height: 30),
+                      Text("Error: ${state.message}"),
+
+                      ElevatedButton(
+                        onPressed: () {
+                          context.read<DispatchBloc>().add(
+                            FetchDispatchEvent(),
+                          );
+                        },
+
+                        child: const Text("Retry"),
+                      ),
                     ],
                   ),
                 ),
               ),
-            ),
-    );
+            );
           }
 
-      return const SizedBox();
-    },
-  ),
-);
+          // SUCCESS
+          if (state is DispatchLoaded) {
+            final dispatches = state.dispatches;
+            return Scaffold(
+              backgroundColor: AppColors.background1,
+              appBar: AppBar(
+                backgroundColor: AppColors.background,
+                scrolledUnderElevation: 0,
+                title: Image.asset("assets/erplogo.png", height: 40),
+                actions: const [
+                  Icon(Icons.search_outlined, color: Colors.black),
+                  SizedBox(width: 10),
+                  Icon(Icons.notifications_outlined, color: Colors.black),
+                  SizedBox(width: 10),
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Color(0xffe0e0e0),
+                    child: Icon(
+                      Icons.person,
+                      size: 20,
+                      color: Color(0xffffffff),
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                ],
+              ),
+              body: RefreshIndicator(
+                onRefresh: () async {
+                  context.read<DispatchBloc>().add(RefreshDispatchEvent());
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: size.width * 0.05,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: size.height * 0.02),
+                        _buildStatsRows(dispatches),
+                        SizedBox(height: size.height * 0.05),
+                        _buildDispatchListHeader(),
+                        SizedBox(height: size.height * 0.02),
+                        dispatches.isEmpty
+                            ? const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(40),
+                                  child: Text("No Active Dispatches Found"),
+                                ),
+                              )
+                            : ListView.builder(
+                                itemCount: dispatches.length,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  final item = dispatches[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 15),
+                                    child: DispatchCard3(
+                                      id: "DS-${item["dispatch_id"] ?? item["id"]}",
+                                      status:
+                                          item["status"]?.toString() ??
+                                          "Pending",
+                                      branch:
+                                          item["destination"]?.toString() ??
+                                          "N/A",
+                                      date:
+                                          item["dispatch_date"]?.toString() ??
+                                          "N/A",
+                                      totalQty:
+                                          "${item["total_trays"] ?? 0} Trays",
+                                      vehicleDriver:
+                                          item["vehicle_driver"]?.toString() ??
+                                          "N/A",
+                                      showFullActions: true,
+                                    ),
+                                  );
+                                },
+                              ),
+                        const SizedBox(height: 30),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+
+          return const SizedBox();
+        },
+      ),
+    );
   }
 
-  Widget _buildStatsRows( List<dynamic> dispatches, ) {
+  Widget _buildStatsRows(List<dynamic> dispatches) {
     return Column(
       children: [
         Row(
@@ -231,9 +216,7 @@ class _DispatchscreenState extends State<Dispatchscreen> {
         ),
       ],
     );
-    
   }
-  
 
   Widget _buildDispatchListHeader() {
     return Row(
@@ -261,7 +244,5 @@ class _DispatchscreenState extends State<Dispatchscreen> {
       ),
       child: Icon(icon, color: Colors.grey, size: 20),
     );
-    
   }
-  
 }

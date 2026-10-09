@@ -27,6 +27,9 @@ import 'package:proteinova_connect/features/branch/tray_returns/presentation/tra
 import 'features/branch/branch_dashboard/presentation/branch_dashboard.dart';
 import 'package:proteinova_connect/features/branch/branch_transfer/presentation/branch_transfer_screen.dart';
 import 'package:proteinova_connect/features/branch/branch_transfer/presentation/transfer_hub_screen.dart';
+import 'package:proteinova_connect/features/auth/presentation/terms_and_conditions.dart';
+import 'package:proteinova_connect/features/auth/presentation/privacy_policy.dart';
+
 
 class BranchBottomNavigator extends StatefulWidget {
   const BranchBottomNavigator({super.key});
@@ -307,6 +310,28 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                   const SizedBox(height: 20),
                   Divider(),
                   ListTile(
+                    leading: const Icon(Icons.description_outlined, color: Colors.black87),
+                    title: const Text(
+                      "Terms and Conditions",
+                      style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsAndConditionsScreen()));
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.privacy_tip_outlined, color: Colors.black87),
+                    title: const Text(
+                      "Privacy Policy",
+                      style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()));
+                    },
+                  ),
+                  ListTile(
                     leading: Icon(Icons.logout, color: Colors.red),
                     title: Text(
                       "Logout",
@@ -317,6 +342,7 @@ class _BranchBottomNavigatorState extends State<BranchBottomNavigator> {
                     ),
                     onTap: () => _handleLogout(),
                   ),
+
                 ],
               ),
             ),

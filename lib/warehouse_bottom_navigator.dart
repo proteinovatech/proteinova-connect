@@ -39,6 +39,8 @@ import 'package:proteinova_connect/features/admin/purchase_expense/screens/purch
 import 'package:proteinova_connect/features/admin/purchase_expense/bloc/purchase_bloc.dart';
 import 'package:proteinova_connect/features/admin/purchase_expense/data/repository/purchase_expense_repository.dart';
 import 'package:proteinova_connect/features/auth/presentation/signup_screen.dart';
+import 'package:proteinova_connect/features/auth/presentation/terms_and_conditions.dart';
+import 'package:proteinova_connect/features/auth/presentation/privacy_policy.dart';
 
 class WarehouseBottomNavigator extends StatefulWidget {
   const WarehouseBottomNavigator({super.key});
@@ -561,6 +563,28 @@ class _WarehouseBottomNavigatorState extends State<WarehouseBottomNavigator> {
                   //   AdminReportDashboardScreen(),
                   // ),
                   Divider(),
+                  ListTile(
+                    leading: const Icon(Icons.description_outlined, color: Colors.black87),
+                    title: const Text(
+                      "Terms and Conditions",
+                      style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsAndConditionsScreen()));
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.privacy_tip_outlined, color: Colors.black87),
+                    title: const Text(
+                      "Privacy Policy",
+                      style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()));
+                    },
+                  ),
                   ListTile(
                     leading: Icon(Icons.logout, color: Colors.red),
                     title: Text(
