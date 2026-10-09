@@ -30,6 +30,11 @@ class AuthService {
 
     // return null;
 
+    final bodyTrimmed = response.body.trim();
+    if (bodyTrimmed.startsWith('<!DOCTYPE html') || bodyTrimmed.startsWith('<html')) {
+      throw Exception('Server returned HTML error (Status ${response.statusCode}). Please check API URL / backend connection.');
+    }
+
     final data = jsonDecode(response.body);
 
     if (response.statusCode == 200) {

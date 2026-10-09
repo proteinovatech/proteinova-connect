@@ -153,7 +153,7 @@ class _DailyClosingState extends State<DailyClosing> {
                       runSpacing: 16,
 
                       children: [
-                        SizedBox(width: width, child: _buildActionBar(data!)),
+                        SizedBox(width: width, child: _buildActionBar(data)),
 
                         SizedBox(
                           width: (width - 48) / 2,
@@ -578,6 +578,8 @@ class _DailyClosingState extends State<DailyClosing> {
   // }
 
   Widget _buildSalesExpenseSummary(DailyClosingModel data) {
+    final num onlineSales = data.sales.online > 0 ? data.sales.online : data.sales.upi;
+    final num creditSales = data.sales.credit;
     return Column(
       children: [
         _buildCard(
@@ -588,7 +590,11 @@ class _DailyClosingState extends State<DailyClosing> {
               const SizedBox(width: 8),
               Expanded(child: _buildStatBox("Cash", data.sales.cash)),
               const SizedBox(width: 8),
-              Expanded(child: _buildStatBox("UPI", data.sales.upi)),
+              Expanded(child: _buildStatBox("UPI / Online", onlineSales)),
+              if (creditSales > 0) ...[
+                const SizedBox(width: 8),
+                Expanded(child: _buildStatBox("Credit", creditSales, color: Colors.orange.shade800)),
+              ],
             ],
           ),
         ),
@@ -615,7 +621,7 @@ class _DailyClosingState extends State<DailyClosing> {
               const SizedBox(width: 8),
               Expanded(
                 child: _buildStatBox(
-                  "UPI",
+                  "UPI / Online",
                   data.expenses.upi,
                   color: Colors.red.shade700,
                 ),
@@ -725,35 +731,27 @@ class _DailyClosingState extends State<DailyClosing> {
 
   Widget _buildTodaysSummary(DailyClosingModel data) {
     final summary = data.todaysSummary;
-    final finalValue =
-        summary.openingStockValue +
-        summary.receivedStockValue +
-        summary.totalSales -
-        summary.totalExpenses;
+    final opening = summary.openingStockValue;
+    final received = summary.receivedStockValue;
+    final sold = summary.soldStockValue;
+    final damaged = summary.damagedStockValue;
+    final closing = summary.closingStockValue;
+
     return _buildCard(
       title: "Today's Summary",
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            _buildFormulaItem(
-              "Opening Stock",
-              data.todaysSummary.openingStockValue,
-            ),
+            _buildFormulaItem("Opening Stock Value", opening),
             _buildOperator("+"),
-            _buildFormulaItem(
-              "Stock Received",
-              data.todaysSummary.receivedStockValue,
-            ),
-            _buildOperator("+"),
-            _buildFormulaItem("Total Sales", data.todaysSummary.totalSales),
+            _buildFormulaItem("Stock Received Value", received),
             _buildOperator("-"),
-            _buildFormulaItem(
-              "Total Expenses",
-              data.todaysSummary.totalExpenses,
-            ),
+            _buildFormulaItem("Stock Sold Value", sold),
+            _buildOperator("-"),
+            _buildFormulaItem("Stock Damaged Value", damaged),
             _buildOperator("="),
-            _buildFormulaItem("Final Value", finalValue, isResult: true),
+            _buildFormulaItem("Closing Stock Value", closing, isResult: true),
           ],
         ),
       ),

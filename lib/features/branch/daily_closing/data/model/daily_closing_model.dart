@@ -51,6 +51,7 @@ class SalesExpenseDetail {
   final num upi;
   final num card;
   final num online;
+  final num credit;
 
   SalesExpenseDetail({
     required this.total,
@@ -58,15 +59,22 @@ class SalesExpenseDetail {
     required this.upi,
     required this.card,
     required this.online,
+    required this.credit,
   });
 
   factory SalesExpenseDetail.fromJson(Map<String, dynamic> json) {
+    final cash = (json['cash'] ?? 0) as num;
+    final upi = (json['upi'] ?? 0) as num;
+    final card = (json['card'] ?? 0) as num;
+    final online = (json['online'] ?? (upi + card)) as num;
+    final credit = (json['credit'] ?? 0) as num;
     return SalesExpenseDetail(
-      total: json['total'] ?? 0,
-      cash: json['cash'] ?? 0,
-      upi: json['upi'] ?? 0,
-      card: json['card'] ?? 0,
-      online: json['online'] ?? 0,
+      total: (json['total'] ?? 0) as num,
+      cash: cash,
+      upi: upi,
+      card: card,
+      online: online,
+      credit: credit,
     );
   }
 }
@@ -210,25 +218,25 @@ class ClosingStockValue {
 class TodaysSummary {
   final num openingStockValue;
   final num receivedStockValue;
-  final num totalSales;
-  final num totalExpenses;
-  final num finalValue;
+  final num soldStockValue;
+  final num damagedStockValue;
+  final num closingStockValue;
 
   TodaysSummary({
     required this.openingStockValue,
     required this.receivedStockValue,
-    required this.totalSales,
-    required this.totalExpenses,
-    required this.finalValue,
+    required this.soldStockValue,
+    required this.damagedStockValue,
+    required this.closingStockValue,
   });
 
   factory TodaysSummary.fromJson(Map<String, dynamic> json) {
     return TodaysSummary(
-      openingStockValue: json['opening_stock_value'] ?? 0,
-      receivedStockValue: json['received_stock_value'] ?? 0,
-      totalSales: json['total_sales'] ?? 0,
-      totalExpenses: json['total_expenses'] ?? 0,
-      finalValue: json['final_value'] ?? 0,
+      openingStockValue: num.tryParse(json['opening_stock_value']?.toString() ?? '') ?? 0,
+      receivedStockValue: num.tryParse(json['received_stock_value']?.toString() ?? '') ?? 0,
+      soldStockValue: num.tryParse(json['sold_stock_value']?.toString() ?? '') ?? (num.tryParse(json['total_sales']?.toString() ?? '') ?? 0),
+      damagedStockValue: num.tryParse(json['damaged_stock_value']?.toString() ?? '') ?? (num.tryParse(json['total_expenses']?.toString() ?? '') ?? 0),
+      closingStockValue: num.tryParse(json['closing_stock_value']?.toString() ?? '') ?? (num.tryParse(json['final_value']?.toString() ?? '') ?? 0),
     );
   }
 }
